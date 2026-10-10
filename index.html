@@ -101,6 +101,27 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
  .orb{width:54px;height:54px;right:24px}.bar span{margin-left:24px}.field textarea{font-size:16px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@supports (height:100dvh){html,body{height:100dvh}}
+button,.chat{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.model .sep{margin-right:1px}
+@media (hover:none){.more{opacity:1}.chat:hover{background:var(--chip)}.chat.on:hover{background:var(--sel)}}
+@media (max-width:640px){
+ body{padding:4px}
+ .frame{min-height:0;border-width:2px;border-radius:20px;padding:6px}
+ .scroll{padding:50px 4px 84px;gap:12px}
+ .msg{max-width:92%}.msg.u{padding:11px 18px}
+ .input{gap:6px}
+ .field{min-height:46px;padding:0 6px 0 16px;border-radius:23px}
+ .field textarea{padding:12px 0;height:46px}
+ #clip{display:none}
+ .round{width:44px;height:44px}
+ .model{padding:6px 4px;font-size:13.5px}.model .sep{display:none}
+ .orb{width:46px;height:46px;right:16px;bottom:calc(100% + 14px)}
+ .pop{width:min(240px,calc(100vw - 32px))}
+ .note{font-size:12px;margin:6px 0 0 6px}
+ .bar span{margin-left:16px;font-size:12px}
+ .mcard{padding:16px}.key{font-size:22px}
+}
 </style>
 </head>
 <body>
@@ -151,7 +172,7 @@ const I={
  chev:ic('<path d="M6 9l6 6 6-6"/>',14,2.4)
 };
 $("new").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',16,2.6);$("clip").innerHTML=I.clip;$("send").innerHTML=I.send;$("tick").innerHTML=I.check;
-$("model").innerHTML="<span>| Aries 1</span>"+I.chev;
+$("model").innerHTML='<span class="sep">|</span><span>Aries 1</span>'+I.chev;
 
 let mem=null;
 const store={get(){try{return localStorage.getItem(KEY)}catch(e){return mem}},set(v){mem=v;try{localStorage.setItem(KEY,v)}catch(e){}}};
