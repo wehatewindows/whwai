@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>WHWai</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -122,6 +122,31 @@ button,.chat{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
  .bar span{margin-left:16px;font-size:12px}
  .mcard{padding:16px}.key{font-size:22px}
 }
+.mbar{display:none}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:18px}
+.chip{border:0;background:var(--bub);border-radius:16px;padding:9px 14px;cursor:pointer;font-size:14px;color:var(--ink);transition:background .15s}
+.chip:hover{background:#e6e6e6}
+@keyframes glow{0%,100%{box-shadow:-6px 4px 20px rgba(106,160,255,.35),6px 4px 20px rgba(244,114,182,.22),0 -4px 20px rgba(167,139,250,.22)}50%{box-shadow:6px 6px 28px rgba(106,160,255,.5),-6px 2px 28px rgba(244,114,182,.38),0 -6px 26px rgba(251,191,36,.28)}}
+@media (max-width:640px){
+ body{padding:0;background:radial-gradient(120% 50% at 50% 108%,rgba(120,150,255,.2),transparent 70%),#fff}
+ .frame{border:0;border-radius:0;padding:0;gap:0;background:transparent}
+ .main{padding:0 0 0}
+ .mbar{display:flex;align-items:center;justify-content:center;position:absolute;left:0;right:0;top:0;height:calc(52px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top);z-index:3;background:rgba(255,255,255,.74);-webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);border-bottom:1px solid rgba(0,0,0,.06)}
+ .mt{font-size:17px;font-weight:500}.mt b{font-weight:700}
+ .mnew{position:absolute;right:12px;bottom:9px;width:34px;height:34px;border:0;border-radius:50%;background:rgba(0,0,0,.06);display:grid;place-items:center;padding:0;cursor:pointer}
+ .expand{left:12px;top:calc(9px + env(safe-area-inset-top));z-index:4}
+ .scroll{padding:calc(64px + env(safe-area-inset-top)) 14px 72px;gap:10px}
+ .msg{max-width:84%;background:#f0f0f3;border-radius:20px;padding:10px 15px}
+ .msg.u{background:linear-gradient(180deg,#7fa9ff,#5b8df0);color:#fff;border-radius:20px;padding:10px 15px}
+ .bar{background:none;padding:0 4px;margin-top:-6px}
+ .input{margin:0 10px}
+ .field{background:rgba(255,255,255,.88);-webkit-backdrop-filter:blur(20px) saturate(1.6);backdrop-filter:blur(20px) saturate(1.6);border:1px solid rgba(255,255,255,.95);min-height:48px;border-radius:24px;box-shadow:-6px 4px 20px rgba(106,160,255,.35),6px 4px 20px rgba(244,114,182,.22),0 -4px 20px rgba(167,139,250,.22)}
+ .busy .field{animation:glow 2.4s ease-in-out infinite}
+ .round{background:rgba(255,255,255,.88);box-shadow:0 2px 12px rgba(106,160,255,.25)}
+ .note{text-align:center;margin:6px 0 calc(8px + env(safe-area-inset-bottom))}
+ .side{background:rgba(238,238,242,.94);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px)}
+ .empty h2{font-size:32px}
+}
 </style>
 </head>
 <body>
@@ -137,6 +162,7 @@ button,.chat{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
  <div class="modal" id="modal" hidden><div class="mcard" role="dialog" aria-label="Settings"><div class="mh"><b>Settings</b><button id="mx" aria-label="Close">&times;</button></div><div id="mbody"></div></div></div>
  <section class="main">
   <button class="expand" id="expand" title="Show sidebar" aria-label="Show sidebar"></button>
+  <div class="mbar"><span class="mt">WHW<b>ai</b></span><button class="mnew" id="mnew" title="New chat" aria-label="New chat"></button></div>
   <div class="scroll" id="chat"></div>
   <div class="toast" id="toast" role="status"></div>
   <div class="input">
@@ -272,7 +298,9 @@ function closeMenu(){
 }
 function renderChat(fresh){
  const c=C();chatEl.innerHTML="";
- if(!c||!c.m.length){chatEl.innerHTML='<div class="empty"><h2>WHW<b>ai</b></h2>Ask anything to get started.</div>';return}
+ if(!c||!c.m.length){const SUG=["Explain something simply","Help me plan a trip","Help me fix my code","Write a short message for me"];
+  chatEl.innerHTML='<div class="empty"><h2>WHW<b>ai</b></h2>Ask anything to get started.<div class="chips">'+SUG.map(t=>'<button class="chip">'+t+'</button>').join("")+'</div></div>';
+  chatEl.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{ta.value=b.textContent;fit();send()});return}
  c.m.forEach((m,i)=>{
   const d=document.createElement("div");d.className="msg"+(m.r==="u"?" u":"");
   if(m.r==="u")d.textContent=m.x;else d.innerHTML=md(m.x);
@@ -313,7 +341,7 @@ function orbStop(){
  orb.style.transition="transform 1s cubic-bezier(.25,.8,.25,1),border-radius 1s ease,box-shadow 1s ease";
  orb.style.transform="";orb.style.borderRadius="";orb.style.boxShadow="";
 }
-function setBusy(b){busy=b;sendBtn.disabled=b;b?orbStart():orbStop()}
+function setBusy(b){busy=b;sendBtn.disabled=b;document.querySelector(".frame").classList.toggle("busy",b);b?orbStart():orbStop()}
 const ERR_TEXT="WHWai is busy or can't be reached right now. Wait a moment, then press regenerate.";
 const hist=c=>c.m.filter(m=>!m.err).slice(-14).map(m=>({r:m.r,x:m.x}));
 async function post(body){
@@ -397,6 +425,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"){pop(false);side(fal
 const KEYLEN=6; /* must match KEY_DIGITS in the backend script */
 const SLIDERS='<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>';
 $("gear").innerHTML=ic(SLIDERS,16,2.2);
+$("mnew").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',18,2.4);$("mnew").onclick=newChat;
 const modal=$("modal"),mbody=$("mbody");
 let syncing=false,st=null,smsg="";
 const touch=c=>{c.mu=Date.now()};
