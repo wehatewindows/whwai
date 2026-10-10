@@ -28,6 +28,8 @@ svg{display:block}
 .chat{flex:1;min-width:0;border:0;text-align:left;background:var(--chip);border-radius:14px;padding:9px 36px 9px 13px;cursor:pointer;display:block;transition:background .15s,box-shadow .15s}
 .ct{display:block;font-weight:500;line-height:1.3;overflow-wrap:anywhere}.ct svg{display:inline-block;vertical-align:-1px;margin-right:5px;opacity:.6}
 .cm{display:block;font-size:12px;color:var(--mute);margin-top:3px}
+.chat.edit{cursor:default;padding:7px 8px}
+.rn{width:100%;border:0;outline:0;background:#fff;border-radius:9px;padding:6px 9px;font:inherit;font-weight:500;box-shadow:0 0 0 1.5px #9bb9f5}
 .chat:hover{background:#d2d2d2}.chat.on{background:var(--sel);box-shadow:inset 0 0 0 1px #aaa}
 .more{position:absolute;right:5px;top:50%;transform:translateY(-50%);border:0;background:none;width:26px;height:26px;border-radius:50%;cursor:pointer;color:#555;display:grid;place-items:center;padding:0;opacity:0;transition:opacity .15s,background .15s}
 .row:hover .more,.row.on .more,.more:focus-visible,.more[aria-expanded=true]{opacity:1}.more:hover,.more[aria-expanded=true]{background:rgba(0,0,0,.1)}
@@ -74,6 +76,20 @@ svg{display:block}
 .toast{position:absolute;left:50%;bottom:64px;transform:translate(-50%,8px);background:#222;color:#fff;border-radius:14px;padding:7px 14px;font-size:13.5px;opacity:0;pointer-events:none;transition:.2s;white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis;z-index:9}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .scrim{display:none;position:absolute;inset:0;background:rgba(0,0,0,.25);z-index:5}
+.gear{position:absolute;left:12px;bottom:12px;width:30px;height:30px;border-radius:50%;border:0;background:#bbb;color:#fff;padding:0;display:grid;place-items:center;cursor:pointer;transition:background .15s}
+.gear:hover{background:#999}
+.modal{position:absolute;inset:0;background:rgba(0,0,0,.28);display:grid;place-items:center;z-index:20;animation:rise .2s ease-out}
+.modal[hidden]{display:none}
+.mcard{width:min(420px,92%);max-height:88%;overflow:auto;background:#fff;border-radius:22px;padding:18px 20px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+.mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;font-size:18px}
+.mh button{border:0;background:var(--bub);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:18px;line-height:1;padding:0}
+.mcard h3{margin:10px 0 6px;font-size:16px}.mcard p{margin:0 0 10px}.sm{font-size:13px;color:var(--mute)}
+.key{display:flex;align-items:center;justify-content:space-between;background:var(--bub);border-radius:14px;padding:10px 14px;margin-bottom:10px;font-size:26px;font-weight:700;letter-spacing:.12em}
+.key button{border:0;background:none;cursor:pointer;padding:6px;border-radius:8px;display:grid;place-items:center}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.pbtn{border:0;background:var(--chip);border-radius:12px;padding:8px 14px;cursor:pointer;font-weight:500;transition:background .15s}
+.pbtn:hover{background:#cfcfcf}.pbtn.danger{color:#d93b3b}
+.join{display:flex;gap:8px;margin-bottom:6px}.join input{flex:1;min-width:0;border:0;outline:0;background:var(--bub);border-radius:12px;padding:9px 12px;font:inherit;letter-spacing:.1em}
 .no-anim,.no-anim *{transition:none!important}
 button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 @media (min-width:641px){.frame.collapsed .side{margin-left:calc(-1 * var(--sw) - 16px);opacity:0;visibility:hidden;transition:margin-left .32s cubic-bezier(.4,0,.2,1),opacity .2s ease,visibility 0s .32s}.frame.collapsed .expand{opacity:1;pointer-events:auto;transition:opacity .25s ease .15s}.frame.collapsed .scroll{padding-top:50px}}
@@ -93,9 +109,11 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
   <div class="brand"><h1>WHW<b>ai</b></h1><button class="logo" id="logo" title="Collapse sidebar" aria-label="Collapse sidebar"></button></div>
   <div class="list" id="list"></div>
   <button class="new" id="new" title="New chat" aria-label="New chat">+</button>
-  <div class="cmenu" id="cmenu" role="menu" hidden><button id="cpin" role="menuitem"></button><button id="cdel" class="danger" role="menuitem"></button></div>
+  <button class="gear" id="gear" title="Settings" aria-label="Settings"></button>
+  <div class="cmenu" id="cmenu" role="menu" hidden><button id="cren" role="menuitem"></button><button id="cpin" role="menuitem"></button><button id="cdel" class="danger" role="menuitem"></button></div>
  </aside>
  <div class="scrim" id="scrim"></div>
+ <div class="modal" id="modal" hidden><div class="mcard" role="dialog" aria-label="Settings"><div class="mh"><b>Settings</b><button id="mx" aria-label="Close">&times;</button></div><div id="mbody"></div></div></div>
  <section class="main">
   <button class="expand" id="expand" title="Show sidebar" aria-label="Show sidebar"></button>
   <div class="scroll" id="chat"></div>
@@ -108,14 +126,14 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
      <button class="model" id="model" aria-haspopup="menu" aria-expanded="false"></button>
      <div class="pop" id="pop" role="menu" hidden>
       <div class="ph">Model</div>
-      <button class="mi" id="mi" role="menuitemradio" aria-checked="true"><div>Aries 1</div><i id="tick"></i></button>
+      <button class="mi" id="mi" role="menuitemradio" aria-checked="true"><div>Aries 1<small>Powered by OpenAI</small></div><i id="tick"></i></button>
      </div>
     </div>
    </div>
    <button class="round" id="clip" title="Attach" aria-label="Attach"></button>
    <button class="round" id="send" title="Send" aria-label="Send"></button>
   </div>
-  <div class="note">WHW<b>ai</b> is not human and can make mistakes. Powered by OpenAI.</div>
+  <div class="note">WHW<b>ai</b> is not human and can make mistakes.</div>
  </section>
 </div>
 <script>
@@ -154,7 +172,9 @@ let S=null;
 try{S=JSON.parse(store.get()||"null")}catch(e){}
 if(!S||!Array.isArray(S.chats))S={chats:[],cur:null};
 if(S.cur&&!S.chats.some(c=>c.id===S.cur))S.cur=null;
-const save=()=>store.set(JSON.stringify({...S,chats:S.chats.map(c=>({...c,m:c.m.filter(m=>!m.err)}))},(k,v)=>k==="_l"?undefined:v));
+if(!Array.isArray(S.dead))S.dead=[];
+const clean=()=>({chats:S.chats.map(c=>({...c,m:c.m.filter(m=>!m.err).map(({_l,...r})=>r)})),dead:S.dead});
+const save=ns=>{store.set(JSON.stringify({...S,...clean()}));if(!ns&&S.key)syncSoon()};
 const C=()=>S.chats.find(c=>c.id===S.cur)||null;
 const sorted=()=>[...S.chats].sort((a,b)=>(b.p?1:0)-(a.p?1:0)||b.u-a.u);
 
@@ -186,11 +206,22 @@ const toBottom=()=>chatEl.scrollTo({top:chatEl.scrollHeight});
 const PIN='<path d="M12 17v5"/><path d="M9 3h6l-1 7 3 3v2H7v-2l3-3z"/>',
  TRASH='<path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/>',
  DOTS='<circle cx="5" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.7" fill="currentColor" stroke="none"/>';
+const PEN='<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>';
+let renamingId=null;
 let mid=null;
 function renderList(){
  list.innerHTML="";closeMenu();
  if(!S.chats.length)list.insertAdjacentHTML("beforeend",'<div class="hint">Your chats will show up here.</div>');
  sorted().forEach(c=>{
+  if(renamingId===c.id){
+   const e=document.createElement("div");e.className="chat on edit";
+   const i=document.createElement("input");i.className="rn";i.value=c.t;i.maxLength=60;i.setAttribute("aria-label","Chat name");
+   let done=0;
+   const fin=ok=>{if(done)return;done=1;const v=i.value.trim();if(ok&&v){c.t=v.slice(0,60);c.auto=0;touch(c);save()}renamingId=null;renderList()};
+   i.onkeydown=ev=>{if(ev.key==="Enter")fin(true);else if(ev.key==="Escape")fin(false)};
+   i.onblur=()=>fin(true);
+   e.appendChild(i);list.appendChild(e);return;
+  }
   const on=c.id===S.cur,r=document.createElement("div");r.className="row"+(on?" on":"");
   const b=document.createElement("button");b.className="chat"+(on?" on":"");b.title=c.t;
   b.innerHTML='<span class="ct">'+(c.p?ic(PIN,12):"")+esc(c.t)+'</span><span class="cm" data-t="'+c.u+'">'+ago(c.u)+'</span>';
@@ -206,6 +237,7 @@ function openMenu(id,btn){
  const c=S.chats.find(x=>x.id===id);if(!c)return;
  closeMenu();mid=id;
  const m=$("cmenu");
+ $("cren").innerHTML=ic(PEN,16)+"<span>Rename</span>";
  $("cpin").innerHTML=ic(PIN,16)+"<span>"+(c.p?"Unpin":"Pin")+"</span>";
  $("cdel").innerHTML=ic(TRASH,16)+"<span>Delete</span>";
  m.hidden=false;
@@ -274,21 +306,21 @@ async function genTitle(c){
  try{
   const j=await post({action:"title",messages:hist(c).slice(0,2)});
   const t=(j.text||"").split("\n")[0].replace(/["*.]+/g,"").trim().slice(0,40);
-  if(t){c.t=t;c.auto=0;save();renderList()}
+  if(t&&c.auto){c.t=t;c.auto=0;touch(c);save();renderList()}
  }catch(e){}
 }
 async function answer(c,q){
  setBusy(true);
  const tmp=document.createElement("div");tmp.className="msg dim fresh";tmp.textContent="Thinking…";chatEl.appendChild(tmp);toBottom();
  let full,err=0;
- if(API_URL){try{const j=await post({action:"chat",messages:hist(c)});full=j.text||ERR_TEXT;if(!j.text||j.disabled)err=1}catch(e){full=ERR_TEXT;err=1}}
+ if(API_URL){try{const j=await post({action:"chat",model:"aries-1",messages:hist(c)});full=j.text||ERR_TEXT;if(!j.text||j.disabled)err=1}catch(e){full=ERR_TEXT;err=1}}
  else{await sleep(800+Math.random()*700);full=(RULES.find(([r])=>r.test(q.toLowerCase()))||[0,FALLBACK])[1]}
  const w=full.split(/(\s+)/),step=Math.max(2,Math.ceil(w.length/300));let out="";
  for(let i=0;i<w.length;i++){
   out+=w[i];
   if(i%step===0){tmp.classList.remove("dim");tmp.innerHTML=md(out);if(near())toBottom();await sleep(22)}
  }
- c.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1}:{r:"a",x:full,at:Date.now(),_l:1});c.u=Date.now();save();renderList();
+ c.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1}:{r:"a",x:full,at:Date.now(),_l:1});c.u=Date.now();touch(c);save();renderList();
  if(API_URL&&!err&&c.auto&&c.m.length<=2)genTitle(c);
  setBusy(false);renderChat();
 }
@@ -303,16 +335,16 @@ function send(){
  ta.value="";fit();let c=C();
  if(!c){c={id:uid(),t:makeTitle(q),auto:1,u:Date.now(),m:[]};S.chats.push(c);S.cur=c.id}
  c.m.push({r:"u",x:q,at:Date.now()});
- c.u=Date.now();save();renderList();renderChat(true);answer(c,q);
+ c.u=Date.now();touch(c);save();renderList();renderChat(true);answer(c,q);
 }
 function regen(){
- const c=C();if(busy||!c)return;c.m.pop();
+ const c=C();if(busy||!c)return;c.m.pop();touch(c);
  const q=[...c.m].reverse().find(m=>m.r==="u");save();renderChat();if(q)answer(c,q.x);
 }
 function openChat(id){if(busy)return;S.cur=id;save();renderList();renderChat();side(false)}
 function newChat(){if(busy)return;S.cur=null;save();renderList();renderChat();side(false);ta.focus()}
 function delChat(id){
- if(busy)return;S.chats=S.chats.filter(c=>c.id!==id);
+ if(busy)return;S.chats=S.chats.filter(c=>c.id!==id);S.dead.push({id,mu:Date.now()});
  if(S.cur===id)S.cur=null;
  save();renderList();renderChat();
 }
@@ -329,7 +361,8 @@ const mob=()=>matchMedia("(max-width:640px)").matches;
 function collapse(c){S.col=c;document.querySelector(".frame").classList.toggle("collapsed",c);save()}
 $("logo").onclick=()=>mob()?side(false):collapse(true);
 $("expand").onclick=()=>mob()?side(true):collapse(false);
-$("cpin").onclick=()=>{const c=S.chats.find(x=>x.id===mid);if(c){c.p=!c.p;save();renderList()}else closeMenu()};
+$("cren").onclick=()=>{const id=mid;closeMenu();renamingId=id;renderList();const i=list.querySelector(".rn");if(i){i.focus();i.select()}};
+$("cpin").onclick=()=>{const c=S.chats.find(x=>x.id===mid);if(c){c.p=!c.p;touch(c);save();renderList()}else closeMenu()};
 $("cdel").onclick=()=>{const id=mid;closeMenu();delChat(id)};
 list.addEventListener("scroll",closeMenu);
 document.addEventListener("click",e=>{if(!$("cmenu").contains(e.target))closeMenu()});
@@ -338,11 +371,80 @@ $("clip").onclick=()=>toast("Attachments aren't available yet.");
 $("model").onclick=e=>{e.stopPropagation();pop($("pop").hidden)};
 $("mi").onclick=()=>pop(false);
 document.addEventListener("click",e=>{if(!$("pop").contains(e.target))pop(false)});
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){pop(false);side(false);closeMenu()}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){pop(false);side(false);closeMenu();modal.hidden=true}});
+/* ---------- settings + sync ---------- */
+const KEYLEN=6; /* must match KEY_DIGITS in the backend script */
+const SLIDERS='<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>';
+$("gear").innerHTML=ic(SLIDERS,16,2.2);
+const modal=$("modal"),mbody=$("mbody");
+let syncing=false,st=null,smsg="";
+const touch=c=>{c.mu=Date.now()};
+function merge(a,b){
+ const map={},dead={},t=c=>c.mu||c.u||0;
+ [a,b].forEach(s=>{
+  (s.dead||[]).forEach(d=>{if(!(d.id in dead)||dead[d.id]<d.mu)dead[d.id]=d.mu});
+  (s.chats||[]).forEach(c=>{const x=map[c.id];if(!x||t(c)>t(x))map[c.id]=c});
+ });
+ return{chats:Object.values(map).filter(c=>!(c.id in dead)||dead[c.id]<t(c)),dead:Object.keys(dead).map(id=>({id,mu:dead[id]}))};
+}
+function applyRemote(j){
+ const sig=()=>JSON.stringify(S.chats.map(c=>[c.id,c.mu||c.u,c.t,c.p]));
+ const before=sig(),m=merge({chats:S.chats,dead:S.dead},{chats:j.chats||[],dead:j.dead||[]});
+ S.chats=m.chats;S.dead=m.dead;
+ if(S.cur&&!S.chats.some(c=>c.id===S.cur))S.cur=null;
+ if(sig()!==before){renderList();renderChat()}
+}
+const errText=e=>({badkey:"That key wasn't found.",slow:"Too many attempts. Wait a minute and try again.",toobig:"Your chats are too large to sync.",busy:"The server is busy. Try again soon."}[e&&e.message]||"Couldn't reach the server. Try again.");
+async function doSync(msg){
+ if(!S.key||syncing)return;syncing=true;
+ try{const j=await post({action:"sync",key:S.key,...clean()});applyRemote(j);S.last=Date.now();save(1);if(msg)smsg=msg}
+ catch(e){
+  if(e&&e.message==="badkey"){S.key=null;S.last=0;save(1);smsg="This key is no longer valid, so sync was turned off."}
+  else if(msg)smsg=errText(e);
+ }
+ finally{syncing=false;if(!modal.hidden)renderSettings()}
+}
+function syncSoon(){clearTimeout(st);st=setTimeout(()=>{busy?syncSoon():doSync()},2500)}
+function setMsg(t){smsg=t;const m=mbody.querySelector("#s-msg");if(m)m.textContent=t}
+function renderSettings(){
+ const on=!!S.key,k=S.key||"";
+ mbody.innerHTML=on?
+ '<h3>Sync across devices</h3><p>Sync is on. Your key:</p><div class="key"><span>'+k.replace(/(\d{3})(?=\d)/g,"$1 ")+'</span><button id="s-copy" title="Copy key" aria-label="Copy key">'+I.copy+'</button></div><p class="sm">On another device, open Settings and enter this key under Connect. Anyone who has this key can read your synced chats, so keep it private.</p><p class="sm">'+(S.last?"Last synced "+ago(S.last):"Not synced yet")+'</p><div class="btns"><button class="pbtn" id="s-now">Sync now</button><button class="pbtn" id="s-off">Turn off on this device</button><button class="pbtn danger" id="s-del">Delete synced copy</button></div>':
+ '<h3>Sync across devices</h3><p>Your chats stay on this device until you turn sync on. With sync on, a copy is stored on the WHWai server so you can open your chats on other devices.</p><div class="btns"><button class="pbtn" id="s-on">Turn on sync</button></div><p class="sm">Already have a key?</p><div class="join"><input id="s-key" inputmode="numeric" autocomplete="off" maxlength="'+KEYLEN+'" placeholder="'+KEYLEN+'-digit key" aria-label="Sync key"><button class="pbtn" id="s-join">Connect</button></div>';
+ mbody.insertAdjacentHTML("beforeend",'<p class="sm" id="s-msg" role="status"></p>');
+ setMsg(smsg);
+ const q=id=>mbody.querySelector("#"+id);
+ if(on){
+  q("s-copy").onclick=()=>copy(S.key,q("s-copy"));
+  q("s-now").onclick=()=>{setMsg("Syncing…");doSync("Synced just now.")};
+  q("s-off").onclick=()=>{S.key=null;S.last=0;save(1);smsg="Sync is off on this device. Your chats here are untouched.";renderSettings()};
+  q("s-del").onclick=async()=>{
+   const b=q("s-del");
+   if(!b.dataset.arm){b.dataset.arm=1;b.textContent="Click again to delete";setTimeout(()=>{if(b.isConnected){b.dataset.arm="";b.textContent="Delete synced copy"}},3000);return}
+   try{await post({action:"sync_delete",key:S.key});S.key=null;S.last=0;save(1);smsg="Synced copy deleted. Your chats on this device are untouched.";renderSettings()}catch(e){setMsg(errText(e))}
+  };
+ }else{
+  q("s-on").onclick=async()=>{
+   setMsg("Turning on…");
+   try{const j=await post({action:"sync_new"});S.key=j.key;save(1);await doSync("Sync is on.");renderSettings()}catch(e){setMsg(errText(e))}
+  };
+  q("s-join").onclick=async()=>{
+   const k=q("s-key").value.replace(/\D/g,"");
+   if(k.length!==KEYLEN)return setMsg("Enter your "+KEYLEN+"-digit key.");
+   setMsg("Connecting…");
+   try{const j=await post({action:"sync",key:k,...clean()});S.key=k;applyRemote(j);S.last=Date.now();save(1);smsg="Connected. Your chats are now synced.";renderSettings()}catch(e){setMsg(errText(e))}
+  };
+ }
+}
+$("gear").onclick=()=>{smsg="";renderSettings();modal.hidden=false};
+$("mx").onclick=()=>{modal.hidden=true};
+modal.onclick=e=>{if(e.target===modal)modal.hidden=true};
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&S.key&&!busy)doSync()});
 setInterval(()=>document.querySelectorAll(".bar span,.cm").forEach(s=>s.textContent=ago(+s.dataset.t)),30000);
 const fr=document.querySelector(".frame");fr.classList.add("no-anim");fr.classList.toggle("collapsed",!!S.col);
 requestAnimationFrame(()=>requestAnimationFrame(()=>fr.classList.remove("no-anim")));
 renderList();renderChat();
+if(S.key)doSync();
 </script>
 </body>
 </html>
