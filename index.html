@@ -89,7 +89,7 @@ svg{display:block}
 .key button{border:0;background:none;cursor:pointer;padding:6px;border-radius:8px;display:grid;place-items:center}
 .btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
 .pbtn{border:0;background:var(--chip);border-radius:12px;padding:8px 14px;cursor:pointer;font-weight:500;transition:background .15s}
-.pbtn:hover{background:#cfcfcf}.pbtn.danger{color:#d93b3b}.privacy-row{margin-top:10px}.policy-placeholder{background:#f3f3f3;border-radius:12px;padding:10px 12px;font-size:13px;color:#555}
+.pbtn:hover{background:#cfcfcf}.pbtn.danger{color:#d93b3b}.privacy-row{margin-top:10px}.privacy-link{color:#2f6ee0;text-decoration:none;cursor:pointer;font-size:14px}.privacy-link:hover,.privacy-link:focus{text-decoration:none;color:#2458b8}.privacy-link:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:3px}.policy-placeholder{background:#f3f3f3;border-radius:12px;padding:10px 12px;font-size:13px;color:#555}
 .join{display:flex;gap:8px;margin-bottom:6px}.join input{flex:1;min-width:0;border:0;outline:0;background:var(--bub);border-radius:12px;padding:9px 12px;font:inherit;letter-spacing:.1em}
 .no-anim,.no-anim *{transition:none!important}
 button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
@@ -515,10 +515,10 @@ function renderSettings(){
  mbody.innerHTML=on?
  '<h3>Sync across devices</h3><p>Sync is on. Your key:</p><div class="key"><span>'+k.replace(/(\d{3})(?=\d)/g,"$1 ")+'</span><button id="s-copy" title="Copy key" aria-label="Copy key">'+I.copy+'</button></div><p class="sm">On another device, open Settings and enter this key under Connect. Anyone who has this key can read your synced chats, so keep it private.</p><p class="sm">'+(S.last?"Last synced "+ago(S.last):"Not synced yet")+'</p><div class="btns"><button class="pbtn" id="s-now">Sync now</button><button class="pbtn" id="s-off">Turn off on this device</button><button class="pbtn danger" id="s-del">Delete synced copy</button></div>':
  '<h3>Sync across devices</h3><p>Your chats stay on this device until you turn sync on. With sync on, a copy is stored on the WHWai server so you can open your chats on other devices. If you have lost your key or need assistance, please contact We Hate Windows Support.</p><div class="btns"><button class="pbtn" id="s-on">Turn on sync</button></div><p class="sm">Already have a key?</p><div class="join"><input id="s-key" inputmode="numeric" autocomplete="off" maxlength="'+KEYLEN+'" placeholder="'+KEYLEN+'-digit key" aria-label="Sync key"><button class="pbtn" id="s-join">Connect</button></div>';
- mbody.insertAdjacentHTML("beforeend",'<p class="sm" id="s-msg" role="status"></p><div class="btns privacy-row"><button class="pbtn" id="privacy-open">Privacy Policy</button></div>');
+ mbody.insertAdjacentHTML("beforeend",'<p class="sm" id="s-msg" role="status"></p><div class="privacy-row"><a href="#" class="privacy-link" id="privacy-open">Privacy Policy</a></div>');
  setMsg(smsg);
  const q=id=>mbody.querySelector("#"+id);
- q("privacy-open").onclick=renderPrivacyPolicy;
+ q("privacy-open").onclick=e=>{e.preventDefault();renderPrivacyPolicy()};
  if(on){
   q("s-copy").onclick=()=>copy(S.key,q("s-copy"));
   q("s-now").onclick=()=>{setMsg("Syncing…");doSync("Synced just now.")};
@@ -544,20 +544,31 @@ function renderSettings(){
 function renderPrivacyPolicy(){
  $("modal-title").textContent="Privacy Policy";
  mbody.innerHTML=`
-  <p class="policy-placeholder"><strong>PLACEHOLDER TEXT — NOT A FINAL PRIVACY POLICY.</strong> Replace the bracketed text below with accurate information about WHWai before publishing.</p>
-  <p class="sm">Last updated: [Month Day, Year]</p>
-  <h3>Information We Collect</h3>
-  <p>[Describe what information WHWai collects, such as messages, chat titles, sync information, or technical data. Remove anything that does not apply.]</p>
-  <h3>How Information Is Used</h3>
-  <p>[Explain how collected information is used to operate, maintain, secure, and improve WHWai.]</p>
-  <h3>Chat Storage and Sync</h3>
-  <p>[Explain where chats are stored, what happens when sync is enabled, how sync keys work, and how users can delete local or synced data.]</p>
-  <h3>Sharing and Third-Party Services</h3>
-  <p>[Identify any service providers or third parties that receive information, including AI or hosting providers, and explain why information is shared.]</p>
-  <h3>Data Retention and Security</h3>
-  <p>[Describe how long information is kept and the safeguards used to protect it. Do not promise protections that have not been implemented.]</p>
-  <h3>Your Choices and Contact</h3>
-  <p>[Explain how users can access or delete information, ask privacy questions, or contact the person or organization responsible for WHWai. Add a valid contact address.]</p>
+  <p class="sm">Effective date: October 10, 2026</p>
+  <p>WHWai is designed to use chat information to provide the AI chat service and to let you save and sync your conversations. This policy explains what WHWai stores and how third-party AI processing may work.</p>
+
+  <h3>Information WHWai Stores</h3>
+  <p>WHWai saves the messages you send, the AI replies, chat titles, and the small amount of chat and sync information needed to organize and restore conversations. Chats are saved on your device. If you turn on sync or connect with a sync key, a copy of the chats included in sync is also stored on a WHWai server.</p>
+
+  <h3>How WHWai Uses Your Data</h3>
+  <p>WHWai stores chat and sync information to save, restore, and sync conversations and to provide related support when requested. Message content and relevant conversation context are sent to the configured AI provider so it can generate a reply. WHWai does not intend to use stored chat content for advertising, profiling, training WHWai models, or purposes unrelated to providing and supporting the chat-saving service.</p>
+
+  <h3>Access to Server-Stored Chats</h3>
+  <p>Only a limited number of authorized We Hate Windows Support personnel may access data stored on a WHWai server when reasonably necessary to help recover a WHWai sync key or resolve a support request. Your sync key is sensitive: anyone who obtains it may be able to access the synced chats associated with it, so keep it private.</p>
+
+  <h3>AI Providers and Groq</h3>
+  <p>To generate a response, WHWai sends your prompt and the relevant conversation context to the AI provider configured for the service. The provider depends on WHWai's current configuration, and its own data practices also apply.</p>
+  <p>According to Groq's current API documentation, inference inputs and outputs are not retained by default. Groq does always collect usage metadata that does not contain the actual customer inputs or outputs. Groq says it may temporarily log inputs and outputs for service-reliability troubleshooting or abuse investigations for up to 30 days, unless Zero Data Retention is enabled. Groq's current Services Agreement also says it does not use inputs or outputs to train or fine-tune models unless the customer explicitly grants permission or instructs it to do so.</p>
+  <p>Read Groq's <a href="https://console.groq.com/docs/your-data" target="_blank" rel="noopener noreferrer">API data-retention documentation</a> and <a href="https://console.groq.com/docs/legal/services-agreement" target="_blank" rel="noopener noreferrer">Services Agreement</a> for the latest details. These descriptions apply if WHWai is using Groq; other AI providers may have different policies.</p>
+
+  <h3>Retention and Deletion</h3>
+  <p>Chats saved only on your device remain there until you delete them or clear the relevant browser data. If sync is enabled, a server-stored copy remains available for syncing until you delete it using the available WHWai controls or it is otherwise removed through the service. Turning sync off on one device does not, by itself, delete chats already stored on that device or a server copy.</p>
+
+  <h3>Privacy Requests and Support</h3>
+  <p>To request access to your data, ask privacy questions, or get assistance with your chats or sync key, contact We Hate Windows Support at <a href="mailto:wehatewindows.help@gmail.com">wehatewindows.help@gmail.com</a>.</p>
+
+  <h3>Security and Policy Updates</h3>
+  <p>We limit server-data access to authorized support personnel for the purposes described above, but no method of online storage or transmission can be guaranteed completely secure. This policy may be updated if WHWai's features, providers, or data practices change. Please review it periodically.</p>
   <div class="btns"><button class="pbtn" id="privacy-back">Back to Settings</button></div>`;
  $("privacy-back").onclick=renderSettings;
 }
