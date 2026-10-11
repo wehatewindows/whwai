@@ -95,7 +95,7 @@ svg{display:block}
 .pbtn:hover{background:#cfcfcf}.pbtn:disabled{opacity:.62;cursor:wait}.pbtn:disabled:hover{background:var(--chip)}.pbtn.danger{color:#d93b3b}.sync-spinner{display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;vertical-align:-2px;margin-right:7px;animation:syncspin .7s linear infinite}.round .sync-spinner{width:19px;height:19px;border-width:2.5px;margin:0;vertical-align:middle}.key-actions{display:flex;align-items:center;gap:2px;flex:none}.key-value{min-width:0;overflow-wrap:anywhere}.key button[aria-pressed=true]{background:rgba(106,160,255,.18)}.privacy-row{margin-top:10px}.privacy-link{color:#2f6ee0;text-decoration:none;cursor:pointer;font-size:14px}.privacy-link:hover,.privacy-link:focus{text-decoration:none;color:#2458b8}.privacy-link:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:3px}.policy-takeaways{background:#eef4ff;border:1px solid #d8e5ff;border-radius:14px;padding:12px 14px;margin:10px 0 14px}.policy-takeaways ul{margin:6px 0 0;padding-left:19px}.policy-takeaways li{font-size:13px;margin:4px 0}.policy-placeholder{background:#f3f3f3;border-radius:12px;padding:10px 12px;font-size:13px;color:#555}
 .data-tools-list{display:flex;flex-direction:column;gap:8px;margin:12px 0 16px}
 .data-tool{display:flex;align-items:center;gap:11px;width:100%;min-width:0;padding:11px 12px;border:1px solid #e4e4e4;border-radius:14px;background:#f7f7f7;text-align:left;cursor:pointer}
-.data-tool:hover{background:#eee;transform:translateY(-1px)}.data-tool:active{transform:scale(.99)}
+.data-tool:hover{background:#eee}.data-tool:active{background:#e7e7e7}
 .data-tool .tool-icon{width:36px;height:36px;flex:none;border-radius:11px;background:#e8e8e8;display:grid;place-items:center;color:#333}
 .data-tool.danger .tool-icon{background:#fbe9e9;color:#c33333}.data-tool .tool-copy{flex:1;min-width:0}.data-tool strong{display:block;font-size:14px;line-height:1.25}.data-tool small{display:block;font-size:12px;line-height:1.35;color:#666;margin-top:3px}.data-tool .tool-arrow{flex:none;color:#777}
 .delete-choice{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;background:#f7f7f7;border:1px solid #e5e5e5;border-radius:13px;padding:10px;margin:8px 0}
@@ -103,8 +103,6 @@ svg{display:block}
 .delete-choice.danger .choice-icon{background:#fae7e7;color:#c33333}.delete-choice .choice-copy{min-width:0}.delete-choice strong{display:block;font-size:13.5px;line-height:1.25}.delete-choice p{font-size:12px;line-height:1.35;color:#666;margin:3px 0 0}.delete-choice .pbtn{padding:7px 10px;font-size:12.5px;white-space:nowrap}
 .confirm-panel{display:flex;gap:12px;align-items:flex-start;padding:12px;background:#f7f7f7;border:1px solid #e5e5e5;border-radius:14px;margin:12px 0}.confirm-panel .choice-icon{width:38px;height:38px;flex:none;display:grid;place-items:center;border-radius:12px;background:#fae7e7;color:#c33333}.confirm-panel p{margin:0;font-size:13px;color:#555}
 .data-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.data-toolbar .pbtn{flex:1}.data-toolbar .pbtn.danger{background:#fbeaea}.data-toolbar .pbtn.danger:hover{background:#f4dada}
-#export-download-link a{color:#2f6ee0;text-decoration:underline;overflow-wrap:anywhere}
-#export-fallback{width:100%;min-height:140px;border:1px solid #d2d2d2;border-radius:10px;padding:10px;font:12px/1.45 ui-monospace,monospace;resize:vertical}
 .export-contents{padding:10px 12px;background:#f5f5f5;border-radius:12px;margin:10px 0}.export-contents ul{margin:6px 0;padding-left:20px}.export-contents li{font-size:13px;margin:3px 0}
 
 .join{display:flex;gap:8px;margin-bottom:6px}.join input{flex:1;min-width:0;border:0;outline:0;background:var(--bub);border-radius:12px;padding:9px 12px;font:inherit;letter-spacing:.1em}
@@ -133,31 +131,46 @@ body{overflow:hidden}
 .empty p{margin:0;color:var(--mute)}
 .mbar,.menubtn{display:none}
 
-/* ---------- balanced visual polish + motion ---------- */
-button,.chat,.model,.mi,.pbtn,.round,.new,.gear,.menubtn,.mnew,.logo,.expand,.more,.bar button,.key button,.mh button{transition:background-color .18s ease,color .18s ease,box-shadow .2s ease,transform .18s ease,opacity .18s ease}
-button:not(:disabled):active,.chat:not(.edit):active{transform:scale(.97)}
-.chat:not(.edit):hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,.045)}
-.chat.on:hover{box-shadow:inset 0 0 0 1px #aaa,0 3px 10px rgba(0,0,0,.045)}
-.round:not(:disabled):hover,.new:hover,.gear:hover,.menubtn:hover,.mnew:hover{transform:translateY(-1px)}
-.round:not(:disabled):active,.new:active,.gear:active,.menubtn:active,.mnew:active{transform:scale(.95)}
+/* ---------- restrained interaction and menu motion ---------- */
+button,.chat,.model,.mi,.pbtn,.round,.new,.gear,.menubtn,.mnew,.logo,.expand,.more,.bar button,.key button,.mh button{transition:background-color .16s ease,color .16s ease,box-shadow .18s ease,opacity .16s ease}
 .field:focus-within{border-color:rgba(106,160,255,.42)}
 .field textarea::placeholder{color:#858585;opacity:1}
-.msg{animation:messageIn .24s cubic-bezier(.2,.75,.25,1) both}
-.msg.u{transform-origin:bottom right}
-.msg:not(.u){transform-origin:bottom left}
-@keyframes messageIn{from{opacity:0;transform:translateY(7px) scale(.992)}to{opacity:1;transform:translateY(0) scale(1)}}
-.row{animation:rowIn .22s ease both}
-@keyframes rowIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-.bar{animation:barIn .2s ease both}
-@keyframes barIn{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:translateY(0)}}
-.typing-indicator{display:inline-flex;align-items:center;gap:5px;min-height:20px;color:#777}
+button:focus-visible,.chat:focus-visible,.model:focus-visible{outline:2px solid rgba(76,130,239,.85);outline-offset:3px}
+.modal{animation:modalFadeIn .18s ease-out both}
+.modal .mcard{animation:menuIn .2s cubic-bezier(.2,.7,.2,1) both;transform-origin:center}
+.modal.closing{animation:modalFadeOut .16s ease-in both;pointer-events:none}
+.modal.closing .mcard{animation:menuOut .16s ease-in both}
+#mbody.menu-content-enter{animation:menuScreenIn .17s ease-out both}
+@keyframes modalFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes modalFadeOut{from{opacity:1}to{opacity:0}}
+@keyframes menuIn{from{opacity:0;transform:translateY(7px) scale(.993)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes menuOut{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(7px) scale(.993)}}
+@keyframes menuScreenIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.sync-control{position:absolute;left:48px;bottom:12px;height:30px;display:flex;align-items:center;gap:7px;z-index:2;max-width:calc(100% - 60px)}
+.sync-control[hidden]{display:none}
+.sync-indicator{position:static;flex:none;width:30px;height:30px;border:0;border-radius:50%;background:#d7e5ff;color:#2458b8;padding:0;display:grid;place-items:center;cursor:pointer}
+.sync-indicator svg{width:18px;height:18px;display:block}
+.sync-indicator[disabled]{opacity:.7;cursor:wait}
+.sync-indicator.syncing svg{animation:syncspin .8s linear infinite}
+.sync-indicator.ok{background:#dff3e4;color:#23733c}
+.sync-status-label{font-size:12px;line-height:1.2;color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px}
+.sync-panel{position:relative;border-radius:12px}
+.sync-panel .settings-sync-lock{position:absolute;inset:0;border-radius:12px;background:rgba(255,255,255,.78);z-index:3;display:flex;align-items:center;justify-content:center;text-align:center;padding:18px;backdrop-filter:blur(2px)}
+.sync-panel .settings-sync-lock[hidden]{display:none}
+.sync-panel .settings-sync-lock-inner{max-width:260px;background:#fff;border:1px solid #e5e5e5;border-radius:14px;padding:14px 16px;box-shadow:0 6px 22px rgba(0,0,0,.08)}
+.data-manage-button{box-sizing:border-box;width:100%;height:44px;min-height:44px;max-height:44px;margin:4px 0 10px;padding:0 14px;display:flex;flex-flow:row nowrap;align-items:center;justify-content:center;gap:9px;text-align:center;line-height:1.2;white-space:nowrap;overflow:hidden}
+.data-manage-button .manage-icon{display:inline-flex;flex:none;align-items:center;justify-content:center}
+.data-manage-button .manage-icon svg{display:block;width:17px;height:17px}
+.policy-takeaways{background:#f1f1f1;border:1px solid #dedede;color:#222}
+.policy-takeaways strong{color:#444}
+#export-data:disabled{background:#dedede!important;color:#686868!important;opacity:1;cursor:wait;min-width:100px;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:center}
+.typing-indicator{display:inline-flex;align-items:center;gap:5px;height:18px;margin-right:7px;vertical-align:middle;color:#777}
 .typing-indicator span{width:6px;height:6px;border-radius:50%;background:currentColor;animation:typingDot 1s ease-in-out infinite;opacity:.45}
 .typing-indicator span:nth-child(2){animation-delay:.14s}.typing-indicator span:nth-child(3){animation-delay:.28s}
 @keyframes typingDot{0%,60%,100%{transform:translateY(0);opacity:.38}30%{transform:translateY(-4px);opacity:1}}
-.toast.show{animation:toastIn .22s cubic-bezier(.2,.75,.25,1) both}
-@keyframes toastIn{from{opacity:0;transform:translate(-50%,7px) scale(.98)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
-button:focus-visible,.chat:focus-visible,.model:focus-visible{outline:2px solid rgba(76,130,239,.85);outline-offset:3px}
-@media (prefers-reduced-motion:reduce){.msg,.row,.bar,.toast.show{animation:none!important}}
+#export-data.cooldown{letter-spacing:.06em;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){.modal,.modal .mcard,.modal.closing,.modal.closing .mcard,#mbody.menu-content-enter,.fresh,.orb.think,.sync-indicator.syncing svg,.sync-spinner{animation:none!important;transition:none!important}}
+
 
 /* ---------- PHONE LAYOUT: tune the numbers here ----------
    --edge        side margin shared by EVERY element (top bar, messages, input, buttons)
@@ -212,7 +225,7 @@ html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(
  .side .more{opacity:1}
  .side .cmenu{right:var(--edge);z-index:14}
  .side .new,.side .gear{position:absolute;left:var(--edge);right:var(--edge);width:auto;height:44px;display:flex;align-items:center;justify-content:flex-start;gap:10px;padding:0 14px;border:0;border-radius:14px;color:#222;background:#dedee5;box-shadow:none}
- .side .new{bottom:64px}.side .gear{bottom:12px;padding-right:38px}.side .sync-indicator{left:auto;right:var(--edge);bottom:19px;z-index:2}
+ .side .new{bottom:64px}.side.has-sync-control .new{bottom:116px}.side .gear{bottom:12px;padding-right:38px}.side .sync-control{left:var(--edge);right:var(--edge);bottom:64px;width:auto;height:44px;max-width:none;padding:0 10px;gap:10px;border-radius:14px;background:#dedee5;z-index:3}.side .sync-indicator{width:44px;height:44px;flex:none;border-radius:12px;background:#dedee5;color:#222}.side .sync-indicator:hover{background:#d4d4dc}.side .sync-status-label{font-size:14px;max-width:none;flex:1;min-width:0}.side .sync-control.syncing{background:#dedee5}
  .side .new::after{content:"New chat";font-size:15px;font-weight:500}
  .side .gear::after{content:"Settings";font-size:15px;font-weight:500}
  .side .new:hover,.side .gear:hover{background:#d4d4dc}
@@ -241,7 +254,7 @@ html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(
   <div class="list" id="list"></div>
   <button class="new" id="new" title="New chat" aria-label="New chat">+</button>
   <button class="gear" id="gear" title="Settings" aria-label="Settings"></button>
-  <button class="sync-indicator" id="sync-indicator" title="Sync now" aria-label="Sync now" hidden></button>
+  <div class="sync-control" id="sync-control" hidden><button class="sync-indicator" id="sync-indicator" title="Sync now" aria-label="Sync now"></button><span class="sync-status-label" id="sync-status-label" role="status">Not synced</span></div>
   <div class="cmenu" id="cmenu" role="menu" hidden><button id="cren" role="menuitem"></button><button id="cpin" role="menuitem"></button><button id="cdel" class="danger" role="menuitem"></button></div>
  </aside>
  <div class="scrim" id="scrim"></div>
@@ -453,7 +466,7 @@ function orbStop(){
  orb.style.transform="";orb.style.borderRadius="";orb.style.boxShadow="";
 }
 function setBusy(b){
- busy=b;sendBtn.disabled=false;
+ busy=b;updateSyncIndicator();sendBtn.disabled=false;
  sendBtn.innerHTML=b?ic('<path d="M7 7h10v10H7z" fill="currentColor" stroke="none"/>',18):I.send;
  sendBtn.title=b?"Stop response":"Send";
  sendBtn.setAttribute("aria-label",b?"Stop response":"Send");
@@ -499,7 +512,7 @@ async function genTitle(c){
 async function answer(c,q){
  const run=++answerRunId,controller=new AbortController();
  responseWasStopped=false;activeAnswerController=controller;setBusy(true);
- const tmp=document.createElement("div");tmp.className="msg dim fresh";tmp.setAttribute("role","status");tmp.setAttribute("aria-label","Aries is thinking");tmp.textContent='Aries is thinking…';chatEl.appendChild(tmp);toBottom();
+ const tmp=document.createElement("div");tmp.className="msg dim fresh";tmp.setAttribute("role","status");tmp.setAttribute("aria-label","Aries is thinking");tmp.innerHTML='<span class="typing-indicator" aria-hidden="true"><span></span><span></span><span></span></span><span class="thinking-label">Aries is thinking…</span>';chatEl.appendChild(tmp);toBottom();
  try{
   let full,err=0;
   if(API_URL){
@@ -610,7 +623,7 @@ const SLIDERS='<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r=
 $("gear").innerHTML=ic(SLIDERS,16,2.2);
 $("mnew").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',18,2.4);$("mnew").onclick=newChat;
 const modal=$("modal"),mbody=$("mbody");
-let syncing=false,creatingSync=false,connectingSync=false,deletingSync=false,disconnectingSync=false,st=null,smsg="",revealNewKeyOnThisOpen=false,revealSyncKey=false;
+let syncing=false,creatingSync=false,connectingSync=false,deletingSync=false,disconnectingSync=false,st=null,smsg="",revealNewKeyOnThisOpen=false,revealSyncKey=false,currentSettingsView="settings",syncError="",closeModalTimer=null,closingModal=false;
 const touch=c=>{c.mu=Date.now()};
 function merge(a,b){
  const map={},dead={},t=c=>c.mu||c.u||0;
@@ -629,7 +642,11 @@ function applyRemote(j){
 }
 const errText=e=>({badkey:"That key wasn't found.",slow:"Too many attempts. Wait a minute and try again.",confirmrequired:"Confirmation was missing. Return to the deletion menu and confirm again.",toobig:"Your chats are too large to sync.",busy:"The server is busy. Try again soon."}[e&&e.message]||"Couldn't reach the server. Try again.");
 async function doSync(msg){
- if(!S.key||syncing||deletingSync||disconnectingSync)return;syncing=true;updateSyncIndicator();
+ if(!S.key||syncing||deletingSync||disconnectingSync)return;
+ syncing=true;syncError="";updateSyncIndicator();
+ const lockThisSettingsView=!modal.hidden&&currentSettingsView==="settings";
+ if(lockThisSettingsView)lockSettingsForSync(true);
+ let invalidKey=false;
  try{
   const j=await post({action:"sync",key:S.key,deviceId:getDeviceId(),...clean()});
   if(j&&j.wipe){
@@ -637,28 +654,47 @@ async function doSync(msg){
    renderList();renderChat();smsg="A synced-data deletion request reached this browser. Its local WHWai chats and sync connection were removed.";
    return;
   }
-  applyRemote(j);S.deviceCount=Math.max(1,Number(j.deviceCount)||1);S.last=Date.now();save(1);if(msg)smsg=msg
+  applyRemote(j);S.deviceCount=Math.max(1,Number(j.deviceCount)||1);S.last=Date.now();save(1);if(msg)smsg=msg;
  }
  catch(e){
-  if(e&&e.message==="badkey"){S.key=null;S.last=0;S.deviceCount=0;save(1);smsg="This key is no longer valid, so sync was turned off."}
-  else if(msg)smsg=errText(e);
+  if(e&&e.message==="badkey"){S.key=null;S.last=0;S.deviceCount=0;save(1);smsg="This key is no longer valid, so sync was turned off.";syncError="Sync key no longer valid";invalidKey=true}
+  else{syncError=errText(e);if(msg)smsg=syncError}
  }
- finally{syncing=false;updateSyncIndicator();if(!modal.hidden)renderSettings()}
+ finally{
+  syncing=false;updateSyncIndicator();
+  if(lockThisSettingsView)lockSettingsForSync(false);
+  if(!modal.hidden&&currentSettingsView==="settings"){
+   if(invalidKey)renderSettings();else updateSettingsSyncSummary();
+  }
+ }
 }
 function lockSettingsForSync(locked){
- const body=mbody;
- let lock=body.querySelector(".settings-sync-lock");
- if(locked&&!lock){lock=document.createElement("div");lock.className="settings-sync-lock";lock.innerHTML='<div class="settings-sync-lock-inner"><span class="sync-spinner" aria-hidden="true"></span><p><strong>Syncing your chats…</strong></p><p class="sm">Please wait while WHWai checks for updates.</p></div>';body.appendChild(lock)}
+ const panel=mbody.querySelector(".sync-panel");
+ if(!panel)return;
+ let lock=panel.querySelector(".settings-sync-lock");
+ if(locked&&!lock){lock=document.createElement("div");lock.className="settings-sync-lock";lock.innerHTML='<div class="settings-sync-lock-inner"><span class="sync-spinner" aria-hidden="true"></span><p><strong>Syncing your chats…</strong></p><p class="sm">Please wait while WHWai checks for updates.</p></div>';panel.appendChild(lock)}
  if(lock)lock.hidden=!locked;
- body.querySelectorAll("button,input,a").forEach(el=>{if(!el.closest(".settings-sync-lock"))el.disabled=!!locked});
+ panel.querySelectorAll("button,input").forEach(el=>{if(!el.closest(".settings-sync-lock"))el.disabled=!!locked});
+ panel.setAttribute("aria-busy",String(locked));
 }
 function updateSyncIndicator(){
- const b=$("sync-indicator");if(!b)return;
- b.hidden=!S.key;
- if(!S.key)return;
- b.innerHTML=ic('<path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.5 9A7 7 0 0 1 18 6l2 6M4 12l2 6a7 7 0 0 0 12.5-3"/>',16,2);
- b.classList.toggle("syncing",syncing);b.classList.toggle("ok",!syncing&&!!S.last);
- b.title=syncing?"Syncing…":"Sync now";b.setAttribute("aria-label",b.title);
+ const wrap=$("sync-control"),b=$("sync-indicator"),label=$("sync-status-label"),sideEl=$("side");
+ if(!wrap||!b)return;
+ const enabled=!!S.key;
+ wrap.hidden=!enabled;
+ if(sideEl)sideEl.classList.toggle("has-sync-control",enabled);
+ if(!enabled)return;
+ b.innerHTML=ic('<path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M5.64 5.64A9 9 0 0 1 20 12"/><path d="M4 12a9 9 0 0 0 14.36 6.36"/>',18,2);
+ b.classList.toggle("syncing",syncing);b.classList.toggle("ok",!syncing&&!syncError&&!!S.last);b.disabled=syncing||busy;
+ const status=syncing?"Syncing…":syncError?"Sync issue":S.last?"Synced "+ago(S.last):"Sync needed";
+ b.title=syncing?"Syncing your chats…":syncError?syncError:"Click to sync now";
+ b.setAttribute("aria-label",b.title);
+ if(label){label.textContent=status;label.title=syncError||(S.last?"Last synced "+ago(S.last):"Chats have not synced yet")}
+}
+function updateSettingsSyncSummary(){
+ const el=$("sync-last");
+ if(el)el.textContent=S.last?"Last synced "+ago(S.last):"Not synced yet";
+ const status=$("s-msg");if(status&&smsg)status.textContent=smsg;
 }
 function syncSoon(){clearTimeout(st);st=setTimeout(()=>{busy?syncSoon():doSync()},2500)}
 function setMsg(t){smsg=t;const m=mbody.querySelector("#s-msg");if(m)m.textContent=t}
@@ -677,7 +713,7 @@ function writeExportCooldown(value){
 function countdownLabel(ms){
  const seconds=Math.max(0,Math.ceil(ms/1000));
  const minutes=Math.floor(seconds/60),remainder=seconds%60;
- return minutes+"m "+String(remainder).padStart(2,"0")+"s";
+ return String(minutes).padStart(2,"0")+":"+String(remainder).padStart(2,"0");
 }
 let exportCooldownTicker=null;
 function updateExportStatus(){
@@ -686,11 +722,13 @@ function updateExportStatus(){
  const remaining=Math.max(0,readExportCooldown()-Date.now());
  button.disabled=exportingData||remaining>0;
  button.setAttribute("aria-busy",String(exportingData));
- button.textContent=exportingData?"Preparing ZIP…":remaining>0?"Download chats · "+countdownLabel(remaining):"Download chats (.zip)";
- button.title=remaining>0?"Available in "+countdownLabel(remaining):"Create a ZIP backup of chats stored in this browser";
+ button.innerHTML=exportingData?'<span class="sync-spinner" aria-hidden="true"></span>Preparing ZIP…':remaining>0?countdownLabel(remaining):"Download chats (.zip)";
+ button.title=remaining>0?"Available again in "+countdownLabel(remaining):"Create a ZIP backup of chats stored in this browser";
+ button.classList.toggle("cooldown",remaining>0);
  if(status){
+  status.hidden=remaining>0&&!exportingData;
   if(exportingData)status.textContent="Preparing the ZIP locally in this browser…";
-  else if(remaining>0)status.textContent="Export available again in "+countdownLabel(remaining)+".";
+  else if(remaining>0)status.textContent="";
   else status.textContent=exportCooldownPersistent?"A 10-minute cooldown starts after an export is prepared.":"A 10-minute cooldown starts after an export is prepared. This browser cannot persist the cooldown across reloads.";
  }
 }
@@ -783,15 +821,6 @@ function makeChatExport(){
  });
  return {data:data,files:files};
 }
-function showExportFallback(jsonText){
- const old=mbody.querySelector(".export-fallback");if(old)old.remove();
- const wrap=document.createElement("div");wrap.className="export-fallback";
- const h=document.createElement("h3");h.textContent="Copy your chat data instead";
- const p=document.createElement("p");p.className="sm";p.textContent="The ZIP download or share sheet was unavailable. Copy this JSON as a text backup. It is not a ZIP file.";
- const area=document.createElement("textarea");area.id="export-fallback";area.value=jsonText;area.setAttribute("aria-label","Chat data JSON backup");
- const b=document.createElement("button");b.className="pbtn";b.textContent="Select backup text";b.onclick=()=>{area.focus();area.select();area.setSelectionRange(0,area.value.length)};
- wrap.append(h,p,area,b);mbody.appendChild(wrap);
-}
 async function exportLocalData(){
  if(exportingData||Date.now()<readExportCooldown())return;
  exportingData=true;updateExportStatus();
@@ -809,15 +838,12 @@ async function exportLocalData(){
   if(!shared){
    const url=URL.createObjectURL(blob),a=document.createElement("a");
    a.href=url;a.download=filename;a.style.display="none";document.body.appendChild(a);a.click();a.remove();
-   const linkWrap=$("export-download-link");
-   if(linkWrap){linkWrap.hidden=false;linkWrap.innerHTML="";const label=document.createElement("span");label.textContent="If the download did not start, ";const link=document.createElement("a");link.href=url;link.download=filename;link.textContent="tap here to download the ZIP";linkWrap.append(label,link)}
    setTimeout(()=>URL.revokeObjectURL(url),10*60*1000);
   }
   writeExportCooldown(Date.now()+EXPORT_COOLDOWN_MS);
   const st=$("export-status");if(st)st.textContent="Your ZIP is ready. The 10-minute cooldown has started.";
  }catch(e){
-  showExportFallback(JSON.stringify(makeChatExport().data,null,2));
-  const st=$("export-status");if(st)st.textContent="Could not create the ZIP. A JSON text backup is available below.";
+  const st=$("export-status");if(st)st.textContent="Could not prepare the ZIP. Please try again.";
  }finally{exportingData=false;updateExportStatus()}
 }
 function clearLocalWhwData(removeDeviceId){
@@ -830,6 +856,7 @@ function clearLocalWhwData(removeDeviceId){
   exportCooldownMemory=0;
   try{localStorage.removeItem(EXPORT_COOLDOWN_KEY)}catch(e){}
  }
+ updateSyncIndicator();
 }
 function setDeleteStatus(message){const el=$("delete-status");if(el)el.textContent=message;else smsg=message}
 function deleteErrorText(e){return errText(e)}
@@ -839,6 +866,7 @@ function iconForDelete(mode){
  return ic('<path d="M4 7h16M10 11v6M14 11v6"/><path d="M5 7l1 13h12l1-13M9 7V4h6v3"/>',19,1.8);
 }
 function renderDeleteOptions(){
+ currentSettingsView="delete-options";
  if(!S.key){renderDataManagement();return}
  $("modal-title").textContent="Delete synced data";
  mbody.innerHTML=`<p class="sm">Choose a deletion option. Offline devices can only be wiped when they reconnect.</p>
@@ -851,6 +879,7 @@ function renderDeleteOptions(){
  $("delete-back").onclick=renderDataManagement;
 }
 function renderDeleteConfirm(mode){
+ currentSettingsView="delete-confirm";
  const options={
   server:{title:"Delete server copy only?",detail:"This removes the active synced record and disconnects the current browser. Chats stored locally on this browser and other devices remain. The old key will no longer sync those chats.",label:"Delete server copy"},
   others:{title:"Delete server and other devices?",detail:"This removes the active server copy and leaves a temporary marker so tracked browsers can erase their local WHWai chats the next time they sync. This browser keeps its local chats but disconnects. Offline or untracked devices may retain chats.",label:"Delete server + tracked devices"},
@@ -871,11 +900,12 @@ async function performSyncedDelete(mode){
  if(!S.key){renderSettings();return}
  deletingSync=true;
  mbody.querySelectorAll("button").forEach(b=>b.disabled=true);
+ const confirmButton=$("confirm-delete");if(confirmButton)confirmButton.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Deleting…';
  setDeleteStatus("Deleting the selected data…");
  try{
   const result=await post({action:"sync_delete",key:S.key,deleteMode:mode,deviceId:getDeviceId(),confirmation:"DELETE"});
   const pending=Math.max(0,Number(result.pendingCount)||0);
-  S.key=null;S.last=0;S.deviceCount=0;revealNewKeyOnThisOpen=false;revealSyncKey=false;
+  S.key=null;S.last=0;S.deviceCount=0;revealNewKeyOnThisOpen=false;revealSyncKey=false;updateSyncIndicator();
   if(mode==="everything")clearLocalWhwData(true);else save(1);
   if(mode==="everything"){renderList();renderChat()}
   if(mode==="server")smsg="Server copy deleted. This device's chats remain; other devices keep their local chats, but their old sync key no longer works.";
@@ -887,6 +917,7 @@ async function performSyncedDelete(mode){
  }finally{deletingSync=false}
 }
 function renderLocalDeleteConfirm(){
+ currentSettingsView="local-delete-confirm";
  $("modal-title").textContent="Delete local data";
  mbody.innerHTML=`<div class="confirm-panel"><span class="choice-icon">${iconForDelete("everything")}</span><div><strong>Delete this device's WHWai data?</strong><p>This removes chats stored in this browser, clears its local sync key and browser identifier, resets the local export cooldown, and attempts to disconnect this browser from sync. The server copy and other devices remain unchanged. If the browser is offline, its server-side device record may remain until it expires.</p></div></div>
   <p class="sm">This cannot be undone unless you have exported a backup.</p><p class="sm" id="delete-status" role="status"></p>
@@ -897,7 +928,7 @@ function renderLocalDeleteConfirm(){
 async function performLocalOnlyDelete(){
  if(deletingSync)return;
  if(syncing||creatingSync||connectingSync||disconnectingSync){setDeleteStatus("Wait for the current sync action to finish, then try again.");return}
- deletingSync=true;mbody.querySelectorAll("button").forEach(b=>b.disabled=true);setDeleteStatus("Removing local data…");
+ deletingSync=true;mbody.querySelectorAll("button").forEach(b=>b.disabled=true);const localButton=$("confirm-local-delete");if(localButton)localButton.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Deleting…';setDeleteStatus("Removing local data…");
  let disconnected=!S.key;
  try{
   if(S.key){
@@ -906,11 +937,12 @@ async function performLocalOnlyDelete(){
   }
   clearLocalWhwData(true);renderList();renderChat();
   smsg=disconnected?"This device's WHWai chat data and local sync connection were removed. The server copy and other devices are unchanged.":"This device's local WHWai chat data was removed. The server copy remains unchanged; because this browser could not disconnect, its device record may remain until it expires.";
-  renderDataManagement();
+  updateSyncIndicator();renderDataManagement();
  }finally{deletingSync=false}
 }
 
 function renderSettings(){
+ currentSettingsView="settings";
  if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}
  $("modal-title").textContent="Settings";
  const on=!!S.key,k=S.key||"",keyVisible=revealNewKeyOnThisOpen||revealSyncKey,deviceCount=Math.max(0,Number(S.deviceCount)||0);
@@ -918,10 +950,12 @@ function renderSettings(){
  const eyeOn=ic('<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',17);
  const eyeOff=ic('<path d="M3 3l18 18"/><path d="M10.6 5.1A10.8 10.8 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3 3.8M6.2 6.2C3.5 8 2 12 2 12s3.5 7 10 7c1.5 0 2.8-.4 4-1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',17);
  mbody.innerHTML=on?
- '<h3>Sync across devices</h3><p>Sync is on. Your key:</p><div class="key"><span class="key-value" id="s-key-value">'+(keyVisible?shownKey:"••••••")+'</span><div class="key-actions"><button id="s-toggle-key" title="'+(keyVisible?"Hide sync key":"Show sync key")+'" aria-label="'+(keyVisible?"Hide sync key":"Show sync key")+'" aria-pressed="'+String(keyVisible)+'">'+(keyVisible?eyeOff:eyeOn)+'</button><button id="s-copy" title="Copy key" aria-label="Copy key">'+I.copy+'</button></div></div><p class="sm">On another device, open Settings and enter this key under Connect. Anyone who has this key can read your synced chats, so keep it private.</p><p class="sm">'+(S.last?"Last synced "+ago(S.last):"Not synced yet")+'</p><div class="btns"><button class="pbtn" id="s-now">Sync now</button>'+(deviceCount>1?'<button class="pbtn" id="s-off">Turn off on this device</button>':'')+'</div>':
- '<h3>Sync across devices</h3><p>Your chats stay on this device until you turn sync on. With sync on, a copy is stored on the WHWai server so you can open your chats on other devices. If you have lost your key or need assistance, please contact We Hate Windows Support.</p><div class="btns"><button class="pbtn" id="s-on">Turn on sync</button></div><p class="sm">Already have a key?</p><div class="join"><input id="s-key" inputmode="numeric" autocomplete="off" maxlength="'+KEYLEN+'" placeholder="'+KEYLEN+'-digit key" aria-label="Sync key"><button class="pbtn" id="s-join">Connect</button></div>';
- mbody.insertAdjacentHTML("beforeend",'<h3>Data & privacy</h3><p class="sm">Export a backup, review or delete chat data, and manage synced copies.</p><button class="pbtn" id="data-tools-open" style="width:100%;margin:4px 0 10px">'+ic('<path d="M4 5h16v14H4z"/><path d="M8 9h8M8 12h8M8 15h5"/>',17)+' &nbsp; Manage your data</button><p class="sm" id="s-msg" role="status"></p><div class="privacy-row"><a href="#" class="privacy-link" id="privacy-open">Privacy Policy</a></div>');
+ '<div class="sync-panel" id="sync-panel"><h3>Sync across devices</h3><p>Sync is on. Your key:</p><div class="key"><span class="key-value" id="s-key-value">'+(keyVisible?shownKey:"••••••")+'</span><div class="key-actions"><button id="s-toggle-key" title="'+(keyVisible?"Hide sync key":"Show sync key")+'" aria-label="'+(keyVisible?"Hide sync key":"Show sync key")+'" aria-pressed="'+String(keyVisible)+'">'+(keyVisible?eyeOff:eyeOn)+'</button><button id="s-copy" title="Copy key" aria-label="Copy key">'+I.copy+'</button></div></div><p class="sm">On another device, open Settings and enter this key under Connect. Anyone who has this key can read your synced chats, so keep it private.</p><p class="sm" id="sync-last">'+(S.last?"Last synced "+ago(S.last):"Not synced yet")+'</p><div class="btns"><button class="pbtn" id="s-now">Sync now</button>'+(deviceCount>1?'<button class="pbtn" id="s-off">Turn off on this device</button>':'')+'</div></div>':
+ '<div class="sync-panel" id="sync-panel"><h3>Sync across devices</h3><p>Your chats stay on this device until you turn sync on. With sync on, a copy is stored on the WHWai server so you can open your chats on other devices. If you have lost your key or need assistance, please contact We Hate Windows Support.</p><div class="btns"><button class="pbtn" id="s-on">Turn on sync</button></div><p class="sm">Already have a key?</p><div class="join"><input id="s-key" inputmode="numeric" autocomplete="off" maxlength="'+KEYLEN+'" placeholder="'+KEYLEN+'-digit key" aria-label="Sync key"><button class="pbtn" id="s-join">Connect</button></div></div>';
+ mbody.insertAdjacentHTML("beforeend",'<h3>Data & privacy</h3><p class="sm">Export a backup, review or delete chat data, and manage synced copies.</p><button class="pbtn data-manage-button" id="data-tools-open" type="button"><span class="manage-icon">'+ic('<path d="M4 5h16v14H4z"/><path d="M8 9h8M8 12h8M8 15h5"/>',17)+'</span><span>Manage your data</span></button><p class="sm" id="s-msg" role="status"></p><div class="privacy-row"><a href="#" class="privacy-link" id="privacy-open">Privacy Policy</a></div>');
  setMsg(smsg);
+ updateSyncIndicator();
+ if(syncing)lockSettingsForSync(true);
  const q=id=>mbody.querySelector("#"+id);
  q("privacy-open").onclick=e=>{e.preventDefault();renderPrivacyPolicy()};
  q("data-tools-open").onclick=renderDataManagement;
@@ -946,7 +980,7 @@ function renderSettings(){
    disconnectingSync=true;offButton.disabled=true;offButton.setAttribute("aria-busy","true");offButton.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Turning off…';setMsg("Disconnecting this device from sync…");
    try{
     const j=await post({action:"sync_device_off",key:S.key,deviceId:getDeviceId()});
-    S.deviceCount=Math.max(0,Number(j.deviceCount)||0);S.key=null;S.last=0;revealNewKeyOnThisOpen=false;revealSyncKey=false;save(1);smsg="Sync is off on this device. Your chats here are untouched.";renderSettings()
+    S.deviceCount=Math.max(0,Number(j.deviceCount)||0);S.key=null;S.last=0;revealNewKeyOnThisOpen=false;revealSyncKey=false;save(1);updateSyncIndicator();smsg="Sync is off on this device. Your chats here are untouched.";renderSettings()
    }catch(e){setMsg(errText(e));if(offButton.isConnected){offButton.disabled=false;offButton.removeAttribute("aria-busy");offButton.textContent="Turn off on this device"}}
    finally{disconnectingSync=false;if(!modal.hidden)renderSettings()}
   };
@@ -985,6 +1019,7 @@ function renderSettings(){
  }
 }
 function renderDataManagement(){
+ currentSettingsView="data";
  if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}
  $("modal-title").textContent="Manage your data";
  const syncAvailable=!!S.key;
@@ -1011,6 +1046,7 @@ function renderDataManagement(){
  setMsg(smsg);
 }
 function renderExportInfo(){
+ currentSettingsView="export-info";
  if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}
  $("modal-title").textContent="Download your data";
  mbody.innerHTML=`<p>WHWai creates the ZIP in this browser from the chat data currently saved on this device. It does not download a fresh copy from the server.</p>
@@ -1019,7 +1055,6 @@ function renderExportInfo(){
   <p><strong>Local copy only:</strong> chats may differ from the shared server copy until syncing completes. Choose Sync now first if you need the latest shared changes. Deleted-chat markers are not included.</p>
   <p><strong>Keep the ZIP private:</strong> anyone who gets the file can read its conversations. </p>
   <p class="sm" id="export-status" role="status">A 10-minute cooldown starts after an export is prepared.</p>
-  <p id="export-download-link" hidden></p>
   <div class="data-toolbar"><button type="button" class="pbtn" id="export-back">Back to data tools</button><button type="button" class="pbtn" id="export-data">Download chats (.zip)</button></div>`;
  const q=id=>mbody.querySelector("#"+id);
  q("export-back").onclick=renderDataManagement;
@@ -1028,8 +1063,9 @@ function renderExportInfo(){
 }
 
 function renderPrivacyPolicy(){
+ currentSettingsView="privacy";
  $("modal-title").textContent="Privacy Policy";
- mbody.innerHTML=`<div class="policy-takeaways"><strong>Privacy at a glance</strong><ul><li>Chats stay in this browser unless you enable sync.</li><li>Synced chats are stored in Google Sheets; Groq processes prompts to generate replies and titles.</li><li>WHW does not intend to sell chats, use them for ads, or train its own models on them.</li><li>Deleting data in WHWai cannot erase downloaded copies or guarantee instant removal from every third-party system.</li></ul></div>
+ mbody.innerHTML=`<div class="policy-takeaways"><strong>Key takeaways</strong><ul><li>Chats stay in this browser unless you enable sync.</li><li>Synced chats are stored in Google Sheets; Groq processes prompts to generate replies and titles.</li><li>WHW does not intend to sell chats, use them for ads, or train its own models on them.</li><li>Deleting data in WHWai cannot erase downloaded copies or guarantee instant removal from every third-party system.</li></ul></div>
  <p class="sm">Effective date: October 11, 2026</p>
  <h3>What WHWai stores</h3><p>Chats, replies, titles, and related chat data are stored in your browser so they remain available when you return. If you enable sync, WHWai sends chat data to its Google Apps Script backend, which stores it in Google Sheets. A six-digit sync key connects devices; a random browser identifier helps count and manage synced devices. Keep the key private and avoid sharing sensitive information.</p>
  <h3>How data is used</h3><p>WHWai uses conversations to display chats, sync and restore them, and generate requested replies and titles. Authorized WHW personnel may access synced data when reasonably needed for support, service maintenance, security response, or legal compliance. WHW does not intend to sell conversations, use them for advertising or profiling, or train its own models on them.</p>
@@ -1041,13 +1077,46 @@ function renderPrivacyPolicy(){
  <p class="sm">This policy may change as WHWai's features, providers, or data practices change.</p><div class="btns"><button class="pbtn" id="privacy-back">Back to Settings</button></div>`;
  $("privacy-back").onclick=renderSettings;
 }
-function closeSettings(){if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}modal.hidden=true;revealNewKeyOnThisOpen=false;revealSyncKey=false}
-$("gear").onclick=()=>{smsg="";revealNewKeyOnThisOpen=false;revealSyncKey=false;renderSettings();modal.hidden=false;if(S.key){lockSettingsForSync(true);doSync("Synced just now.").finally(()=>lockSettingsForSync(false))}};
+function animateMenuContent(){
+ mbody.classList.remove("menu-content-enter");
+ void mbody.offsetWidth;
+ mbody.classList.add("menu-content-enter");
+}
+mbody.addEventListener("animationend",e=>{if(e.target===mbody&&e.animationName==="menuScreenIn")mbody.classList.remove("menu-content-enter")});
+function withMenuTransition(fn){return function(){fn.apply(this,arguments);if(!modal.hidden)animateMenuContent()}}
+renderSettings=withMenuTransition(renderSettings);
+renderDataManagement=withMenuTransition(renderDataManagement);
+renderDeleteOptions=withMenuTransition(renderDeleteOptions);
+renderDeleteConfirm=withMenuTransition(renderDeleteConfirm);
+renderLocalDeleteConfirm=withMenuTransition(renderLocalDeleteConfirm);
+renderExportInfo=withMenuTransition(renderExportInfo);
+renderPrivacyPolicy=withMenuTransition(renderPrivacyPolicy);
+function finishModalClose(){
+ if(!closingModal)return;
+ if(closeModalTimer!==null){clearTimeout(closeModalTimer);closeModalTimer=null}
+ modal.hidden=true;modal.classList.remove("closing");closingModal=false;
+ revealNewKeyOnThisOpen=false;revealSyncKey=false;
+}
+function closeSettings(){
+ if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}
+ revealNewKeyOnThisOpen=false;revealSyncKey=false;
+ if(modal.hidden||closingModal)return;
+ closingModal=true;modal.classList.add("closing");
+ closeModalTimer=setTimeout(finishModalClose,190);
+}
+function openSettings(){
+ if(closeModalTimer!==null){clearTimeout(closeModalTimer);closeModalTimer=null}
+ closingModal=false;modal.classList.remove("closing");modal.hidden=false;
+ smsg="";revealNewKeyOnThisOpen=false;revealSyncKey=false;
+ renderSettings();
+ if(S.key)doSync("Synced just now.");
+}
+$("gear").onclick=openSettings;
 $("mx").onclick=closeSettings;
 $("sync-indicator").onclick=()=>{if(S.key&&!syncing&&!busy)doSync("Synced just now.")};
 modal.onclick=e=>{if(e.target===modal)closeSettings()};
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&S.key&&!busy)doSync()});
-setInterval(()=>{document.querySelectorAll(".bar span,.cm").forEach(s=>s.textContent=ago(+s.dataset.t))},1000);
+setInterval(()=>{document.querySelectorAll(".bar span,.cm").forEach(s=>s.textContent=ago(+s.dataset.t));if(S&&S.key&&!syncing&&!syncError){const label=$("sync-status-label");if(label&&S.last)label.textContent="Synced "+ago(S.last)}},1000);
 const fr=document.querySelector(".frame");fr.classList.add("no-anim");fr.classList.toggle("collapsed",!!S.col);
 requestAnimationFrame(()=>requestAnimationFrame(()=>fr.classList.remove("no-anim")));
 renderList();renderChat();updateSyncIndicator();
