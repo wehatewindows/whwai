@@ -418,12 +418,20 @@ async function post(body,externalSignal){
   if(externalSignal)externalSignal.removeEventListener("abort",forwardAbort);
  }
 }
+const titleRequests=new Set();
 async function genTitle(c){
+ if(!c||!c.auto||titleRequests.has(c.id))return;
+ titleRequests.add(c.id);
  try{
-  const j=await post({action:"title",messages:hist(c).slice(0,2)});
-  const t=(j.text||"").split("\n")[0].replace(/["*.]+/g,"").trim().slice(0,40);
+  // Send the available conversation, not just the opening greeting and reply.
+  const j=await post({action:"title",messages:hist(c)});
+  const raw=(j.text||"").split("\n")[0].trim();
+  // Keep auto-title enabled until a substantive topic exists.
+  if(!raw||/^NO_TITLE$/i.test(raw))return;
+  const t=raw.replace(/["*.]+/g,"").trim().slice(0,40);
   if(t&&c.auto){c.t=t;c.auto=0;touch(c);save();renderList()}
  }catch(e){}
+ finally{titleRequests.delete(c.id)}
 }
 async function answer(c,q){
  const run=++answerRunId,controller=new AbortController();
@@ -453,7 +461,7 @@ async function answer(c,q){
   }
   if(responseWasStopped||run!==answerRunId)return;
   c.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1}:{r:"a",x:full,at:Date.now(),_l:1});c.u=Date.now();touch(c);save();renderList();renderChat();
-  if(API_URL&&!err&&c.auto&&c.m.length<=2)genTitle(c);
+  if(API_URL&&!err&&c.auto)genTitle(c);
  }finally{
   if(run===answerRunId){
    if(responseWasStopped&&tmp.isConnected)tmp.remove();
