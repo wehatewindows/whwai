@@ -266,6 +266,14 @@ if(S.cur&&!S.chats.some(c=>c.id===S.cur))S.cur=null;
 if(!Array.isArray(S.dead))S.dead=[];
 const clean=()=>({chats:S.chats.map(c=>({...c,m:c.m.filter(m=>!m.err).map(({_l,...r})=>r)})),dead:S.dead});
 const save=ns=>{store.set(JSON.stringify({...S,...clean()}));if(!ns&&S.key)syncSoon()};
+// Repair titles saved by earlier versions that exposed the NO_TITLE marker.
+let repairedTitle=false;
+S.chats.forEach(c=>{
+ if(!c||!Array.isArray(c.m)||!/^NO_TITLE[.!]*$/i.test(String(c.t||"")))return;
+ const firstUser=c.m.find(m=>m&&m.r==="u"&&String(m.x||"").trim());
+ if(firstUser){c.t=makeTitle(firstUser.x);c.auto=1;repairedTitle=true}
+});
+if(repairedTitle)save(true);
 const C=()=>S.chats.find(c=>c.id===S.cur)||null;
 const sorted=()=>[...S.chats].sort((a,b)=>(b.p?1:0)-(a.p?1:0)||b.u-a.u);
 
@@ -423,11 +431,11 @@ async function genTitle(c){
  if(!c||!c.auto||titleRequests.has(c.id))return;
  titleRequests.add(c.id);
  try{
-  // Send the available conversation, not just the opening greeting and reply.
+  // If there isn't enough detail yet, the backend returns an empty title and
+  // the initial user message stays visible until a real topic emerges.
   const j=await post({action:"title",messages:hist(c)});
   const raw=(j.text||"").split("\n")[0].trim();
-  // Keep auto-title enabled until a substantive topic exists.
-  if(!raw||/^NO_TITLE$/i.test(raw))return;
+  if(!raw||/^NO_TITLE[.!]*$/i.test(raw))return;
   const t=raw.replace(/["*.]+/g,"").trim().slice(0,40);
   if(t&&c.auto){c.t=t;c.auto=0;touch(c);save();renderList()}
  }catch(e){}
@@ -473,9 +481,8 @@ async function answer(c,q){
 }
 /* demo title: first few words. The real version should ask the AI for a 3-5 word summary instead. */
 function makeTitle(q){
- const w=q.replace(/[?!.]+$/,"").split(/\s+/).slice(0,5).join(" ");
- const t=w.charAt(0).toUpperCase()+w.slice(1);
- return t.length>30?t.slice(0,29)+"…":t;
+ const text=String(q||"").trim().replace(/\s+/g," ");
+ return text.length>60?text.slice(0,59).trimEnd()+"…":text;
 }
 function send(){
  const q=ta.value.trim();if(!q||busy)return;
