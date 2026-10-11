@@ -89,7 +89,7 @@ svg{display:block}
 .key button{border:0;background:none;cursor:pointer;padding:6px;border-radius:8px;display:grid;place-items:center}
 .btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
 .pbtn{border:0;background:var(--chip);border-radius:12px;padding:8px 14px;cursor:pointer;font-weight:500;transition:background .15s}
-.pbtn:hover{background:#cfcfcf}.pbtn.danger{color:#d93b3b}.privacy-row{margin-top:10px}.privacy-link{color:#2f6ee0;text-decoration:none;cursor:pointer;font-size:14px}.privacy-link:hover,.privacy-link:focus{text-decoration:none;color:#2458b8}.privacy-link:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:3px}.policy-placeholder{background:#f3f3f3;border-radius:12px;padding:10px 12px;font-size:13px;color:#555}
+.pbtn:hover{background:#cfcfcf}.pbtn:disabled{opacity:.62;cursor:wait}.pbtn:disabled:hover{background:var(--chip)}.pbtn.danger{color:#d93b3b}.sync-spinner{display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;vertical-align:-2px;margin-right:7px;animation:syncspin .7s linear infinite}@keyframes syncspin{to{transform:rotate(360deg)}}.privacy-row{margin-top:10px}.privacy-link{color:#2f6ee0;text-decoration:none;cursor:pointer;font-size:14px}.privacy-link:hover,.privacy-link:focus{text-decoration:none;color:#2458b8}.privacy-link:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:3px}.policy-placeholder{background:#f3f3f3;border-radius:12px;padding:10px 12px;font-size:13px;color:#555}
 .join{display:flex;gap:8px;margin-bottom:6px}.join input{flex:1;min-width:0;border:0;outline:0;background:var(--bub);border-radius:12px;padding:9px 12px;font:inherit;letter-spacing:.1em}
 .no-anim,.no-anim *{transition:none!important}
 button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
@@ -480,7 +480,7 @@ const SLIDERS='<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r=
 $("gear").innerHTML=ic(SLIDERS,16,2.2);
 $("mnew").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',18,2.4);$("mnew").onclick=newChat;
 const modal=$("modal"),mbody=$("mbody");
-let syncing=false,st=null,smsg="";
+let syncing=false,creatingSync=false,st=null,smsg="";
 const touch=c=>{c.mu=Date.now()};
 function merge(a,b){
  const map={},dead={},t=c=>c.mu||c.u||0;
@@ -530,8 +530,22 @@ function renderSettings(){
   };
  }else{
   q("s-on").onclick=async()=>{
-   setMsg("Turning on…");
-   try{const j=await post({action:"sync_new"});S.key=j.key;save(1);await doSync("Sync is on.");renderSettings()}catch(e){setMsg(errText(e))}
+   // Guard against rapid/double clicks while a new sync key is being created.
+   if(creatingSync)return;
+   creatingSync=true;
+   const b=q("s-on");
+   if(b){b.disabled=true;b.setAttribute("aria-busy","true");b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Turning on sync…'}
+   setMsg("Creating your sync key and saving your chats…");
+   try{
+    const j=await post({action:"sync_new"});
+    if(!j||!j.key)throw new Error((j&&j.error)||"Could not create a sync key.");
+    S.key=j.key;save(1);await doSync("Sync is on.");renderSettings()
+   }catch(e){setMsg(errText(e))}
+   finally{
+    creatingSync=false;
+    const current=q("s-on");
+    if(current){current.disabled=false;current.removeAttribute("aria-busy");current.textContent="Turn on sync"}
+   }
   };
   q("s-join").onclick=async()=>{
    const k=q("s-key").value.replace(/\D/g,"");
@@ -545,30 +559,38 @@ function renderPrivacyPolicy(){
  $("modal-title").textContent="Privacy Policy";
  mbody.innerHTML=`
   <p class="sm">Effective date: October 10, 2026</p>
-  <p>WHWai is designed to use chat information to provide the AI chat service and to let you save and sync your conversations. This policy explains what WHWai stores and how third-party AI processing may work.</p>
+  <p><strong>WHWai is intended to be a private chat service.</strong> We Hate Windows (WHW) intends to use conversation data only as needed to provide WHWai, generate requested AI responses and chat titles, and save, restore, and sync conversations between your devices. We do not intend to sell conversations or use their content for advertising, profiling, or unrelated purposes. This policy describes the service as currently implemented; it does not promise that every copy can always be erased from every system.</p>
 
-  <h3>Information WHWai Stores</h3>
-  <p>WHWai saves the messages you send, the AI replies, chat titles, and the small amount of chat and sync information needed to organize and restore conversations. Chats are saved on your device. If you turn on sync or connect with a sync key, a copy of the chats included in sync is also stored on a WHWai server.</p>
+  <h3>Information Stored by WHWai</h3>
+  <p><strong>On your device:</strong> WHWai stores your conversations, generated replies, chat titles, and related chat information in your browser so your chats can appear when you return. Sync settings and a sync key may also be stored in that browser.</p>
+  <p><strong>When sync is enabled:</strong> WHWai sends conversation data and related synchronization information to the WHWai backend. The backend stores the synced data in a Google Sheets spreadsheet connected to the Google Apps Script service. WHWai does not currently require a personal account; a numeric sync key is used to access the synced copy. Anyone who obtains that key may be able to access the conversations associated with it, so keep it private.</p>
+  <p>The service also uses limited operational information, such as temporary request counters used to limit excessive requests and prevent abuse. Google and the AI provider may separately process service, security, and usage metadata under their own terms and policies.</p>
 
-  <h3>How WHWai Uses Your Data</h3>
-  <p>WHWai stores chat and sync information to save, restore, and sync conversations and to provide related support when requested. Message content and relevant conversation context are sent to the configured AI provider so it can generate a reply. WHWai does not intend to use stored chat content for advertising, profiling, training WHWai models, or purposes unrelated to providing and supporting the chat-saving service.</p>
+  <h3>How WHW Uses Conversation Data</h3>
+  <p>Conversation content is used to show you your chats, sync and restore them between devices, generate the AI replies you request, and generate chat titles. Relevant conversation messages and context are sent to the AI provider for those functions. Data may also be accessed when reasonably necessary to respond to a support request, maintain the service, investigate a security issue, or comply with law.</p>
+  <p>Beyond providing and supporting these functions, We Hate Windows has no intention of using your conversation content for other purposes. We do not intend to use it for advertising, profiling, selling, or training our own models.</p>
 
-  <h3>Access to Server-Stored Chats</h3>
-  <p>Only a limited number of authorized We Hate Windows Support personnel may access data stored on a WHWai server when reasonably necessary to help recover a WHWai sync key or resolve a support request. Your sync key is sensitive: anyone who obtains it may be able to access the synced chats associated with it, so keep it private.</p>
+  <h3>Who Can Access Synced Conversations</h3>
+  <p>WHW intends to restrict access to server-stored conversations to a small number of authorized We Hate Windows personnel, and only when reasonably necessary for a support request, sync-key issue, service operation, or security response. People with administrative or editor access to the underlying Google Apps Script project or spreadsheet may also be technically able to access stored data. WHWai does not currently maintain a user account directory that automatically links a person's identity to a sync key, so identifying a particular synced copy or recovering a lost key may not always be possible.</p>
 
-  <h3>AI Providers and Groq</h3>
-  <p>To generate a response, WHWai sends your prompt and the relevant conversation context to the AI provider configured for the service. The provider depends on WHWai's current configuration, and its own data practices also apply.</p>
-  <p>According to Groq's current API documentation, inference inputs and outputs are not retained by default. Groq does always collect usage metadata that does not contain the actual customer inputs or outputs. Groq says it may temporarily log inputs and outputs for service-reliability troubleshooting or abuse investigations for up to 30 days, unless Zero Data Retention is enabled. Groq's current Services Agreement also says it does not use inputs or outputs to train or fine-tune models unless the customer explicitly grants permission or instructs it to do so.</p>
-  <p>Read Groq's <a href="https://console.groq.com/docs/your-data" target="_blank" rel="noopener noreferrer">API data-retention documentation</a> and <a href="https://console.groq.com/docs/legal/services-agreement" target="_blank" rel="noopener noreferrer">Services Agreement</a> for the latest details. These descriptions apply if WHWai is using Groq; other AI providers may have different policies.</p>
+  <h3>AI Provider and Groq</h3>
+  <p>WHWai currently sends prompts and relevant conversation context to the Groq API to generate responses. It also sends conversation context to the configured Groq API for chat-title generation. The website's backend configuration may change, in which case the provider's applicable practices will also matter.</p>
+  <p>According to Groq's current documentation, ordinary inference requests are not retained by default, but Groq always collects usage metadata that does not contain the actual prompts or responses. Groq may temporarily log inputs and outputs for troubleshooting reliability issues or investigating suspected abuse for up to 30 days, unless Zero Data Retention is enabled; legal requirements may also affect retention. WHWai's source code alone does not confirm whether Zero Data Retention is enabled in the Groq account, so do not assume that it is enabled. Groq's current Services Agreement says it does not use inputs or outputs to train or fine-tune models unless the customer explicitly grants permission or instructs it to do so.</p>
+  <p>Read <a href="https://console.groq.com/docs/your-data" target="_blank" rel="noopener noreferrer">Groq's API data and retention documentation</a> and the <a href="https://console.groq.com/docs/legal/services-agreement" target="_blank" rel="noopener noreferrer">Groq Services Agreement</a> for current details. Groq's policies may change and are controlled by Groq, not WHW.</p>
 
   <h3>Retention and Deletion</h3>
-  <p>Chats saved only on your device remain there until you delete them or clear the relevant browser data. If sync is enabled, a server-stored copy remains available for syncing until you delete it using the available WHWai controls or it is otherwise removed through the service. Turning sync off on one device does not, by itself, delete chats already stored on that device or a server copy.</p>
+  <p>Chats saved only on a device remain in that browser until deleted in WHWai or the relevant browser data is cleared. Deleting an individual chat removes it from the current chat list; sync may retain a small deletion marker so that the deleted chat is not restored from another device.</p>
+  <p><strong>Delete synced copy</strong> removes the active synced record from the WHWai spreadsheet and disconnects that sync key in the current browser if the server deletion succeeds. It does not delete local chats on that device, copies on other devices, or data previously sent to Groq. Turning sync off is different: it disconnects the current browser but does not itself delete the server-stored copy. To remove both local and synced copies, delete the conversations and use the synced-copy deletion control where applicable.</p>
+  <p>The current server deletion code removes active rows from the spreadsheet. It does not explicitly erase Google Sheets version history, all provider backups, operational logs, or copies held by third parties. As a result, WHW cannot promise that deletion from WHWai instantly and permanently erases every trace from every system.</p>
+
+  <h3>Security and Response to Incidents</h3>
+  <p>WHW intends to handle conversations as private data and take reasonable steps to protect stored information. No online service or storage system can be guaranteed completely secure. If WHW becomes aware of signs of a data breach or another serious security issue, we will do our best to investigate promptly and take appropriate protective steps. Depending on the circumstances, these steps may include restricting access, disabling sync or other affected features, and deleting active server-stored conversation data if that is considered necessary to reduce risk. Deleting that data may permanently remove synced conversations and may not remove local copies, spreadsheet history, or data retained by Groq, Google, or other third parties. We cannot guarantee that every incident will be prevented or that all copies can be recovered or erased.</p>
 
   <h3>Privacy Requests and Support</h3>
-  <p>To request access to your data, ask privacy questions, or get assistance with your chats or sync key, contact We Hate Windows Support at <a href="mailto:wehatewindows.help@gmail.com">wehatewindows.help@gmail.com</a>.</p>
+  <p>For privacy questions, data requests, sync-key issues, or other assistance, contact We Hate Windows Support at <a href="mailto:wehatewindows.help@gmail.com">wehatewindows.help@gmail.com</a>. Please avoid sending sensitive conversation content or your sync key in an ordinary email unless support provides an appropriate secure method.</p>
 
-  <h3>Security and Policy Updates</h3>
-  <p>We limit server-data access to authorized support personnel for the purposes described above, but no method of online storage or transmission can be guaranteed completely secure. This policy may be updated if WHWai's features, providers, or data practices change. Please review it periodically.</p>
+  <h3>Policy Updates</h3>
+  <p>This policy may be updated if WHWai's features, providers, security practices, or data handling change. The effective date above indicates when this version was last updated. We will aim to keep the policy consistent with the actual service, but provider practices and platform retention controls may be outside WHW's control.</p>
   <div class="btns"><button class="pbtn" id="privacy-back">Back to Settings</button></div>`;
  $("privacy-back").onclick=renderSettings;
 }
