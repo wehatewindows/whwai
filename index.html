@@ -324,6 +324,28 @@ body{overflow:hidden;}
   .side .gear{bottom:max(12px, calc(12px + env(safe-area-inset-bottom, 0px)));}
 }
 
+
+
+/* ---------- iOS Safari: prevent focus zoom on message and settings fields ---------- */
+html, body {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+/* Some Google Sites mobile embeds report a wider iframe viewport than the phone.
+   Apply the 16px input-size rule on narrow embeds OR touch-first mobile devices. */
+@media (max-width: 640px), (hover: none) and (pointer: coarse) {
+  input,
+  textarea,
+  select,
+  .field textarea#in {
+    font-size: 16px !important;
+    -webkit-text-size-adjust: 100%;
+  }
+  .field textarea#in {
+    line-height: 22px !important;
+  }
+}
+
 </style>
 </head>
 <body>
