@@ -78,6 +78,8 @@ svg{display:block}
 .scrim{display:none;position:absolute;inset:0;background:rgba(0,0,0,.25);z-index:5}
 .gear{position:absolute;left:12px;bottom:12px;width:30px;height:30px;border-radius:50%;border:0;background:#bbb;color:#fff;padding:0;display:grid;place-items:center;cursor:pointer;transition:background .15s}
 .gear:hover{background:#999}
+.sync-indicator{position:absolute;left:48px;bottom:12px;width:30px;height:30px;border:0;border-radius:50%;background:#d7e5ff;color:#2458b8;display:grid;place-items:center;cursor:pointer}.sync-indicator[hidden]{display:none}.sync-indicator.syncing svg{animation:syncspin .8s linear infinite}.sync-indicator.ok{background:#dff3e4;color:#23733c}
+.settings-sync-lock{position:absolute;inset:0;background:rgba(255,255,255,.82);z-index:30;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;backdrop-filter:blur(2px)}.settings-sync-lock[hidden]{display:none}.settings-sync-lock-inner{max-width:260px;background:#fff;border:1px solid #e5e5e5;border-radius:16px;padding:18px;box-shadow:0 8px 28px rgba(0,0,0,.1)}
 .modal{position:absolute;inset:0;background:rgba(0,0,0,.28);display:grid;place-items:center;z-index:20;animation:rise .2s ease-out}
 .modal[hidden]{display:none}
 .mcard{width:min(420px,92%);max-height:88%;overflow:auto;background:#fff;border-radius:22px;padding:18px 20px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
@@ -90,7 +92,7 @@ svg{display:block}
 .btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
 .pbtn{border:0;background:var(--chip);border-radius:12px;padding:8px 14px;cursor:pointer;font-weight:500;transition:background .15s}
 @keyframes syncspin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-.pbtn:hover{background:#cfcfcf}.pbtn:disabled{opacity:.62;cursor:wait}.pbtn:disabled:hover{background:var(--chip)}.pbtn.danger{color:#d93b3b}.sync-spinner{display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;vertical-align:-2px;margin-right:7px;animation:syncspin .7s linear infinite}.round .sync-spinner{width:19px;height:19px;border-width:2.5px;margin:0;vertical-align:middle}.key-actions{display:flex;align-items:center;gap:2px;flex:none}.key-value{min-width:0;overflow-wrap:anywhere}.key button[aria-pressed=true]{background:rgba(106,160,255,.18)}.privacy-row{margin-top:10px}.privacy-link{color:#2f6ee0;text-decoration:none;cursor:pointer;font-size:14px}.privacy-link:hover,.privacy-link:focus{text-decoration:none;color:#2458b8}.privacy-link:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:3px}.policy-placeholder{background:#f3f3f3;border-radius:12px;padding:10px 12px;font-size:13px;color:#555}
+.pbtn:hover{background:#cfcfcf}.pbtn:disabled{opacity:.62;cursor:wait}.pbtn:disabled:hover{background:var(--chip)}.pbtn.danger{color:#d93b3b}.sync-spinner{display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;vertical-align:-2px;margin-right:7px;animation:syncspin .7s linear infinite}.round .sync-spinner{width:19px;height:19px;border-width:2.5px;margin:0;vertical-align:middle}.key-actions{display:flex;align-items:center;gap:2px;flex:none}.key-value{min-width:0;overflow-wrap:anywhere}.key button[aria-pressed=true]{background:rgba(106,160,255,.18)}.privacy-row{margin-top:10px}.privacy-link{color:#2f6ee0;text-decoration:none;cursor:pointer;font-size:14px}.privacy-link:hover,.privacy-link:focus{text-decoration:none;color:#2458b8}.privacy-link:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:3px}.policy-takeaways{background:#eef4ff;border:1px solid #d8e5ff;border-radius:14px;padding:12px 14px;margin:10px 0 14px}.policy-takeaways ul{margin:6px 0 0;padding-left:19px}.policy-takeaways li{font-size:13px;margin:4px 0}.policy-placeholder{background:#f3f3f3;border-radius:12px;padding:10px 12px;font-size:13px;color:#555}
 .data-tools-list{display:flex;flex-direction:column;gap:8px;margin:12px 0 16px}
 .data-tool{display:flex;align-items:center;gap:11px;width:100%;min-width:0;padding:11px 12px;border:1px solid #e4e4e4;border-radius:14px;background:#f7f7f7;text-align:left;cursor:pointer}
 .data-tool:hover{background:#eee;transform:translateY(-1px)}.data-tool:active{transform:scale(.99)}
@@ -210,7 +212,7 @@ html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(
  .side .more{opacity:1}
  .side .cmenu{right:var(--edge);z-index:14}
  .side .new,.side .gear{position:absolute;left:var(--edge);right:var(--edge);width:auto;height:44px;display:flex;align-items:center;justify-content:flex-start;gap:10px;padding:0 14px;border:0;border-radius:14px;color:#222;background:#dedee5;box-shadow:none}
- .side .new{bottom:64px}.side .gear{bottom:12px}
+ .side .new{bottom:64px}.side .gear{bottom:12px;padding-right:38px}.side .sync-indicator{left:auto;right:var(--edge);bottom:19px;z-index:2}
  .side .new::after{content:"New chat";font-size:15px;font-weight:500}
  .side .gear::after{content:"Settings";font-size:15px;font-weight:500}
  .side .new:hover,.side .gear:hover{background:#d4d4dc}
@@ -239,6 +241,7 @@ html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(
   <div class="list" id="list"></div>
   <button class="new" id="new" title="New chat" aria-label="New chat">+</button>
   <button class="gear" id="gear" title="Settings" aria-label="Settings"></button>
+  <button class="sync-indicator" id="sync-indicator" title="Sync now" aria-label="Sync now" hidden></button>
   <div class="cmenu" id="cmenu" role="menu" hidden><button id="cren" role="menuitem"></button><button id="cpin" role="menuitem"></button><button id="cdel" class="danger" role="menuitem"></button></div>
  </aside>
  <div class="scrim" id="scrim"></div>
@@ -496,7 +499,7 @@ async function genTitle(c){
 async function answer(c,q){
  const run=++answerRunId,controller=new AbortController();
  responseWasStopped=false;activeAnswerController=controller;setBusy(true);
- const tmp=document.createElement("div");tmp.className="msg dim fresh";tmp.setAttribute("role","status");tmp.setAttribute("aria-label","Aries is thinking");tmp.innerHTML='<span class="typing-indicator" aria-hidden="true"><span></span><span></span><span></span></span>';chatEl.appendChild(tmp);toBottom();
+ const tmp=document.createElement("div");tmp.className="msg dim fresh";tmp.setAttribute("role","status");tmp.setAttribute("aria-label","Aries is thinking");tmp.textContent='Aries is thinking…';chatEl.appendChild(tmp);toBottom();
  try{
   let full,err=0;
   if(API_URL){
@@ -522,6 +525,7 @@ async function answer(c,q){
   if(responseWasStopped||run!==answerRunId)return;
   c.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1}:{r:"a",x:full,at:Date.now(),_l:1});c.u=Date.now();touch(c);save();renderList();renderChat();
   if(API_URL&&!err&&c.auto)genTitle(c);
+  if(S.key)syncSoon();
  }finally{
   if(run===answerRunId){
    if(responseWasStopped&&tmp.isConnected)tmp.remove();
@@ -625,7 +629,7 @@ function applyRemote(j){
 }
 const errText=e=>({badkey:"That key wasn't found.",slow:"Too many attempts. Wait a minute and try again.",confirmrequired:"Confirmation was missing. Return to the deletion menu and confirm again.",toobig:"Your chats are too large to sync.",busy:"The server is busy. Try again soon."}[e&&e.message]||"Couldn't reach the server. Try again.");
 async function doSync(msg){
- if(!S.key||syncing||deletingSync||disconnectingSync)return;syncing=true;
+ if(!S.key||syncing||deletingSync||disconnectingSync)return;syncing=true;updateSyncIndicator();
  try{
   const j=await post({action:"sync",key:S.key,deviceId:getDeviceId(),...clean()});
   if(j&&j.wipe){
@@ -639,7 +643,22 @@ async function doSync(msg){
   if(e&&e.message==="badkey"){S.key=null;S.last=0;S.deviceCount=0;save(1);smsg="This key is no longer valid, so sync was turned off."}
   else if(msg)smsg=errText(e);
  }
- finally{syncing=false;if(!modal.hidden)renderSettings()}
+ finally{syncing=false;updateSyncIndicator();if(!modal.hidden)renderSettings()}
+}
+function lockSettingsForSync(locked){
+ const body=mbody;
+ let lock=body.querySelector(".settings-sync-lock");
+ if(locked&&!lock){lock=document.createElement("div");lock.className="settings-sync-lock";lock.innerHTML='<div class="settings-sync-lock-inner"><span class="sync-spinner" aria-hidden="true"></span><p><strong>Syncing your chats…</strong></p><p class="sm">Please wait while WHWai checks for updates.</p></div>';body.appendChild(lock)}
+ if(lock)lock.hidden=!locked;
+ body.querySelectorAll("button,input,a").forEach(el=>{if(!el.closest(".settings-sync-lock"))el.disabled=!!locked});
+}
+function updateSyncIndicator(){
+ const b=$("sync-indicator");if(!b)return;
+ b.hidden=!S.key;
+ if(!S.key)return;
+ b.innerHTML=ic('<path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.5 9A7 7 0 0 1 18 6l2 6M4 12l2 6a7 7 0 0 0 12.5-3"/>',16,2);
+ b.classList.toggle("syncing",syncing);b.classList.toggle("ok",!syncing&&!!S.last);
+ b.title=syncing?"Syncing…":"Sync now";b.setAttribute("aria-label",b.title);
 }
 function syncSoon(){clearTimeout(st);st=setTimeout(()=>{busy?syncSoon():doSync()},2500)}
 function setMsg(t){smsg=t;const m=mbody.querySelector("#s-msg");if(m)m.textContent=t}
@@ -671,7 +690,7 @@ function updateExportStatus(){
  button.title=remaining>0?"Available in "+countdownLabel(remaining):"Create a ZIP backup of chats stored in this browser";
  if(status){
   if(exportingData)status.textContent="Preparing the ZIP locally in this browser…";
-  else if(remaining>0)status.textContent="The countdown is shown in the download button.";
+  else if(remaining>0)status.textContent="Export available again in "+countdownLabel(remaining)+".";
   else status.textContent=exportCooldownPersistent?"A 10-minute cooldown starts after an export is prepared.":"A 10-minute cooldown starts after an export is prepared. This browser cannot persist the cooldown across reloads.";
  }
 }
@@ -753,14 +772,8 @@ function makeChatExport(){
    "- README.txt: this file, with export details and limitations.\n\n"+
    "SOURCE AND SCOPE\n"+
    "This ZIP is created locally in your browser and contains the chats currently stored on this device. It is not fetched from the WHWai server. If sync is enabled, the local copy may differ from the server copy until a successful sync completes. If you need the latest shared changes, return to WHWai and choose Sync now before exporting. Deleted-chat markers are not included.\n\n"+
-   "KEY AND DEVICE PRIVACY\n"+
-   "Your six-digit WHWai sync key and random browser-installation identifier are not included in this ZIP. The JSON includes syncKeyIncluded: false to make clear that the key is not part of the export. Do not add your sync key to this file yourself.\n\n"+
    "KEEP THIS FILE PRIVATE\n"+
-   "Anyone who obtains the ZIP or an extracted text file may be able to read the conversations. Store it in a private location. Deleting chats in WHWai does not delete copies inside ZIP files you have already downloaded. You must delete those downloaded copies separately.\n\n"+
-   "DOWNLOAD COOLDOWN\n"+
-   "WHWai uses a 10-minute export cooldown saved in this browser. The timer appears in the Download chats button. The cooldown is a browser-side control and may not persist if browser storage is unavailable or cleared.\n\n"+
-   "DATA DELETION LIMITS\n"+
-   "Deleting local or synced data in WHWai does not erase this ZIP, extracted copies, screenshots, backups, spreadsheet version history, or data that may be retained by Google, Groq, or other third parties. A remote wipe can only reach tracked devices when they reconnect before the temporary wipe marker expires.\n"
+   "Anyone who obtains the ZIP or an extracted text file may be able to read the conversations. Store it in a private location.\n"
  }];
  chats.forEach((c,index)=>{
   const lines=["WHWai chat: "+c.title,"Created: "+dateLabel(c.createdAt),"Last updated: "+dateLabel(c.updatedAt),"", "=".repeat(60),""];
@@ -828,11 +841,11 @@ function iconForDelete(mode){
 function renderDeleteOptions(){
  if(!S.key){renderDataManagement();return}
  $("modal-title").textContent="Delete synced data";
- mbody.innerHTML=`<p class="sm">Choose how much to delete. Each option opens a brief confirmation screen. Remote deletion cannot immediately reach an offline browser.</p>
-  <div class="delete-choice"><span class="choice-icon">${iconForDelete("server")}</span><div class="choice-copy"><strong>1. Server copy only</strong><p>Remove synced data. Local chats on all devices stay.</p></div><button type="button" class="pbtn danger" data-delete-mode="server">Choose</button></div>
-  <div class="delete-choice"><span class="choice-icon">${iconForDelete("others")}</span><div class="choice-copy"><strong>2. Server + other devices</strong><p>Also ask other tracked browsers to erase chats on next sync. This device keeps its chats.</p></div><button type="button" class="pbtn danger" data-delete-mode="others">Choose</button></div>
-  <div class="delete-choice danger"><span class="choice-icon">${iconForDelete("everything")}</span><div class="choice-copy"><strong>3. Everything</strong><p>Also erase this browser's chats and sync information.</p></div><button type="button" class="pbtn danger" data-delete-mode="everything">Choose</button></div>
-  <p class="sm">Only devices tracked within the last 30 days can receive a remote wipe. They must reconnect before the marker expires; offline, inactive, or untracked devices may keep local chats.</p>
+ mbody.innerHTML=`<p class="sm">Choose a deletion option. Offline devices can only be wiped when they reconnect.</p>
+  <div class="delete-choice"><span class="choice-icon">${iconForDelete("server")}</span><div class="choice-copy"><strong>Server copy only</strong><p>Remove synced data. Local chats on all devices stay.</p></div><button type="button" class="pbtn danger" data-delete-mode="server">Choose</button></div>
+  ${Number(S.deviceCount)>1?`<div class="delete-choice"><span class="choice-icon">${iconForDelete("others")}</span><div class="choice-copy"><strong>Server + other devices</strong><p>Erase chats on other tracked browsers when they reconnect.</p></div><button type="button" class="pbtn danger" data-delete-mode="others">Choose</button></div>`:""}
+  <div class="delete-choice danger"><span class="choice-icon">${iconForDelete("everything")}</span><div class="choice-copy"><strong>Everything</strong><p>Also erase this browser's chats and sync information.</p></div><button type="button" class="pbtn danger" data-delete-mode="everything">Choose</button></div>
+  <p class="sm">Other devices must reconnect to receive a remote wipe. Offline or untracked devices cannot be erased immediately.</p>
   <div class="data-toolbar"><button class="pbtn" id="delete-back">Back to data tools</button></div>`;
  mbody.querySelectorAll("[data-delete-mode]").forEach(button=>button.onclick=()=>renderDeleteConfirm(button.dataset.deleteMode));
  $("delete-back").onclick=renderDataManagement;
@@ -900,7 +913,7 @@ async function performLocalOnlyDelete(){
 function renderSettings(){
  if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}
  $("modal-title").textContent="Settings";
- const on=!!S.key,k=S.key||"",keyVisible=revealNewKeyOnThisOpen||revealSyncKey,deviceCount=Math.max(1,Number(S.deviceCount)||1);
+ const on=!!S.key,k=S.key||"",keyVisible=revealNewKeyOnThisOpen||revealSyncKey,deviceCount=Math.max(0,Number(S.deviceCount)||0);
  const shownKey=k.replace(/(\d{3})(?=\d)/g,"$1 ");
  const eyeOn=ic('<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',17);
  const eyeOff=ic('<path d="M3 3l18 18"/><path d="M10.6 5.1A10.8 10.8 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3 3.8M6.2 6.2C3.5 8 2 12 2 12s3.5 7 10 7c1.5 0 2.8-.4 4-1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',17);
@@ -1001,11 +1014,11 @@ function renderExportInfo(){
  if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}
  $("modal-title").textContent="Download your data";
  mbody.innerHTML=`<p>WHWai creates the ZIP in this browser from the chat data currently saved on this device. It does not download a fresh copy from the server.</p>
-  <div class="export-contents"><strong>What's inside</strong><ul><li><strong>chats.json</strong> — structured chat data.</li><li><strong>chats/</strong> — a readable text file for each chat.</li><li><strong>README.txt</strong> — export scope, privacy notes, and deletion limitations.</li></ul></div>
+  <div class="export-contents"><strong>What's inside</strong><ul><li><strong>chats.json</strong> — structured chat data.</li><li><strong>chats/</strong> — a readable text file for each chat.</li><li><strong>README.txt</strong> — export scope and general notes.</li></ul></div>
   <p><strong>Key and device privacy:</strong> your six-digit sync key and random browser-installation identifier are not included. The JSON contains only chat data and one key-safety field confirming the sync key is not included.</p>
   <p><strong>Local copy only:</strong> chats may differ from the shared server copy until syncing completes. Choose Sync now first if you need the latest shared changes. Deleted-chat markers are not included.</p>
-  <p><strong>Keep the ZIP private:</strong> anyone who gets the file can read its conversations. Deleting chats in WHWai does not delete downloads or extracted copies. The README includes these details for later reference.</p>
-  <p class="sm" id="export-status" role="status">A 10-minute cooldown starts after an export is prepared. The countdown appears in the download button.</p>
+  <p><strong>Keep the ZIP private:</strong> anyone who gets the file can read its conversations. </p>
+  <p class="sm" id="export-status" role="status">A 10-minute cooldown starts after an export is prepared.</p>
   <p id="export-download-link" hidden></p>
   <div class="data-toolbar"><button type="button" class="pbtn" id="export-back">Back to data tools</button><button type="button" class="pbtn" id="export-data">Download chats (.zip)</button></div>`;
  const q=id=>mbody.querySelector("#"+id);
@@ -1016,66 +1029,28 @@ function renderExportInfo(){
 
 function renderPrivacyPolicy(){
  $("modal-title").textContent="Privacy Policy";
- mbody.innerHTML=`
-  <p class="sm">Effective date: October 11, 2026</p>
-  <p><strong>WHWai is intended to be a private chat service.</strong> We Hate Windows (WHW) intends to use conversation data only as needed to provide WHWai, generate requested AI responses and chat titles, and save, restore, and sync conversations between your devices. We do not intend to sell conversations or use their content for advertising, profiling, or unrelated purposes. This policy describes the service as currently built; it does not promise that every copy can always be erased from every system.</p>
-
-  <h3>What Not to Share</h3>
-  <p>Please do not type personal or sensitive information into WHWai, such as passwords, home addresses, phone numbers, or financial, health, or school-record details. Your messages are sent to an AI provider. If you enable sync, your chats are also stored by the WHWai backend.</p>
-
-  <h3>Information Stored by WHWai</h3>
-  <p><strong>On your device:</strong> WHWai stores conversations, replies, chat titles, and related chat information in your browser so your chats can appear when you return. Sync settings, a sync key, and a random browser-installation identifier used to distinguish sync devices may also be stored. The identifier is used for sync-device management, not advertising or cross-service tracking.</p>
-  <p><strong>When sync is enabled:</strong> WHWai sends conversation data and synchronization information to its backend, which stores the synced data in a Google Sheets spreadsheet connected to Google Apps Script. WHWai does not currently require a personal account; a six-digit sync key is used to access the synced copy. The browser-installation identifier is stored with the synced record so WHWai can count browsers that have synced with that key. A device record stops counting after 30 days without a successful sync and is dropped the next time the synced copy is updated, or sooner if that browser turns sync off.</p>
-  <p><strong>The sync key is short.</strong> It is a six-digit number. WHWai limits repeated incorrect attempts, but the key provides much less protection than a strong password. Anyone who obtains or guesses it may be able to read the associated synced chats or request deletion of that copy. Keep it private and do not sync sensitive conversations.</p>
-  <p>The service also uses limited operational information, such as temporary request counters to limit excessive requests and help prevent abuse.</p>
-
-  <h3>Hosting and Third-Party Services</h3>
-  <p>WHWai is displayed on a We Hate Windows website built with Google Sites. The chat page is served from GitHub Pages and loads the Inter font from Google Fonts. Its backend runs on Google Apps Script and Google Sheets, and AI replies come from Groq. These services may receive standard connection information such as IP address, browser/device details, and request times, and handle it under their own policies. The WHWai chat page does not include its own advertising or analytics tools. The surrounding Google Sites website may use Google-provided cookies or measurement tools outside WHWai's control.</p>
-
-  <h3>How WHW Uses Conversation Data</h3>
-  <p>Conversation content is used to show chats, sync and restore them between devices, generate requested AI replies, and generate chat titles. Relevant recent messages are sent to the AI provider for those functions. Data may also be accessed when reasonably necessary to respond to a support request, maintain the service, investigate a security issue, or comply with law.</p>
-  <p>Beyond providing and supporting these functions, WHW has no intention of using conversation content for other purposes. WHW does not intend to use it for advertising, profiling, selling, or training its own models.</p>
-
-  <h3>Who Can Access Synced Conversations</h3>
-  <p>WHW intends to restrict access to server-stored conversations to a small number of authorized personnel, only when reasonably necessary for support, a sync-key issue, service operation, or security response. People with administrative or editor access to the Apps Script project or underlying spreadsheet may also be technically able to access stored data. WHWai does not maintain a user account directory linking a person's identity to a sync key, so identifying a particular synced copy or recovering a lost key may not always be possible.</p>
-
-  <h3>AI Provider and Groq</h3>
-  <p>WHWai sends your prompt and recent conversation context (up to the latest 14 messages of the chat) to the Groq API to generate responses. Conversation context is also sent to Groq for chat-title generation. WHWai currently uses OpenAI's open-weight gpt-oss models on Groq infrastructure; WHWai sends requests to Groq, not directly to OpenAI. The backend configuration may change, and provider practices may change with it.</p>
-  <p>According to Groq's documentation checked October 11, 2026, Groq always collects usage metadata that does not contain prompts or responses. By default it does not retain customer data for ordinary inference requests, but it may temporarily log inputs and outputs to troubleshoot reliability problems or investigate suspected abuse. Those logs may be retained for up to 30 days unless the law requires longer or Zero Data Retention is enabled. Groq says customer data retained for these purposes is stored in the United States. Groq's Services Agreement, last modified June 22, 2026, says inputs and outputs are not used to train or fine-tune models unless the customer explicitly grants permission or instructs Groq to do so. WHWai's source code cannot confirm whether Zero Data Retention is enabled for its Groq account, so do not assume it is.</p>
-  <p>Pressing Stop in WHWai stops the reply from appearing in the chat, but the request may already have been sent to and processed by Groq.</p>
-  <p>Read <a href="https://console.groq.com/docs/your-data" target="_blank" rel="noopener noreferrer">Groq's API data and retention documentation</a> and the <a href="https://console.groq.com/docs/legal/services-agreement" target="_blank" rel="noopener noreferrer">Groq Services Agreement</a> for current details. Groq controls its policies, not WHW.</p>
-
-  <h3>Downloading Your Data</h3>
-  <p>Settings has a Manage your data section with an export-information screen. WHWai creates a ZIP in the current browser containing chats.json, one readable text file for each chat, and a README. It uses this browser's locally stored chats, not a fresh copy from the server, so local data may differ from the shared copy until sync completes. The six-digit sync key and browser-installation identifier are not exported. The JSON contains chat data and one field confirming that the sync key is not included; explanations and limitations are in the menu and README. A 10-minute browser-side cooldown appears in the download button after an export is prepared. Keep ZIPs private; deleting chats in WHWai does not delete downloaded copies.</p>
-
-  <h3>Retention and Deletion</h3>
-  <p>Chats stored only on a device remain in that browser until deleted in WHWai or the relevant browser data is cleared. Deleting an individual chat removes it from the current list; sync may retain a small deletion marker containing the chat ID and a timestamp, not the message content, so that chat is not restored from another device.</p>
-  <p><strong>Delete data on this device</strong> removes the local WHWai chat store and local sync key, and attempts to disconnect this browser from the sync-device list. It does not delete the server copy or local chats on other devices. If the browser cannot reach the server, the device record may remain until it becomes stale.</p>
-  <p><strong>Manage your data → Server copy only</strong> removes the active synced record from the WHWai spreadsheet and disconnects the sync key on the current browser if the server request succeeds. Other devices keep their local chats, but the old key no longer works when they next try to sync.</p>
-  <p><strong>Manage your data → Server copy and other tracked devices</strong> replaces the server's active chat record with a temporary wipe marker containing pending browser identifiers but no chat contents. The current browser disconnects and keeps its local chats. Other tracked browsers are asked to clear their local WHWai chat store and disconnect the next time they successfully sync. The server cannot remotely contact a browser that is offline. Only browsers tracked as active within the 30-day device window are included, and each must reconnect before the wipe marker expires; disconnected devices, untracked devices, or browsers that do not return within that window may keep local chats. When all tracked browsers check in, the marker is deleted. It expires after 30 days; the backend attempts to set up a daily cleanup trigger to remove expired markers, and also checks expiry when a marker's key is accessed. If trigger setup fails and nobody accesses the old key after expiry, a content-free marker could remain in the sheet until a later cleanup.</p>
-  <p><strong>Manage your data → Delete everything</strong> combines the server-and-other-tracked-device deletion with deleting the current browser's local WHWai chats and local sync information. Because the server cannot push to devices, this does not guarantee immediate deletion on an offline or untracked device. In a connected browser, this wipe clears all WHWai chats stored locally, including any chats not yet synced.</p>
-  <p>The server deletion code removes active rows from the spreadsheet. It does not erase Google Sheets version history, local backups, downloaded exports, provider retention logs, operational logs, or copies held by Google, Groq, or other third parties. Deleting in WHWai cannot guarantee instant and permanent deletion from every system.</p>
-
-  <h3>Security and Response to Incidents</h3>
-  <p>WHW intends to handle conversations as private data and take reasonable steps to protect stored information. No online service or storage system can be guaranteed completely secure. If WHW becomes aware of signs of a data breach or another serious security issue, we will do our best to investigate promptly and take appropriate protective steps. Depending on the circumstances, steps may include restricting access, disabling sync or affected features, and deleting active server-stored conversation data if necessary to reduce risk. This may permanently remove synced conversations and may not remove local copies, spreadsheet history, or data retained by third parties. WHW cannot guarantee that every incident will be prevented or every copy recovered or erased.</p>
-
-  <h3>Privacy Requests and Support</h3>
-  <p>For privacy questions, data requests, sync-key issues, or other assistance, contact We Hate Windows Support at <a href="mailto:wehatewindows.help@gmail.com">wehatewindows.help@gmail.com</a>. Avoid sending sensitive conversation content or your sync key in an ordinary email unless support provides an appropriate secure method.</p>
-
-  <h3>Policy Updates</h3>
-  <p>This policy may be updated if WHWai's features, providers, security practices, or data handling change. The effective date above shows when this version was last updated. WHW will aim to keep this policy consistent with the actual service, but provider practices and platform retention controls may be outside WHW's control.</p>
-  <div class="btns"><button class="pbtn" id="privacy-back">Back to Settings</button></div>`;
+ mbody.innerHTML=`<div class="policy-takeaways"><strong>Privacy at a glance</strong><ul><li>Chats stay in this browser unless you enable sync.</li><li>Synced chats are stored in Google Sheets; Groq processes prompts to generate replies and titles.</li><li>WHW does not intend to sell chats, use them for ads, or train its own models on them.</li><li>Deleting data in WHWai cannot erase downloaded copies or guarantee instant removal from every third-party system.</li></ul></div>
+ <p class="sm">Effective date: October 11, 2026</p>
+ <h3>What WHWai stores</h3><p>Chats, replies, titles, and related chat data are stored in your browser so they remain available when you return. If you enable sync, WHWai sends chat data to its Google Apps Script backend, which stores it in Google Sheets. A six-digit sync key connects devices; a random browser identifier helps count and manage synced devices. Keep the key private and avoid sharing sensitive information.</p>
+ <h3>How data is used</h3><p>WHWai uses conversations to display chats, sync and restore them, and generate requested replies and titles. Authorized WHW personnel may access synced data when reasonably needed for support, service maintenance, security response, or legal compliance. WHW does not intend to sell conversations, use them for advertising or profiling, or train its own models on them.</p>
+ <h3>Services and AI processing</h3><p>WHWai is displayed through Google Sites; its page is hosted on GitHub Pages, loads Inter from Google Fonts, and uses Google Apps Script, Google Sheets, and Groq. These providers may receive connection information and process data under their own policies. WHWai sends prompts and recent conversation context (up to 14 messages) to Groq for responses and title generation. The current models are OpenAI open-weight gpt-oss models running on Groq; requests go to Groq, not directly to OpenAI.</p>
+ <p>Groq says it collects usage metadata and generally does not retain ordinary inference prompts and outputs by default, but may temporarily log inputs and outputs for reliability or suspected-abuse investigations for up to 30 days. WHWai's code cannot verify whether Zero Data Retention is enabled for its account. See <a href="https://console.groq.com/docs/your-data" target="_blank" rel="noopener noreferrer">Groq's data documentation</a> and <a href="https://console.groq.com/docs/legal/services-agreement" target="_blank" rel="noopener noreferrer">Services Agreement</a>.</p>
+ <h3>Sync, deletion, and downloads</h3><p>Chats saved only on a device remain there until deleted or browser data is cleared. Sync deletion can remove the server copy and, where selected, mark tracked devices to erase local chats the next time they reconnect. The server cannot immediately contact offline devices, and devices that are untracked or do not reconnect may retain local data. Turning sync off on one device does not delete the server copy.</p>
+ <p>Export creates a ZIP from this browser's local chats. The sync key and browser identifier are not included. Keep exports private; deleting chats in WHWai does not delete ZIPs or extracted files. Server deletion does not erase Google Sheets version history or data that third parties may retain.</p>
+ <h3>Security and contact</h3><p>WHW intends to take reasonable steps to protect conversation data, but no online service can guarantee complete security. If a serious security issue is identified, WHW will investigate and take appropriate protective steps, which may include disabling sync or deleting active server data. For privacy questions or support, contact <a href="mailto:wehatewindows.help@gmail.com">wehatewindows.help@gmail.com</a>.</p>
+ <p class="sm">This policy may change as WHWai's features, providers, or data practices change.</p><div class="btns"><button class="pbtn" id="privacy-back">Back to Settings</button></div>`;
  $("privacy-back").onclick=renderSettings;
 }
 function closeSettings(){if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}modal.hidden=true;revealNewKeyOnThisOpen=false;revealSyncKey=false}
-$("gear").onclick=()=>{smsg="";revealNewKeyOnThisOpen=false;revealSyncKey=false;if(S.key)S.deviceCount=0;renderSettings();modal.hidden=false;if(S.key)doSync()};
+$("gear").onclick=()=>{smsg="";revealNewKeyOnThisOpen=false;revealSyncKey=false;renderSettings();modal.hidden=false;if(S.key){lockSettingsForSync(true);doSync("Synced just now.").finally(()=>lockSettingsForSync(false))}};
 $("mx").onclick=closeSettings;
+$("sync-indicator").onclick=()=>{if(S.key&&!syncing&&!busy)doSync("Synced just now.")};
 modal.onclick=e=>{if(e.target===modal)closeSettings()};
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&S.key&&!busy)doSync()});
 setInterval(()=>{document.querySelectorAll(".bar span,.cm").forEach(s=>s.textContent=ago(+s.dataset.t))},1000);
 const fr=document.querySelector(".frame");fr.classList.add("no-anim");fr.classList.toggle("collapsed",!!S.col);
 requestAnimationFrame(()=>requestAnimationFrame(()=>fr.classList.remove("no-anim")));
-renderList();renderChat();
+renderList();renderChat();updateSyncIndicator();
 if(S.key)doSync();
 </script>
 </body>
