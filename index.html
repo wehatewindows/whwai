@@ -89,7 +89,7 @@ svg{display:block}
 .key button{border:0;background:none;cursor:pointer;padding:6px;border-radius:8px;display:grid;place-items:center}
 .btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
 .pbtn{border:0;background:var(--chip);border-radius:12px;padding:8px 14px;cursor:pointer;font-weight:500;transition:background .15s}
-.pbtn:hover{background:#cfcfcf}.pbtn.danger{color:#d93b3b}
+.pbtn:hover{background:#cfcfcf}.pbtn.danger{color:#d93b3b}.privacy-row{margin-top:10px}.policy-placeholder{background:#f3f3f3;border-radius:12px;padding:10px 12px;font-size:13px;color:#555}
 .join{display:flex;gap:8px;margin-bottom:6px}.join input{flex:1;min-width:0;border:0;outline:0;background:var(--bub);border-radius:12px;padding:9px 12px;font:inherit;letter-spacing:.1em}
 .no-anim,.no-anim *{transition:none!important}
 button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
@@ -201,7 +201,7 @@ html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(
   <div class="cmenu" id="cmenu" role="menu" hidden><button id="cren" role="menuitem"></button><button id="cpin" role="menuitem"></button><button id="cdel" class="danger" role="menuitem"></button></div>
  </aside>
  <div class="scrim" id="scrim"></div>
- <div class="modal" id="modal" hidden><div class="mcard" role="dialog" aria-label="Settings"><div class="mh"><b>Settings</b><button id="mx" aria-label="Close">&times;</button></div><div id="mbody"></div></div></div>
+ <div class="modal" id="modal" hidden><div class="mcard" role="dialog" aria-label="Settings"><div class="mh"><b id="modal-title">Settings</b><button id="mx" aria-label="Close">&times;</button></div><div id="mbody"></div></div></div>
  <section class="main">
   <button class="expand" id="expand" title="Show sidebar" aria-label="Show sidebar"></button>
   <div class="mbar"><button class="menubtn" id="mopen" title="Open chats and settings" aria-label="Open chats and settings" aria-expanded="false"></button><span class="mt">WHW<b>ai</b></span><button class="mnew" id="mnew" title="New chat" aria-label="New chat"></button></div>
@@ -215,7 +215,7 @@ html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(
      <button class="model" id="model" aria-haspopup="menu" aria-expanded="false"></button>
      <div class="pop" id="pop" role="menu" hidden>
       <div class="ph">Model</div>
-      <button class="mi" id="mi" role="menuitemradio" aria-checked="true"><div>Aries 1<small>Powered by OpenAI</small></div><i id="tick"></i></button>
+      <button class="mi" id="mi" role="menuitemradio" aria-checked="true"><div>Aries<small>Powered by OpenAI</small></div><i id="tick"></i></button>
      </div>
     </div>
    </div>
@@ -241,7 +241,7 @@ const I={
  chev:ic('<path d="M6 9l6 6 6-6"/>',14,2.4)
 };
 $("new").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',16,2.6);$("clip").innerHTML=I.clip;$("send").innerHTML=I.send;$("tick").innerHTML=I.check;
-$("model").innerHTML='<span class="sep">|</span><span>Aries 1</span>'+I.chev;
+$("model").innerHTML='<span class="sep">|</span><span>Aries</span>'+I.chev;
 
 let mem=null;
 const store={get(){try{return localStorage.getItem(KEY)}catch(e){return mem}},set(v){mem=v;try{localStorage.setItem(KEY,v)}catch(e){}}};
@@ -254,7 +254,7 @@ const RULES=[
  [/resume|cv|job/,`Happy to review it. Good resumes lead with results, so for each job, swap duties for outcomes ("cut wait times by 20%" beats "answered phones"). Paste your resume and tell me the role you're aiming for.`],
  [/japan|trip|travel|tokyo|kyoto/,`Japan is great for a first visit of 10 days or so:\n\n- **Tokyo (4 nights):** neighborhoods, food, day trips.\n- **Kyoto (3 nights):** temples and gardens.\n- **Osaka (2 nights):** street food and nightlife.\n\nWhen are you thinking of going?`],
  [/stock|invest|money/,`I can explain how stocks and funds work, but I can't tell you what to buy. Tell me your time horizon and how much risk you're comfortable with and I'll lay out the common options.`],
- [/^(hi|hello|hey)\b|who are you|your name/,`Hi! I'm Aries 1, the model behind WHWai. Ask me about marketing, meal plans, code, or trip planning.`]
+ [/^(hi|hello|hey)\b|who are you|your name/,`Hi! I'm Aries, the model behind WHWai. Ask me about marketing, meal plans, code, or trip planning.`]
 ];
 const FALLBACK=`That's an interesting question. This demo only knows a few topics, but the real version will answer anything. Try asking about **marketing**, **meal prep**, **Python**, **resumes**, or **a trip**.`;
 
@@ -510,14 +510,15 @@ async function doSync(msg){
 function syncSoon(){clearTimeout(st);st=setTimeout(()=>{busy?syncSoon():doSync()},2500)}
 function setMsg(t){smsg=t;const m=mbody.querySelector("#s-msg");if(m)m.textContent=t}
 function renderSettings(){
+ $("modal-title").textContent="Settings";
  const on=!!S.key,k=S.key||"";
  mbody.innerHTML=on?
  '<h3>Sync across devices</h3><p>Sync is on. Your key:</p><div class="key"><span>'+k.replace(/(\d{3})(?=\d)/g,"$1 ")+'</span><button id="s-copy" title="Copy key" aria-label="Copy key">'+I.copy+'</button></div><p class="sm">On another device, open Settings and enter this key under Connect. Anyone who has this key can read your synced chats, so keep it private.</p><p class="sm">'+(S.last?"Last synced "+ago(S.last):"Not synced yet")+'</p><div class="btns"><button class="pbtn" id="s-now">Sync now</button><button class="pbtn" id="s-off">Turn off on this device</button><button class="pbtn danger" id="s-del">Delete synced copy</button></div>':
  '<h3>Sync across devices</h3><p>Your chats stay on this device until you turn sync on. With sync on, a copy is stored on the WHWai server so you can open your chats on other devices. If you have lost your key or need assistance, please contact We Hate Windows Support.</p><div class="btns"><button class="pbtn" id="s-on">Turn on sync</button></div><p class="sm">Already have a key?</p><div class="join"><input id="s-key" inputmode="numeric" autocomplete="off" maxlength="'+KEYLEN+'" placeholder="'+KEYLEN+'-digit key" aria-label="Sync key"><button class="pbtn" id="s-join">Connect</button></div>';
- mbody.insertAdjacentHTML("beforeend",'<p class="sm" id="s-msg" role="status"></p>');
- if(document.documentElement.classList.contains("embedded"))mbody.insertAdjacentHTML("beforeend",'<p class="sm"><a href="'+location.href.split("#")[0]+'" target="_blank" rel="noopener">Open WHWai full screen</a></p>');
+ mbody.insertAdjacentHTML("beforeend",'<p class="sm" id="s-msg" role="status"></p><div class="btns privacy-row"><button class="pbtn" id="privacy-open">Privacy Policy</button></div>');
  setMsg(smsg);
  const q=id=>mbody.querySelector("#"+id);
+ q("privacy-open").onclick=renderPrivacyPolicy;
  if(on){
   q("s-copy").onclick=()=>copy(S.key,q("s-copy"));
   q("s-now").onclick=()=>{setMsg("Syncing…");doSync("Synced just now.")};
@@ -539,6 +540,26 @@ function renderSettings(){
    try{const j=await post({action:"sync",key:k,...clean()});S.key=k;applyRemote(j);S.last=Date.now();save(1);smsg="Connected. Your chats are now synced.";renderSettings()}catch(e){setMsg(errText(e))}
   };
  }
+}
+function renderPrivacyPolicy(){
+ $("modal-title").textContent="Privacy Policy";
+ mbody.innerHTML=`
+  <p class="policy-placeholder"><strong>PLACEHOLDER TEXT — NOT A FINAL PRIVACY POLICY.</strong> Replace the bracketed text below with accurate information about WHWai before publishing.</p>
+  <p class="sm">Last updated: [Month Day, Year]</p>
+  <h3>Information We Collect</h3>
+  <p>[Describe what information WHWai collects, such as messages, chat titles, sync information, or technical data. Remove anything that does not apply.]</p>
+  <h3>How Information Is Used</h3>
+  <p>[Explain how collected information is used to operate, maintain, secure, and improve WHWai.]</p>
+  <h3>Chat Storage and Sync</h3>
+  <p>[Explain where chats are stored, what happens when sync is enabled, how sync keys work, and how users can delete local or synced data.]</p>
+  <h3>Sharing and Third-Party Services</h3>
+  <p>[Identify any service providers or third parties that receive information, including AI or hosting providers, and explain why information is shared.]</p>
+  <h3>Data Retention and Security</h3>
+  <p>[Describe how long information is kept and the safeguards used to protect it. Do not promise protections that have not been implemented.]</p>
+  <h3>Your Choices and Contact</h3>
+  <p>[Explain how users can access or delete information, ask privacy questions, or contact the person or organization responsible for WHWai. Add a valid contact address.]</p>
+  <div class="btns"><button class="pbtn" id="privacy-back">Back to Settings</button></div>`;
+ $("privacy-back").onclick=renderSettings;
 }
 $("gear").onclick=()=>{smsg="";renderSettings();modal.hidden=false};
 $("mx").onclick=()=>{modal.hidden=true};
