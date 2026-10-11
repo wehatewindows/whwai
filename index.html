@@ -147,6 +147,127 @@ button,.chat{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
  .side{background:rgba(238,238,242,.94);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px)}
  .empty h2{font-size:32px}
 }
+
+/* ---------- desktop glow + Google Sites responsive hardening ---------- */
+html,body{width:100%;min-width:0;height:100%;min-height:100%;}
+body{overflow:hidden;}
+.frame{min-width:0;min-height:420px;}
+.main{min-height:0;min-width:0;height:100%;}
+.scroll{min-height:0;min-width:0;}
+.input,.note{flex-shrink:0;}
+.field{
+  box-shadow:-6px 4px 20px rgba(106,160,255,.24),
+             6px 4px 20px rgba(244,114,182,.16),
+             0 -4px 20px rgba(167,139,250,.15);
+  transition:box-shadow .25s ease,background .2s ease;
+}
+.field:focus-within{
+  box-shadow:-6px 4px 24px rgba(106,160,255,.34),
+             6px 4px 24px rgba(244,114,182,.23),
+             0 -4px 24px rgba(167,139,250,.22);
+}
+.busy .field{animation:glow 2.4s ease-in-out infinite;}
+.msg.u{background:linear-gradient(180deg,#7fa9ff,#5b8df0);color:#fff;}
+.empty p{margin:0;color:var(--mute);}
+.chips,.chip{display:none!important;}
+.menubtn{display:none;}
+
+@media (max-width:640px){
+  html,body{height:100%;min-height:100%;}
+  body{
+    height:100dvh;
+    min-height:320px;
+    padding:0;
+    overflow:hidden;
+    background:radial-gradient(120% 50% at 50% 108%,rgba(120,150,255,.2),transparent 70%),#fff;
+  }
+  .frame{
+    width:100%;height:100%;min-height:320px;
+    border:0;border-radius:0;padding:0;gap:0;overflow:hidden;
+    background:transparent;
+  }
+  .main{width:100%;height:100%;min-height:0;padding:0;}
+  .mbar{display:flex;}
+  .menubtn{
+    display:grid;place-items:center;position:absolute;left:12px;bottom:9px;
+    width:36px;height:36px;padding:0;border:0;border-radius:50%;
+    background:rgba(0,0,0,.055);color:#222;cursor:pointer;
+  }
+  .menubtn:hover,.mnew:hover{background:rgba(0,0,0,.10);}
+  .mt{pointer-events:none;}
+  .mnew{bottom:9px;width:36px;height:36px;}
+  /* Let the message list use the iframe's actual available height. */
+  .scroll{
+    flex:1;min-height:0;min-width:0;
+    padding:calc(64px + env(safe-area-inset-top)) 12px 12px;
+    gap:10px;overscroll-behavior:contain;
+  }
+  .msg{max-width:90%;min-width:0;}
+  .msg.u{max-width:90%;padding:10px 15px;border-radius:20px;}
+  .input{flex-shrink:0;min-width:0;gap:7px;margin:0 10px;padding-top:5px;}
+  .field{min-width:0;min-height:48px;padding:0 7px 0 15px;border-radius:24px;}
+  .field textarea{min-width:0;width:0;flex:1;font-size:16px;line-height:22px;padding:12px 0;max-height:112px;height:48px;}
+  .mwrap{flex:none;margin-left:2px;}
+  .model{max-width:94px;overflow:hidden;font-size:12.5px;padding:6px 3px;gap:3px;}
+  .model span:not(.sep){overflow:hidden;text-overflow:ellipsis;}
+  .round{width:42px;height:42px;}
+  .note{flex-shrink:0;font-size:11.5px;text-align:center;margin:5px 8px calc(7px + env(safe-area-inset-bottom));}
+  .orb{width:44px;height:44px;right:12px;bottom:calc(100% + 12px);}
+  /* Mobile chat navigation is a true full-screen view, not a narrow drawer. */
+  .side{
+    position:absolute;inset:0;z-index:12;
+    width:100%;height:100%;min-width:0;max-width:none;
+    border-radius:0;padding:calc(14px + env(safe-area-inset-top)) 16px calc(118px + env(safe-area-inset-bottom));
+    background:#eeeef2;box-shadow:none;
+    transform:translateX(-101%);visibility:hidden;
+    transition:transform .24s ease,visibility 0s .24s;
+  }
+  .side.open{transform:translateX(0);visibility:visible;transition:transform .24s ease;}
+  .side .brand{flex:none;margin-bottom:12px;padding:0 2px 12px;}
+  .side .brand h1{font-size:25px;}
+  .side .logo{background:rgba(0,0,0,.07)!important;background-image:none!important;}
+  .side.open #logo::after{content:"×";display:block;font-size:27px;line-height:1;color:#333;}
+  .side .list{flex:1;min-height:0;overflow:auto;padding:0 0 14px;}
+  .side .hint{padding:8px 6px;}
+  .side .chat{padding-top:12px;padding-bottom:12px;}
+  .side .more{opacity:1;}
+  .side .cmenu{position:absolute;right:16px;z-index:14;}
+  .side .new,.side .gear{
+    position:absolute;left:16px;right:16px;width:calc(100% - 32px);height:44px;
+    display:flex;align-items:center;justify-content:flex-start;gap:10px;
+    padding:0 14px;border:0;border-radius:14px;color:#222;
+    background:#dedee5;box-shadow:none;
+  }
+  .side .new{bottom:calc(64px + env(safe-area-inset-bottom));}
+  .side .gear{bottom:calc(12px + env(safe-area-inset-bottom));}
+  .side .new::after{content:"New chat";font-size:15px;font-weight:500;}
+  .side .gear::after{content:"Settings";font-size:15px;font-weight:500;}
+  .side .new:hover,.side .gear:hover{background:#d4d4dc;}
+  .scrim{display:none!important;}
+  .expand{display:none!important;}
+  .modal{position:absolute;inset:0;padding:10px;}
+  .mcard{width:min(420px,100%);max-height:calc(100% - 20px);padding:16px;}
+  .pop{width:min(240px,calc(100vw - 24px));right:-2px;}
+  .bar{max-width:100%;}
+  .bar span{margin-left:12px;}
+  .empty{max-width:100%;padding:12px;}
+  .empty h2{font-size:30px;}
+}
+@media (max-width:360px){
+  .input{margin-left:6px;margin-right:6px;gap:5px;}
+  .round{width:38px;height:38px;}
+  .model{max-width:82px;font-size:12px;}
+  .field{padding-left:12px;}
+  .scroll{padding-left:9px;padding-right:9px;}
+}
+@media (max-height:480px) and (max-width:640px){
+  .scroll{padding-top:calc(56px + env(safe-area-inset-top));}
+  .mbar{height:calc(46px + env(safe-area-inset-top));}
+  .menubtn,.mnew{bottom:5px;width:32px;height:32px;}
+  .note{margin-top:3px;margin-bottom:calc(4px + env(safe-area-inset-bottom));}
+  .side{padding-bottom:calc(112px + env(safe-area-inset-bottom));}
+}
+
 </style>
 </head>
 <body>
@@ -162,7 +283,7 @@ button,.chat{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
  <div class="modal" id="modal" hidden><div class="mcard" role="dialog" aria-label="Settings"><div class="mh"><b>Settings</b><button id="mx" aria-label="Close">&times;</button></div><div id="mbody"></div></div></div>
  <section class="main">
   <button class="expand" id="expand" title="Show sidebar" aria-label="Show sidebar"></button>
-  <div class="mbar"><span class="mt">WHW<b>ai</b></span><button class="mnew" id="mnew" title="New chat" aria-label="New chat"></button></div>
+  <div class="mbar"><button class="menubtn" id="mopen" title="Open chats and settings" aria-label="Open chats and settings" aria-expanded="false"></button><span class="mt">WHW<b>ai</b></span><button class="mnew" id="mnew" title="New chat" aria-label="New chat"></button></div>
   <div class="scroll" id="chat"></div>
   <div class="toast" id="toast" role="status"></div>
   <div class="input">
@@ -298,9 +419,10 @@ function closeMenu(){
 }
 function renderChat(fresh){
  const c=C();chatEl.innerHTML="";
- if(!c||!c.m.length){const SUG=["Explain something simply","Help me plan a trip","Help me fix my code","Write a short message for me"];
-  chatEl.innerHTML='<div class="empty"><h2>WHW<b>ai</b></h2>Ask anything to get started.<div class="chips">'+SUG.map(t=>'<button class="chip">'+t+'</button>').join("")+'</div></div>';
-  chatEl.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{ta.value=b.textContent;fit();send()});return}
+ if(!c||!c.m.length){
+  chatEl.innerHTML='<div class="empty"><h2>WHW<b>ai</b></h2><p>Ask anything to get started.</p></div>';
+  return;
+ }
  c.m.forEach((m,i)=>{
   const d=document.createElement("div");d.className="msg"+(m.r==="u"?" u":"");
   if(m.r==="u")d.textContent=m.x;else d.innerHTML=md(m.x);
@@ -397,7 +519,15 @@ function delChat(id){
  if(S.cur===id)S.cur=null;
  save();renderList();renderChat();
 }
-function side(open){$("side").classList.toggle("open",open);$("scrim").classList.toggle("show",open)}
+function side(open){
+ const mobile=mob();
+ $("side").classList.toggle("open",open);
+ $("scrim").classList.toggle("show",open&&!mobile);
+ const menuButton=$("mopen");
+ if(menuButton)menuButton.setAttribute("aria-expanded",String(open&&mobile));
+ const logoButton=$("logo");
+ if(mobile){logoButton.setAttribute("aria-label",open?"Close chats and settings":"Open chats and settings");logoButton.title=open?"Close chats and settings":"Open chats and settings";}
+}
 function fit(){ta.style.height="auto";ta.style.height=Math.min(ta.scrollHeight,120)+"px"}
 function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(toast.h);toast.h=setTimeout(()=>e.classList.remove("show"),2200)}
 function pop(open){$("pop").hidden=!open;$("model").setAttribute("aria-expanded",open)}
@@ -407,6 +537,8 @@ ta.addEventListener("input",fit);
 ta.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();send()}});
 $("new").onclick=newChat;
 const mob=()=>matchMedia("(max-width:640px)").matches;
+$("mopen").innerHTML=ic('<path d="M4 6h16M4 12h16M4 18h16"/>',20,2.1);
+$("mopen").onclick=()=>side(!$("side").classList.contains("open"));
 function collapse(c){S.col=c;document.querySelector(".frame").classList.toggle("collapsed",c);save()}
 $("logo").onclick=()=>mob()?side(false):collapse(true);
 $("expand").onclick=()=>mob()?side(true):collapse(false);
@@ -416,6 +548,7 @@ $("cdel").onclick=()=>{const id=mid;closeMenu();delChat(id)};
 list.addEventListener("scroll",closeMenu);
 document.addEventListener("click",e=>{if(!$("cmenu").contains(e.target))closeMenu()});
 $("scrim").onclick=()=>side(false);
+window.addEventListener("resize",()=>{if(!mob()){$("side").classList.remove("open");$("scrim").classList.remove("show");$("mopen").setAttribute("aria-expanded","false")}});
 $("clip").onclick=()=>toast("Attachments aren't available yet.");
 $("model").onclick=e=>{e.stopPropagation();pop($("pop").hidden)};
 $("mi").onclick=()=>pop(false);
