@@ -268,6 +268,62 @@ body{overflow:hidden;}
   .side{padding-bottom:calc(112px + env(safe-area-inset-bottom));}
 }
 
+
+/* ---------- Mobile embed breathing room for Google Sites + iOS browser UI ---------- */
+@media (max-width:640px){
+  html,body{
+    width:100%;
+    height:100%;
+    min-height:0;
+    overflow:hidden;
+  }
+  body{
+    /* The Google Sites page header can occupy the top of the embed on phones.
+       Keep the app below it and leave a visible buffer above Safari's bottom bar. */
+    height:100dvh;
+    min-height:320px;
+    box-sizing:border-box;
+    padding: max(88px, env(safe-area-inset-top, 0px)) 0 max(32px, env(safe-area-inset-bottom, 0px));
+    overflow:hidden;
+  }
+  .frame{
+    width:100%;
+    height:100%;
+    min-height:0;
+    max-height:100%;
+    padding:0;
+    border:0;
+    border-radius:0;
+    gap:0;
+    overflow:hidden;
+  }
+  .main{width:100%;height:100%;min-height:0;}
+  .mbar{
+    top:0;
+    height:52px;
+    padding-top:0;
+  }
+  .scroll{
+    min-height:0;
+    padding-top:calc(64px + env(safe-area-inset-top, 0px));
+    padding-bottom:12px;
+  }
+  .input{margin-left:10px;margin-right:10px;}
+  .note{
+    margin-top:7px;
+    margin-bottom:max(12px, env(safe-area-inset-bottom, 0px));
+    padding:0 8px;
+  }
+  /* Keep the mobile menu and settings actions inside the app's safe visible area. */
+  .side{
+    top:0;bottom:0;height:100%;
+    padding-top:max(14px, env(safe-area-inset-top, 0px));
+    padding-bottom:max(118px, calc(32px + env(safe-area-inset-bottom, 0px)));
+  }
+  .side .new{bottom:max(64px, calc(64px + env(safe-area-inset-bottom, 0px)));}
+  .side .gear{bottom:max(12px, calc(12px + env(safe-area-inset-bottom, 0px)));}
+}
+
 </style>
 </head>
 <body>
