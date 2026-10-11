@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>WHWai</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -93,259 +93,100 @@ svg{display:block}
 .no-anim,.no-anim *{transition:none!important}
 button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 @media (min-width:641px){.frame.collapsed .side{margin-left:calc(-1 * var(--sw) - 16px);opacity:0;visibility:hidden;transition:margin-left .32s cubic-bezier(.4,0,.2,1),opacity .2s ease,visibility 0s .32s}.frame.collapsed .expand{opacity:1;pointer-events:auto;transition:opacity .25s ease .15s}.frame.collapsed .scroll{padding-top:50px}}
-@media (max-width:640px){
- body{padding:6px}.frame{border-width:3px;border-radius:24px;padding:8px}
- .side{position:absolute;z-index:6;left:8px;top:8px;bottom:8px;width:min(260px,82%);transform:translateX(-110%);visibility:hidden;transition:transform .25s ease,visibility 0s .25s;box-shadow:0 8px 30px rgba(0,0,0,.25)}
- .side.open{transform:none;visibility:visible;transition:transform .25s ease}
- .scrim.show{display:block}.expand{opacity:1;pointer-events:auto}.scroll{padding-top:50px}.msg{max-width:94%}
- .orb{width:54px;height:54px;right:24px}.bar span{margin-left:24px}.field textarea{font-size:16px}
-}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @supports (height:100dvh){html,body{height:100dvh}}
 button,.chat{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .model .sep{margin-right:1px}
 @media (hover:none){.more{opacity:1}.chat:hover{background:var(--chip)}.chat.on:hover{background:var(--sel)}}
-@media (max-width:640px){
- body{padding:4px}
- .frame{min-height:0;border-width:2px;border-radius:20px;padding:6px}
- .scroll{padding:50px 4px 84px;gap:12px}
- .msg{max-width:92%}.msg.u{padding:11px 18px}
- .input{gap:6px}
- .field{min-height:46px;padding:0 6px 0 16px;border-radius:23px}
- .field textarea{padding:12px 0;height:46px}
- #clip{display:none}
- .round{width:44px;height:44px}
- .model{padding:6px 4px;font-size:13.5px}.model .sep{display:none}
- .orb{width:46px;height:46px;right:16px;bottom:calc(100% + 14px)}
- .pop{width:min(240px,calc(100vw - 32px))}
- .note{font-size:12px;margin:6px 0 0 6px}
- .bar span{margin-left:16px;font-size:12px}
- .mcard{padding:16px}.key{font-size:22px}
-}
-.mbar{display:none}
-.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:18px}
-.chip{border:0;background:var(--bub);border-radius:16px;padding:9px 14px;cursor:pointer;font-size:14px;color:var(--ink);transition:background .15s}
-.chip:hover{background:#e6e6e6}
 @keyframes glow{0%,100%{box-shadow:-6px 4px 20px rgba(106,160,255,.35),6px 4px 20px rgba(244,114,182,.22),0 -4px 20px rgba(167,139,250,.22)}50%{box-shadow:6px 6px 28px rgba(106,160,255,.5),-6px 2px 28px rgba(244,114,182,.38),0 -6px 26px rgba(251,191,36,.28)}}
+
+/* ---------- shared polish ---------- */
+html,body{width:100%;min-width:0}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{overflow:hidden}
+.frame{min-width:0}
+.main{min-height:0;min-width:0;height:100%}
+.scroll{min-height:0;min-width:0}
+.input,.note{flex-shrink:0}
+.field{box-shadow:-6px 4px 20px rgba(106,160,255,.24),6px 4px 20px rgba(244,114,182,.16),0 -4px 20px rgba(167,139,250,.15);transition:box-shadow .25s ease,background .2s ease}
+.field:focus-within{box-shadow:-6px 4px 24px rgba(106,160,255,.34),6px 4px 24px rgba(244,114,182,.23),0 -4px 24px rgba(167,139,250,.22)}
+.busy .field{animation:glow 2.4s ease-in-out infinite}
+.msg.u{background:linear-gradient(180deg,#7fa9ff,#5b8df0);color:#fff}
+.empty p{margin:0;color:var(--mute)}
+.mbar,.menubtn{display:none}
+
+/* ---------- PHONE LAYOUT: tune the numbers here ----------
+   --edge        side margin shared by EVERY element (top bar, messages, input, buttons)
+   --gap-top     space kept free above the app when it sits inside Google Sites
+                 (so the Sites header can't cover the top bar). Raise it if the top bar is
+                 hidden, lower it if there is too much blank space.
+   --gap-bottom  same, for Safari's bottom bar.
+   Opened directly (not inside Sites) these gaps shrink to just the phone's safe area. */
+:root{--edge:14px;--bar:52px;--gap-top:env(safe-area-inset-top,0px);--gap-bottom:env(safe-area-inset-bottom,0px)}
+html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(32px,env(safe-area-inset-bottom,0px))}
+
 @media (max-width:640px){
- body{padding:0;background:radial-gradient(120% 50% at 50% 108%,rgba(120,150,255,.2),transparent 70%),#fff}
- .frame{border:0;border-radius:0;padding:0;gap:0;background:transparent}
- .main{padding:0 0 0}
- .mbar{display:flex;align-items:center;justify-content:center;position:absolute;left:0;right:0;top:0;height:calc(52px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top);z-index:3;background:rgba(255,255,255,.74);-webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);border-bottom:1px solid rgba(0,0,0,.06)}
- .mt{font-size:17px;font-weight:500}.mt b{font-weight:700}
- .mnew{position:absolute;right:12px;bottom:9px;width:34px;height:34px;border:0;border-radius:50%;background:rgba(0,0,0,.06);display:grid;place-items:center;padding:0;cursor:pointer}
- .expand{left:12px;top:calc(9px + env(safe-area-inset-top));z-index:4}
- .scroll{padding:calc(64px + env(safe-area-inset-top)) 14px 72px;gap:10px}
- .msg{max-width:84%;background:#f0f0f3;border-radius:20px;padding:10px 15px}
+ body{height:100dvh;min-height:320px;padding:var(--gap-top) 0 var(--gap-bottom);background:radial-gradient(120% 50% at 50% 108%,rgba(120,150,255,.2),transparent 70%),#fff}
+ .frame{width:100%;height:100%;min-height:0;border:0;border-radius:0;padding:0;gap:0;background:transparent}
+ .main{width:100%;padding:0}
+ .expand,.scrim{display:none!important}
+
+ /* top bar: both buttons share the same edge and are exactly centered; title is centered on the screen */
+ .mbar{display:flex;align-items:center;justify-content:center;position:absolute;left:0;right:0;top:0;height:var(--bar);z-index:3;background:rgba(255,255,255,.74);-webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);border-bottom:1px solid rgba(0,0,0,.06)}
+ .mt{font-size:17px;font-weight:500;pointer-events:none}.mt b{font-weight:700}
+ .menubtn,.mnew{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;padding:0;border:0;border-radius:50%;background:rgba(0,0,0,.06);color:#222;display:grid;place-items:center;cursor:pointer;transition:background .15s}
+ .menubtn{left:var(--edge)}.mnew{right:var(--edge)}
+ .menubtn:hover,.mnew:hover{background:rgba(0,0,0,.1)}
+
+ /* messages */
+ .scroll{padding:calc(var(--bar) + 12px) var(--edge) 12px;gap:10px;overscroll-behavior:contain}
+ .msg{max-width:86%;min-width:0;background:#f0f0f3;border-radius:20px;padding:10px 15px}
  .msg.u{background:linear-gradient(180deg,#7fa9ff,#5b8df0);color:#fff;border-radius:20px;padding:10px 15px}
- .bar{background:none;padding:0 4px;margin-top:-6px}
- .input{margin:0 10px}
- .field{background:rgba(255,255,255,.88);-webkit-backdrop-filter:blur(20px) saturate(1.6);backdrop-filter:blur(20px) saturate(1.6);border:1px solid rgba(255,255,255,.95);min-height:48px;border-radius:24px;box-shadow:-6px 4px 20px rgba(106,160,255,.35),6px 4px 20px rgba(244,114,182,.22),0 -4px 20px rgba(167,139,250,.22)}
- .busy .field{animation:glow 2.4s ease-in-out infinite}
- .round{background:rgba(255,255,255,.88);box-shadow:0 2px 12px rgba(106,160,255,.25)}
- .note{text-align:center;margin:6px 0 calc(8px + env(safe-area-inset-bottom))}
- .side{background:rgba(238,238,242,.94);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px)}
- .empty h2{font-size:32px}
-}
+ .bar{background:none;padding:0 4px;margin-top:-6px;max-width:100%}.bar span{margin-left:12px;font-size:12px}
+ .empty{max-width:100%;padding:12px}.empty h2{font-size:30px}
 
-/* ---------- desktop glow + Google Sites responsive hardening ---------- */
-html,body{width:100%;min-width:0;height:100%;min-height:100%;}
-body{overflow:hidden;}
-.frame{min-width:0;min-height:420px;}
-.main{min-height:0;min-width:0;height:100%;}
-.scroll{min-height:0;min-width:0;}
-.input,.note{flex-shrink:0;}
-.field{
-  box-shadow:-6px 4px 20px rgba(106,160,255,.24),
-             6px 4px 20px rgba(244,114,182,.16),
-             0 -4px 20px rgba(167,139,250,.15);
-  transition:box-shadow .25s ease,background .2s ease;
-}
-.field:focus-within{
-  box-shadow:-6px 4px 24px rgba(106,160,255,.34),
-             6px 4px 24px rgba(244,114,182,.23),
-             0 -4px 24px rgba(167,139,250,.22);
-}
-.busy .field{animation:glow 2.4s ease-in-out infinite;}
-.msg.u{background:linear-gradient(180deg,#7fa9ff,#5b8df0);color:#fff;}
-.empty p{margin:0;color:var(--mute);}
-.chips,.chip{display:none!important;}
-.menubtn{display:none;}
+ /* input row: same side margin as everything else; orb lines up with the send button */
+ .input{margin:0 var(--edge);gap:8px;padding-top:6px;min-width:0}
+ .field{min-width:0;min-height:48px;padding:0 6px 0 16px;border-radius:24px;background:rgba(255,255,255,.88);-webkit-backdrop-filter:blur(20px) saturate(1.6);backdrop-filter:blur(20px) saturate(1.6);border:1px solid rgba(255,255,255,.95)}
+ .field textarea{min-width:0;width:0;flex:1;line-height:22px;padding:13px 0;max-height:112px;height:48px}
+ .mwrap{flex:none;margin-left:4px}
+ .model{max-width:96px;overflow:hidden;font-size:13px;padding:6px 4px;gap:3px}.model .sep{display:none}.model span{overflow:hidden;text-overflow:ellipsis}
+ #clip{display:none}
+ .round{width:44px;height:44px;margin-bottom:2px;background:rgba(255,255,255,.88);box-shadow:0 2px 12px rgba(106,160,255,.25)}
+ .orb{width:46px;height:46px;right:0;bottom:calc(100% + 12px)}
+ .pop{width:min(240px,calc(100vw - 2 * var(--edge)));right:0}
+ .note{text-align:center;font-size:12px;margin:6px var(--edge) 8px}
 
-@media (max-width:640px){
-  html,body{height:100%;min-height:100%;}
-  body{
-    height:100dvh;
-    min-height:320px;
-    padding:0;
-    overflow:hidden;
-    background:radial-gradient(120% 50% at 50% 108%,rgba(120,150,255,.2),transparent 70%),#fff;
-  }
-  .frame{
-    width:100%;height:100%;min-height:320px;
-    border:0;border-radius:0;padding:0;gap:0;overflow:hidden;
-    background:transparent;
-  }
-  .main{width:100%;height:100%;min-height:0;padding:0;}
-  .mbar{display:flex;}
-  .menubtn{
-    display:grid;place-items:center;position:absolute;left:12px;bottom:9px;
-    width:36px;height:36px;padding:0;border:0;border-radius:50%;
-    background:rgba(0,0,0,.055);color:#222;cursor:pointer;
-  }
-  .menubtn:hover,.mnew:hover{background:rgba(0,0,0,.10);}
-  .mt{pointer-events:none;}
-  .mnew{bottom:9px;width:36px;height:36px;}
-  /* Let the message list use the iframe's actual available height. */
-  .scroll{
-    flex:1;min-height:0;min-width:0;
-    padding:calc(64px + env(safe-area-inset-top)) 12px 12px;
-    gap:10px;overscroll-behavior:contain;
-  }
-  .msg{max-width:90%;min-width:0;}
-  .msg.u{max-width:90%;padding:10px 15px;border-radius:20px;}
-  .input{flex-shrink:0;min-width:0;gap:7px;margin:0 10px;padding-top:5px;}
-  .field{min-width:0;min-height:48px;padding:0 7px 0 15px;border-radius:24px;}
-  .field textarea{min-width:0;width:0;flex:1;font-size:16px;line-height:22px;padding:12px 0;max-height:112px;height:48px;}
-  .mwrap{flex:none;margin-left:2px;}
-  .model{max-width:94px;overflow:hidden;font-size:12.5px;padding:6px 3px;gap:3px;}
-  .model span:not(.sep){overflow:hidden;text-overflow:ellipsis;}
-  .round{width:42px;height:42px;}
-  .note{flex-shrink:0;font-size:11.5px;text-align:center;margin:5px 8px calc(7px + env(safe-area-inset-bottom));}
-  .orb{width:44px;height:44px;right:12px;bottom:calc(100% + 12px);}
-  /* Mobile chat navigation is a true full-screen view, not a narrow drawer. */
-  .side{
-    position:absolute;inset:0;z-index:12;
-    width:100%;height:100%;min-width:0;max-width:none;
-    border-radius:0;padding:calc(14px + env(safe-area-inset-top)) 16px calc(118px + env(safe-area-inset-bottom));
-    background:#eeeef2;box-shadow:none;
-    transform:translateX(-101%);visibility:hidden;
-    transition:transform .24s ease,visibility 0s .24s;
-  }
-  .side.open{transform:translateX(0);visibility:visible;transition:transform .24s ease;}
-  .side .brand{flex:none;margin-bottom:12px;padding:0 2px 12px;}
-  .side .brand h1{font-size:25px;}
-  .side .logo{background:rgba(0,0,0,.07)!important;background-image:none!important;}
-  .side.open #logo::after{content:"×";display:block;font-size:27px;line-height:1;color:#333;}
-  .side .list{flex:1;min-height:0;overflow:auto;padding:0 0 14px;}
-  .side .hint{padding:8px 6px;}
-  .side .chat{padding-top:12px;padding-bottom:12px;}
-  .side .more{opacity:1;}
-  .side .cmenu{position:absolute;right:16px;z-index:14;}
-  .side .new,.side .gear{
-    position:absolute;left:16px;right:16px;width:calc(100% - 32px);height:44px;
-    display:flex;align-items:center;justify-content:flex-start;gap:10px;
-    padding:0 14px;border:0;border-radius:14px;color:#222;
-    background:#dedee5;box-shadow:none;
-  }
-  .side .new{bottom:calc(64px + env(safe-area-inset-bottom));}
-  .side .gear{bottom:calc(12px + env(safe-area-inset-bottom));}
-  .side .new::after{content:"New chat";font-size:15px;font-weight:500;}
-  .side .gear::after{content:"Settings";font-size:15px;font-weight:500;}
-  .side .new:hover,.side .gear:hover{background:#d4d4dc;}
-  .scrim{display:none!important;}
-  .expand{display:none!important;}
-  .modal{position:absolute;inset:0;padding:10px;}
-  .mcard{width:min(420px,100%);max-height:calc(100% - 20px);padding:16px;}
-  .pop{width:min(240px,calc(100vw - 24px));right:-2px;}
-  .bar{max-width:100%;}
-  .bar span{margin-left:12px;}
-  .empty{max-width:100%;padding:12px;}
-  .empty h2{font-size:30px;}
+ /* chats + settings: full-screen view with the same edge */
+ .side{position:absolute;inset:0;z-index:12;width:100%;height:100%;max-width:none;border-radius:0;padding:14px var(--edge) 124px;background:#eeeef2;box-shadow:none;transform:translateX(-101%);visibility:hidden;transition:transform .24s ease,visibility 0s .24s}
+ .side.open{transform:none;visibility:visible;transition:transform .24s ease}
+ .side .brand{flex:none;margin-bottom:12px;padding:0 2px 12px}.side .brand h1{font-size:25px}
+ .side .logo{background:rgba(0,0,0,.07)!important;background-image:none!important}
+ .side.open #logo::after{content:"×";display:block;font-size:27px;line-height:1;color:#333}
+ .side .list{flex:1;min-height:0;padding:0 0 14px}
+ .side .chat{padding-top:12px;padding-bottom:12px}
+ .side .more{opacity:1}
+ .side .cmenu{right:var(--edge);z-index:14}
+ .side .new,.side .gear{position:absolute;left:var(--edge);right:var(--edge);width:auto;height:44px;display:flex;align-items:center;justify-content:flex-start;gap:10px;padding:0 14px;border:0;border-radius:14px;color:#222;background:#dedee5;box-shadow:none}
+ .side .new{bottom:64px}.side .gear{bottom:12px}
+ .side .new::after{content:"New chat";font-size:15px;font-weight:500}
+ .side .gear::after{content:"Settings";font-size:15px;font-weight:500}
+ .side .new:hover,.side .gear:hover{background:#d4d4dc}
+ .modal{padding:10px}.mcard{width:min(420px,100%);max-height:calc(100% - 20px);padding:16px}.key{font-size:22px}
 }
 @media (max-width:360px){
-  .input{margin-left:6px;margin-right:6px;gap:5px;}
-  .round{width:38px;height:38px;}
-  .model{max-width:82px;font-size:12px;}
-  .field{padding-left:12px;}
-  .scroll{padding-left:9px;padding-right:9px;}
+ :root{--edge:10px}
+ .round{width:40px;height:40px}.model{max-width:84px;font-size:12px}
 }
 @media (max-height:480px) and (max-width:640px){
-  .scroll{padding-top:calc(56px + env(safe-area-inset-top));}
-  .mbar{height:calc(46px + env(safe-area-inset-top));}
-  .menubtn,.mnew{bottom:5px;width:32px;height:32px;}
-  .note{margin-top:3px;margin-bottom:calc(4px + env(safe-area-inset-bottom));}
-  .side{padding-bottom:calc(112px + env(safe-area-inset-bottom));}
+ :root{--bar:46px}
+ .menubtn,.mnew{width:32px;height:32px}
 }
 
-
-/* ---------- Mobile embed breathing room for Google Sites + iOS browser UI ---------- */
-@media (max-width:640px){
-  html,body{
-    width:100%;
-    height:100%;
-    min-height:0;
-    overflow:hidden;
-  }
-  body{
-    /* The Google Sites page header can occupy the top of the embed on phones.
-       Keep the app below it and leave a visible buffer above Safari's bottom bar. */
-    height:100dvh;
-    min-height:320px;
-    box-sizing:border-box;
-    padding: max(88px, env(safe-area-inset-top, 0px)) 0 max(32px, env(safe-area-inset-bottom, 0px));
-    overflow:hidden;
-  }
-  .frame{
-    width:100%;
-    height:100%;
-    min-height:0;
-    max-height:100%;
-    padding:0;
-    border:0;
-    border-radius:0;
-    gap:0;
-    overflow:hidden;
-  }
-  .main{width:100%;height:100%;min-height:0;}
-  .mbar{
-    top:0;
-    height:52px;
-    padding-top:0;
-  }
-  .scroll{
-    min-height:0;
-    padding-top:calc(64px + env(safe-area-inset-top, 0px));
-    padding-bottom:12px;
-  }
-  .input{margin-left:10px;margin-right:10px;}
-  .note{
-    margin-top:7px;
-    margin-bottom:max(12px, env(safe-area-inset-bottom, 0px));
-    padding:0 8px;
-  }
-  /* Keep the mobile menu and settings actions inside the app's safe visible area. */
-  .side{
-    top:0;bottom:0;height:100%;
-    padding-top:max(14px, env(safe-area-inset-top, 0px));
-    padding-bottom:max(118px, calc(32px + env(safe-area-inset-bottom, 0px)));
-  }
-  .side .new{bottom:max(64px, calc(64px + env(safe-area-inset-bottom, 0px)));}
-  .side .gear{bottom:max(12px, calc(12px + env(safe-area-inset-bottom, 0px)));}
+/* ---------- iOS Safari zooms in when a text field is under 16px, so never go below it ---------- */
+@media (max-width:640px),(hover:none) and (pointer:coarse){
+ input,textarea,select,.field textarea,.mcard .join input,.list .rn{font-size:16px!important}
 }
-
-
-
-/* ---------- iOS Safari: prevent focus zoom on message and settings fields ---------- */
-html, body {
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-}
-/* Some Google Sites mobile embeds report a wider iframe viewport than the phone.
-   Apply the 16px input-size rule on narrow embeds OR touch-first mobile devices. */
-@media (max-width: 640px), (hover: none) and (pointer: coarse) {
-  input,
-  textarea,
-  select,
-  .field textarea#in {
-    font-size: 16px !important;
-    -webkit-text-size-adjust: 100%;
-  }
-  .field textarea#in {
-    line-height: 22px !important;
-  }
-}
-
 </style>
 </head>
 <body>
@@ -386,6 +227,7 @@ html, body {
 const LOGO="data:image/webp;base64,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";
 // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE (MUST END IN /exec). Leave empty for scripted demo replies.
 const API_URL="https://script.google.com/macros/s/AKfycbzoXvUigJ1gri6Yyeoj6CRh-wsqJB4A9SOV0OA_6rZ43NsJIsTLNpQdDyqC-lVd8Wbv/exec";
+try{if(self!==top)document.documentElement.classList.add("embedded")}catch(e){document.documentElement.classList.add("embedded")}
 const MIN=60000,KEY="whwai.v2",$=id=>document.getElementById(id);
 const ic=(d,s=18,w=2)=>`<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const I={
@@ -497,10 +339,8 @@ function closeMenu(){
 }
 function renderChat(fresh){
  const c=C();chatEl.innerHTML="";
- if(!c||!c.m.length){
-  chatEl.innerHTML='<div class="empty"><h2>WHW<b>ai</b></h2><p>Ask anything to get started.</p></div>';
-  return;
- }
+ if(!c||!c.m.length){chatEl.innerHTML='<div class="empty"><h2>WHW<b>ai</b></h2><p>Ask anything to get started.</p></div>';
+  return}
  c.m.forEach((m,i)=>{
   const d=document.createElement("div");d.className="msg"+(m.r==="u"?" u":"");
   if(m.r==="u")d.textContent=m.x;else d.innerHTML=md(m.x);
