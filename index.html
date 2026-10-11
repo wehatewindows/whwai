@@ -283,13 +283,25 @@ if(LOGO)document.querySelectorAll(".logo,.expand").forEach(l=>l.style.background
 
 const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 function md(s){
+ const normalize=t=>String(t||"")
+  .replace(/\r\n?/g,"\n")
+  .replace(/&(?:#x0*20|#0*32|nbsp);/gi," ")
+  .replace(/[ \t]*\\[ \t]*(?=\n|$)/g,"")
+  .replace(/(^|\n)[ \t]*\\([*-])[ \t]+/g,"$1$2 ")
+  .replace(/\\([*_`-])/g,"$1")
+  .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g,"$1$2");
  const inl=t=>esc(t).replace(/`([^`\n]+)`/g,"<code>$1</code>").replace(/\*\*(.+?)\*\*/g,"<b>$1</b>");
  const blocks=t=>t.split(/\n\n+/).filter(b=>b.trim()).map(b=>{
-  const ls=b.split("\n");
-  if(ls.every(l=>/^[-*] /.test(l)))return"<ul>"+ls.map(l=>"<li>"+inl(l.slice(2))+"</li>").join("")+"</ul>";
-  return"<p>"+ls.map(inl).join("<br>")+"</p>";
+  const html=[];let para=[],items=[];
+  const flushPara=()=>{if(para.length){html.push("<p>"+para.map(inl).join("<br>")+"</p>");para=[]}};
+  const flushList=()=>{if(items.length){html.push("<ul>"+items.map(l=>"<li>"+inl(l.replace(/^[-*]\s+/,""))+"</li>").join("")+"</ul>");items=[]}};
+  b.split("\n").forEach(line=>{
+   if(/^\s*[-*]\s+/.test(line)){flushPara();items.push(line.trim())}
+   else{flushList();para.push(line)}
+  });
+  flushList();flushPara();return html.join("");
  }).join("");
- return s.split(/```[\w+-]*\n?([\s\S]*?)(?:```|$)/).map((p,i)=>i%2?"<pre>"+esc(p.replace(/\n+$/,""))+"</pre>":blocks(p)).join("");
+ return String(s||"").split(/```[\w+-]*\n?([\s\S]*?)(?:```|$)/).map((p,i)=>i%2?"<pre>"+esc(p.replace(/\n+$/,""))+"</pre>":blocks(normalize(p))).join("");
 }
 function ago(t){
  const m=Math.floor((Date.now()-t)/MIN);
