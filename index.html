@@ -89,7 +89,7 @@ svg{display:block}
 .key button{border:0;background:none;cursor:pointer;padding:6px;border-radius:8px;display:grid;place-items:center}
 .btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
 .pbtn{border:0;background:var(--chip);border-radius:12px;padding:8px 14px;cursor:pointer;font-weight:500;transition:background .15s}
-.pbtn:hover{background:#cfcfcf}.pbtn:disabled{opacity:.62;cursor:wait}.pbtn:disabled:hover{background:var(--chip)}.pbtn.danger{color:#d93b3b}.sync-spinner{display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;vertical-align:-2px;margin-right:7px;animation:syncspin .7s linear infinite}@keyframes syncspin{to{transform:rotate(360deg)}}.privacy-row{margin-top:10px}.privacy-link{color:#2f6ee0;text-decoration:none;cursor:pointer;font-size:14px}.privacy-link:hover,.privacy-link:focus{text-decoration:none;color:#2458b8}.privacy-link:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:3px}.policy-placeholder{background:#f3f3f3;border-radius:12px;padding:10px 12px;font-size:13px;color:#555}
+.pbtn:hover{background:#cfcfcf}.pbtn:disabled{opacity:.62;cursor:wait}.pbtn:disabled:hover{background:var(--chip)}.pbtn.danger{color:#d93b3b}.sync-spinner{display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;vertical-align:-2px;margin-right:7px;animation:syncspin .7s linear infinite}.round .sync-spinner{width:19px;height:19px;border-width:2.5px;margin:0;vertical-align:middle}.key-actions{display:flex;align-items:center;gap:2px;flex:none}.key-value{min-width:0;overflow-wrap:anywhere}.key button[aria-pressed=true]{background:rgba(106,160,255,.18)}.privacy-row{margin-top:10px}.privacy-link{color:#2f6ee0;text-decoration:none;cursor:pointer;font-size:14px}.privacy-link:hover,.privacy-link:focus{text-decoration:none;color:#2458b8}.privacy-link:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:3px}.policy-placeholder{background:#f3f3f3;border-radius:12px;padding:10px 12px;font-size:13px;color:#555}
 .join{display:flex;gap:8px;margin-bottom:6px}.join input{flex:1;min-width:0;border:0;outline:0;background:var(--bub);border-radius:12px;padding:9px 12px;font:inherit;letter-spacing:.1em}
 .no-anim,.no-anim *{transition:none!important}
 button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
@@ -269,7 +269,7 @@ const C=()=>S.chats.find(c=>c.id===S.cur)||null;
 const sorted=()=>[...S.chats].sort((a,b)=>(b.p?1:0)-(a.p?1:0)||b.u-a.u);
 
 const chatEl=$("chat"),ta=$("in"),orb=$("orb"),list=$("list"),sendBtn=$("send");
-let busy=false;
+let busy=false,activeAnswerController=null,responseWasStopped=false,answerRunId=0;
 if(LOGO)document.querySelectorAll(".logo,.expand").forEach(l=>l.style.background="url("+LOGO+") center/cover no-repeat");
 
 const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
@@ -290,6 +290,11 @@ function ago(t){
  return new Date(t).toLocaleDateString();
 }
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function sleepUntilAbort(ms,signal){return new Promise(resolve=>{
+ let done=false;const finish=()=>{if(done)return;done=true;clearTimeout(t);if(signal)signal.removeEventListener("abort",finish);resolve()};
+ const t=setTimeout(finish,ms);
+ if(signal){if(signal.aborted)finish();else signal.addEventListener("abort",finish,{once:true})}
+})}
 const near=()=>chatEl.scrollHeight-chatEl.scrollTop-chatEl.clientHeight<140;
 const toBottom=()=>chatEl.scrollTo({top:chatEl.scrollHeight});
 
@@ -383,15 +388,34 @@ function orbStop(){
  orb.style.transition="transform 1s cubic-bezier(.25,.8,.25,1),border-radius 1s ease,box-shadow 1s ease";
  orb.style.transform="";orb.style.borderRadius="";orb.style.boxShadow="";
 }
-function setBusy(b){busy=b;sendBtn.disabled=b;document.querySelector(".frame").classList.toggle("busy",b);b?orbStart():orbStop()}
+function setBusy(b){
+ busy=b;sendBtn.disabled=false;
+ sendBtn.innerHTML=b?ic('<path d="M7 7h10v10H7z" fill="currentColor" stroke="none"/>',18):I.send;
+ sendBtn.title=b?"Stop response":"Send";
+ sendBtn.setAttribute("aria-label",b?"Stop response":"Send");
+ sendBtn.setAttribute("aria-pressed",String(b));
+ document.querySelector(".frame").classList.toggle("busy",b);b?orbStart():orbStop()
+}
+function stopAnswer(){
+ if(!busy)return;
+ responseWasStopped=true;
+ sendBtn.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>';
+ sendBtn.title="Stopping response…";sendBtn.setAttribute("aria-label","Stopping response");
+ if(activeAnswerController)activeAnswerController.abort();
+}
 const ERR_TEXT="WHWai is busy or can't be reached right now. Wait a moment, then press regenerate.";
 const hist=c=>c.m.filter(m=>!m.err).slice(-14).map(m=>({r:m.r,x:m.x}));
-async function post(body){
+async function post(body,externalSignal){
  const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),45000);
+ const forwardAbort=()=>ctl.abort();
+ if(externalSignal){if(externalSignal.aborted)ctl.abort();else externalSignal.addEventListener("abort",forwardAbort,{once:true})}
  try{
   const r=await fetch(API_URL,{method:"POST",body:JSON.stringify(body),signal:ctl.signal});
   const j=await r.json();if(j.error)throw new Error(j.error);return j;
- }finally{clearTimeout(tm)}
+ }finally{
+  clearTimeout(tm);
+  if(externalSignal)externalSignal.removeEventListener("abort",forwardAbort);
+ }
 }
 async function genTitle(c){
  try{
@@ -401,19 +425,42 @@ async function genTitle(c){
  }catch(e){}
 }
 async function answer(c,q){
- setBusy(true);
+ const run=++answerRunId,controller=new AbortController();
+ responseWasStopped=false;activeAnswerController=controller;setBusy(true);
  const tmp=document.createElement("div");tmp.className="msg dim fresh";tmp.textContent="Thinking…";chatEl.appendChild(tmp);toBottom();
- let full,err=0;
- if(API_URL){try{const j=await post({action:"chat",model:"aries-1",messages:hist(c)});full=j.text||ERR_TEXT;if(!j.text||j.disabled)err=1}catch(e){full=ERR_TEXT;err=1}}
- else{await sleep(800+Math.random()*700);full=(RULES.find(([r])=>r.test(q.toLowerCase()))||[0,FALLBACK])[1]}
- const w=full.split(/(\s+)/),step=Math.max(2,Math.ceil(w.length/300));let out="";
- for(let i=0;i<w.length;i++){
-  out+=w[i];
-  if(i%step===0){tmp.classList.remove("dim");tmp.innerHTML=md(out);if(near())toBottom();await sleep(22)}
+ try{
+  let full,err=0;
+  if(API_URL){
+   try{
+    const j=await post({action:"chat",model:"aries-1",messages:hist(c)},controller.signal);
+    if(responseWasStopped||run!==answerRunId)return;
+    full=j.text||ERR_TEXT;if(!j.text||j.disabled)err=1;
+   }catch(e){
+    if(responseWasStopped||run!==answerRunId||e&&e.name==="AbortError"&&controller.signal.aborted)return;
+    full=ERR_TEXT;err=1;
+   }
+  }else{
+   await sleepUntilAbort(800+Math.random()*700,controller.signal);
+   if(responseWasStopped||run!==answerRunId)return;
+   full=(RULES.find(([r])=>r.test(q.toLowerCase()))||[0,FALLBACK])[1]
+  }
+  const w=full.split(/(\s+)/),step=Math.max(2,Math.ceil(w.length/300));let out="";
+  for(let i=0;i<w.length;i++){
+   if(responseWasStopped||run!==answerRunId)return;
+   out+=w[i];
+   if(i%step===0){tmp.classList.remove("dim");tmp.innerHTML=md(out);if(near())toBottom();await sleepUntilAbort(22,controller.signal)}
+  }
+  if(responseWasStopped||run!==answerRunId)return;
+  c.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1}:{r:"a",x:full,at:Date.now(),_l:1});c.u=Date.now();touch(c);save();renderList();renderChat();
+  if(API_URL&&!err&&c.auto&&c.m.length<=2)genTitle(c);
+ }finally{
+  if(run===answerRunId){
+   if(responseWasStopped&&tmp.isConnected)tmp.remove();
+   if(activeAnswerController===controller)activeAnswerController=null;
+   setBusy(false);
+   if(responseWasStopped)renderChat();
+  }
  }
- c.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1}:{r:"a",x:full,at:Date.now(),_l:1});c.u=Date.now();touch(c);save();renderList();
- if(API_URL&&!err&&c.auto&&c.m.length<=2)genTitle(c);
- setBusy(false);renderChat();
 }
 /* demo title: first few words. The real version should ask the AI for a 3-5 word summary instead. */
 function makeTitle(q){
@@ -452,7 +499,7 @@ function fit(){ta.style.height="auto";ta.style.height=Math.min(ta.scrollHeight,1
 function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(toast.h);toast.h=setTimeout(()=>e.classList.remove("show"),2200)}
 function pop(open){$("pop").hidden=!open;$("model").setAttribute("aria-expanded",open)}
 
-sendBtn.onclick=send;
+sendBtn.onclick=()=>busy?stopAnswer():send();
 ta.addEventListener("input",fit);
 ta.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();send()}});
 $("new").onclick=newChat;
@@ -473,14 +520,14 @@ $("clip").onclick=()=>toast("Attachments aren't available yet.");
 $("model").onclick=e=>{e.stopPropagation();pop($("pop").hidden)};
 $("mi").onclick=()=>pop(false);
 document.addEventListener("click",e=>{if(!$("pop").contains(e.target))pop(false)});
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){pop(false);side(false);closeMenu();modal.hidden=true}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){pop(false);side(false);closeMenu();closeSettings()}});
 /* ---------- settings + sync ---------- */
 const KEYLEN=6; /* must match KEY_DIGITS in the backend script */
 const SLIDERS='<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>';
 $("gear").innerHTML=ic(SLIDERS,16,2.2);
 $("mnew").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',18,2.4);$("mnew").onclick=newChat;
 const modal=$("modal"),mbody=$("mbody");
-let syncing=false,creatingSync=false,st=null,smsg="";
+let syncing=false,creatingSync=false,connectingSync=false,deletingSync=false,st=null,smsg="",revealNewKeyOnThisOpen=false,revealSyncKey=false;
 const touch=c=>{c.mu=Date.now()};
 function merge(a,b){
  const map={},dead={},t=c=>c.mu||c.u||0;
@@ -499,7 +546,7 @@ function applyRemote(j){
 }
 const errText=e=>({badkey:"That key wasn't found.",slow:"Too many attempts. Wait a minute and try again.",toobig:"Your chats are too large to sync.",busy:"The server is busy. Try again soon."}[e&&e.message]||"Couldn't reach the server. Try again.");
 async function doSync(msg){
- if(!S.key||syncing)return;syncing=true;
+ if(!S.key||syncing||deletingSync)return;syncing=true;
  try{const j=await post({action:"sync",key:S.key,...clean()});applyRemote(j);S.last=Date.now();save(1);if(msg)smsg=msg}
  catch(e){
   if(e&&e.message==="badkey"){S.key=null;S.last=0;save(1);smsg="This key is no longer valid, so sync was turned off."}
@@ -511,22 +558,41 @@ function syncSoon(){clearTimeout(st);st=setTimeout(()=>{busy?syncSoon():doSync()
 function setMsg(t){smsg=t;const m=mbody.querySelector("#s-msg");if(m)m.textContent=t}
 function renderSettings(){
  $("modal-title").textContent="Settings";
- const on=!!S.key,k=S.key||"";
+ const on=!!S.key,k=S.key||"",keyVisible=revealNewKeyOnThisOpen||revealSyncKey;
+ const shownKey=k.replace(/(\d{3})(?=\d)/g,"$1 ");
+ const eyeOn=ic('<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',17);
+ const eyeOff=ic('<path d="M3 3l18 18"/><path d="M10.6 5.1A10.8 10.8 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3 3.8M6.2 6.2C3.5 8 2 12 2 12s3.5 7 10 7c1.5 0 2.8-.4 4-1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',17);
  mbody.innerHTML=on?
- '<h3>Sync across devices</h3><p>Sync is on. Your key:</p><div class="key"><span>'+k.replace(/(\d{3})(?=\d)/g,"$1 ")+'</span><button id="s-copy" title="Copy key" aria-label="Copy key">'+I.copy+'</button></div><p class="sm">On another device, open Settings and enter this key under Connect. Anyone who has this key can read your synced chats, so keep it private.</p><p class="sm">'+(S.last?"Last synced "+ago(S.last):"Not synced yet")+'</p><div class="btns"><button class="pbtn" id="s-now">Sync now</button><button class="pbtn" id="s-off">Turn off on this device</button><button class="pbtn danger" id="s-del">Delete synced copy</button></div>':
+ '<h3>Sync across devices</h3><p>Sync is on. Your key:</p><div class="key"><span class="key-value" id="s-key-value">'+(keyVisible?shownKey:"••••••")+'</span><div class="key-actions"><button id="s-toggle-key" title="'+(keyVisible?"Hide sync key":"Show sync key")+'" aria-label="'+(keyVisible?"Hide sync key":"Show sync key")+'" aria-pressed="'+String(keyVisible)+'">'+(keyVisible?eyeOff:eyeOn)+'</button><button id="s-copy" title="Copy key" aria-label="Copy key">'+I.copy+'</button></div></div><p class="sm">On another device, open Settings and enter this key under Connect. Anyone who has this key can read your synced chats, so keep it private.</p><p class="sm">'+(S.last?"Last synced "+ago(S.last):"Not synced yet")+'</p><div class="btns"><button class="pbtn" id="s-now">Sync now</button><button class="pbtn" id="s-off">Turn off on this device</button><button class="pbtn danger" id="s-del">Delete synced copy</button></div>':
  '<h3>Sync across devices</h3><p>Your chats stay on this device until you turn sync on. With sync on, a copy is stored on the WHWai server so you can open your chats on other devices. If you have lost your key or need assistance, please contact We Hate Windows Support.</p><div class="btns"><button class="pbtn" id="s-on">Turn on sync</button></div><p class="sm">Already have a key?</p><div class="join"><input id="s-key" inputmode="numeric" autocomplete="off" maxlength="'+KEYLEN+'" placeholder="'+KEYLEN+'-digit key" aria-label="Sync key"><button class="pbtn" id="s-join">Connect</button></div>';
  mbody.insertAdjacentHTML("beforeend",'<p class="sm" id="s-msg" role="status"></p><div class="privacy-row"><a href="#" class="privacy-link" id="privacy-open">Privacy Policy</a></div>');
  setMsg(smsg);
  const q=id=>mbody.querySelector("#"+id);
  q("privacy-open").onclick=e=>{e.preventDefault();renderPrivacyPolicy()};
  if(on){
+  q("s-toggle-key").onclick=()=>{
+   if(revealNewKeyOnThisOpen||revealSyncKey){revealNewKeyOnThisOpen=false;revealSyncKey=false}
+   else revealSyncKey=true;
+   renderSettings();
+  };
   q("s-copy").onclick=()=>copy(S.key,q("s-copy"));
-  q("s-now").onclick=()=>{setMsg("Syncing…");doSync("Synced just now.")};
-  q("s-off").onclick=()=>{S.key=null;S.last=0;save(1);smsg="Sync is off on this device. Your chats here are untouched.";renderSettings()};
+  q("s-now").onclick=async()=>{
+   if(syncing||deletingSync)return;
+   const b=q("s-now");b.disabled=true;b.setAttribute("aria-busy","true");b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Syncing…';
+   setMsg("Syncing your conversations…");
+   await doSync("Synced just now.");
+   if(b.isConnected){b.disabled=false;b.removeAttribute("aria-busy");b.textContent="Sync now"}
+  };
+  q("s-off").onclick=()=>{S.key=null;S.last=0;revealNewKeyOnThisOpen=false;revealSyncKey=false;save(1);smsg="Sync is off on this device. Your chats here are untouched.";renderSettings()};
   q("s-del").onclick=async()=>{
    const b=q("s-del");
+   if(deletingSync)return;
    if(!b.dataset.arm){b.dataset.arm=1;b.textContent="Click again to delete";setTimeout(()=>{if(b.isConnected){b.dataset.arm="";b.textContent="Delete synced copy"}},3000);return}
-   try{await post({action:"sync_delete",key:S.key});S.key=null;S.last=0;save(1);smsg="Synced copy deleted. Your chats on this device are untouched.";renderSettings()}catch(e){setMsg(errText(e))}
+   if(syncing){setMsg("Wait for the current sync to finish, then try deleting again.");return}
+   deletingSync=true;b.disabled=true;b.setAttribute("aria-busy","true");b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Deleting…';setMsg("Deleting the synced copy…");
+   try{await post({action:"sync_delete",key:S.key});S.key=null;S.last=0;revealNewKeyOnThisOpen=false;revealSyncKey=false;save(1);smsg="Synced copy deleted. Your chats on this device are untouched.";renderSettings()}
+   catch(e){setMsg(errText(e));if(b.isConnected){b.disabled=false;b.removeAttribute("aria-busy");b.dataset.arm="";b.textContent="Delete synced copy"}}
+   finally{deletingSync=false}
   };
  }else{
   q("s-on").onclick=async()=>{
@@ -539,7 +605,7 @@ function renderSettings(){
    try{
     const j=await post({action:"sync_new"});
     if(!j||!j.key)throw new Error((j&&j.error)||"Could not create a sync key.");
-    S.key=j.key;save(1);await doSync("Sync is on.");renderSettings()
+    S.key=j.key;revealNewKeyOnThisOpen=true;revealSyncKey=false;save(1);await doSync("Sync is on.");renderSettings()
    }catch(e){setMsg(errText(e))}
    finally{
     creatingSync=false;
@@ -548,10 +614,13 @@ function renderSettings(){
    }
   };
   q("s-join").onclick=async()=>{
+   if(connectingSync)return;
    const k=q("s-key").value.replace(/\D/g,"");
    if(k.length!==KEYLEN)return setMsg("Enter your "+KEYLEN+"-digit key.");
-   setMsg("Connecting…");
-   try{const j=await post({action:"sync",key:k,...clean()});S.key=k;applyRemote(j);S.last=Date.now();save(1);smsg="Connected. Your chats are now synced.";renderSettings()}catch(e){setMsg(errText(e))}
+   connectingSync=true;const b=q("s-join");b.disabled=true;b.setAttribute("aria-busy","true");b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Connecting…';setMsg("Connecting and syncing your conversations…");
+   try{const j=await post({action:"sync",key:k,...clean()});S.key=k;revealNewKeyOnThisOpen=false;revealSyncKey=false;applyRemote(j);S.last=Date.now();save(1);smsg="Connected. Your chats are now synced.";renderSettings()}
+   catch(e){setMsg(errText(e))}
+   finally{connectingSync=false;if(b.isConnected){b.disabled=false;b.removeAttribute("aria-busy");b.textContent="Connect"}}
   };
  }
 }
@@ -594,9 +663,10 @@ function renderPrivacyPolicy(){
   <div class="btns"><button class="pbtn" id="privacy-back">Back to Settings</button></div>`;
  $("privacy-back").onclick=renderSettings;
 }
-$("gear").onclick=()=>{smsg="";renderSettings();modal.hidden=false};
-$("mx").onclick=()=>{modal.hidden=true};
-modal.onclick=e=>{if(e.target===modal)modal.hidden=true};
+function closeSettings(){modal.hidden=true;revealNewKeyOnThisOpen=false;revealSyncKey=false}
+$("gear").onclick=()=>{smsg="";revealNewKeyOnThisOpen=false;revealSyncKey=false;renderSettings();modal.hidden=false};
+$("mx").onclick=closeSettings;
+modal.onclick=e=>{if(e.target===modal)closeSettings()};
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&S.key&&!busy)doSync()});
 setInterval(()=>document.querySelectorAll(".bar span,.cm").forEach(s=>s.textContent=ago(+s.dataset.t)),30000);
 const fr=document.querySelector(".frame");fr.classList.add("no-anim");fr.classList.toggle("collapsed",!!S.col);
