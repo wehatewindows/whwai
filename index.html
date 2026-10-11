@@ -83,6 +83,7 @@ svg{display:block}
 .mcard{width:min(420px,92%);max-height:88%;overflow:auto;background:#fff;border-radius:22px;padding:18px 20px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
 .mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;font-size:18px}
 .mh button{border:0;background:var(--bub);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:18px;line-height:1;padding:0}
+.mcard a{color:#2f6ee0}
 .mcard h3{margin:10px 0 6px;font-size:16px}.mcard p{margin:0 0 10px}.sm{font-size:13px;color:var(--mute)}
 .key{display:flex;align-items:center;justify-content:space-between;background:var(--bub);border-radius:14px;padding:10px 14px;margin-bottom:10px;font-size:26px;font-weight:700;letter-spacing:.12em}
 .key button{border:0;background:none;cursor:pointer;padding:6px;border-radius:8px;display:grid;place-items:center}
@@ -148,7 +149,7 @@ html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(
  /* input row: same side margin as everything else; orb lines up with the send button */
  .input{margin:0 var(--edge);gap:8px;padding-top:6px;min-width:0}
  .field{min-width:0;min-height:48px;padding:0 6px 0 16px;border-radius:24px;background:rgba(255,255,255,.88);-webkit-backdrop-filter:blur(20px) saturate(1.6);backdrop-filter:blur(20px) saturate(1.6);border:1px solid rgba(255,255,255,.95)}
- .field textarea{min-width:0;width:0;flex:1;line-height:22px;padding:13px 0;max-height:112px;height:48px}
+ .field textarea{min-width:0;width:0;flex:1;line-height:24px;padding:12px 0;max-height:112px;height:48px}
  .mwrap{flex:none;margin-left:4px}
  .model{max-width:96px;overflow:hidden;font-size:13px;padding:6px 4px;gap:3px}.model .sep{display:none}.model span{overflow:hidden;text-overflow:ellipsis}
  #clip{display:none}
@@ -183,9 +184,10 @@ html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(
  .menubtn,.mnew{width:32px;height:32px}
 }
 
-/* ---------- iOS Safari zooms in when a text field is under 16px, so never go below it ---------- */
+/* ---------- iOS Safari zooms in when a text field renders under 16px. 18px leaves headroom in case the
+   page around the embed (Google Sites) is slightly zoomed out. ---------- */
 @media (max-width:640px),(hover:none) and (pointer:coarse){
- input,textarea,select,.field textarea,.mcard .join input,.list .rn{font-size:16px!important}
+ input,textarea,select,.field textarea,.mcard .join input,.list .rn{font-size:18px!important}
 }
 </style>
 </head>
@@ -513,6 +515,7 @@ function renderSettings(){
  '<h3>Sync across devices</h3><p>Sync is on. Your key:</p><div class="key"><span>'+k.replace(/(\d{3})(?=\d)/g,"$1 ")+'</span><button id="s-copy" title="Copy key" aria-label="Copy key">'+I.copy+'</button></div><p class="sm">On another device, open Settings and enter this key under Connect. Anyone who has this key can read your synced chats, so keep it private.</p><p class="sm">'+(S.last?"Last synced "+ago(S.last):"Not synced yet")+'</p><div class="btns"><button class="pbtn" id="s-now">Sync now</button><button class="pbtn" id="s-off">Turn off on this device</button><button class="pbtn danger" id="s-del">Delete synced copy</button></div>':
  '<h3>Sync across devices</h3><p>Your chats stay on this device until you turn sync on. With sync on, a copy is stored on the WHWai server so you can open your chats on other devices. If you have lost your key or need assistance, please contact We Hate Windows Support.</p><div class="btns"><button class="pbtn" id="s-on">Turn on sync</button></div><p class="sm">Already have a key?</p><div class="join"><input id="s-key" inputmode="numeric" autocomplete="off" maxlength="'+KEYLEN+'" placeholder="'+KEYLEN+'-digit key" aria-label="Sync key"><button class="pbtn" id="s-join">Connect</button></div>';
  mbody.insertAdjacentHTML("beforeend",'<p class="sm" id="s-msg" role="status"></p>');
+ if(document.documentElement.classList.contains("embedded"))mbody.insertAdjacentHTML("beforeend",'<p class="sm"><a href="'+location.href.split("#")[0]+'" target="_blank" rel="noopener">Open WHWai full screen</a></p>');
  setMsg(smsg);
  const q=id=>mbody.querySelector("#"+id);
  if(on){
