@@ -554,8 +554,8 @@ async function answer(c,q){
  const run=++answerRunId,controller=new AbortController();
  responseWasStopped=false;activeAnswerController=controller;setBusy(true);
  const tmp=document.createElement("div");tmp.className="msg dim fresh";tmp.setAttribute("role","status");
- const thinkingLines=["Aries is thinking…","Working on it…","One moment…","Putting it together…","Checking that…","Thinking it through…","Aries is working…"];
- const rareThinkingLines=["Consulting the council of open tabs…","My last two neurons are syncing…","Asking the office plant…","idk ask chatgpt"];
+ const thinkingLines=["Aries is thinking…","Working on it…","One moment…","Putting it together…","Checking that…","Thinking it through…","Aries is working…","Contemplating…"];
+ const rareThinkingLines=["Consulting the council of open tabs…","My last two neurons are syncing…","Asking the office plant…","idk ask chatgpt","Questioning artificial life…","Thinking but fun fact is that the longest scientific name for a living organism belongs to a tiny, microscopic critter called Gammaracanthuskytodermogammarus loricatobaicalensis. It is a small crustacean found exclusively in Lake Baikal in Russia.","Acetoning the thiosemicarbazone…"];
  const thinkingLine=Math.random()<0.08?rareThinkingLines[Math.floor(Math.random()*rareThinkingLines.length)]:thinkingLines[Math.floor(Math.random()*thinkingLines.length)];tmp.setAttribute("aria-label",thinkingLine);tmp.innerHTML='<span class="typing-indicator" aria-hidden="true"><span></span><span></span><span></span></span><span class="thinking-label"></span>';tmp.querySelector(".thinking-label").textContent=thinkingLine;chatEl.appendChild(tmp);toBottom();
  try{
   let full,err=0;
