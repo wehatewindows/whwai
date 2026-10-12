@@ -246,29 +246,33 @@ html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(
  input,textarea,select,.field textarea,.mcard .join input,.list .rn{font-size:max(16px,1rem)!important}
 }
 
-/* ---------- minimal early-access lock screen ---------- */
+/* ---------- minimal access gate ---------- */
 body.access-locked{overflow:hidden!important}
 body.access-locked .frame{filter:blur(6px);transform:scale(1.004);transform-origin:center;pointer-events:none;user-select:none}
-.access-gate{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(245,247,251,.52);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.access-gate{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(255,255,255,.72)}
 .access-gate[hidden]{display:none!important}
-.access-card{width:min(100%,360px);box-sizing:border-box;padding:23px;border:1px solid #e5e7eb;border-radius:16px;background:#fff;box-shadow:0 8px 28px rgba(25,35,55,.08);color:#20242d}
-.access-brand{font-size:20px;font-weight:700;letter-spacing:-.7px;margin-bottom:18px}.access-brand b{color:#5b8df0}
-.access-pill{display:block;margin:0 0 8px;padding:0;background:none;color:#6b7280;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase}
-.access-card h2{font-size:20px;line-height:1.25;font-weight:600;margin:0 0 8px;letter-spacing:-.35px}.access-card p{font-size:13px;line-height:1.5;color:#697180;margin:0 0 16px}.access-form{display:flex;gap:8px}.access-form input{min-width:0;flex:1;height:42px;box-sizing:border-box;border:1px solid #d9dde5;border-radius:10px;padding:0 12px;font-size:16px;letter-spacing:.08em;outline:none;background:#fff}.access-form input:focus{border-color:#7fa9ff;box-shadow:0 0 0 2px rgba(91,141,240,.12)}.access-form button{height:42px;border:0;border-radius:10px;background:#5b8df0;color:white;font-weight:600;padding:0 15px;cursor:pointer}.access-form button:disabled{opacity:.65;cursor:wait}.access-error{min-height:16px;margin-top:9px!important;margin-bottom:0!important;color:#c0393b!important;font-size:12px!important}.access-foot{margin-top:12px!important;font-size:11px!important;color:#858b98!important}
+.access-card{width:min(100%,340px);box-sizing:border-box;padding:22px;background:#fff;border:1px solid #dedede;border-radius:12px;color:#111}
+.access-card h2{font-size:17px;line-height:1.35;font-weight:500;margin:0 0 14px;letter-spacing:0;color:#111}
+.access-form{display:flex;gap:8px;align-items:center}
+.access-form input{min-width:0;flex:1;height:42px;box-sizing:border-box;border:1px solid #d5d5d5;border-radius:10px;padding:0 12px;font:inherit;font-size:16px;letter-spacing:.04em;outline:none;background:#fff;color:#111;box-shadow:none}
+.access-form input:focus{border-color:#999;box-shadow:0 0 0 1px #999}
+.access-form button{height:42px;width:42px;flex:none;border:1px solid #ddd;border-radius:10px;background:#f5f5f5;color:#111;font-size:21px;line-height:1;cursor:pointer;padding:0}
+.access-form button:hover{background:#ebebeb}
+.access-form button:disabled{opacity:.55;cursor:wait}
+.access-form[hidden],.access-error[hidden]{display:none!important}
+.access-error{font-size:12px;line-height:1.4;color:#333;margin:10px 0 0}
+.access-card.disabled-mode{width:auto;max-width:340px;padding:22px 26px}
+.access-card.disabled-mode h2{margin:0;font-weight:500}
 @media(prefers-reduced-motion:reduce){.access-card{animation:none}}
 
 </style>
 </head>
 <body class="access-locked">
 <div class="access-gate" id="access-gate" role="dialog" aria-modal="true" aria-labelledby="access-title">
- <div class="access-card">
-  <div class="access-brand">WHW<b>ai</b></div>
-  <span class="access-pill">Early access</span>
+ <div class="access-card" id="access-card">
   <h2 id="access-title">Enter access code</h2>
-  <p>WHWai is currently limited to early-access testers. Unlock it for 24 hours on this browser.</p>
-  <form class="access-form" id="access-form"><input id="access-code" type="password" inputmode="numeric" autocomplete="one-time-code" maxlength="32" placeholder="Access code" aria-label="Early access code" required><button id="access-unlock" type="submit">Unlock</button></form>
-  <p class="access-error" id="access-error" role="status" aria-live="polite"></p>
-  <p class="access-foot">Access expires automatically after 24 hours.</p>
+  <form class="access-form" id="access-form" autocomplete="off"><input id="access-code" type="text" inputmode="numeric" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="32" aria-label="Enter access code" required><button id="access-unlock" type="submit" aria-label="Submit access code" title="Submit access code">→</button></form>
+  <p class="access-error" id="access-error" role="status" aria-live="polite" hidden></p>
  </div>
 </div>
 <div class="frame" id="app-frame">
@@ -506,7 +510,7 @@ function stopAnswer(){
 const ERR_TEXT="WHWai is busy or can't be reached right now. Wait a moment, then press regenerate.";
 const hist=c=>c.m.filter(m=>!m.err).slice(-14).map(m=>({r:m.r,x:m.x}));
 async function post(body,externalSignal){
- if(body.action!=="access_check"){try{const token=localStorage.getItem(ACCESS_TOKEN_KEY);if(token)body={...body,accessToken:token}}catch(e){}}
+ if(body.action!=="access_check"&&body.action!=="status_check"){try{const token=localStorage.getItem(ACCESS_TOKEN_KEY);if(token)body={...body,accessToken:token}}catch(e){}}
  const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),45000);
  const forwardAbort=()=>ctl.abort();
  if(externalSignal){if(externalSignal.aborted)ctl.abort();else externalSignal.addEventListener("abort",forwardAbort,{once:true})}
@@ -520,12 +524,16 @@ async function post(body,externalSignal){
 }
 // Early-access unlock is stored only in this browser's localStorage and expires after 24 hours.
 const ACCESS_STORAGE_KEY="whwai.earlyAccessUntil.v1",ACCESS_TOKEN_KEY="whwai.earlyAccessToken.v1",ACCESS_TTL=24*60*60*1000;
-const accessGate=$("access-gate"),accessForm=$("access-form"),accessInput=$("access-code"),accessError=$("access-error"),accessButton=$("access-unlock");
+const accessGate=$("access-gate"),accessCard=$("access-card"),accessTitle=$("access-title"),accessForm=$("access-form"),accessInput=$("access-code"),accessError=$("access-error"),accessButton=$("access-unlock");
+let aiDisabled=false;
 function hasEarlyAccess(){try{const until=Number(localStorage.getItem(ACCESS_STORAGE_KEY)||0),token=localStorage.getItem(ACCESS_TOKEN_KEY);return until>Date.now()&&!!token}catch(e){return false}}
-function unlockEarlyAccess(token,expiresAt){try{const until=Number(expiresAt)||Date.now()+ACCESS_TTL;localStorage.setItem(ACCESS_STORAGE_KEY,String(until));localStorage.setItem(ACCESS_TOKEN_KEY,String(token||""))}catch(e){}document.body.classList.remove("access-locked");accessGate.hidden=true;$("app-frame").removeAttribute("aria-hidden")}
-function lockEarlyAccess(showGate){try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");if(showGate){accessInput.value="";accessError.textContent="WHWai is locked. Enter the early-access code to continue.";setTimeout(()=>accessInput.focus(),50)}}
+function unlockEarlyAccess(token,expiresAt){if(aiDisabled)return;try{const until=Number(expiresAt)||Date.now()+ACCESS_TTL;localStorage.setItem(ACCESS_STORAGE_KEY,String(until));localStorage.setItem(ACCESS_TOKEN_KEY,String(token||""))}catch(e){}document.body.classList.remove("access-locked");accessGate.hidden=true;$("app-frame").removeAttribute("aria-hidden")}
+function lockEarlyAccess(showGate){try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.remove("disabled-mode");accessTitle.textContent="Enter access code";accessForm.hidden=false;accessError.hidden=true;accessError.textContent="";if(showGate){accessInput.value="";setTimeout(()=>accessInput.focus(),50)}}
+function showAIDisabled(){aiDisabled=true;try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");accessTitle.textContent="WHWai is currently disabled";accessForm.hidden=true;accessError.hidden=true;accessError.textContent=""}
 if(hasEarlyAccess()){unlockEarlyAccess()}else{lockEarlyAccess(false);setTimeout(()=>accessInput.focus(),100)}
-accessForm.addEventListener("submit",async e=>{e.preventDefault();const code=accessInput.value.trim();if(!code)return;accessButton.disabled=true;accessButton.textContent="Checking…";accessError.textContent="";try{if(!API_URL)throw new Error("backend");const result=await post({action:"access_check",code});if(result&&result.ok&&result.token){unlockEarlyAccess(result.token,result.expiresAt)}else{accessError.textContent="That code isn't correct. Please try again.";accessInput.select()}}catch(err){accessError.textContent="Couldn't verify the code. Check your connection and try again."}finally{accessButton.disabled=false;accessButton.textContent="Unlock"}});
+accessForm.addEventListener("submit",async e=>{e.preventDefault();const code=accessInput.value.trim();if(!code)return;accessButton.disabled=true;accessError.hidden=true;accessError.textContent="";try{if(!API_URL)throw new Error("backend");const result=await post({action:"access_check",code});if(result&&result.aiEnabled===false){showAIDisabled();return}if(result&&result.ok&&result.token){unlockEarlyAccess(result.token,result.expiresAt)}else{accessError.textContent="Incorrect code";accessError.hidden=false;accessInput.select()}}catch(err){accessError.textContent="Unable to verify code";accessError.hidden=false}finally{accessButton.disabled=false}});
+// Read the backend AI_ENABLED flag on load, including for browsers that were already unlocked.
+(async function checkBackendAIStatus(){if(!API_URL)return;try{const status=await post({action:"status_check"});if(status&&status.aiEnabled===false){showAIDisabled();return}if(hasEarlyAccess()){unlockEarlyAccess()}else if(!accessGate.hidden){accessCard.classList.remove("disabled-mode");accessTitle.textContent="Enter access code";accessForm.hidden=false}}catch(e){/* Keep the access gate usable if status probing is temporarily unavailable. */}})();
 
 const titleRequests=new Set();
 async function genTitle(c){
