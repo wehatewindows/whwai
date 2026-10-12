@@ -246,15 +246,15 @@ html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(
  input,textarea,select,.field textarea,.mcard .join input,.list .rn{font-size:max(16px,1rem)!important}
 }
 
-/* ---------- early-access lock screen ---------- */
+/* ---------- minimal early-access lock screen ---------- */
 body.access-locked{overflow:hidden!important}
-body.access-locked .frame{filter:blur(9px);transform:scale(1.008);transform-origin:center;pointer-events:none;user-select:none}
-.access-gate{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(18,25,40,.28);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+body.access-locked .frame{filter:blur(6px);transform:scale(1.004);transform-origin:center;pointer-events:none;user-select:none}
+.access-gate{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(245,247,251,.52);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
 .access-gate[hidden]{display:none!important}
-.access-card{width:min(100%,390px);box-sizing:border-box;padding:27px;border:1px solid rgba(255,255,255,.7);border-radius:22px;background:rgba(255,255,255,.96);box-shadow:0 20px 70px rgba(0,0,0,.2);color:#20242d;animation:menuIn .22s ease-out both}
-.access-brand{font-size:21px;font-weight:700;letter-spacing:-.7px;margin-bottom:8px}.access-brand b{color:#5b8df0}
-.access-pill{display:inline-block;margin:4px 0 12px;padding:5px 9px;border-radius:999px;background:#e9f0ff;color:#2857a6;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
-.access-card h2{font-size:22px;line-height:1.2;margin:4px 0 10px}.access-card p{font-size:13px;line-height:1.55;color:#626b7b;margin:0 0 16px}.access-form{display:flex;gap:8px}.access-form input{min-width:0;flex:1;height:46px;box-sizing:border-box;border:1px solid #d6dce7;border-radius:12px;padding:0 13px;font-size:18px;letter-spacing:.15em;outline:none}.access-form input:focus{border-color:#5b8df0;box-shadow:0 0 0 3px rgba(91,141,240,.15)}.access-form button{height:46px;border:0;border-radius:12px;background:#5b8df0;color:white;font-weight:700;padding:0 17px;cursor:pointer}.access-form button:disabled{opacity:.65;cursor:wait}.access-error{min-height:18px;margin-top:10px!important;margin-bottom:0!important;color:#c0393b!important;font-size:12px!important}.access-foot{margin-top:15px!important;font-size:11px!important;color:#858b98!important}
+.access-card{width:min(100%,360px);box-sizing:border-box;padding:23px;border:1px solid #e5e7eb;border-radius:16px;background:#fff;box-shadow:0 8px 28px rgba(25,35,55,.08);color:#20242d}
+.access-brand{font-size:20px;font-weight:700;letter-spacing:-.7px;margin-bottom:18px}.access-brand b{color:#5b8df0}
+.access-pill{display:block;margin:0 0 8px;padding:0;background:none;color:#6b7280;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+.access-card h2{font-size:20px;line-height:1.25;font-weight:600;margin:0 0 8px;letter-spacing:-.35px}.access-card p{font-size:13px;line-height:1.5;color:#697180;margin:0 0 16px}.access-form{display:flex;gap:8px}.access-form input{min-width:0;flex:1;height:42px;box-sizing:border-box;border:1px solid #d9dde5;border-radius:10px;padding:0 12px;font-size:16px;letter-spacing:.08em;outline:none;background:#fff}.access-form input:focus{border-color:#7fa9ff;box-shadow:0 0 0 2px rgba(91,141,240,.12)}.access-form button{height:42px;border:0;border-radius:10px;background:#5b8df0;color:white;font-weight:600;padding:0 15px;cursor:pointer}.access-form button:disabled{opacity:.65;cursor:wait}.access-error{min-height:16px;margin-top:9px!important;margin-bottom:0!important;color:#c0393b!important;font-size:12px!important}.access-foot{margin-top:12px!important;font-size:11px!important;color:#858b98!important}
 @media(prefers-reduced-motion:reduce){.access-card{animation:none}}
 
 </style>
@@ -263,12 +263,12 @@ body.access-locked .frame{filter:blur(9px);transform:scale(1.008);transform-orig
 <div class="access-gate" id="access-gate" role="dialog" aria-modal="true" aria-labelledby="access-title">
  <div class="access-card">
   <div class="access-brand">WHW<b>ai</b></div>
-  <span class="access-pill">Early access testers</span>
-  <h2 id="access-title">WHWai is currently locked</h2>
-  <p>This version of WHWai is available to early access testers only. Enter the access code to unlock the interface for 24 hours on this browser and device.</p>
+  <span class="access-pill">Early access</span>
+  <h2 id="access-title">Enter access code</h2>
+  <p>WHWai is currently limited to early-access testers. Unlock it for 24 hours on this browser.</p>
   <form class="access-form" id="access-form"><input id="access-code" type="password" inputmode="numeric" autocomplete="one-time-code" maxlength="32" placeholder="Access code" aria-label="Early access code" required><button id="access-unlock" type="submit">Unlock</button></form>
   <p class="access-error" id="access-error" role="status" aria-live="polite"></p>
-  <p class="access-foot">Access automatically expires after 24 hours. You will need to enter the code again.</p>
+  <p class="access-foot">Access expires automatically after 24 hours.</p>
  </div>
 </div>
 <div class="frame" id="app-frame">
@@ -546,8 +546,9 @@ async function answer(c,q){
  const run=++answerRunId,controller=new AbortController();
  responseWasStopped=false;activeAnswerController=controller;setBusy(true);
  const tmp=document.createElement("div");tmp.className="msg dim fresh";tmp.setAttribute("role","status");
- const thinkingLines=["Aries is thinking…","Aries is connecting the dots…","Aries is checking its mental notes…","Aries is consulting the imaginary whiteboard…","Aries is doing the brain thing…","Aries is asking the tiny calculators…","Aries is arranging the thoughts alphabetically…","Aries is loading a suspicious amount of brainpower…","Aries is trying not to overthink this…","Aries is putting on its thinking hat…","Aries is asking the universe for a hint…","Aries is buffering its best idea…","Aries is thinking very professionally…","Aries is staring thoughtfully into the digital distance…","Aries is making the pixels think…","idk ask chatgpt"];
- const thinkingLine=thinkingLines[Math.floor(Math.random()*thinkingLines.length)];tmp.setAttribute("aria-label",thinkingLine);tmp.innerHTML='<span class="typing-indicator" aria-hidden="true"><span></span><span></span><span></span></span><span class="thinking-label"></span>';tmp.querySelector(".thinking-label").textContent=thinkingLine;chatEl.appendChild(tmp);toBottom();
+ const thinkingLines=["Aries is thinking…","Working on it…","One moment…","Putting it together…","Checking that…","Thinking it through…","Aries is working…"];
+ const rareThinkingLines=["Consulting the council of open tabs…","My last two neurons are syncing…","Asking the office plant…","idk ask chatgpt"];
+ const thinkingLine=Math.random()<0.08?rareThinkingLines[Math.floor(Math.random()*rareThinkingLines.length)]:thinkingLines[Math.floor(Math.random()*thinkingLines.length)];tmp.setAttribute("aria-label",thinkingLine);tmp.innerHTML='<span class="typing-indicator" aria-hidden="true"><span></span><span></span><span></span></span><span class="thinking-label"></span>';tmp.querySelector(".thinking-label").textContent=thinkingLine;chatEl.appendChild(tmp);toBottom();
  try{
   let full,err=0;
   if(API_URL){
