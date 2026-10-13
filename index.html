@@ -297,74 +297,9 @@ body.access-locked .frame{filter:blur(6px);transform:scale(1.004);transform-orig
 .code-copy{position:absolute;top:6px;right:6px;z-index:2;display:flex;align-items:center;justify-content:center;gap:5px;min-height:25px;padding:4px 8px;border:1px solid #d4d4d4;border-radius:8px;background:#f7f7f7;color:#222;font:500 11.5px/1.1 var(--f);cursor:pointer;white-space:nowrap}
 .code-copy:hover{background:#e8e8e8}
 .code-copy:disabled{opacity:.7;cursor:default}
-.theme-switch{display:flex;gap:8px;margin:8px 0 16px}
-.theme-choice{flex:1;min-height:38px;background:var(--chip);color:var(--ink);border:1px solid transparent}
-.theme-choice[aria-pressed="true"]{background:#dbe7ff;color:#214d9c;border-color:#b7ceff}
-html[data-theme="dark"]{color-scheme:dark;--frame:#3a3c46;--side:#22242b;--chip:#343640;--sel:#454853;--bub:#292b33;--ink:#f1f2f5;--mute:#aaadb8;--blue:#8eb5ff}
-html[data-theme="dark"] body{background:#15161b;color:var(--ink)}
-html[data-theme="dark"] .frame{border-color:var(--frame);background:#191a20}
-html[data-theme="dark"] .side{background:var(--side)}
-html[data-theme="dark"] .brand{border-bottom-color:#3a3c45}
-html[data-theme="dark"] .chat{color:var(--ink)}
-html[data-theme="dark"] .chat:hover{background:#3d404a}
-html[data-theme="dark"] .chat.on{background:var(--sel);box-shadow:inset 0 0 0 1px #595c68}
-html[data-theme="dark"] .more{color:#d0d2da}
-html[data-theme="dark"] .new,html[data-theme="dark"] .gear{background:#454751;color:#f4f4f6}
-html[data-theme="dark"] .new:hover,html[data-theme="dark"] .gear:hover{background:#555864}
-html[data-theme="dark"] .scrim{background:rgba(0,0,0,.5)}
-html[data-theme="dark"] .msg{background:var(--bub);color:var(--ink)}
-html[data-theme="dark"] .msg.u{background:linear-gradient(180deg,#557ecb,#416ab4);color:#fff}
-html[data-theme="dark"] .msg pre,html[data-theme="dark"] .msg code{background:#1a1c22;color:#f0f1f5}
-html[data-theme="dark"] .bar button{color:var(--ink)}
-html[data-theme="dark"] .bar button:hover{background:#3b3e47}
-html[data-theme="dark"] .empty h2{color:var(--ink)}
-html[data-theme="dark"] .model:hover{background:#343640}
-html[data-theme="dark"] .round{background:#292b33;color:var(--ink);box-shadow:0 2px 12px rgba(0,0,0,.2)}
-html[data-theme="dark"] .round:hover{background:#393c46}
-html[data-theme="dark"] .field{background:rgba(37,39,47,.96);border-color:#343640}
-html[data-theme="dark"] .field textarea{color:var(--ink)}
-html[data-theme="dark"] .note{color:#a5a8b2}
-html[data-theme="dark"] .pop,html[data-theme="dark"] .cmenu,html[data-theme="dark"] .modal .mcard{background:#22242b;color:var(--ink);border-color:#3d404a}
-html[data-theme="dark"] .cmenu button{color:var(--ink)}
-html[data-theme="dark"] .cmenu button:hover{background:#383b45}
-html[data-theme="dark"] .pop .ph{color:var(--mute)}
-html[data-theme="dark"] .mi{background:#343640;color:var(--ink)}
-html[data-theme="dark"] .mi:hover{background:#41444e}
-html[data-theme="dark"] .mi small{color:var(--mute)}
-html[data-theme="dark"] .mh button{background:#343640;color:var(--ink)}
-html[data-theme="dark"] .key,html[data-theme="dark"] .join input{background:#292b33;color:var(--ink)}
-html[data-theme="dark"] .pbtn{background:#383a44;color:var(--ink)}
-html[data-theme="dark"] .pbtn:hover{background:#484b56}
-html[data-theme="dark"] .pbtn:disabled,html[data-theme="dark"] .pbtn:disabled:hover{background:#30323a;color:#8f929b}
-html[data-theme="dark"] .data-tool,html[data-theme="dark"] .delete-choice,html[data-theme="dark"] .confirm-panel,html[data-theme="dark"] .export-contents{background:#2b2d35;border-color:#41434d;color:var(--ink)}
-html[data-theme="dark"] .data-tool:hover{background:#363943}
-html[data-theme="dark"] .data-tool .tool-icon,html[data-theme="dark"] .delete-choice .choice-icon{background:#3a3d47;color:#e4e6ec}
-html[data-theme="dark"] .data-tool small,html[data-theme="dark"] .delete-choice p,html[data-theme="dark"] .confirm-panel p{color:#b5b7c0}
-html[data-theme="dark"] .data-tool.danger .tool-icon,html[data-theme="dark"] .delete-choice.danger .choice-icon,html[data-theme="dark"] .confirm-panel .choice-icon{background:#4b2c31;color:#ffb0b0}
-html[data-theme="dark"] .policy-takeaways{background:#282e3a;border-color:#3b465c;color:var(--ink)}
-html[data-theme="dark"] .policy-takeaways strong{color:#e0e7f5}
-html[data-theme="dark"] .policy-placeholder{background:#2d3038;color:#c5c7cf}
-html[data-theme="dark"] .privacy-link,html[data-theme="dark"] .lock-link,html[data-theme="dark"] .mcard a{color:#91b6ff}
-html[data-theme="dark"] .privacy-link:hover,html[data-theme="dark"] .lock-link:hover{color:#b7ceff}
-html[data-theme="dark"] .settings-sync-lock{background:rgba(20,21,26,.84)}
-html[data-theme="dark"] .settings-sync-lock-inner{background:#22242b;border-color:#3d404a;color:var(--ink)}
-html[data-theme="dark"] .sync-status-label{color:#babdc6}
-html[data-theme="dark"] .toast{background:#f3f3f5;color:#191a20}
-html[data-theme="dark"] .chat-search{background:#30323b;border-color:#3e414b}
-html[data-theme="dark"] .chat-search button{background:#444751;color:var(--ink)}
-html[data-theme="dark"] .code-copy{background:#383b45;border-color:#535660;color:#f2f3f6}
-html[data-theme="dark"] .code-copy:hover{background:#4b4e59}
-html[data-theme="dark"] .theme-choice[aria-pressed="true"]{background:#344967;color:#dce8ff;border-color:#526f9c}
-html[data-theme="dark"] .side .new,html[data-theme="dark"] .side .gear,html[data-theme="dark"] .side .sync-control{background:#343640;color:var(--ink)}
-html[data-theme="dark"] .side .sync-indicator{background:#343640;color:var(--ink)}
-html[data-theme="dark"] .side .logo{background:rgba(255,255,255,.09)!important;background-image:none!important}
 @media (max-width:640px){
  .chat-search{margin-bottom:12px;height:42px}
  .chat-search input{font-size:18px}
- html[data-theme="dark"] body{background:radial-gradient(120% 50% at 50% 108%,rgba(120,150,255,.12),transparent 70%),#15161b}
- html[data-theme="dark"] .mbar{background:rgba(24,25,31,.86);border-bottom-color:rgba(255,255,255,.08)}
- html[data-theme="dark"] .menubtn,html[data-theme="dark"] .mnew{background:rgba(255,255,255,.09);color:#f1f2f5}
- html[data-theme="dark"] .side{background:#22242b}
 }
 @media (max-width:360px){.chat-search{height:40px}}
 
@@ -508,8 +443,7 @@ function safeState(value){
   col:!!raw.col,
   key:/^\d{6}$/.test(key)?key:null,
   deviceCount:Math.max(0,Number(raw.deviceCount)||0),
-  last:Math.max(0,Number(raw.last)||0),
-  theme:raw.theme==="dark"?"dark":"light"
+  last:Math.max(0,Number(raw.last)||0)
  };
  chats.forEach(c=>{if(!c.model)c.model="aries-1"});
  return state;
@@ -529,12 +463,9 @@ const persistedState=()=>({
  col:!!S.col,
  key:/^\d{6}$/.test(String(S.key||""))?String(S.key):null,
  deviceCount:Math.max(0,Number(S.deviceCount)||0),
- last:Math.max(0,Number(S.last)||0),
- theme:S.theme==="dark"?"dark":"light"
+ last:Math.max(0,Number(S.last)||0)
 });
 let localRevision=0;
-const applyTheme=theme=>{const normalized=theme==="dark"?"dark":"light";S.theme=normalized;document.documentElement.dataset.theme=normalized};
-applyTheme(S.theme);
 const save=ns=>{localRevision++;store.set(JSON.stringify(persistedState()));if(!ns&&S.key){syncPending=true;updateSyncIndicator();syncSoon()}};
 // Repair titles saved by earlier versions that exposed the NO_TITLE marker.
 let repairedTitle=false;
@@ -1184,8 +1115,7 @@ function makeChatExport(){
   id:c.id,title:String(c.t||"Untitled chat"),createdAt:c.u||null,updatedAt:c.mu||c.u||null,pinned:!!c.p,
   messages:(Array.isArray(c.m)?c.m:[]).filter(m=>m&&!m.err).map(m=>({role:m.r==="u"?"user":"assistant",content:String(m.x||""),timestamp:m.at||null}))
  }));
- // Keep chats.json focused on chat data plus this key safety detail only.
- const data={syncKeyIncluded:false,chats:chats};
+ const data={chats:chats};
  const exportedAt=new Date();
  const files=[{
   name:"chats.json",
@@ -1342,11 +1272,8 @@ function renderSettings(){
  $("modal-title").textContent="Settings";
  const syncIcon=ic('<path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M5.64 5.64A9 9 0 0 1 20 12"/><path d="M4 12a9 9 0 0 0 14.36 6.36"/>',17);
  const dataIcon=ic('<path d="M4 5h16v14H4z"/><path d="M8 9h8M8 12h8M8 15h5"/>',17);
- mbody.innerHTML='<h3>Appearance</h3><div class="theme-switch" role="group" aria-label="Appearance"><button class="pbtn theme-choice" type="button" data-theme-choice="light" aria-pressed="'+String(S.theme!=="dark")+'">Light</button><button class="pbtn theme-choice" type="button" data-theme-choice="dark" aria-pressed="'+String(S.theme==="dark")+'">Dark</button></div><h3>Sync across devices</h3><p class="sm">'+(S.key?"Sync is on. Your chats are kept up to date across your devices.":"Keep your chats on more than one device with a sync key.")+'</p><button class="pbtn data-manage-button" id="sync-open" type="button"><span class="manage-icon">'+syncIcon+'</span><span>Sync settings</span></button><h3>Data & privacy</h3><p class="sm">Export a backup, review or delete chat data, and manage synced copies.</p><button class="pbtn data-manage-button" id="data-tools-open" type="button"><span class="manage-icon">'+dataIcon+'</span><span>Manage your data</span></button><p class="sm" id="s-msg" role="status"></p><div class="privacy-row"><a href="#" class="privacy-link" id="privacy-open">Privacy Policy</a>'+(accessRequired?'<button type="button" class="lock-link" id="lock-whwai-now">Lock WHWai</button>':'')+'</div>';
- setMsg(smsg);
- updateSyncIndicator();
+ mbody.innerHTML='<h3>Sync across devices</h3><p class="sm">'+(S.key?"Sync is on. Your chats are kept up to date across your devices.":"Keep your chats on more than one device with a sync key.")+'</p><button class="pbtn data-manage-button" id="sync-open" type="button"><span class="manage-icon">'+syncIcon+'</span><span>Sync settings</span></button><h3>Data & privacy</h3><p class="sm">Export a backup, review or delete chat data, and manage synced copies.</p><button class="pbtn data-manage-button" id="data-tools-open" type="button"><span class="manage-icon">'+dataIcon+'</span><span>Manage your data</span></button><p class="sm" id="s-msg" role="status"></p><div class="privacy-row"><a href="#" class="privacy-link" id="privacy-open">Privacy Policy</a>'+(accessRequired?'<button type="button" class="lock-link" id="lock-whwai-now">Lock WHWai</button>':'')+'</div>';
  const q=id=>mbody.querySelector("#"+id);
- mbody.querySelectorAll("[data-theme-choice]").forEach(button=>button.onclick=()=>{const next=button.dataset.themeChoice==="dark"?"dark":"light";if(S.theme===next)return;applyTheme(next);save(true);renderSettings()});
  q("sync-open").onclick=renderSync;
  q("data-tools-open").onclick=renderDataManagement;
  q("privacy-open").onclick=e=>{e.preventDefault();renderPrivacyPolicy()};
@@ -1430,6 +1357,31 @@ function renderSync(){
   };
  }
 }
+async function readBackupFile(file){
+ const bytes=new Uint8Array(await file.arrayBuffer());
+ if(/\.json$/i.test(file.name)||file.type==="application/json")return JSON.parse(new TextDecoder().decode(bytes));
+ // WHWai currently writes uncompressed ZIP entries, so read local ZIP headers and locate chats.json.
+ const view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength),decoder=new TextDecoder();let offset=0;
+ while(offset+30<=bytes.length&&view.getUint32(offset,true)===0x04034b50){
+  const method=view.getUint16(offset+8,true),size=view.getUint32(offset+18,true),nameLen=view.getUint16(offset+26,true),extraLen=view.getUint16(offset+28,true);
+  const nameStart=offset+30,name=decoder.decode(bytes.slice(nameStart,nameStart+nameLen)),dataStart=nameStart+nameLen+extraLen,dataEnd=dataStart+size;
+  if(dataEnd>bytes.length)throw new Error("Invalid ZIP");
+  if(name.replace(/\\/g,"/").split("/").pop()==="chats.json"){
+   if(method!==0)throw new Error("Compressed ZIP not supported");
+   return JSON.parse(decoder.decode(bytes.slice(dataStart,dataEnd)));
+  }
+  offset=dataEnd;
+ }
+ throw new Error("No chats.json in ZIP");
+}
+function normalizeBackupChats(data){
+ const list=Array.isArray(data)?data:(data&&Array.isArray(data.chats)?data.chats:[]);
+ return list.map((item,index)=>{
+  const messages=Array.isArray(item.m)?item.m:(Array.isArray(item.messages)?item.messages:[]);
+  const chat=safeChat({id:item.id||("import-"+Date.now().toString(36)+"-"+index+"-"+Math.random().toString(36).slice(2,7)),t:item.t!=null?item.t:(item.title||"Imported chat"),u:item.u||item.createdAt||Date.now(),mu:item.mu||item.updatedAt||Date.now(),p:item.p||item.pinned,m:messages.map(m=>({r:(m.role==="user"||m.r==="u")?"u":"a",x:m.content!=null?m.content:m.x,at:m.timestamp||m.at,sources:m.sources,model:m.model}))});
+  return chat;
+ }).filter(Boolean);
+}
 function renderDataManagement(){
  currentSettingsView="data";
  if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}
@@ -1441,6 +1393,8 @@ function renderDataManagement(){
  mbody.innerHTML=`<p class="sm">Choose a data action below. Downloads are local backups; deletions cannot remove copies already downloaded or held by third-party services.</p>
   <div class="data-tools-list">
    <button class="data-tool" id="open-export-info" type="button"><span class="tool-icon">${exportIcon}</span><span class="tool-copy"><strong>Download / export chats</strong><small>Review contents and privacy details before creating a ZIP.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>
+   <button class="data-tool" id="open-import-backup" type="button"><span class="tool-icon">${ic('<path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v4h16v-4"/>',19,1.8)}</span><span class="tool-copy"><strong>Import chat backup</strong><small>Restore chats from a WHWai JSON or ZIP backup.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>
+   <input id="import-backup-file" type="file" accept=".json,.zip,application/json,application/zip" hidden>
    ${syncAvailable?`<button class="data-tool danger" id="open-delete-synced" type="button"><span class="tool-icon">${serverIcon}</span><span class="tool-copy"><strong>Delete synced data</strong><small>Choose server-only, tracked devices, or everything.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>`:''}
    <button class="data-tool danger" id="open-delete-local" type="button"><span class="tool-icon">${localIcon}</span><span class="tool-copy"><strong>Delete data on this device</strong><small>Remove this browser's local chats and sync information.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>
   </div>
@@ -1448,6 +1402,8 @@ function renderDataManagement(){
   <div class="data-toolbar"><button class="pbtn" id="data-back">Back to Settings</button></div>`;
  const q=id=>mbody.querySelector("#"+id);
  q("open-export-info").onclick=renderExportInfo;
+ q("open-import-backup").onclick=()=>q("import-backup-file").click();
+ q("import-backup-file").onchange=async ev=>{const file=ev.target.files&&ev.target.files[0];if(!file)return;try{const data=await readBackupFile(file);const imported=normalizeBackupChats(data);if(!imported.length){setMsg("No chats were found in that backup.");return}const existing=new Set(S.chats.map(c=>c.id));let added=0;for(const chat of imported){if(existing.has(chat.id))chat.id="import-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,9);existing.add(chat.id);S.chats.push(chat);added++}S.chats.sort((a,b)=>(Number(b.mu||b.u)||0)-(Number(a.mu||a.u)||0));S.cur=S.chats.length?S.chats[0].id:null;save();renderList();renderChat();setMsg("Imported "+added+" chat"+(added===1?"":"s")+". Syncing if sync is enabled.");}catch(err){setMsg("Could not import that backup. Choose a valid WHWai JSON or ZIP backup.")}finally{ev.target.value=""}};
  const delSync=q("open-delete-synced");
  if(delSync)delSync.onclick=()=>{
   if(syncing||disconnectingSync||creatingSync||connectingSync){smsg="Wait for the current sync action to finish before deleting.";renderDataManagement();return}
@@ -1463,7 +1419,7 @@ function renderExportInfo(){
  $("modal-title").textContent="Download your data";
  mbody.innerHTML=`<p>WHWai creates the ZIP in this browser from the chat data currently saved on this device. It does not download a fresh copy from the server.</p>
   <div class="export-contents"><strong>What's inside</strong><ul><li><strong>chats.json</strong> — structured chat data.</li><li><strong>chats/</strong> — a readable text file for each chat.</li><li><strong>README.txt</strong> — export scope and general notes.</li></ul></div>
-  <p><strong>Key and device privacy:</strong> your six-digit sync key and random browser-installation identifier are not included. The JSON contains only chat data and one key-safety field confirming the sync key is not included.</p>
+  <p><strong>Key and device privacy:</strong> your six-digit sync key and random browser-installation identifier are not included. The JSON contains chat data only.</p>
   <p><strong>Local copy only:</strong> chats may differ from the shared server copy until syncing completes. Choose Sync now first if you need the latest shared changes. Deleted-chat markers are not included.</p>
   <p><strong>Keep the ZIP private:</strong> anyone who gets the file can read its conversations. </p>
   <p class="sm" id="export-status" role="status">A 10-minute cooldown starts after an export is prepared.</p>
