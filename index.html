@@ -423,7 +423,7 @@ const LOGO="data:image/webp;base64,UklGRk4cAABXRUJQVlA4WAoAAAAQAAAAnwAAnwAAQUxQS
 const API_URL="https://script.google.com/macros/s/AKfycbzoXvUigJ1gri6Yyeoj6CRh-wsqJB4A9SOV0OA_6rZ43NsJIsTLNpQdDyqC-lVd8Wbv/exec";
 try{if(self!==top)document.documentElement.classList.add("embedded")}catch(e){document.documentElement.classList.add("embedded")}
 const MIN=60000,KEY="whwai.v2",$=id=>document.getElementById(id);
-const ic=(d,s=18,w=2)=><svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>;
+const ic=(d,s=18,w=2)=>`<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const I={
  copy:ic('<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>',16),
  regen:ic('<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/>',16),
@@ -438,15 +438,15 @@ const store={get(){try{return localStorage.getItem(KEY)}catch(e){return mem}},se
 let canSave=true;try{localStorage.setItem(KEY+".t","1");localStorage.removeItem(KEY+".t")}catch(e){canSave=false}
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const RULES=[
- [/coffee|shop|marketing|customers|business/,For a local coffee shop, your best marketing is usually hyper-local and relationship-driven, which is also the cheapest kind. Here are a few things worth trying:\n\n- **Start a simple loyalty program.** A punch card gives regulars a reason to come back and costs almost nothing to run.\n- **Partner with nearby businesses.** Offer a discount to employees of the office next door, or swap flyers with a bookstore or gym.\n- **Make your Google Business Profile shine.** Fresh photos, accurate hours, and steady reviews matter more than almost any ad.\n- **Post behind-the-scenes content.** Latte art and new menu items build familiarity for free.\n\nIf you only have time for two, start with the Google Business Profile and a loyalty program.],
- [/meal|prep|dinner|lunch|cook/,Meal prep works best when you keep it simple:\n\n- **Cook two proteins and two grains** on Sunday, then mix them all week.\n- **Chop vegetables** right after shopping so they get used.\n- **Freeze one portion** of everything as a backup.\n\nWant a shopping list for five lunches?],
- [/python|bug|error|code|script/,Paste the script and the full error message and I'll walk through it. In the meantime, check these first:\n\n- **The last line of the traceback** names the real problem.\n- **Indentation and typos** cause most beginner errors.\n- **Print the variable** just before the line that fails.],
- [/resume|cv|job/,Happy to review it. Good resumes lead with results, so for each job, swap duties for outcomes ("cut wait times by 20%" beats "answered phones"). Paste your resume and tell me the role you're aiming for.],
- [/japan|trip|travel|tokyo|kyoto/,Japan is great for a first visit of 10 days or so:\n\n- **Tokyo (4 nights):** neighborhoods, food, day trips.\n- **Kyoto (3 nights):** temples and gardens.\n- **Osaka (2 nights):** street food and nightlife.\n\nWhen are you thinking of going?],
- [/stock|invest|money/,I can explain how stocks and funds work, but I can't tell you what to buy. Tell me your time horizon and how much risk you're comfortable with and I'll lay out the common options.],
- [/^(hi|hello|hey)\b|who are you|your name/,Hi! I'm Aries, the model behind WHWai. Ask me about marketing, meal plans, code, or trip planning.]
+ [/coffee|shop|marketing|customers|business/,`For a local coffee shop, your best marketing is usually hyper-local and relationship-driven, which is also the cheapest kind. Here are a few things worth trying:\n\n- **Start a simple loyalty program.** A punch card gives regulars a reason to come back and costs almost nothing to run.\n- **Partner with nearby businesses.** Offer a discount to employees of the office next door, or swap flyers with a bookstore or gym.\n- **Make your Google Business Profile shine.** Fresh photos, accurate hours, and steady reviews matter more than almost any ad.\n- **Post behind-the-scenes content.** Latte art and new menu items build familiarity for free.\n\nIf you only have time for two, start with the Google Business Profile and a loyalty program.`],
+ [/meal|prep|dinner|lunch|cook/,`Meal prep works best when you keep it simple:\n\n- **Cook two proteins and two grains** on Sunday, then mix them all week.\n- **Chop vegetables** right after shopping so they get used.\n- **Freeze one portion** of everything as a backup.\n\nWant a shopping list for five lunches?`],
+ [/python|bug|error|code|script/,`Paste the script and the full error message and I'll walk through it. In the meantime, check these first:\n\n- **The last line of the traceback** names the real problem.\n- **Indentation and typos** cause most beginner errors.\n- **Print the variable** just before the line that fails.`],
+ [/resume|cv|job/,`Happy to review it. Good resumes lead with results, so for each job, swap duties for outcomes ("cut wait times by 20%" beats "answered phones"). Paste your resume and tell me the role you're aiming for.`],
+ [/japan|trip|travel|tokyo|kyoto/,`Japan is great for a first visit of 10 days or so:\n\n- **Tokyo (4 nights):** neighborhoods, food, day trips.\n- **Kyoto (3 nights):** temples and gardens.\n- **Osaka (2 nights):** street food and nightlife.\n\nWhen are you thinking of going?`],
+ [/stock|invest|money/,`I can explain how stocks and funds work, but I can't tell you what to buy. Tell me your time horizon and how much risk you're comfortable with and I'll lay out the common options.`],
+ [/^(hi|hello|hey)\b|who are you|your name/,`Hi! I'm Aries, the model behind WHWai. Ask me about marketing, meal plans, code, or trip planning.`]
 ];
-const FALLBACK=That's an interesting question. This demo only knows a few topics, but the real version will answer anything. Try asking about **marketing**, **meal prep**, **Python**, **resumes**, or **a trip**.;
+const FALLBACK=`That's an interesting question. This demo only knows a few topics, but the real version will answer anything. Try asking about **marketing**, **meal prep**, **Python**, **resumes**, or **a trip**.`;
 
 // Browser storage is user-readable, so persist only the fields the UI needs.
 // In particular, never persist system/developer messages or unknown properties from
@@ -582,7 +582,7 @@ function md(s){
   .replace(/(^|\n)[ \t]*\\([*-])[ \t]+/g,"$1$2 ")
   .replace(/\\([*_`-])/g,"$1")
   .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g,"$1$2");
- const inl=t=>esc(t).replace(/([^\n]+)`/g,"<code>$1</code>").replace(/\*\*(.+?)\*\*/g,"<b>$1</b>");
+ const inl=t=>esc(t).replace(/`([^`\n]+)`/g,"<code>$1</code>").replace(/\*\*(.+?)\*\*/g,"<b>$1</b>");
  const blocks=t=>t.split(/\n\n+/).filter(b=>b.trim()).map(b=>{
   const html=[];let para=[],items=[];
   const flushPara=()=>{if(para.length){html.push("<p>"+para.map(inl).join("<br>")+"</p>");para=[]}};
@@ -1263,7 +1263,7 @@ function renderDeleteOptions(){
  $("modal-title").textContent="Delete synced data";
  mbody.innerHTML=`<p class="sm">Choose a deletion option. Offline devices can only be wiped when they reconnect.</p>
   <div class="delete-choice"><span class="choice-icon">${iconForDelete("server")}</span><div class="choice-copy"><strong>Server copy only</strong><p>Remove synced data. Local chats on all devices stay.</p></div><button type="button" class="pbtn danger" data-delete-mode="server">Choose</button></div>
-  ${Number(S.deviceCount)>1?<div class="delete-choice"><span class="choice-icon">${iconForDelete("others")}</span><div class="choice-copy"><strong>Server + other devices</strong><p>Erase chats on other tracked browsers when they reconnect.</p></div><button type="button" class="pbtn danger" data-delete-mode="others">Choose</button></div>:""}
+  ${Number(S.deviceCount)>1?`<div class="delete-choice"><span class="choice-icon">${iconForDelete("others")}</span><div class="choice-copy"><strong>Server + other devices</strong><p>Erase chats on other tracked browsers when they reconnect.</p></div><button type="button" class="pbtn danger" data-delete-mode="others">Choose</button></div>`:""}
   <div class="delete-choice danger"><span class="choice-icon">${iconForDelete("everything")}</span><div class="choice-copy"><strong>Everything</strong><p>Also erase this browser's chats and sync information.</p></div><button type="button" class="pbtn danger" data-delete-mode="everything">Choose</button></div>
   <p class="sm">Other devices must reconnect to receive a remote wipe. Offline or untracked devices cannot be erased immediately.</p>
   <div class="data-toolbar"><button class="pbtn" id="delete-back">Back to data tools</button></div>`;
@@ -1441,7 +1441,7 @@ function renderDataManagement(){
  mbody.innerHTML=`<p class="sm">Choose a data action below. Downloads are local backups; deletions cannot remove copies already downloaded or held by third-party services.</p>
   <div class="data-tools-list">
    <button class="data-tool" id="open-export-info" type="button"><span class="tool-icon">${exportIcon}</span><span class="tool-copy"><strong>Download / export chats</strong><small>Review contents and privacy details before creating a ZIP.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>
-   ${syncAvailable?<button class="data-tool danger" id="open-delete-synced" type="button"><span class="tool-icon">${serverIcon}</span><span class="tool-copy"><strong>Delete synced data</strong><small>Choose server-only, tracked devices, or everything.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>:''}
+   ${syncAvailable?`<button class="data-tool danger" id="open-delete-synced" type="button"><span class="tool-icon">${serverIcon}</span><span class="tool-copy"><strong>Delete synced data</strong><small>Choose server-only, tracked devices, or everything.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>`:''}
    <button class="data-tool danger" id="open-delete-local" type="button"><span class="tool-icon">${localIcon}</span><span class="tool-copy"><strong>Delete data on this device</strong><small>Remove this browser's local chats and sync information.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>
   </div>
   <p class="sm" id="s-msg" role="status"></p>
