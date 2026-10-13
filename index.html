@@ -74,6 +74,7 @@ svg{display:block}
 .pop .ph{font-size:12.5px;color:var(--mute);padding:6px 10px 4px}
 .mi{display:flex;width:100%;align-items:center;gap:8px;border:0;background:#f3f3f3;border-radius:11px;padding:8px 10px;cursor:pointer;text-align:left}
 .mi div{flex:1}.mi small{display:block;color:var(--mute);font-size:12.5px}.mi i{display:flex;color:var(--blue)}
+.mi:disabled{opacity:.58;cursor:not-allowed;background:#f5f5f5}.mi:disabled small{color:#888}
 .round{width:48px;height:48px;border-radius:50%;border:0;background:var(--bub);cursor:pointer;flex:none;display:grid;place-items:center;transition:background .15s,opacity .15s;margin-bottom:1px}
 .round:hover{background:#e2e2e2}.round:disabled{opacity:.45;cursor:default}
 .note{font-size:13px;margin:8px 0 0 4px}
@@ -356,17 +357,89 @@ const RULES=[
 ];
 const FALLBACK=`That's an interesting question. This demo only knows a few topics, but the real version will answer anything. Try asking about **marketing**, **meal prep**, **Python**, **resumes**, or **a trip**.`;
 
+// Browser storage is user-readable, so persist only the fields the UI needs.
+// In particular, never persist system/developer messages or unknown properties from
+// older app versions, imported state, or backend responses.
+function safeText(value,max=40000){return String(value==null?"":value).slice(0,max)}
+function safeSources(value){
+ if(!Array.isArray(value))return [];
+ const out=[];const seen=new Set();
+ for(const source of value){
+  if(!source||typeof source!=="object")continue;
+  const title=safeText(source.title,180).trim(),url=safeText(source.url,1000).trim();
+  if(!title||!/^https:\/\//i.test(url)||/[\s<>"']/.test(url)||seen.has(url))continue;
+  seen.add(url);out.push({title,url});if(out.length>=5)break;
+ }
+ return out;
+}
+function safeMessage(value){
+ if(!value||typeof value!=="object"||value.err)return null;
+ const role=value.r||value.role;
+ // Only user-visible user/assistant messages are allowed. Never retain a system prompt.
+ const r=(role==="u"||role==="user")?"u":((role==="a"||role==="assistant")?"a":"");
+ if(!r)return null;
+ const x=safeText(value.x!=null?value.x:value.content);
+ const item={r,x};
+ const at=Number(value.at!=null?value.at:value.timestamp);if(Number.isFinite(at)&&at>0)item.at=at;
+ if(r==="a"){
+  const sources=safeSources(value.sources);if(sources.length)item.sources=sources;
+  const model=safeText(value.model,80);if(model)item.model=model;
+ }
+ return item;
+}
+function safeChat(value){
+ if(!value||typeof value!=="object")return null;
+ const id=safeText(value.id,120);if(!id)return null;
+ const title=safeText(value.t!=null?value.t:value.title,300);
+ const created=Number(value.u!=null?value.u:value.createdAt)||Date.now();
+ const chat={id,t:title||"New chat",u:created,m:[]};
+ const updated=Number(value.mu!=null?value.mu:value.updatedAt);if(Number.isFinite(updated)&&updated>0)chat.mu=updated;
+ if(value.auto)chat.auto=1;if(value.p||value.pinned)chat.p=1;
+ const model=safeText(value.model,80);if(model)chat.model=model;
+ const messages=Array.isArray(value.m)?value.m:(Array.isArray(value.messages)?value.messages:[]);
+ chat.m=messages.map(safeMessage).filter(Boolean);
+ return chat;
+}
+function safeDead(value){
+ if(!Array.isArray(value))return [];
+ return value.filter(d=>d&&typeof d==="object"&&d.id!=null).map(d=>({id:safeText(d.id,120),mu:Number(d.mu)||0})).filter(d=>d.id&&d.mu>0).slice(-5000);
+}
+function safeState(value){
+ const raw=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
+ const chats=(Array.isArray(raw.chats)?raw.chats:[]).map(safeChat).filter(Boolean);
+ const model=safeText(raw.model,80);
+ const key=safeText(raw.key,6);
+ const state={
+  chats,
+  cur:raw.cur!=null&&chats.some(c=>c.id===String(raw.cur))?String(raw.cur):null,
+  dead:safeDead(raw.dead),
+  model:model||"aries-1",
+  col:!!raw.col,
+  key:/^\d{6}$/.test(key)?key:null,
+  deviceCount:Math.max(0,Number(raw.deviceCount)||0),
+  last:Math.max(0,Number(raw.last)||0)
+ };
+ chats.forEach(c=>{if(!c.model)c.model="aries-1"});
+ return state;
+}
 let S=null;
-try{S=JSON.parse(store.get()||"null")}catch(e){}
-if(!S||!Array.isArray(S.chats))S={chats:[],cur:null};
-if(S.cur&&!S.chats.some(c=>c.id===S.cur))S.cur=null;
-if(!Array.isArray(S.dead))S.dead=[];
-if(!S.model)S.model="aries-1";
-S.chats.forEach(c=>{if(c&&!c.model)c.model="aries-1"});
+try{S=safeState(JSON.parse(store.get()||"null"))}catch(e){S=safeState(null)}
+// Rewrite existing storage immediately to remove any legacy/unrecognized fields.
+try{store.set(JSON.stringify(S))}catch(e){}
 let availableModels=[{id:"aries-1",name:"Aries",description:"Powered by OpenAI"}];
 const ARIES_NOTICE_KEY="whwai.ariesInfoSeen.v1";
-const clean=()=>({chats:S.chats.map(c=>({...c,m:c.m.filter(m=>!m.err).map(({_l,...r})=>r)})),dead:S.dead});
-const save=ns=>{store.set(JSON.stringify({...S,...clean()}));if(!ns&&S.key)syncSoon()};
+const clean=()=>({chats:S.chats.map(safeChat).filter(Boolean),dead:safeDead(S.dead)});
+const persistedState=()=>({
+ chats:clean().chats,
+ cur:S.cur&&S.chats.some(c=>c.id===S.cur)?S.cur:null,
+ dead:clean().dead,
+ model:safeText(S.model||"aries-1",80),
+ col:!!S.col,
+ key:/^\d{6}$/.test(String(S.key||""))?String(S.key):null,
+ deviceCount:Math.max(0,Number(S.deviceCount)||0),
+ last:Math.max(0,Number(S.last)||0)
+});
+const save=ns=>{store.set(JSON.stringify(persistedState()));if(!ns&&S.key)syncSoon()};
 // Repair titles saved by earlier versions that exposed the NO_TITLE marker.
 let repairedTitle=false;
 S.chats.forEach(c=>{
@@ -492,6 +565,26 @@ function updateModelUI(){
   };
   options.appendChild(b);
  });
+ // Keep a quiet placeholder visible until the future model is released.
+ // When the backend starts advertising future-1, its real entry replaces this placeholder.
+ if(!availableModels.some(m=>m.id==="future-1")){
+  const placeholder=document.createElement("button");
+  placeholder.type="button";
+  placeholder.className="mi future-placeholder";
+  placeholder.disabled=true;
+  placeholder.setAttribute("role","menuitem");
+  placeholder.setAttribute("aria-disabled","true");
+  const copy=document.createElement("div");
+  copy.textContent="New AI";
+  const small=document.createElement("small");
+  small.textContent="Coming soon";
+  copy.appendChild(small);
+  const marker=document.createElement("i");
+  marker.textContent="···";
+  marker.style.color="#888";
+  placeholder.append(copy,marker);
+  options.appendChild(placeholder);
+ }
 }
 function updateAvailableModels(models){
  if(!Array.isArray(models))return;
@@ -773,8 +866,9 @@ function merge(a,b){
 }
 function applyRemote(j){
  const sig=()=>JSON.stringify(S.chats.map(c=>[c.id,c.mu||c.u,c.t,c.p]));
- const before=sig(),m=merge({chats:S.chats,dead:S.dead},{chats:j.chats||[],dead:j.dead||[]});
- S.chats=m.chats;S.dead=m.dead;
+ const remoteChats=(Array.isArray(j.chats)?j.chats:[]).map(safeChat).filter(Boolean);
+ const before=sig(),m=merge({chats:S.chats.map(safeChat).filter(Boolean),dead:safeDead(S.dead)},{chats:remoteChats,dead:safeDead(j.dead)});
+ S.chats=m.chats.map(safeChat).filter(Boolean);S.dead=safeDead(m.dead);
  if(S.cur&&!S.chats.some(c=>c.id===S.cur))S.cur=null;
  if(sig()!==before){renderList();renderChat()}
 }
