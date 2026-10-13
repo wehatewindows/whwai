@@ -62,9 +62,13 @@ svg{display:block}
 .input{display:flex;gap:10px;align-items:flex-end;position:relative}
 .field{flex:1;display:flex;align-items:flex-end;background:var(--bub);border-radius:26px;padding:0 14px 0 20px;min-height:50px}
 .field textarea{flex:1;border:0;background:none;outline:0;resize:none;min-width:0;padding:14px 0;max-height:120px;line-height:22px;height:50px}
-.mwrap{position:relative;align-self:center;margin-left:8px}
+.mwrap{position:relative;align-self:center;margin-left:8px;display:flex;align-items:center;gap:2px}
 .model{border:0;background:none;font-weight:700;cursor:pointer;white-space:nowrap;padding:6px;border-radius:10px;display:flex;align-items:center;gap:5px}
 .model:hover{background:#e4e4e4}
+.model-info{flex:none;border:0;border-radius:8px;background:#e5edff;color:#2458b8;padding:3px 6px;min-height:22px;font-size:11px;line-height:1;font-weight:700;cursor:pointer;white-space:nowrap}
+.model-info:hover{background:#d6e3ff}.model-info[hidden]{display:none!important}
+.info-pop{position:absolute;right:0;bottom:calc(100% + 14px);width:min(270px,calc(100vw - 44px));background:#fff;border:1px solid #ddd;border-radius:14px;box-shadow:0 8px 26px rgba(0,0,0,.14);padding:12px;z-index:12;animation:rise .15s ease-out}
+.info-pop[hidden]{display:none!important}.info-pop p{margin:0 0 10px;font-size:13px;line-height:1.45;color:#222}.info-pop button{border:0;background:#e7e7e7;border-radius:9px;padding:6px 10px;font:inherit;font-size:12px;cursor:pointer}.info-pop button:hover{background:#d9d9d9}
 .pop{position:absolute;right:0;bottom:calc(100% + 14px);width:240px;background:#fff;border:1px solid #ddd;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.16);padding:6px;z-index:10;animation:rise .15s ease-out}
 .pop[hidden]{display:none}
 .pop .ph{font-size:12.5px;color:var(--mute);padding:6px 10px 4px}
@@ -167,6 +171,11 @@ button:focus-visible,.chat:focus-visible,.model:focus-visible{outline:2px solid 
 .typing-indicator{display:inline-flex;align-items:center;gap:5px;height:18px;margin-right:7px;vertical-align:middle;color:#777}
 .typing-indicator span{width:6px;height:6px;border-radius:50%;background:currentColor;animation:typingDot 1s ease-in-out infinite;opacity:.45}
 .typing-indicator span:nth-child(2){animation-delay:.14s}.typing-indicator span:nth-child(3){animation-delay:.28s}
+.msg a{color:#2f6ee0;text-decoration:none;overflow-wrap:anywhere}.msg a:hover{text-decoration:underline}
+.answer-sources{align-self:flex-start;max-width:86%;margin-top:-8px;font-size:12.5px;color:#555}
+.answer-sources details{background:#f7f7f7;border:1px solid #e5e5e5;border-radius:11px;padding:7px 10px}
+.answer-sources summary{cursor:pointer;user-select:none;color:#444;font-weight:500}
+.answer-sources ul{margin:7px 0 0;padding-left:17px}.answer-sources li{margin:4px 0;overflow-wrap:anywhere}.answer-sources a{color:#2f6ee0;text-decoration:none}.answer-sources a:hover{text-decoration:underline}
 @keyframes typingDot{0%,60%,100%{transform:translateY(0);opacity:.38}30%{transform:translateY(-4px);opacity:1}}
 #export-data.cooldown{letter-spacing:.06em;font-variant-numeric:tabular-nums}
 @media (prefers-reduced-motion:reduce){.modal,.modal .mcard,.modal.closing,.modal.closing .mcard,#mbody.menu-content-enter,.fresh,.orb.think,.sync-indicator.syncing svg,.sync-spinner{animation:none!important;transition:none!important}}
@@ -206,8 +215,9 @@ html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(
  .input{margin:0 var(--edge);gap:8px;padding-top:6px;min-width:0}
  .field{min-width:0;min-height:48px;padding:0 6px 0 16px;border-radius:24px;background:rgba(255,255,255,.88);-webkit-backdrop-filter:blur(20px) saturate(1.6);backdrop-filter:blur(20px) saturate(1.6);border:1px solid rgba(255,255,255,.95)}
  .field textarea{min-width:0;width:0;flex:1;line-height:24px;padding:12px 0;max-height:112px;height:48px}
- .mwrap{flex:none;margin-left:4px}
- .model{max-width:96px;overflow:hidden;font-size:13px;padding:6px 4px;gap:3px}.model .sep{display:none}.model span{overflow:hidden;text-overflow:ellipsis}
+ .mwrap{flex:none;margin-left:4px;gap:2px}
+ .model{max-width:88px;overflow:hidden;font-size:13px;padding:6px 4px;gap:3px}.model .sep{display:none}.model span{overflow:hidden;text-overflow:ellipsis}
+ .model-info{padding:3px 5px;font-size:10px;min-height:20px}.info-pop{width:min(260px,calc(100vw - 40px))}
  .round{width:44px;height:44px;margin-bottom:2px;background:rgba(255,255,255,.88);box-shadow:0 2px 12px rgba(106,160,255,.25)}
  .orb{width:46px;height:46px;right:0;bottom:calc(100% + 12px)}
  .pop{width:min(240px,calc(100vw - 2 * var(--edge)));right:0}
@@ -299,9 +309,14 @@ body.access-locked .frame{filter:blur(6px);transform:scale(1.004);transform-orig
     <textarea id="in" rows="1" placeholder="Message WHWai" aria-label="Message"></textarea>
     <div class="mwrap">
      <button class="model" id="model" aria-haspopup="menu" aria-expanded="false"></button>
+     <button class="model-info" id="aries-info" type="button" aria-label="About Aries" title="About Aries" hidden>Info</button>
+     <div class="info-pop" id="aries-info-pop" role="dialog" aria-label="About Aries" hidden>
+      <p>Aries’ knowledge is current to around mid-2024 and it has no web access.</p>
+      <button type="button" id="aries-info-dismiss">Got it</button>
+     </div>
      <div class="pop" id="pop" role="menu" hidden>
       <div class="ph">Model</div>
-      <button class="mi" id="mi" role="menuitemradio" aria-checked="true"><div>Aries<small>Powered by OpenAI</small></div><i id="tick"></i></button>
+      <div id="model-options"></div>
      </div>
     </div>
    </div>
@@ -324,8 +339,7 @@ const I={
  send:ic('<path d="M5 12h14"/><path d="M13 6l6 6-6 6"/>',22,2.6),
  chev:ic('<path d="M6 9l6 6 6-6"/>',14,2.4)
 };
-$("new").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',16,2.6);$("send").innerHTML=I.send;$("tick").innerHTML=I.check;
-$("model").innerHTML='<span class="sep">|</span><span>Aries</span>'+I.chev;
+$("new").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',16,2.6);$("send").innerHTML=I.send;
 
 let mem=null;
 const store={get(){try{return localStorage.getItem(KEY)}catch(e){return mem}},set(v){mem=v;try{localStorage.setItem(KEY,v)}catch(e){}}};
@@ -347,6 +361,10 @@ try{S=JSON.parse(store.get()||"null")}catch(e){}
 if(!S||!Array.isArray(S.chats))S={chats:[],cur:null};
 if(S.cur&&!S.chats.some(c=>c.id===S.cur))S.cur=null;
 if(!Array.isArray(S.dead))S.dead=[];
+if(!S.model)S.model="aries-1";
+S.chats.forEach(c=>{if(c&&!c.model)c.model="aries-1"});
+let availableModels=[{id:"aries-1",name:"Aries",description:"Powered by OpenAI"}];
+const ARIES_NOTICE_KEY="whwai.ariesInfoSeen.v1";
 const clean=()=>({chats:S.chats.map(c=>({...c,m:c.m.filter(m=>!m.err).map(({_l,...r})=>r)})),dead:S.dead});
 const save=ns=>{store.set(JSON.stringify({...S,...clean()}));if(!ns&&S.key)syncSoon()};
 // Repair titles saved by earlier versions that exposed the NO_TITLE marker.
@@ -450,16 +468,62 @@ function closeMenu(){
  $("cmenu").hidden=true;mid=null;
  document.querySelectorAll(".more").forEach(b=>b.setAttribute("aria-expanded","false"));
 }
+function selectedModelId(){
+ const c=C();const id=(c&&c.model)||S.model||"aries-1";
+ return availableModels.some(m=>m.id===id)?id:"aries-1";
+}
+function updateModelUI(){
+ const id=selectedModelId(),selected=availableModels.find(m=>m.id===id)||availableModels[0];
+ $("model").innerHTML='<span class="sep">|</span><span class="model-name">'+esc(selected.name)+'</span>'+I.chev;
+ let seen=false;try{seen=localStorage.getItem(ARIES_NOTICE_KEY)==="1"}catch(e){}
+ const info=$("aries-info");info.hidden=id!=="aries-1"||seen;
+ const options=$("model-options");if(!options)return;options.innerHTML="";
+ availableModels.forEach(m=>{
+  const b=document.createElement("button");b.type="button";b.className="mi";b.setAttribute("role","menuitemradio");b.setAttribute("aria-checked",String(m.id===id));
+  const copy=document.createElement("div");copy.textContent=m.name;
+  const small=document.createElement("small");small.textContent=m.description||"";copy.appendChild(small);
+  const tick=document.createElement("i");tick.innerHTML=m.id===id?I.check:"";b.append(copy,tick);
+  b.onclick=()=>{
+   const c=C();
+   S.model=m.id;
+   if(c){c.model=m.id;touch(c)}
+   save();pop(false);$("aries-info-pop").hidden=true;updateModelUI();
+   if(c)renderChat();
+  };
+  options.appendChild(b);
+ });
+}
+function updateAvailableModels(models){
+ if(!Array.isArray(models))return;
+ const cleanModels=models.filter(m=>m&&typeof m.id==="string"&&typeof m.name==="string"&&m.name.trim()).map(m=>({id:m.id,name:m.name,description:String(m.description||"")}));
+ if(!cleanModels.some(m=>m.id==="aries-1"))cleanModels.unshift({id:"aries-1",name:"Aries",description:"Powered by OpenAI"});
+ availableModels=cleanModels;
+ let repaired=false;
+ S.chats.forEach(c=>{if(!availableModels.some(m=>m.id===c.model)){c.model="aries-1";repaired=true}});
+ if(!availableModels.some(m=>m.id===S.model)){S.model="aries-1";repaired=true}
+ if(repaired)save(true);
+ updateModelUI();
+}
 function renderChat(fresh){
- const c=C();chatEl.innerHTML="";
+ const c=C();updateModelUI();chatEl.innerHTML="";
  if(!c||!c.m.length){chatEl.innerHTML='<div class="empty"><h2>WHW<b>ai</b></h2><p>Ask anything to get started.</p></div>';
   return}
  c.m.forEach((m,i)=>{
   const d=document.createElement("div");d.className="msg"+(m.r==="u"?" u":"");
-  if(m.r==="u")d.textContent=m.x;else d.innerHTML=md(m.x);
-  chatEl.appendChild(d);
-  if(m.r==="a"){
-   const canRegen=i===c.m.length-1&&m._l,b=document.createElement("div");b.className="bar";
+   if(m.r==="u")d.textContent=m.x;else d.innerHTML=md(m.x);
+   chatEl.appendChild(d);
+   if(m.r==="a"&&Array.isArray(m.sources)&&m.sources.length){
+    const wrap=document.createElement("div");wrap.className="answer-sources";
+    const details=document.createElement("details");const summary=document.createElement("summary");summary.textContent="Sources ("+m.sources.length+")";details.appendChild(summary);
+    const ul=document.createElement("ul");
+    m.sources.slice(0,5).forEach(source=>{
+     if(!source||typeof source.title!=="string"||typeof source.url!=="string"||!/^https:\/\//i.test(source.url)||/[\s<>"']/.test(source.url))return;
+     const li=document.createElement("li"),a=document.createElement("a");a.textContent=source.title;a.href=source.url;a.target="_blank";a.rel="noopener noreferrer";li.appendChild(a);ul.appendChild(li);
+    });
+    if(ul.children.length){details.appendChild(ul);wrap.appendChild(details);chatEl.appendChild(wrap)}
+   }
+   if(m.r==="a"){
+    const canRegen=i===c.m.length-1&&m._l,b=document.createElement("div");b.className="bar";
    b.innerHTML='<button class="cp" title="Copy" aria-label="Copy">'+I.copy+'</button>'+(canRegen?'<button class="rg" title="Regenerate" aria-label="Regenerate">'+I.regen+'</button>':'')+'<span data-t="'+m.at+'">'+ago(m.at)+'</span>';
    const cp=b.querySelector(".cp"),rg=b.querySelector(".rg");
    cp.onclick=()=>copy(m.x,cp);if(rg)rg.onclick=regen;
@@ -518,7 +582,7 @@ async function post(body,externalSignal){
  if(externalSignal){if(externalSignal.aborted)ctl.abort();else externalSignal.addEventListener("abort",forwardAbort,{once:true})}
  try{
   const r=await fetch(API_URL,{method:"POST",body:JSON.stringify(body),signal:ctl.signal});
-  const j=await r.json();if(j.error)throw new Error(j.error);return j;
+  const j=await r.json();if(j.error){const error=new Error(j.error);error.payload=j;throw error}return j;
  }finally{
   clearTimeout(tm);
   if(externalSignal)externalSignal.removeEventListener("abort",forwardAbort);
@@ -529,16 +593,15 @@ async function post(body,externalSignal){
 const ACCESS_STORAGE_KEY="whwai.earlyAccessUntil.v1",ACCESS_TOKEN_KEY="whwai.earlyAccessToken.v1",ACCESS_OFF_KEY="whwai.accessCodeOff.v1",ACCESS_TTL=24*60*60*1000;
 const accessGate=$("access-gate"),accessCard=$("access-card"),accessTitle=$("access-title"),accessForm=$("access-form"),accessInput=$("access-code"),accessError=$("access-error"),accessButton=$("access-unlock");
 let aiDisabled=false,accessRequired=true;
-try{accessRequired=localStorage.getItem(ACCESS_OFF_KEY)!=="1"}catch(e){}
 function hasEarlyAccess(){try{const until=Number(localStorage.getItem(ACCESS_STORAGE_KEY)||0),token=localStorage.getItem(ACCESS_TOKEN_KEY);return until>Date.now()&&!!token}catch(e){return false}}
 function openApp(){if(aiDisabled)return;document.body.classList.remove("access-locked");accessGate.hidden=true;$("app-frame").removeAttribute("aria-hidden")}
 function unlockEarlyAccess(token,expiresAt){if(aiDisabled)return;try{const until=Number(expiresAt)||Date.now()+ACCESS_TTL;localStorage.setItem(ACCESS_STORAGE_KEY,String(until));localStorage.setItem(ACCESS_TOKEN_KEY,String(token||""))}catch(e){}openApp()}
 function lockEarlyAccess(showGate){try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.remove("disabled-mode");accessTitle.textContent="Enter access code";accessForm.hidden=false;accessError.hidden=true;accessError.textContent="";if(showGate){accessInput.value="";setTimeout(()=>accessInput.focus(),50)}}
 function showAIDisabled(){aiDisabled=true;try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");accessTitle.textContent="WHWai is currently disabled";accessForm.hidden=true;accessError.hidden=true;accessError.textContent=""}
-if(!accessRequired){openApp()}else{lockEarlyAccess(false);setTimeout(()=>accessInput.focus(),100)}
+lockEarlyAccess(false);setTimeout(()=>accessInput.focus(),100)
 accessForm.addEventListener("submit",async e=>{e.preventDefault();const code=accessInput.value.trim();if(!code)return;accessButton.disabled=true;accessError.hidden=true;accessError.textContent="";try{if(!API_URL)throw new Error("backend");const result=await post({action:"access_check",code});if(result&&result.aiEnabled===false){showAIDisabled();return}if(result&&result.ok&&result.token){unlockEarlyAccess(result.token,result.expiresAt)}else{accessError.textContent="Incorrect code";accessError.hidden=false;accessInput.select()}}catch(err){accessError.textContent="Unable to verify code";accessError.hidden=false}finally{accessButton.disabled=false}});
 // Ask the backend whether AI is enabled and whether the access code screen is required.
-(async function checkBackendStatus(){if(!API_URL)return;try{const status=await post({action:"status_check"});if(status&&status.aiEnabled===false){showAIDisabled();return}
+(async function checkBackendStatus(){if(!API_URL)return;try{const status=await post({action:"status_check"});if(status&&Array.isArray(status.models))updateAvailableModels(status.models);if(status&&status.aiEnabled===false){showAIDisabled();return}
  if(status&&status.accessRequired===false){accessRequired=false;try{localStorage.setItem(ACCESS_OFF_KEY,"1")}catch(e){}openApp();return}
  accessRequired=true;try{localStorage.removeItem(ACCESS_OFF_KEY)}catch(e){}
  if(hasEarlyAccess()){openApp()}else{const typed=accessInput.value;lockEarlyAccess(false);accessInput.value=typed}
@@ -579,19 +642,21 @@ async function answer(c,q){
  const run=++answerRunId,controller=new AbortController();
  responseWasStopped=false;activeAnswerController=controller;setBusy(true);
  const tmp=document.createElement("div");tmp.className="msg dim fresh";tmp.setAttribute("role","status");
- const thinkingLines=["Aries is thinking…","Working on it…","One moment…","Putting it together…","Checking that…","Thinking it through…","Aries is working…","Contemplating…"];
- const rareThinkingLines=["Consulting the council of open tabs…","My last two neurons are syncing…","Asking the office plant…","idk ask chatgpt","Questioning artificial life…","Thinking but fun fact is that the longest scientific name for a living organism belongs to a tiny, microscopic critter called Gammaracanthuskytodermogammarus loricatobaicalensis. It is a small crustacean found exclusively in Lake Baikal in Russia.","Acetoning the thiosemicarbazone…"];
+ const thinkingLines=["Thinking…","Working on it…","One moment…","Putting it together…","Checking that…","Almost there…","Aries is working…"];
+ const rareThinkingLines=["idk ask chatgpt","The tiny calculators are meeting…","Consulting the office plant…","My last two neurons are syncing…","The pixels are negotiating…"];
  const thinkingLine=Math.random()<0.08?rareThinkingLines[Math.floor(Math.random()*rareThinkingLines.length)]:thinkingLines[Math.floor(Math.random()*thinkingLines.length)];tmp.setAttribute("aria-label",thinkingLine);tmp.innerHTML='<span class="typing-indicator" aria-hidden="true"><span></span><span></span><span></span></span><span class="thinking-label"></span>';tmp.querySelector(".thinking-label").textContent=thinkingLine;chatEl.appendChild(tmp);toBottom();
  try{
-  let full,err=0;
+  let full,err=0,sources=[];
   if(API_URL){
    try{
-    const j=await post({action:"chat",model:"aries-1",messages:hist(c)},controller.signal);
+    const modelId=availableModels.some(m=>m.id===c.model)?c.model:(S.model||"aries-1");
+    if(c.model!==modelId)c.model=modelId;
+    const j=await post({action:"chat",model:modelId,deviceId:getDeviceId(),syncKey:S.key||"",messages:hist(c)},controller.signal);
     if(responseWasStopped||run!==answerRunId)return;
-    full=j.text||ERR_TEXT;if(!j.text||j.disabled)err=1;
+    full=j.text||ERR_TEXT;sources=Array.isArray(j.sources)?j.sources:[];if(!j.text||j.disabled)err=1;
    }catch(e){
     if(responseWasStopped||run!==answerRunId||e&&e.name==="AbortError"&&controller.signal.aborted)return;
-    full=ERR_TEXT;err=1;
+    full=e&&e.message==="daily_limit"?(e.payload&&e.payload.message||"You've reached this model's daily limit. Please try again tomorrow."):e&&e.message==="model_unavailable"?"That model is not available right now.":ERR_TEXT;err=1;
    }
   }else{
    await sleepUntilAbort(800+Math.random()*700,controller.signal);
@@ -605,7 +670,7 @@ async function answer(c,q){
    if(i%step===0){tmp.classList.remove("dim");tmp.innerHTML=md(out);if(near())toBottom();await sleepUntilAbort(22,controller.signal)}
   }
   if(responseWasStopped||run!==answerRunId)return;
-  c.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1}:{r:"a",x:full,at:Date.now(),_l:1});c.u=Date.now();touch(c);save();renderList();renderChat();
+  c.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1}:{r:"a",x:full,at:Date.now(),sources:sources,model:c.model||S.model||"aries-1",_l:1});c.u=Date.now();touch(c);save();renderList();renderChat();
   if(API_URL&&!err&&c.auto)genTitle(c);
   if(S.key)syncSoon();
  }finally{
@@ -625,7 +690,7 @@ function makeTitle(q){
 function send(){
  const q=ta.value.trim();if(!q||busy)return;
  ta.value="";fit();let c=C();
- if(!c){c={id:uid(),t:makeTitle(q),auto:1,u:Date.now(),m:[]};S.chats.push(c);S.cur=c.id}
+   if(!c){c={id:uid(),t:makeTitle(q),auto:1,u:Date.now(),model:S.model||"aries-1",m:[]};S.chats.push(c);S.cur=c.id}
  c.m.push({r:"u",x:q,at:Date.now()});
  c.u=Date.now();touch(c);save();renderList();renderChat(true);answer(c,q);
 }
@@ -671,9 +736,13 @@ list.addEventListener("scroll",closeMenu);
 document.addEventListener("click",e=>{if(!$("cmenu").contains(e.target))closeMenu()});
 $("scrim").onclick=()=>side(false);
 window.addEventListener("resize",()=>{if(!mob()){$("side").classList.remove("open");$("scrim").classList.remove("show");$("mopen").setAttribute("aria-expanded","false")}});
-$("model").onclick=e=>{e.stopPropagation();pop($("pop").hidden)};
-$("mi").onclick=()=>pop(false);
-document.addEventListener("click",e=>{if(!$("pop").contains(e.target))pop(false)});
+$("model").onclick=e=>{e.stopPropagation();$("aries-info-pop").hidden=true;pop($("pop").hidden)};
+$("aries-info").onclick=e=>{e.stopPropagation();pop(false);$("aries-info-pop").hidden=!$("aries-info-pop").hidden};
+$("aries-info-dismiss").onclick=()=>{try{localStorage.setItem(ARIES_NOTICE_KEY,"1")}catch(e){}$("aries-info-pop").hidden=true;updateModelUI()};
+document.addEventListener("click",e=>{
+ if(!$("pop").contains(e.target)&&e.target!==$("model"))pop(false);
+ if(!$("aries-info-pop").contains(e.target)&&e.target!==$("aries-info"))$("aries-info-pop").hidden=true;
+});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){pop(false);side(false);closeMenu();closeSettings()}});
 /* ---------- settings + sync ---------- */
 const KEYLEN=6; /* must match KEY_DIGITS in the backend script */
@@ -927,11 +996,11 @@ function clearLocalWhwData(removeDeviceId){
  mem=null;
  try{localStorage.removeItem(KEY);if(removeDeviceId)localStorage.removeItem(DEVICE_STORAGE_KEY)}
  catch(e){mem=JSON.stringify({chats:[],cur:null,dead:[]})}
- if(removeDeviceId){
-  cachedDeviceId="";
-  exportCooldownMemory=0;
-  try{localStorage.removeItem(EXPORT_COOLDOWN_KEY)}catch(e){}
- }
+   if(removeDeviceId){
+   cachedDeviceId="";
+   exportCooldownMemory=0;
+   try{localStorage.removeItem(EXPORT_COOLDOWN_KEY);localStorage.removeItem(ARIES_NOTICE_KEY)}catch(e){}
+  }
  updateSyncIndicator();
 }
 function setDeleteStatus(message){const el=$("delete-status");if(el)el.textContent=message;else smsg=message}
