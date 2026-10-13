@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>WHWai</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -208,7 +208,6 @@ html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(
  .field textarea{min-width:0;width:0;flex:1;line-height:24px;padding:12px 0;max-height:112px;height:48px}
  .mwrap{flex:none;margin-left:4px}
  .model{max-width:96px;overflow:hidden;font-size:13px;padding:6px 4px;gap:3px}.model .sep{display:none}.model span{overflow:hidden;text-overflow:ellipsis}
- #clip{display:none}
  .round{width:44px;height:44px;margin-bottom:2px;background:rgba(255,255,255,.88);box-shadow:0 2px 12px rgba(106,160,255,.25)}
  .orb{width:46px;height:46px;right:0;bottom:calc(100% + 12px)}
  .pop{width:min(240px,calc(100vw - 2 * var(--edge)));right:0}
@@ -240,10 +239,13 @@ html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(
  .menubtn,.mnew{width:32px;height:32px}
 }
 
-/* ---------- iOS Safari zooms in when a text field renders under 16px. 18px leaves headroom in case the
-   page around the embed (Google Sites) is slightly zoomed out. ---------- */
+/* ---------- Stop iOS Safari zooming into text fields on focus. It zooms whenever a focused field's
+   font size is under 16px, so every field on touch devices is kept at 18px or larger. ---------- */
 @media (max-width:640px),(hover:none) and (pointer:coarse){
- input,textarea,select,.field textarea,.mcard .join input,.list .rn{font-size:max(16px,1rem)!important}
+ input,textarea,select,.field textarea,.mcard .join input,.list .rn,.access-form input{font-size:max(18px,1rem)!important}
+}
+@supports (-webkit-touch-callout:none){
+ input,textarea,select{font-size:max(18px,1rem)!important}
 }
 
 /* ---------- minimal access gate ---------- */
@@ -303,7 +305,6 @@ body.access-locked .frame{filter:blur(6px);transform:scale(1.004);transform-orig
      </div>
     </div>
    </div>
-   <button class="round" id="clip" title="Attach" aria-label="Attach"></button>
    <button class="round" id="send" title="Send" aria-label="Send"></button>
   </div>
   <div class="note">WHW<b>ai</b> is not human and can make mistakes.</div>
@@ -320,11 +321,10 @@ const I={
  copy:ic('<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>',16),
  regen:ic('<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/>',16),
  check:ic('<path d="M5 12.5l4.5 4.5L19 7.5"/>',16,2.4),
- clip:ic('<path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>',22),
  send:ic('<path d="M5 12h14"/><path d="M13 6l6 6-6 6"/>',22,2.6),
  chev:ic('<path d="M6 9l6 6 6-6"/>',14,2.4)
 };
-$("new").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',16,2.6);$("clip").innerHTML=I.clip;$("send").innerHTML=I.send;$("tick").innerHTML=I.check;
+$("new").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',16,2.6);$("send").innerHTML=I.send;$("tick").innerHTML=I.check;
 $("model").innerHTML='<span class="sep">|</span><span>Aries</span>'+I.chev;
 
 let mem=null;
@@ -523,17 +523,24 @@ async function post(body,externalSignal){
  }
 }
 // Early-access unlock is stored only in this browser's localStorage and expires after 24 hours.
-const ACCESS_STORAGE_KEY="whwai.earlyAccessUntil.v1",ACCESS_TOKEN_KEY="whwai.earlyAccessToken.v1",ACCESS_TTL=24*60*60*1000;
+// The backend decides whether the access code screen is required (ACCESS_CODE_REQUIRED in the Apps Script).
+const ACCESS_STORAGE_KEY="whwai.earlyAccessUntil.v1",ACCESS_TOKEN_KEY="whwai.earlyAccessToken.v1",ACCESS_OFF_KEY="whwai.accessCodeOff.v1",ACCESS_TTL=24*60*60*1000;
 const accessGate=$("access-gate"),accessCard=$("access-card"),accessTitle=$("access-title"),accessForm=$("access-form"),accessInput=$("access-code"),accessError=$("access-error"),accessButton=$("access-unlock");
-let aiDisabled=false;
+let aiDisabled=false,accessRequired=true;
+try{accessRequired=localStorage.getItem(ACCESS_OFF_KEY)!=="1"}catch(e){}
 function hasEarlyAccess(){try{const until=Number(localStorage.getItem(ACCESS_STORAGE_KEY)||0),token=localStorage.getItem(ACCESS_TOKEN_KEY);return until>Date.now()&&!!token}catch(e){return false}}
-function unlockEarlyAccess(token,expiresAt){if(aiDisabled)return;try{const until=Number(expiresAt)||Date.now()+ACCESS_TTL;localStorage.setItem(ACCESS_STORAGE_KEY,String(until));localStorage.setItem(ACCESS_TOKEN_KEY,String(token||""))}catch(e){}document.body.classList.remove("access-locked");accessGate.hidden=true;$("app-frame").removeAttribute("aria-hidden")}
+function openApp(){if(aiDisabled)return;document.body.classList.remove("access-locked");accessGate.hidden=true;$("app-frame").removeAttribute("aria-hidden")}
+function unlockEarlyAccess(token,expiresAt){if(aiDisabled)return;try{const until=Number(expiresAt)||Date.now()+ACCESS_TTL;localStorage.setItem(ACCESS_STORAGE_KEY,String(until));localStorage.setItem(ACCESS_TOKEN_KEY,String(token||""))}catch(e){}openApp()}
 function lockEarlyAccess(showGate){try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.remove("disabled-mode");accessTitle.textContent="Enter access code";accessForm.hidden=false;accessError.hidden=true;accessError.textContent="";if(showGate){accessInput.value="";setTimeout(()=>accessInput.focus(),50)}}
 function showAIDisabled(){aiDisabled=true;try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");accessTitle.textContent="WHWai is currently disabled";accessForm.hidden=true;accessError.hidden=true;accessError.textContent=""}
-if(hasEarlyAccess()){unlockEarlyAccess()}else{lockEarlyAccess(false);setTimeout(()=>accessInput.focus(),100)}
+if(!accessRequired||hasEarlyAccess()){openApp()}else{lockEarlyAccess(false);setTimeout(()=>accessInput.focus(),100)}
 accessForm.addEventListener("submit",async e=>{e.preventDefault();const code=accessInput.value.trim();if(!code)return;accessButton.disabled=true;accessError.hidden=true;accessError.textContent="";try{if(!API_URL)throw new Error("backend");const result=await post({action:"access_check",code});if(result&&result.aiEnabled===false){showAIDisabled();return}if(result&&result.ok&&result.token){unlockEarlyAccess(result.token,result.expiresAt)}else{accessError.textContent="Incorrect code";accessError.hidden=false;accessInput.select()}}catch(err){accessError.textContent="Unable to verify code";accessError.hidden=false}finally{accessButton.disabled=false}});
-// Read the backend AI_ENABLED flag on load, including for browsers that were already unlocked.
-(async function checkBackendAIStatus(){if(!API_URL)return;try{const status=await post({action:"status_check"});if(status&&status.aiEnabled===false){showAIDisabled();return}if(hasEarlyAccess()){unlockEarlyAccess()}else if(!accessGate.hidden){accessCard.classList.remove("disabled-mode");accessTitle.textContent="Enter access code";accessForm.hidden=false}}catch(e){/* Keep the access gate usable if status probing is temporarily unavailable. */}})();
+// Ask the backend whether AI is enabled and whether the access code screen is required.
+(async function checkBackendStatus(){if(!API_URL)return;try{const status=await post({action:"status_check"});if(status&&status.aiEnabled===false){showAIDisabled();return}
+ if(status&&status.accessRequired===false){accessRequired=false;try{localStorage.setItem(ACCESS_OFF_KEY,"1")}catch(e){}openApp();return}
+ accessRequired=true;try{localStorage.removeItem(ACCESS_OFF_KEY)}catch(e){}
+ if(hasEarlyAccess()){openApp()}else{const typed=accessInput.value;lockEarlyAccess(false);accessInput.value=typed}
+}catch(e){/* Keep the current screen if the status probe fails. */}})();
 
 const titleRequests=new Set();
 async function genTitle(c){
@@ -645,7 +652,6 @@ list.addEventListener("scroll",closeMenu);
 document.addEventListener("click",e=>{if(!$("cmenu").contains(e.target))closeMenu()});
 $("scrim").onclick=()=>side(false);
 window.addEventListener("resize",()=>{if(!mob()){$("side").classList.remove("open");$("scrim").classList.remove("show");$("mopen").setAttribute("aria-expanded","false")}});
-$("clip").onclick=()=>toast("Attachments aren't available yet.");
 $("model").onclick=e=>{e.stopPropagation();pop($("pop").hidden)};
 $("mi").onclick=()=>pop(false);
 document.addEventListener("click",e=>{if(!$("pop").contains(e.target))pop(false)});
@@ -1006,13 +1012,13 @@ function renderSettings(){
  mbody.innerHTML=on?
  '<div class="sync-panel" id="sync-panel"><h3>Sync across devices</h3><p>Sync is on. Your key:</p><div class="key"><span class="key-value" id="s-key-value">'+(keyVisible?shownKey:"••••••")+'</span><div class="key-actions"><button id="s-toggle-key" title="'+(keyVisible?"Hide sync key":"Show sync key")+'" aria-label="'+(keyVisible?"Hide sync key":"Show sync key")+'" aria-pressed="'+String(keyVisible)+'">'+(keyVisible?eyeOff:eyeOn)+'</button><button id="s-copy" title="Copy key" aria-label="Copy key">'+I.copy+'</button></div></div><p class="sm">On another device, open Settings and enter this key under Connect. Anyone who has this key can read your synced chats, so keep it private.</p><p class="sm" id="sync-last">'+(S.last?"Last synced "+ago(S.last):"Not synced yet")+'</p><div class="btns"><button class="pbtn" id="s-now">Sync now</button>'+(deviceCount>1?'<button class="pbtn" id="s-off">Turn off on this device</button>':'')+'</div></div>':
  '<div class="sync-panel" id="sync-panel"><h3>Sync across devices</h3><p>Your chats stay on this device until you turn sync on. With sync on, a copy is stored on the WHWai server so you can open your chats on other devices. If you have lost your key or need assistance, please contact We Hate Windows Support.</p><div class="btns"><button class="pbtn" id="s-on">Turn on sync</button></div><p class="sm">Already have a key?</p><div class="join"><input id="s-key" inputmode="numeric" autocomplete="off" maxlength="'+KEYLEN+'" placeholder="'+KEYLEN+'-digit key" aria-label="Sync key"><button class="pbtn" id="s-join">Connect</button></div></div>';
- mbody.insertAdjacentHTML("beforeend",'<h3>Early access</h3><p class="sm">WHWai is currently restricted to early access testers. This browser unlocks for 24 hours at a time.</p><button class="pbtn data-manage-button" id="lock-whwai-now" type="button"><span class="manage-icon">'+ic('<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',17)+'</span><span>Lock WHWai now</span></button><h3>Data & privacy</h3><p class="sm">Export a backup, review or delete chat data, and manage synced copies.</p><button class="pbtn data-manage-button" id="data-tools-open" type="button"><span class="manage-icon">'+ic('<path d="M4 5h16v14H4z"/><path d="M8 9h8M8 12h8M8 15h5"/>',17)+'</span><span>Manage your data</span></button><p class="sm" id="s-msg" role="status"></p><div class="privacy-row"><a href="#" class="privacy-link" id="privacy-open">Privacy Policy</a></div>');
+ mbody.insertAdjacentHTML("beforeend",(accessRequired?'<h3>Early access</h3><p class="sm">WHWai is currently restricted to early access testers. This browser unlocks for 24 hours at a time.</p><button class="pbtn data-manage-button" id="lock-whwai-now" type="button"><span class="manage-icon">'+ic('<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',17)+'</span><span>Lock WHWai now</span></button>':'')+'<h3>Data & privacy</h3><p class="sm">Export a backup, review or delete chat data, and manage synced copies.</p><button class="pbtn data-manage-button" id="data-tools-open" type="button"><span class="manage-icon">'+ic('<path d="M4 5h16v14H4z"/><path d="M8 9h8M8 12h8M8 15h5"/>',17)+'</span><span>Manage your data</span></button><p class="sm" id="s-msg" role="status"></p><div class="privacy-row"><a href="#" class="privacy-link" id="privacy-open">Privacy Policy</a></div>');
  setMsg(smsg);
  updateSyncIndicator();
  if(syncing)lockSettingsForSync(true);
  const q=id=>mbody.querySelector("#"+id);
  q("privacy-open").onclick=e=>{e.preventDefault();renderPrivacyPolicy()};
- q("lock-whwai-now").onclick=()=>lockEarlyAccess(true);
+ const lockButton=q("lock-whwai-now");if(lockButton)lockButton.onclick=()=>lockEarlyAccess(true);
  q("data-tools-open").onclick=renderDataManagement;
  if(on){
   q("s-toggle-key").onclick=()=>{
