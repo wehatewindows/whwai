@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>WHWai</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap">
 <style>
-:root{color-scheme:light;--sw:clamp(210px,26vw,280px);--frame:#bdbdbd;--side:#e6e6e6;--chip:#dcdcdc;--sel:#c9c9c9;--bub:#f1f1f1;--ink:#111;--mute:#666;--blue:#6aa0ff;--f:"Helvetica Neue",Inter,sans-serif}
+:root{--sw:clamp(210px,26vw,280px);--frame:#bdbdbd;--side:#e6e6e6;--chip:#dcdcdc;--sel:#c9c9c9;--bub:#f1f1f1;--ink:#111;--mute:#666;--blue:#6aa0ff;--f:"Helvetica Neue",Inter,sans-serif}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
 body{font:15px/1.45 var(--f);color:var(--ink);background:#fff;padding:12px}
@@ -33,7 +33,7 @@ svg{display:block}
 .chat:hover{background:#d2d2d2}.chat.on{background:var(--sel);box-shadow:inset 0 0 0 1px #aaa}
 .more{position:absolute;right:5px;top:50%;transform:translateY(-50%);border:0;background:none;width:26px;height:26px;border-radius:50%;cursor:pointer;color:#555;display:grid;place-items:center;padding:0;opacity:0;transition:opacity .15s,background .15s}
 .row:hover .more,.row.on .more,.more:focus-visible,.more[aria-expanded=true]{opacity:1}.more:hover,.more[aria-expanded=true]{background:rgba(0,0,0,.1)}
-.cmenu{position:absolute;right:12px;width:160px;background:#fff;border:1px solid #ddd;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.16);padding:5px;z-index:8;animation:rise .15s ease-out}
+.cmenu{position:absolute;right:12px;width:185px;background:#fff;border:1px solid #ddd;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.16);padding:5px;z-index:8;animation:rise .15s ease-out}
 .cmenu[hidden]{display:none}
 .cmenu button{display:flex;align-items:center;gap:9px;width:100%;border:0;background:none;border-radius:9px;padding:8px 10px;cursor:pointer;text-align:left}
 .cmenu button:hover{background:#f0f0f0}.cmenu .danger{color:#d93b3b}
@@ -43,8 +43,6 @@ svg{display:block}
 .menu{display:none;align-self:flex-start;border:0;background:var(--chip);border-radius:12px;padding:5px 12px;cursor:pointer;margin-bottom:8px}
 .scroll{flex:1;overflow:auto;padding:14px 8px 112px;display:flex;flex-direction:column;gap:14px;overscroll-behavior:contain;transition:padding-top .3s ease;scrollbar-width:thin;scrollbar-color:#cfcfcf transparent}
 .scroll::-webkit-scrollbar{width:8px}.scroll::-webkit-scrollbar-thumb{background:#cfcfcf;border-radius:4px}
-.jump-latest{position:absolute;right:18px;bottom:116px;z-index:4;border:1px solid #d5d5d5;border-radius:999px;background:#fff;padding:8px 12px;box-shadow:0 3px 14px rgba(0,0,0,.12);font-size:12px;cursor:pointer;display:none}.jump-latest.show{display:block}.jump-latest:hover{background:#f0f0f0}
-@media(max-width:640px){.jump-latest{right:12px;bottom:calc(100px + env(safe-area-inset-bottom));}}
 .msg{max-width:78%;background:var(--bub);border-radius:20px;padding:12px 16px;overflow-wrap:anywhere;flex:none}
 .msg.u{align-self:flex-end;border-radius:26px;padding:13px 24px;white-space:pre-wrap}
 .msg.dim{color:#777}
@@ -64,18 +62,23 @@ svg{display:block}
 .input{display:flex;gap:10px;align-items:flex-end;position:relative}
 .field{flex:1;display:flex;align-items:flex-end;background:var(--bub);border-radius:26px;padding:0 14px 0 20px;min-height:50px}
 .field textarea{flex:1;border:0;background:none;outline:0;resize:none;min-width:0;padding:14px 0;max-height:120px;line-height:22px;height:50px}
-.mwrap{position:relative;align-self:center;margin-left:8px}
+.mwrap{position:relative;align-self:center;margin-left:8px;display:flex;align-items:center;gap:2px}
 .model{border:0;background:none;font-weight:700;cursor:pointer;white-space:nowrap;padding:6px;border-radius:10px;display:flex;align-items:center;gap:5px}
 .model:hover{background:#e4e4e4}
+.model-info{flex:none;border:0;border-radius:8px;background:#e5edff;color:#2458b8;padding:3px 6px;min-height:22px;font-size:11px;line-height:1;font-weight:700;cursor:pointer;white-space:nowrap}
+.model-info:hover{background:#d6e3ff}.model-info[hidden]{display:none!important}
+.info-pop{position:absolute;right:0;bottom:calc(100% + 14px);width:min(270px,calc(100vw - 44px));background:#fff;border:1px solid #ddd;border-radius:14px;box-shadow:0 8px 26px rgba(0,0,0,.14);padding:12px;z-index:12;animation:rise .15s ease-out}
+.info-pop[hidden]{display:none!important}.info-pop p{margin:0 0 10px;font-size:13px;line-height:1.45;color:#222}.info-pop button{border:0;background:#e7e7e7;border-radius:9px;padding:6px 10px;font:inherit;font-size:12px;cursor:pointer}.info-pop button:hover{background:#d9d9d9}
 .pop{position:absolute;right:0;bottom:calc(100% + 14px);width:240px;background:#fff;border:1px solid #ddd;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.16);padding:6px;z-index:10;animation:rise .15s ease-out}
 .pop[hidden]{display:none}
 .pop .ph{font-size:12.5px;color:var(--mute);padding:6px 10px 4px}
 .mi{display:flex;width:100%;align-items:center;gap:8px;border:0;background:#f3f3f3;border-radius:11px;padding:8px 10px;cursor:pointer;text-align:left}
 .mi div{flex:1}.mi small{display:block;color:var(--mute);font-size:12.5px}.mi i{display:flex;color:var(--blue)}
+.mi:disabled{opacity:.58;cursor:not-allowed;background:#f5f5f5}.mi:disabled small{color:#888}
 .round{width:48px;height:48px;border-radius:50%;border:0;background:var(--bub);cursor:pointer;flex:none;display:grid;place-items:center;transition:background .15s,opacity .15s;margin-bottom:1px}
 .round:hover{background:#e2e2e2}.round:disabled{opacity:.45;cursor:default}
 .note{font-size:13px;margin:8px 0 0 4px}
-.toast{position:absolute;left:50%;bottom:64px;transform:translate(-50%,8px);background:#222;color:#fff;border-radius:14px;padding:7px 14px;font-size:13.5px;opacity:0;pointer-events:none;transition:.2s;white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis;z-index:9}
+.toast{position:absolute;left:50%;bottom:64px;transform:translate(-50%,8px);background:#222;color:#fff;border-radius:14px;padding:7px 14px;font-size:13.5px;opacity:0;pointer-events:none;transition:.2s;white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis;z-index:25}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .scrim{display:none;position:absolute;inset:0;background:rgba(0,0,0,.25);z-index:5}
 .gear{position:absolute;left:12px;bottom:12px;width:30px;height:30px;border-radius:50%;border:0;background:#bbb;color:#fff;padding:0;display:grid;place-items:center;cursor:pointer;transition:background .15s}
@@ -94,7 +97,7 @@ svg{display:block}
 .btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
 .pbtn{border:0;background:var(--chip);border-radius:12px;padding:8px 14px;cursor:pointer;font-weight:500;transition:background .15s}
 @keyframes syncspin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-.pbtn:hover{background:#cfcfcf}.pbtn:disabled{opacity:.62;cursor:wait}.pbtn:disabled:hover{background:var(--chip)}.pbtn.danger{color:#d93b3b}.sync-spinner{display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;vertical-align:-2px;margin-right:7px;animation:syncspin .7s linear infinite}.round .sync-spinner{width:19px;height:19px;border-width:2.5px;margin:0;vertical-align:middle}.key-actions{display:flex;align-items:center;gap:2px;flex:none}.key-value{min-width:0;overflow-wrap:anywhere}.key button[aria-pressed=true]{background:rgba(106,160,255,.18)}.privacy-row{margin-top:10px}.privacy-link{color:#2f6ee0;text-decoration:none;cursor:pointer;font-size:14px}.privacy-link:hover,.privacy-link:focus{text-decoration:none;color:#2458b8}.privacy-link:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:3px}.policy-takeaways{background:#eef4ff;border:1px solid #d8e5ff;border-radius:14px;padding:12px 14px;margin:10px 0 14px}.policy-takeaways ul{margin:6px 0 0;padding-left:19px}.policy-takeaways li{font-size:13px;margin:4px 0}.policy-placeholder{background:#f3f3f3;border-radius:12px;padding:10px 12px;font-size:13px;color:#555}
+.pbtn:hover{background:#cfcfcf}.pbtn:disabled{opacity:.62;cursor:wait}.pbtn:disabled:hover{background:var(--chip)}.pbtn.danger{color:#d93b3b}.sync-spinner{display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;vertical-align:-2px;margin-right:7px;animation:syncspin .7s linear infinite}.round .sync-spinner{width:19px;height:19px;border-width:2.5px;margin:0;vertical-align:middle}.key-actions{display:flex;align-items:center;gap:2px;flex:none}.key-value{min-width:0;overflow-wrap:anywhere}.key button[aria-pressed=true]{background:rgba(106,160,255,.18)}.privacy-row{margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:12px}.lock-link{border:0;background:none;padding:0;margin:0;font:inherit;font-size:14px;color:#2f6ee0;cursor:pointer;text-decoration:none}.lock-link:hover,.lock-link:focus{color:#2458b8}.lock-link:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:3px}.privacy-link{color:#2f6ee0;text-decoration:none;cursor:pointer;font-size:14px}.privacy-link:hover,.privacy-link:focus{text-decoration:none;color:#2458b8}.privacy-link:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:3px}.policy-takeaways{background:#eef4ff;border:1px solid #d8e5ff;border-radius:14px;padding:12px 14px;margin:10px 0 14px}.policy-takeaways ul{margin:6px 0 0;padding-left:19px}.policy-takeaways li{font-size:13px;margin:4px 0}.policy-placeholder{background:#f3f3f3;border-radius:12px;padding:10px 12px;font-size:13px;color:#555}
 .data-tools-list{display:flex;flex-direction:column;gap:8px;margin:12px 0 16px}
 .data-tool{display:flex;align-items:center;gap:11px;width:100%;min-width:0;padding:11px 12px;border:1px solid #e4e4e4;border-radius:14px;background:#f7f7f7;text-align:left;cursor:pointer}
 .data-tool:hover{background:#eee}.data-tool:active{background:#e7e7e7}
@@ -169,6 +172,11 @@ button:focus-visible,.chat:focus-visible,.model:focus-visible{outline:2px solid 
 .typing-indicator{display:inline-flex;align-items:center;gap:5px;height:18px;margin-right:7px;vertical-align:middle;color:#777}
 .typing-indicator span{width:6px;height:6px;border-radius:50%;background:currentColor;animation:typingDot 1s ease-in-out infinite;opacity:.45}
 .typing-indicator span:nth-child(2){animation-delay:.14s}.typing-indicator span:nth-child(3){animation-delay:.28s}
+.msg a{color:#2f6ee0;text-decoration:none;overflow-wrap:anywhere}.msg a:hover{text-decoration:underline}
+.answer-sources{align-self:flex-start;max-width:86%;margin-top:-8px;font-size:12.5px;color:#555}
+.answer-sources details{background:#f7f7f7;border:1px solid #e5e5e5;border-radius:11px;padding:7px 10px}
+.answer-sources summary{cursor:pointer;user-select:none;color:#444;font-weight:500}
+.answer-sources ul{margin:7px 0 0;padding-left:17px}.answer-sources li{margin:4px 0;overflow-wrap:anywhere}.answer-sources a{color:#2f6ee0;text-decoration:none}.answer-sources a:hover{text-decoration:underline}
 @keyframes typingDot{0%,60%,100%{transform:translateY(0);opacity:.38}30%{transform:translateY(-4px);opacity:1}}
 #export-data.cooldown{letter-spacing:.06em;font-variant-numeric:tabular-nums}
 @media (prefers-reduced-motion:reduce){.modal,.modal .mcard,.modal.closing,.modal.closing .mcard,#mbody.menu-content-enter,.fresh,.orb.think,.sync-indicator.syncing svg,.sync-spinner{animation:none!important;transition:none!important}}
@@ -208,9 +216,9 @@ html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(
  .input{margin:0 var(--edge);gap:8px;padding-top:6px;min-width:0}
  .field{min-width:0;min-height:48px;padding:0 6px 0 16px;border-radius:24px;background:rgba(255,255,255,.88);-webkit-backdrop-filter:blur(20px) saturate(1.6);backdrop-filter:blur(20px) saturate(1.6);border:1px solid rgba(255,255,255,.95)}
  .field textarea{min-width:0;width:0;flex:1;line-height:24px;padding:12px 0;max-height:112px;height:48px}
- .mwrap{flex:none;margin-left:4px}
- .model{max-width:96px;overflow:hidden;font-size:13px;padding:6px 4px;gap:3px}.model .sep{display:none}.model span{overflow:hidden;text-overflow:ellipsis}
- #clip{display:none}
+ .mwrap{flex:none;margin-left:4px;gap:2px}
+ .model{max-width:88px;overflow:hidden;font-size:13px;padding:6px 4px;gap:3px}.model .sep{display:none}.model span{overflow:hidden;text-overflow:ellipsis}
+ .model-info{padding:3px 5px;font-size:10px;min-height:20px}.info-pop{width:min(260px,calc(100vw - 40px))}
  .round{width:44px;height:44px;margin-bottom:2px;background:rgba(255,255,255,.88);box-shadow:0 2px 12px rgba(106,160,255,.25)}
  .orb{width:46px;height:46px;right:0;bottom:calc(100% + 12px)}
  .pop{width:min(240px,calc(100vw - 2 * var(--edge)));right:0}
@@ -242,10 +250,13 @@ html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(
  .menubtn,.mnew{width:32px;height:32px}
 }
 
-/* ---------- iOS Safari zooms in when a text field renders under 16px. 18px leaves headroom in case the
-   page around the embed (Google Sites) is slightly zoomed out. ---------- */
+/* ---------- Stop iOS Safari zooming into text fields on focus. It zooms whenever a focused field's
+   font size is under 16px, so every field on touch devices is kept at 18px or larger. ---------- */
 @media (max-width:640px),(hover:none) and (pointer:coarse){
- input,textarea,select,.field textarea,.mcard .join input,.list .rn{font-size:max(16px,1rem)!important}
+ input,textarea,select,.field textarea,.mcard .join input,.list .rn,.access-form input{font-size:max(18px,1rem)!important}
+}
+@supports (-webkit-touch-callout:none){
+ input,textarea,select{font-size:max(18px,1rem)!important}
 }
 
 /* ---------- minimal access gate ---------- */
@@ -267,6 +278,96 @@ body.access-locked .frame{filter:blur(6px);transform:scale(1.004);transform-orig
 .access-card.disabled-mode h2{margin:0;font-weight:500}
 @media(prefers-reduced-motion:reduce){.access-card{animation:none}}
 
+
+/* ---------- chat search, code copying, and light/dark appearance ---------- */
+.chat-search{display:flex;align-items:center;gap:8px;flex:none;margin:0 0 10px;padding:0 10px;height:40px;border-radius:12px;background:var(--chip);color:var(--mute);border:1px solid transparent}
+.chat-search:focus-within{border-color:rgba(106,160,255,.65);box-shadow:0 0 0 2px rgba(106,160,255,.12)}
+.chat-search svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.chat-search input{min-width:0;width:100%;height:100%;border:0;outline:0;background:transparent;color:var(--ink);font:inherit;font-size:13.5px}
+.chat-search input::-webkit-search-cancel-button{display:none}
+.chat-search input::placeholder{color:var(--mute);opacity:1}
+.chat-search button{width:23px;height:23px;flex:none;border:0;border-radius:50%;background:rgba(0,0,0,.06);color:var(--ink);font-size:19px;line-height:1;padding:0;cursor:pointer}
+.chat-search button[hidden]{display:none}
+.search-empty{padding:12px 8px;color:var(--mute);font-size:13px;line-height:1.45}
+.search-snippet{display:-webkit-box;margin-top:4px;color:var(--mute);font-size:11.5px;line-height:1.35;overflow:hidden;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere;font-weight:400}
+.msg .codeblock{position:relative;max-width:100%;min-width:0;margin:0 0 8px}
+.msg .codeblock:last-child{margin-bottom:0}
+.msg .codeblock pre{margin:0;padding-top:35px;max-width:100%}
+.msg .codeblock pre code{background:transparent;padding:0;font-size:inherit}
+.code-copy{position:absolute;top:6px;right:6px;z-index:2;display:flex;align-items:center;justify-content:center;gap:5px;min-height:25px;padding:4px 8px;border:1px solid #d4d4d4;border-radius:8px;background:#f7f7f7;color:#222;font:500 11.5px/1.1 var(--f);cursor:pointer;white-space:nowrap}
+.code-copy:hover{background:#e8e8e8}
+.code-copy:disabled{opacity:.7;cursor:default}
+.theme-switch{display:flex;gap:8px;margin:8px 0 16px}
+.theme-choice{flex:1;min-height:38px;background:var(--chip);color:var(--ink);border:1px solid transparent}
+.theme-choice[aria-pressed="true"]{background:#dbe7ff;color:#214d9c;border-color:#b7ceff}
+html[data-theme="dark"]{color-scheme:dark;--frame:#3a3c46;--side:#22242b;--chip:#343640;--sel:#454853;--bub:#292b33;--ink:#f1f2f5;--mute:#aaadb8;--blue:#8eb5ff}
+html[data-theme="dark"] body{background:#15161b;color:var(--ink)}
+html[data-theme="dark"] .frame{border-color:var(--frame);background:#191a20}
+html[data-theme="dark"] .side{background:var(--side)}
+html[data-theme="dark"] .brand{border-bottom-color:#3a3c45}
+html[data-theme="dark"] .chat{color:var(--ink)}
+html[data-theme="dark"] .chat:hover{background:#3d404a}
+html[data-theme="dark"] .chat.on{background:var(--sel);box-shadow:inset 0 0 0 1px #595c68}
+html[data-theme="dark"] .more{color:#d0d2da}
+html[data-theme="dark"] .new,html[data-theme="dark"] .gear{background:#454751;color:#f4f4f6}
+html[data-theme="dark"] .new:hover,html[data-theme="dark"] .gear:hover{background:#555864}
+html[data-theme="dark"] .scrim{background:rgba(0,0,0,.5)}
+html[data-theme="dark"] .msg{background:var(--bub);color:var(--ink)}
+html[data-theme="dark"] .msg.u{background:linear-gradient(180deg,#557ecb,#416ab4);color:#fff}
+html[data-theme="dark"] .msg pre,html[data-theme="dark"] .msg code{background:#1a1c22;color:#f0f1f5}
+html[data-theme="dark"] .bar button{color:var(--ink)}
+html[data-theme="dark"] .bar button:hover{background:#3b3e47}
+html[data-theme="dark"] .empty h2{color:var(--ink)}
+html[data-theme="dark"] .model:hover{background:#343640}
+html[data-theme="dark"] .round{background:#292b33;color:var(--ink);box-shadow:0 2px 12px rgba(0,0,0,.2)}
+html[data-theme="dark"] .round:hover{background:#393c46}
+html[data-theme="dark"] .field{background:rgba(37,39,47,.96);border-color:#343640}
+html[data-theme="dark"] .field textarea{color:var(--ink)}
+html[data-theme="dark"] .note{color:#a5a8b2}
+html[data-theme="dark"] .pop,html[data-theme="dark"] .cmenu,html[data-theme="dark"] .modal .mcard{background:#22242b;color:var(--ink);border-color:#3d404a}
+html[data-theme="dark"] .cmenu button{color:var(--ink)}
+html[data-theme="dark"] .cmenu button:hover{background:#383b45}
+html[data-theme="dark"] .pop .ph{color:var(--mute)}
+html[data-theme="dark"] .mi{background:#343640;color:var(--ink)}
+html[data-theme="dark"] .mi:hover{background:#41444e}
+html[data-theme="dark"] .mi small{color:var(--mute)}
+html[data-theme="dark"] .mh button{background:#343640;color:var(--ink)}
+html[data-theme="dark"] .key,html[data-theme="dark"] .join input{background:#292b33;color:var(--ink)}
+html[data-theme="dark"] .pbtn{background:#383a44;color:var(--ink)}
+html[data-theme="dark"] .pbtn:hover{background:#484b56}
+html[data-theme="dark"] .pbtn:disabled,html[data-theme="dark"] .pbtn:disabled:hover{background:#30323a;color:#8f929b}
+html[data-theme="dark"] .data-tool,html[data-theme="dark"] .delete-choice,html[data-theme="dark"] .confirm-panel,html[data-theme="dark"] .export-contents{background:#2b2d35;border-color:#41434d;color:var(--ink)}
+html[data-theme="dark"] .data-tool:hover{background:#363943}
+html[data-theme="dark"] .data-tool .tool-icon,html[data-theme="dark"] .delete-choice .choice-icon{background:#3a3d47;color:#e4e6ec}
+html[data-theme="dark"] .data-tool small,html[data-theme="dark"] .delete-choice p,html[data-theme="dark"] .confirm-panel p{color:#b5b7c0}
+html[data-theme="dark"] .data-tool.danger .tool-icon,html[data-theme="dark"] .delete-choice.danger .choice-icon,html[data-theme="dark"] .confirm-panel .choice-icon{background:#4b2c31;color:#ffb0b0}
+html[data-theme="dark"] .policy-takeaways{background:#282e3a;border-color:#3b465c;color:var(--ink)}
+html[data-theme="dark"] .policy-takeaways strong{color:#e0e7f5}
+html[data-theme="dark"] .policy-placeholder{background:#2d3038;color:#c5c7cf}
+html[data-theme="dark"] .privacy-link,html[data-theme="dark"] .lock-link,html[data-theme="dark"] .mcard a{color:#91b6ff}
+html[data-theme="dark"] .privacy-link:hover,html[data-theme="dark"] .lock-link:hover{color:#b7ceff}
+html[data-theme="dark"] .settings-sync-lock{background:rgba(20,21,26,.84)}
+html[data-theme="dark"] .settings-sync-lock-inner{background:#22242b;border-color:#3d404a;color:var(--ink)}
+html[data-theme="dark"] .sync-status-label{color:#babdc6}
+html[data-theme="dark"] .toast{background:#f3f3f5;color:#191a20}
+html[data-theme="dark"] .chat-search{background:#30323b;border-color:#3e414b}
+html[data-theme="dark"] .chat-search button{background:#444751;color:var(--ink)}
+html[data-theme="dark"] .code-copy{background:#383b45;border-color:#535660;color:#f2f3f6}
+html[data-theme="dark"] .code-copy:hover{background:#4b4e59}
+html[data-theme="dark"] .theme-choice[aria-pressed="true"]{background:#344967;color:#dce8ff;border-color:#526f9c}
+html[data-theme="dark"] .side .new,html[data-theme="dark"] .side .gear,html[data-theme="dark"] .side .sync-control{background:#343640;color:var(--ink)}
+html[data-theme="dark"] .side .sync-indicator{background:#343640;color:var(--ink)}
+html[data-theme="dark"] .side .logo{background:rgba(255,255,255,.09)!important;background-image:none!important}
+@media (max-width:640px){
+ .chat-search{margin-bottom:12px;height:42px}
+ .chat-search input{font-size:18px}
+ html[data-theme="dark"] body{background:radial-gradient(120% 50% at 50% 108%,rgba(120,150,255,.12),transparent 70%),#15161b}
+ html[data-theme="dark"] .mbar{background:rgba(24,25,31,.86);border-bottom-color:rgba(255,255,255,.08)}
+ html[data-theme="dark"] .menubtn,html[data-theme="dark"] .mnew{background:rgba(255,255,255,.09);color:#f1f2f5}
+ html[data-theme="dark"] .side{background:#22242b}
+}
+@media (max-width:360px){.chat-search{height:40px}}
+
 </style>
 </head>
 <body class="access-locked">
@@ -280,19 +381,19 @@ body.access-locked .frame{filter:blur(6px);transform:scale(1.004);transform-orig
 <div class="frame" id="app-frame">
  <aside class="side" id="side">
   <div class="brand"><h1>WHW<b>ai</b></h1><button class="logo" id="logo" title="Collapse sidebar" aria-label="Collapse sidebar"></button></div>
+  <div class="chat-search" role="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4.5 4.5"></path></svg><input id="chat-search" type="search" placeholder="Search chats" aria-label="Search chats" autocomplete="off" spellcheck="false"><button id="chat-search-clear" type="button" aria-label="Clear search" title="Clear search" hidden>×</button></div>
   <div class="list" id="list"></div>
   <button class="new" id="new" title="New chat" aria-label="New chat">+</button>
   <button class="gear" id="gear" title="Settings" aria-label="Settings"></button>
   <div class="sync-control" id="sync-control" hidden><button class="sync-indicator" id="sync-indicator" title="Sync now" aria-label="Sync now"></button><span class="sync-status-label" id="sync-status-label" role="status">Not synced</span></div>
-  <div class="cmenu" id="cmenu" role="menu" hidden><button id="cren" role="menuitem"></button><button id="cpin" role="menuitem"></button><button id="cdel" class="danger" role="menuitem"></button></div>
+  <div class="cmenu" id="cmenu" role="menu" hidden><button id="cren" role="menuitem"></button><button id="cgen" role="menuitem"></button><button id="cpin" role="menuitem"></button><button id="cdel" class="danger" role="menuitem"></button></div>
  </aside>
  <div class="scrim" id="scrim"></div>
  <div class="modal" id="modal" hidden><div class="mcard" role="dialog" aria-label="Settings"><div class="mh"><b id="modal-title">Settings</b><button id="mx" aria-label="Close">&times;</button></div><div id="mbody"></div></div></div>
  <section class="main">
   <button class="expand" id="expand" title="Show sidebar" aria-label="Show sidebar"></button>
   <div class="mbar"><button class="menubtn" id="mopen" title="Open chats and settings" aria-label="Open chats and settings" aria-expanded="false"></button><span class="mt">WHW<b>ai</b></span><button class="mnew" id="mnew" title="New chat" aria-label="New chat"></button></div>
-  <div class="scroll" id="chat" aria-label="Conversation messages"></div>
-  <button class="jump-latest" id="jump-latest" type="button" title="Jump to latest message">↓ Latest</button>
+  <div class="scroll" id="chat"></div>
   <div class="toast" id="toast" role="status"></div>
   <div class="input">
    <div class="orb" id="orb" aria-hidden="true"></div>
@@ -300,13 +401,17 @@ body.access-locked .frame{filter:blur(6px);transform:scale(1.004);transform-orig
     <textarea id="in" rows="1" placeholder="Message WHWai" aria-label="Message"></textarea>
     <div class="mwrap">
      <button class="model" id="model" aria-haspopup="menu" aria-expanded="false"></button>
+     <button class="model-info" id="aries-info" type="button" aria-label="About Aries" title="About Aries" hidden>Info</button>
+     <div class="info-pop" id="aries-info-pop" role="dialog" aria-label="About Aries" hidden>
+      <p>Aries’ knowledge is current to around mid-2024 and it has no web access.</p>
+      <button type="button" id="aries-info-dismiss">Got it</button>
+     </div>
      <div class="pop" id="pop" role="menu" hidden>
       <div class="ph">Model</div>
-      <button class="mi" id="mi" role="menuitemradio" aria-checked="true"><div>Aries<small>Powered by OpenAI</small></div><i id="tick"></i></button>
+      <div id="model-options"></div>
      </div>
     </div>
    </div>
-   <button class="round" id="clip" title="Attach" aria-label="Attach"></button>
    <button class="round" id="send" title="Send" aria-label="Send"></button>
   </div>
   <div class="note">WHW<b>ai</b> is not human and can make mistakes.</div>
@@ -318,40 +423,119 @@ const LOGO="data:image/webp;base64,UklGRk4cAABXRUJQVlA4WAoAAAAQAAAAnwAAnwAAQUxQS
 const API_URL="https://script.google.com/macros/s/AKfycbzoXvUigJ1gri6Yyeoj6CRh-wsqJB4A9SOV0OA_6rZ43NsJIsTLNpQdDyqC-lVd8Wbv/exec";
 try{if(self!==top)document.documentElement.classList.add("embedded")}catch(e){document.documentElement.classList.add("embedded")}
 const MIN=60000,KEY="whwai.v2",$=id=>document.getElementById(id);
-const ic=(d,s=18,w=2)=>`<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const ic=(d,s=18,w=2)=><svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>;
 const I={
  copy:ic('<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>',16),
  regen:ic('<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/>',16),
  check:ic('<path d="M5 12.5l4.5 4.5L19 7.5"/>',16,2.4),
- clip:ic('<path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>',22),
  send:ic('<path d="M5 12h14"/><path d="M13 6l6 6-6 6"/>',22,2.6),
  chev:ic('<path d="M6 9l6 6 6-6"/>',14,2.4)
 };
-$("new").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',16,2.6);$("clip").innerHTML=I.clip;$("send").innerHTML=I.send;$("tick").innerHTML=I.check;
-$("model").innerHTML='<span class="sep">|</span><span>Aries</span>'+I.chev;
+$("new").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',16,2.6);$("send").innerHTML=I.send;
 
 let mem=null;
 const store={get(){try{return localStorage.getItem(KEY)}catch(e){return mem}},set(v){mem=v;try{localStorage.setItem(KEY,v)}catch(e){}}};
 let canSave=true;try{localStorage.setItem(KEY+".t","1");localStorage.removeItem(KEY+".t")}catch(e){canSave=false}
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const RULES=[
- [/coffee|shop|marketing|customers|business/,`For a local coffee shop, your best marketing is usually hyper-local and relationship-driven, which is also the cheapest kind. Here are a few things worth trying:\n\n- **Start a simple loyalty program.** A punch card gives regulars a reason to come back and costs almost nothing to run.\n- **Partner with nearby businesses.** Offer a discount to employees of the office next door, or swap flyers with a bookstore or gym.\n- **Make your Google Business Profile shine.** Fresh photos, accurate hours, and steady reviews matter more than almost any ad.\n- **Post behind-the-scenes content.** Latte art and new menu items build familiarity for free.\n\nIf you only have time for two, start with the Google Business Profile and a loyalty program.`],
- [/meal|prep|dinner|lunch|cook/,`Meal prep works best when you keep it simple:\n\n- **Cook two proteins and two grains** on Sunday, then mix them all week.\n- **Chop vegetables** right after shopping so they get used.\n- **Freeze one portion** of everything as a backup.\n\nWant a shopping list for five lunches?`],
- [/python|bug|error|code|script/,`Paste the script and the full error message and I'll walk through it. In the meantime, check these first:\n\n- **The last line of the traceback** names the real problem.\n- **Indentation and typos** cause most beginner errors.\n- **Print the variable** just before the line that fails.`],
- [/resume|cv|job/,`Happy to review it. Good resumes lead with results, so for each job, swap duties for outcomes ("cut wait times by 20%" beats "answered phones"). Paste your resume and tell me the role you're aiming for.`],
- [/japan|trip|travel|tokyo|kyoto/,`Japan is great for a first visit of 10 days or so:\n\n- **Tokyo (4 nights):** neighborhoods, food, day trips.\n- **Kyoto (3 nights):** temples and gardens.\n- **Osaka (2 nights):** street food and nightlife.\n\nWhen are you thinking of going?`],
- [/stock|invest|money/,`I can explain how stocks and funds work, but I can't tell you what to buy. Tell me your time horizon and how much risk you're comfortable with and I'll lay out the common options.`],
- [/^(hi|hello|hey)\b|who are you|your name/,`Hi! I'm Aries, the model behind WHWai. Ask me about marketing, meal plans, code, or trip planning.`]
+ [/coffee|shop|marketing|customers|business/,For a local coffee shop, your best marketing is usually hyper-local and relationship-driven, which is also the cheapest kind. Here are a few things worth trying:\n\n- **Start a simple loyalty program.** A punch card gives regulars a reason to come back and costs almost nothing to run.\n- **Partner with nearby businesses.** Offer a discount to employees of the office next door, or swap flyers with a bookstore or gym.\n- **Make your Google Business Profile shine.** Fresh photos, accurate hours, and steady reviews matter more than almost any ad.\n- **Post behind-the-scenes content.** Latte art and new menu items build familiarity for free.\n\nIf you only have time for two, start with the Google Business Profile and a loyalty program.],
+ [/meal|prep|dinner|lunch|cook/,Meal prep works best when you keep it simple:\n\n- **Cook two proteins and two grains** on Sunday, then mix them all week.\n- **Chop vegetables** right after shopping so they get used.\n- **Freeze one portion** of everything as a backup.\n\nWant a shopping list for five lunches?],
+ [/python|bug|error|code|script/,Paste the script and the full error message and I'll walk through it. In the meantime, check these first:\n\n- **The last line of the traceback** names the real problem.\n- **Indentation and typos** cause most beginner errors.\n- **Print the variable** just before the line that fails.],
+ [/resume|cv|job/,Happy to review it. Good resumes lead with results, so for each job, swap duties for outcomes ("cut wait times by 20%" beats "answered phones"). Paste your resume and tell me the role you're aiming for.],
+ [/japan|trip|travel|tokyo|kyoto/,Japan is great for a first visit of 10 days or so:\n\n- **Tokyo (4 nights):** neighborhoods, food, day trips.\n- **Kyoto (3 nights):** temples and gardens.\n- **Osaka (2 nights):** street food and nightlife.\n\nWhen are you thinking of going?],
+ [/stock|invest|money/,I can explain how stocks and funds work, but I can't tell you what to buy. Tell me your time horizon and how much risk you're comfortable with and I'll lay out the common options.],
+ [/^(hi|hello|hey)\b|who are you|your name/,Hi! I'm Aries, the model behind WHWai. Ask me about marketing, meal plans, code, or trip planning.]
 ];
-const FALLBACK=`That's an interesting question. This demo only knows a few topics, but the real version will answer anything. Try asking about **marketing**, **meal prep**, **Python**, **resumes**, or **a trip**.`;
+const FALLBACK=That's an interesting question. This demo only knows a few topics, but the real version will answer anything. Try asking about **marketing**, **meal prep**, **Python**, **resumes**, or **a trip**.;
 
+// Browser storage is user-readable, so persist only the fields the UI needs.
+// In particular, never persist system/developer messages or unknown properties from
+// older app versions, imported state, or backend responses.
+function safeText(value,max=40000){return String(value==null?"":value).slice(0,max)}
+function safeSources(value){
+ if(!Array.isArray(value))return [];
+ const out=[];const seen=new Set();
+ for(const source of value){
+  if(!source||typeof source!=="object")continue;
+  const title=safeText(source.title,180).trim(),url=safeText(source.url,1000).trim();
+  if(!title||!/^https:\/\//i.test(url)||/[\s<>"']/.test(url)||seen.has(url))continue;
+  seen.add(url);out.push({title,url});if(out.length>=5)break;
+ }
+ return out;
+}
+function safeMessage(value){
+ if(!value||typeof value!=="object"||value.err)return null;
+ const role=value.r||value.role;
+ // Only user-visible user/assistant messages are allowed. Never retain a system prompt.
+ const r=(role==="u"||role==="user")?"u":((role==="a"||role==="assistant")?"a":"");
+ if(!r)return null;
+ const x=safeText(value.x!=null?value.x:value.content);
+ const item={r,x};
+ const at=Number(value.at!=null?value.at:value.timestamp);if(Number.isFinite(at)&&at>0)item.at=at;
+ if(r==="a"){
+  const sources=safeSources(value.sources);if(sources.length)item.sources=sources;
+  const model=safeText(value.model,80);if(model)item.model=model;
+ }
+ return item;
+}
+function safeChat(value){
+ if(!value||typeof value!=="object")return null;
+ const id=safeText(value.id,120);if(!id)return null;
+ const title=safeText(value.t!=null?value.t:value.title,300);
+ const created=Number(value.u!=null?value.u:value.createdAt)||Date.now();
+ const chat={id,t:title||"New chat",u:created,m:[]};
+ const updated=Number(value.mu!=null?value.mu:value.updatedAt);if(Number.isFinite(updated)&&updated>0)chat.mu=updated;
+ if(value.auto)chat.auto=1;if(value.p||value.pinned)chat.p=1;
+ const model=safeText(value.model,80);if(model)chat.model=model;
+ const messages=Array.isArray(value.m)?value.m:(Array.isArray(value.messages)?value.messages:[]);
+ chat.m=messages.map(safeMessage).filter(Boolean);
+ return chat;
+}
+function safeDead(value){
+ if(!Array.isArray(value))return [];
+ return value.filter(d=>d&&typeof d==="object"&&d.id!=null).map(d=>({id:safeText(d.id,120),mu:Number(d.mu)||0})).filter(d=>d.id&&d.mu>0).slice(-5000);
+}
+function safeState(value){
+ const raw=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
+ const chats=(Array.isArray(raw.chats)?raw.chats:[]).map(safeChat).filter(Boolean);
+ const model=safeText(raw.model,80);
+ const key=safeText(raw.key,6);
+ const state={
+  chats,
+  cur:raw.cur!=null&&chats.some(c=>c.id===String(raw.cur))?String(raw.cur):null,
+  dead:safeDead(raw.dead),
+  model:model||"aries-1",
+  col:!!raw.col,
+  key:/^\d{6}$/.test(key)?key:null,
+  deviceCount:Math.max(0,Number(raw.deviceCount)||0),
+  last:Math.max(0,Number(raw.last)||0),
+  theme:raw.theme==="dark"?"dark":"light"
+ };
+ chats.forEach(c=>{if(!c.model)c.model="aries-1"});
+ return state;
+}
 let S=null;
-try{S=JSON.parse(store.get()||"null")}catch(e){}
-if(!S||!Array.isArray(S.chats))S={chats:[],cur:null};
-if(S.cur&&!S.chats.some(c=>c.id===S.cur))S.cur=null;
-if(!Array.isArray(S.dead))S.dead=[];
-const clean=()=>({chats:S.chats.map(c=>({...c,m:c.m.filter(m=>!m.err).map(({_l,...r})=>r)})),dead:S.dead});
-const save=ns=>{store.set(JSON.stringify({...S,...clean()}));if(!ns&&S.key)syncSoon()};
+try{S=safeState(JSON.parse(store.get()||"null"))}catch(e){S=safeState(null)}
+// Rewrite existing storage immediately to remove any legacy/unrecognized fields.
+try{store.set(JSON.stringify(S))}catch(e){}
+let availableModels=[{id:"aries-1",name:"Aries",description:"Powered by OpenAI"}];
+const ARIES_NOTICE_KEY="whwai.ariesInfoSeen.v1";
+const clean=()=>({chats:S.chats.map(safeChat).filter(Boolean),dead:safeDead(S.dead)});
+const persistedState=()=>({
+ chats:clean().chats,
+ cur:S.cur&&S.chats.some(c=>c.id===S.cur)?S.cur:null,
+ dead:clean().dead,
+ model:safeText(S.model||"aries-1",80),
+ col:!!S.col,
+ key:/^\d{6}$/.test(String(S.key||""))?String(S.key):null,
+ deviceCount:Math.max(0,Number(S.deviceCount)||0),
+ last:Math.max(0,Number(S.last)||0),
+ theme:S.theme==="dark"?"dark":"light"
+});
+let localRevision=0;
+const applyTheme=theme=>{const normalized=theme==="dark"?"dark":"light";S.theme=normalized;document.documentElement.dataset.theme=normalized};
+applyTheme(S.theme);
+const save=ns=>{localRevision++;store.set(JSON.stringify(persistedState()));if(!ns&&S.key){syncPending=true;updateSyncIndicator();syncSoon()}};
 // Repair titles saved by earlier versions that exposed the NO_TITLE marker.
 let repairedTitle=false;
 S.chats.forEach(c=>{
@@ -362,6 +546,28 @@ S.chats.forEach(c=>{
 if(repairedTitle)save(true);
 const C=()=>S.chats.find(c=>c.id===S.cur)||null;
 const sorted=()=>[...S.chats].sort((a,b)=>(b.p?1:0)-(a.p?1:0)||b.u-a.u);
+const searchInput=$("chat-search"),searchClear=$("chat-search-clear");
+function normalizeSearch(value){return String(value||"").toLocaleLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g,"").replace(/[^\p{L}\p{N}]+/gu," ").trim()}
+function countOccurrences(text,term){if(!term)return 0;let count=0,at=0;while((at=text.indexOf(term,at))!==-1&&count<20){count++;at+=Math.max(1,term.length)}return count}
+function scoreChat(chat,query){
+ const q=normalizeSearch(query);if(!q)return 0;
+ const title=normalizeSearch(chat.t),messages=normalizeSearch((chat.m||[]).map(m=>m.x||"").join(" ")),terms=[...new Set(q.split(/\s+/).filter(Boolean))];
+ if(!terms.length)return 0;let score=0;
+ if(title===q)score+=180;else if(title.startsWith(q))score+=100;else if(title.includes(q))score+=65;
+ if(messages.includes(q)){const pos=messages.indexOf(q);score+=42+Math.max(0,12-Math.floor(pos/180))}
+ let found=0;terms.forEach(term=>{const titleCount=countOccurrences(title,term),messageCount=countOccurrences(messages,term);if(titleCount||messageCount)found++;if(titleCount)score+=Math.min(titleCount,3)*22+(title.startsWith(term)?8:0);if(messageCount)score+=Math.min(messageCount,8)*4+Math.max(0,7-Math.floor(messages.indexOf(term)/250));});
+ if(found===terms.length)score+=35;else if(found>1)score+=found*3;
+ if(!terms.some(t=>title.includes(t)||messages.includes(t)))return 0;
+ return score;
+}
+function searchSnippet(chat,query){
+ const q=normalizeSearch(query),terms=q.split(/\s+/).filter(Boolean),messages=(chat.m||[]).map(m=>String(m.x||""));
+ let candidate=messages.find(text=>normalizeSearch(text).includes(q));
+ if(!candidate)candidate=messages.find(text=>{const n=normalizeSearch(text);return terms.some(term=>n.includes(term))});
+ if(!candidate)return "Title match · Updated "+ago(chat.u);
+ const normal=normalizeSearch(candidate);let at=normal.indexOf(q);if(at<0){const positions=terms.map(t=>normal.indexOf(t)).filter(n=>n>=0);at=positions.length?Math.min(...positions):0}
+ const original=candidate;let start=Math.max(0,at-42),end=Math.min(original.length,start+118);if(end-start<118)start=Math.max(0,end-118);return (start>0?"…":"")+original.slice(start,end).replace(/\s+/g," ").trim()+(end<original.length?"…":"");
+}
 
 const chatEl=$("chat"),ta=$("in"),orb=$("orb"),list=$("list"),sendBtn=$("send");
 let busy=false,activeAnswerController=null,responseWasStopped=false,answerRunId=0;
@@ -376,7 +582,7 @@ function md(s){
   .replace(/(^|\n)[ \t]*\\([*-])[ \t]+/g,"$1$2 ")
   .replace(/\\([*_`-])/g,"$1")
   .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g,"$1$2");
- const inl=t=>esc(t).replace(/`([^`\n]+)`/g,"<code>$1</code>").replace(/\*\*(.+?)\*\*/g,"<b>$1</b>");
+ const inl=t=>esc(t).replace(/([^\n]+)`/g,"<code>$1</code>").replace(/\*\*(.+?)\*\*/g,"<b>$1</b>");
  const blocks=t=>t.split(/\n\n+/).filter(b=>b.trim()).map(b=>{
   const html=[];let para=[],items=[];
   const flushPara=()=>{if(para.length){html.push("<p>"+para.map(inl).join("<br>")+"</p>");para=[]}};
@@ -387,7 +593,7 @@ function md(s){
   });
   flushList();flushPara();return html.join("");
  }).join("");
- return String(s||"").split(/```[\w+-]*\n?([\s\S]*?)(?:```|$)/).map((p,i)=>i%2?"<pre>"+esc(p.replace(/\n+$/,""))+"</pre>":blocks(normalize(p))).join("");
+ return String(s||"").split(/```[\w+-]*\n?([\s\S]*?)(?:```|$)/).map((p,i)=>i%2?'<div class="codeblock"><button class="code-copy" type="button" aria-label="Copy code">Copy code</button><pre><code>'+esc(p.replace(/\n+$/,""))+'</code></pre></div>':blocks(normalize(p))).join("");
 }
 function ago(t){
  const m=Math.floor((Date.now()-t)/MIN);
@@ -402,23 +608,25 @@ function sleepUntilAbort(ms,signal){return new Promise(resolve=>{
  const t=setTimeout(finish,ms);
  if(signal){if(signal.aborted)finish();else signal.addEventListener("abort",finish,{once:true})}
 })}
-let userScrolledUp=false;
 const near=()=>chatEl.scrollHeight-chatEl.scrollTop-chatEl.clientHeight<140;
-const toBottom=()=>{chatEl.scrollTo({top:chatEl.scrollHeight,behavior:"auto"});userScrolledUp=false;updateJumpLatest()};
-function updateJumpLatest(){const b=$("jump-latest");if(b)b.classList.toggle("show",!near())}
-chatEl.addEventListener("scroll",()=>{userScrolledUp=!near();updateJumpLatest()},{passive:true});
-$("jump-latest").onclick=()=>toBottom();
+const toBottom=()=>chatEl.scrollTo({top:chatEl.scrollHeight});
 
 const PIN='<path d="M12 17v5"/><path d="M9 3h6l-1 7 3 3v2H7v-2l3-3z"/>',
  TRASH='<path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/>',
  DOTS='<circle cx="5" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.7" fill="currentColor" stroke="none"/>';
 const PEN='<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>';
+const SPARK='<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16v4M17 18h4"/>';
 let renamingId=null;
 let mid=null;
 function renderList(){
  list.innerHTML="";closeMenu();
- if(!S.chats.length)list.insertAdjacentHTML("beforeend",'<div class="hint">Your chats will show up here.</div>');
- sorted().forEach(c=>{
+ const query=searchInput?searchInput.value.trim():"";
+ if(searchClear)searchClear.hidden=!query;
+ let entries;
+ if(query){entries=S.chats.map(c=>({c,score:scoreChat(c,query)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||(b.c.u||0)-(a.c.u||0));
+  if(!entries.length){list.insertAdjacentHTML("beforeend",'<div class="search-empty">No chats match your search.</div>');if(!canSave)list.insertAdjacentHTML("beforeend",'<div class="hint warn">Chats can&#39;t be saved in this browser, so they will be lost when you leave this page.</div>');return}
+ }else{entries=sorted().map(c=>({c,score:0}));if(!S.chats.length)list.insertAdjacentHTML("beforeend",'<div class="hint">Your chats will show up here.</div>')}
+ entries.forEach(entry=>{const c=entry.c;
   if(renamingId===c.id){
    const e=document.createElement("div");e.className="chat on edit";
    const i=document.createElement("input");i.className="rn";i.value=c.t;i.maxLength=60;i.setAttribute("aria-label","Chat name");
@@ -430,7 +638,8 @@ function renderList(){
   }
   const on=c.id===S.cur,r=document.createElement("div");r.className="row"+(on?" on":"");
   const b=document.createElement("button");b.className="chat"+(on?" on":"");b.title=c.t;
-  b.innerHTML='<span class="ct">'+(c.p?ic(PIN,12):"")+esc(c.t)+'</span><span class="cm" data-t="'+c.u+'">'+ago(c.u)+'</span>';
+  b.innerHTML='<span class="ct">'+(c.p?ic(PIN,12):"")+esc(c.t)+'</span>'+(query?'<span class="search-snippet"></span>':'<span class="cm" data-t="'+c.u+'">'+ago(c.u)+'</span>');
+  if(query){const snippet=b.querySelector(".search-snippet");snippet.textContent=searchSnippet(c,query);b.title=c.t+" — "+snippet.textContent;}
   b.onclick=()=>openChat(c.id);
   const x=document.createElement("button");x.className="more";x.innerHTML=ic(DOTS,18);x.title="Chat options";
   x.setAttribute("aria-label","Chat options");x.setAttribute("aria-haspopup","menu");x.setAttribute("aria-expanded","false");
@@ -444,6 +653,7 @@ function openMenu(id,btn){
  closeMenu();mid=id;
  const m=$("cmenu");
  $("cren").innerHTML=ic(PEN,16)+"<span>Rename</span>";
+ $("cgen").innerHTML=ic(SPARK,16)+"<span>Generate title</span>";
  $("cpin").innerHTML=ic(PIN,16)+"<span>"+(c.p?"Unpin":"Pin")+"</span>";
  $("cdel").innerHTML=ic(TRASH,16)+"<span>Delete</span>";
  m.hidden=false;
@@ -455,31 +665,109 @@ function closeMenu(){
  $("cmenu").hidden=true;mid=null;
  document.querySelectorAll(".more").forEach(b=>b.setAttribute("aria-expanded","false"));
 }
-function renderChat(fresh,keepPosition=false){
- const previousTop=chatEl.scrollTop;const wasNear=near();const c=C();chatEl.innerHTML="";
+function selectedModelId(){
+ const c=C();const id=(c&&c.model)||S.model||"aries-1";
+ return availableModels.some(m=>m.id===id)?id:"aries-1";
+}
+function updateModelUI(){
+ const id=selectedModelId(),selected=availableModels.find(m=>m.id===id)||availableModels[0];
+ $("model").innerHTML='<span class="sep">|</span><span class="model-name">'+esc(selected.name)+'</span>'+I.chev;
+ let seen=false;try{seen=localStorage.getItem(ARIES_NOTICE_KEY)==="1"}catch(e){}
+ const info=$("aries-info");info.hidden=id!=="aries-1"||seen;
+ const options=$("model-options");if(!options)return;options.innerHTML="";
+ availableModels.forEach(m=>{
+  const b=document.createElement("button");b.type="button";b.className="mi";b.setAttribute("role","menuitemradio");b.setAttribute("aria-checked",String(m.id===id));
+  const copy=document.createElement("div");copy.textContent=m.name;
+  const small=document.createElement("small");small.textContent=m.description||"";copy.appendChild(small);
+  const tick=document.createElement("i");tick.innerHTML=m.id===id?I.check:"";b.append(copy,tick);
+  b.onclick=()=>{
+   const c=C();
+   S.model=m.id;
+   if(c){c.model=m.id;touch(c)}
+   save();pop(false);$("aries-info-pop").hidden=true;updateModelUI();
+   if(c)renderChat();
+  };
+  options.appendChild(b);
+ });
+ // Keep a quiet placeholder visible until the future model is released.
+ // When the backend starts advertising future-1, its real entry replaces this placeholder.
+ if(!availableModels.some(m=>m.id==="future-1")){
+  const placeholder=document.createElement("button");
+  placeholder.type="button";
+  placeholder.className="mi future-placeholder";
+  placeholder.disabled=true;
+  placeholder.setAttribute("role","menuitem");
+  placeholder.setAttribute("aria-disabled","true");
+  const copy=document.createElement("div");
+  copy.textContent="New AI";
+  const small=document.createElement("small");
+  small.textContent="Coming soon";
+  copy.appendChild(small);
+  const marker=document.createElement("i");
+  marker.textContent="···";
+  marker.style.color="#888";
+  placeholder.append(copy,marker);
+  options.appendChild(placeholder);
+ }
+}
+function updateAvailableModels(models){
+ if(!Array.isArray(models))return;
+ const cleanModels=models.filter(m=>m&&typeof m.id==="string"&&typeof m.name==="string"&&m.name.trim()).map(m=>({id:m.id,name:m.name,description:String(m.description||"")}));
+ if(!cleanModels.some(m=>m.id==="aries-1"))cleanModels.unshift({id:"aries-1",name:"Aries",description:"Powered by OpenAI"});
+ availableModels=cleanModels;
+ let repaired=false;
+ S.chats.forEach(c=>{if(!availableModels.some(m=>m.id===c.model)){c.model="aries-1";repaired=true}});
+ if(!availableModels.some(m=>m.id===S.model)){S.model="aries-1";repaired=true}
+ if(repaired)save(true);
+ updateModelUI();
+}
+function renderChat(fresh){
+ const c=C();updateModelUI();chatEl.innerHTML="";
  if(!c||!c.m.length){chatEl.innerHTML='<div class="empty"><h2>WHW<b>ai</b></h2><p>Ask anything to get started.</p></div>';
   return}
  c.m.forEach((m,i)=>{
   const d=document.createElement("div");d.className="msg"+(m.r==="u"?" u":"");
-  if(m.r==="u")d.textContent=m.x;else d.innerHTML=md(m.x);
-  chatEl.appendChild(d);
-  if(m.r==="a"){
-   const canRegen=i===c.m.length-1&&m._l,b=document.createElement("div");b.className="bar";
+   if(m.r==="u")d.textContent=m.x;else d.innerHTML=md(m.x);
+   chatEl.appendChild(d);
+   if(m.r==="a"&&Array.isArray(m.sources)&&m.sources.length){
+    const wrap=document.createElement("div");wrap.className="answer-sources";
+    const details=document.createElement("details");const summary=document.createElement("summary");summary.textContent="Sources ("+m.sources.length+")";details.appendChild(summary);
+    const ul=document.createElement("ul");
+    m.sources.slice(0,5).forEach(source=>{
+     if(!source||typeof source.title!=="string"||typeof source.url!=="string"||!/^https:\/\//i.test(source.url)||/[\s<>"']/.test(source.url))return;
+     const li=document.createElement("li"),a=document.createElement("a");a.textContent=source.title;a.href=source.url;a.target="_blank";a.rel="noopener noreferrer";li.appendChild(a);ul.appendChild(li);
+    });
+    if(ul.children.length){details.appendChild(ul);wrap.appendChild(details);chatEl.appendChild(wrap)}
+   }
+   if(m.r==="a"){
+    const canRegen=i===c.m.length-1&&m._l,b=document.createElement("div");b.className="bar";
    b.innerHTML='<button class="cp" title="Copy" aria-label="Copy">'+I.copy+'</button>'+(canRegen?'<button class="rg" title="Regenerate" aria-label="Regenerate">'+I.regen+'</button>':'')+'<span data-t="'+m.at+'">'+ago(m.at)+'</span>';
    const cp=b.querySelector(".cp"),rg=b.querySelector(".rg");
    cp.onclick=()=>copy(m.x,cp);if(rg)rg.onclick=regen;
    chatEl.appendChild(b);
   }
  });
- if(fresh){const ms=chatEl.querySelectorAll(".msg");if(ms.length)ms[ms.length-1].classList.add("fresh")}
- if(keepPosition&&!wasNear){chatEl.scrollTop=previousTop;userScrolledUp=true;updateJumpLatest()}else toBottom();
+ if(fresh){const ms=chatEl.querySelectorAll(".msg");ms[ms.length-1].classList.add("fresh")}
+ toBottom();
 }
 const plain=t=>t.replace(/\*\*(.+?)\*\*/g,"$1").replace(/^[-*] /gm,"\u2022 ");
+async function copyCode(text,button){
+ const original=button.textContent;button.disabled=true;
+ try{
+  if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(String(text));button.textContent="Copied";}
+  else throw new Error("clipboard unavailable");
+ }catch(e){
+  const a=document.createElement("textarea");a.value=String(text);a.style.cssText="position:fixed;top:0;left:0;opacity:0";document.body.appendChild(a);a.focus();a.select();a.setSelectionRange(0,a.value.length);
+  try{if(document.execCommand("copy"))button.textContent="Copied";else toast("Couldn't copy code. Select it and copy manually.")}catch(err){toast("Couldn't copy code. Select it and copy manually.")}a.remove();
+ }
+ setTimeout(()=>{if(button.isConnected){button.textContent=original;button.disabled=false}},1300);
+}
+chatEl.addEventListener("click",e=>{const button=e.target.closest(".code-copy");if(!button)return;const block=button.closest(".codeblock"),code=block&&block.querySelector("code");if(code)copyCode(code.textContent,button)});
 async function copy(t,btn){
  const ok=()=>{btn.innerHTML=I.check;setTimeout(()=>btn.innerHTML=I.copy,1200)};
  try{
   if(window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write){
-   await navigator.clipboard.write([new ClipboardItem({"text/plain":new Blob([plain(t)],{type:"text/plain"}),"text/html":new Blob([md(t)],{type:"text/html"})})]);
+   await navigator.clipboard.write([new ClipboardItem({"text/plain":new Blob([plain(t)],{type:"text/plain"}),"text/html":new Blob([md(t).replace(/<button class="code-copy"[^>]*>Copy code<\/button>/g,"")],{type:"text/html"})})]);
    return ok();
   }
   await navigator.clipboard.writeText(plain(t));return ok();
@@ -523,24 +811,30 @@ async function post(body,externalSignal){
  if(externalSignal){if(externalSignal.aborted)ctl.abort();else externalSignal.addEventListener("abort",forwardAbort,{once:true})}
  try{
   const r=await fetch(API_URL,{method:"POST",body:JSON.stringify(body),signal:ctl.signal});
-  const j=await r.json();if(j.error)throw new Error(j.error);return j;
+  const j=await r.json();if(j.error){const error=new Error(j.error);error.payload=j;throw error}return j;
  }finally{
   clearTimeout(tm);
   if(externalSignal)externalSignal.removeEventListener("abort",forwardAbort);
  }
 }
-// Early-access unlock is stored only in this browser's localStorage and expires after 24 hours.
-const ACCESS_STORAGE_KEY="whwai.earlyAccessUntil.v1",ACCESS_TOKEN_KEY="whwai.earlyAccessToken.v1",ACCESS_TTL=24*60*60*1000;
+// When the code screen is required, WHWai locks again on every page load. Entering the code unlocks it until the page is refreshed.
+// The backend decides whether the access code screen is required (ACCESS_CODE_REQUIRED in the Apps Script).
+const ACCESS_STORAGE_KEY="whwai.earlyAccessUntil.v1",ACCESS_TOKEN_KEY="whwai.earlyAccessToken.v1",ACCESS_OFF_KEY="whwai.accessCodeOff.v1",ACCESS_TTL=24*60*60*1000;
 const accessGate=$("access-gate"),accessCard=$("access-card"),accessTitle=$("access-title"),accessForm=$("access-form"),accessInput=$("access-code"),accessError=$("access-error"),accessButton=$("access-unlock");
-let aiDisabled=false;
+let aiDisabled=false,accessRequired=true;
 function hasEarlyAccess(){try{const until=Number(localStorage.getItem(ACCESS_STORAGE_KEY)||0),token=localStorage.getItem(ACCESS_TOKEN_KEY);return until>Date.now()&&!!token}catch(e){return false}}
-function unlockEarlyAccess(token,expiresAt){if(aiDisabled)return;try{const until=Number(expiresAt)||Date.now()+ACCESS_TTL;localStorage.setItem(ACCESS_STORAGE_KEY,String(until));localStorage.setItem(ACCESS_TOKEN_KEY,String(token||""))}catch(e){}document.body.classList.remove("access-locked");accessGate.hidden=true;$("app-frame").removeAttribute("aria-hidden")}
+function openApp(){if(aiDisabled)return;document.body.classList.remove("access-locked");accessGate.hidden=true;$("app-frame").removeAttribute("aria-hidden")}
+function unlockEarlyAccess(token,expiresAt){if(aiDisabled)return;try{const until=Number(expiresAt)||Date.now()+ACCESS_TTL;localStorage.setItem(ACCESS_STORAGE_KEY,String(until));localStorage.setItem(ACCESS_TOKEN_KEY,String(token||""))}catch(e){}openApp()}
 function lockEarlyAccess(showGate){try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.remove("disabled-mode");accessTitle.textContent="Enter access code";accessForm.hidden=false;accessError.hidden=true;accessError.textContent="";if(showGate){accessInput.value="";setTimeout(()=>accessInput.focus(),50)}}
 function showAIDisabled(){aiDisabled=true;try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");accessTitle.textContent="WHWai is currently disabled";accessForm.hidden=true;accessError.hidden=true;accessError.textContent=""}
-if(hasEarlyAccess()){unlockEarlyAccess()}else{lockEarlyAccess(false);setTimeout(()=>accessInput.focus(),100)}
+lockEarlyAccess(false);setTimeout(()=>accessInput.focus(),100)
 accessForm.addEventListener("submit",async e=>{e.preventDefault();const code=accessInput.value.trim();if(!code)return;accessButton.disabled=true;accessError.hidden=true;accessError.textContent="";try{if(!API_URL)throw new Error("backend");const result=await post({action:"access_check",code});if(result&&result.aiEnabled===false){showAIDisabled();return}if(result&&result.ok&&result.token){unlockEarlyAccess(result.token,result.expiresAt)}else{accessError.textContent="Incorrect code";accessError.hidden=false;accessInput.select()}}catch(err){accessError.textContent="Unable to verify code";accessError.hidden=false}finally{accessButton.disabled=false}});
-// Read the backend AI_ENABLED flag on load, including for browsers that were already unlocked.
-(async function checkBackendAIStatus(){if(!API_URL)return;try{const status=await post({action:"status_check"});if(status&&status.aiEnabled===false){showAIDisabled();return}if(hasEarlyAccess()){unlockEarlyAccess()}else if(!accessGate.hidden){accessCard.classList.remove("disabled-mode");accessTitle.textContent="Enter access code";accessForm.hidden=false}}catch(e){/* Keep the access gate usable if status probing is temporarily unavailable. */}})();
+// Ask the backend whether AI is enabled and whether the access code screen is required.
+(async function checkBackendStatus(){if(!API_URL)return;try{const status=await post({action:"status_check"});if(status&&Array.isArray(status.models))updateAvailableModels(status.models);if(status&&status.aiEnabled===false){showAIDisabled();return}
+ if(status&&status.accessRequired===false){accessRequired=false;try{localStorage.setItem(ACCESS_OFF_KEY,"1")}catch(e){}openApp();return}
+ accessRequired=true;try{localStorage.removeItem(ACCESS_OFF_KEY)}catch(e){}
+ if(hasEarlyAccess()){openApp()}else{const typed=accessInput.value;lockEarlyAccess(false);accessInput.value=typed}
+}catch(e){/* Keep the current screen if the status probe fails. */}})();
 
 const titleRequests=new Set();
 async function genTitle(c){
@@ -557,23 +851,41 @@ async function genTitle(c){
  }catch(e){}
  finally{titleRequests.delete(c.id)}
 }
+async function retitle(id){
+ const c=S.chats.find(x=>x.id===id);
+ if(!c)return;
+ if(!API_URL){toast("Title generation needs the live backend.");return}
+ if(titleRequests.has(c.id))return;
+ if(!c.m.some(m=>m.r==="u")){toast("Nothing to title yet.");return}
+ titleRequests.add(c.id);toast("Generating a new title…");
+ try{
+  const j=await post({action:"title",messages:hist(c)});
+  const raw=(j.text||"").split("\n")[0].trim();
+  if(!raw||/^NO_TITLE[.!]*$/i.test(raw)){toast("Not enough conversation to make a title yet.");return}
+  const t=raw.replace(/["*.]+/g,"").trim().slice(0,40);
+  if(t){c.t=t;c.auto=0;touch(c);save();renderList();toast("Title updated.")}
+ }catch(e){toast("Couldn't generate a title right now.")}
+ finally{titleRequests.delete(c.id)}
+}
 async function answer(c,q){
  const run=++answerRunId,controller=new AbortController();
  responseWasStopped=false;activeAnswerController=controller;setBusy(true);
  const tmp=document.createElement("div");tmp.className="msg dim fresh";tmp.setAttribute("role","status");
- const thinkingLines=["Aries is thinking…","Working on it…","One moment…","Putting it together…","Checking that…","Thinking it through…","Aries is working…"];
- const rareThinkingLines=["Consulting the council of open tabs…","My last two neurons are syncing…","Asking the office plant…","idk ask chatgpt"];
- const thinkingLine=Math.random()<0.08?rareThinkingLines[Math.floor(Math.random()*rareThinkingLines.length)]:thinkingLines[Math.floor(Math.random()*thinkingLines.length)];tmp.setAttribute("aria-label",thinkingLine);tmp.innerHTML='<span class="typing-indicator" aria-hidden="true"><span></span><span></span><span></span></span><span class="thinking-label"></span>';tmp.querySelector(".thinking-label").textContent=thinkingLine;chatEl.appendChild(tmp);if(!userScrolledUp)toBottom();else updateJumpLatest();
+ const thinkingLines=["Thinking…","Working on it…","One moment…","Putting it together…","Checking that…","Almost there…","Aries is working…"];
+ const rareThinkingLines=["idk ask chatgpt","The tiny calculators are meeting…","Consulting the office plant…","My last two neurons are syncing…","The pixels are negotiating…"];
+ const thinkingLine=Math.random()<0.08?rareThinkingLines[Math.floor(Math.random()*rareThinkingLines.length)]:thinkingLines[Math.floor(Math.random()*thinkingLines.length)];tmp.setAttribute("aria-label",thinkingLine);tmp.innerHTML='<span class="typing-indicator" aria-hidden="true"><span></span><span></span><span></span></span><span class="thinking-label"></span>';tmp.querySelector(".thinking-label").textContent=thinkingLine;chatEl.appendChild(tmp);toBottom();
  try{
-  let full,err=0;
+  let full,err=0,sources=[];
   if(API_URL){
    try{
-    const j=await post({action:"chat",model:"aries-1",messages:hist(c)},controller.signal);
+    const modelId=availableModels.some(m=>m.id===c.model)?c.model:(S.model||"aries-1");
+    if(c.model!==modelId)c.model=modelId;
+    const j=await post({action:"chat",model:modelId,deviceId:getDeviceId(),syncKey:S.key||"",messages:hist(c)},controller.signal);
     if(responseWasStopped||run!==answerRunId)return;
-    full=j.text||ERR_TEXT;if(!j.text||j.disabled)err=1;
+    full=j.text||ERR_TEXT;sources=Array.isArray(j.sources)?j.sources:[];if(!j.text||j.disabled)err=1;
    }catch(e){
     if(responseWasStopped||run!==answerRunId||e&&e.name==="AbortError"&&controller.signal.aborted)return;
-    full=ERR_TEXT;err=1;
+    full=e&&e.message==="daily_limit"?(e.payload&&e.payload.message||"You've reached this model's daily limit. Please try again tomorrow."):e&&e.message==="model_unavailable"?"That model is not available right now.":ERR_TEXT;err=1;
    }
   }else{
    await sleepUntilAbort(800+Math.random()*700,controller.signal);
@@ -584,10 +896,10 @@ async function answer(c,q){
   for(let i=0;i<w.length;i++){
    if(responseWasStopped||run!==answerRunId)return;
    out+=w[i];
-   if(i%step===0){const wasNear=near();const oldTop=chatEl.scrollTop;tmp.classList.remove("dim");tmp.innerHTML=md(out);if(wasNear&&!userScrolledUp)toBottom();else{chatEl.scrollTop=oldTop;updateJumpLatest()}await sleepUntilAbort(22,controller.signal)}
+   if(i%step===0){tmp.classList.remove("dim");tmp.innerHTML=md(out);if(near())toBottom();await sleepUntilAbort(22,controller.signal)}
   }
   if(responseWasStopped||run!==answerRunId)return;
-  c.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1}:{r:"a",x:full,at:Date.now(),_l:1});c.u=Date.now();touch(c);save();renderList();renderChat(false,true);
+  c.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1}:{r:"a",x:full,at:Date.now(),sources:sources,model:c.model||S.model||"aries-1",_l:1});c.u=Date.now();touch(c);save();renderList();renderChat();
   if(API_URL&&!err&&c.auto)genTitle(c);
   if(S.key)syncSoon();
  }finally{
@@ -607,7 +919,7 @@ function makeTitle(q){
 function send(){
  const q=ta.value.trim();if(!q||busy)return;
  ta.value="";fit();let c=C();
- if(!c){c={id:uid(),t:makeTitle(q),auto:1,u:Date.now(),m:[]};S.chats.push(c);S.cur=c.id}
+   if(!c){c={id:uid(),t:makeTitle(q),auto:1,u:Date.now(),model:S.model||"aries-1",m:[]};S.chats.push(c);S.cur=c.id}
  c.m.push({r:"u",x:q,at:Date.now()});
  c.u=Date.now();touch(c);save();renderList();renderChat(true);answer(c,q);
 }
@@ -615,8 +927,8 @@ function regen(){
  const c=C();if(busy||!c)return;c.m.pop();touch(c);
  const q=[...c.m].reverse().find(m=>m.r==="u");save();renderChat();if(q)answer(c,q.x);
 }
-function openChat(id){if(busy)return;userScrolledUp=false;S.cur=id;save();renderList();renderChat();side(false)}
-function newChat(){if(busy)return;userScrolledUp=false;S.cur=null;save();renderList();renderChat();side(false);ta.focus()}
+function openChat(id){if(busy)return;S.cur=id;save();renderList();renderChat();side(false)}
+function newChat(){if(busy)return;S.cur=null;save();renderList();renderChat();side(false);ta.focus()}
 function delChat(id){
  if(busy)return;S.chats=S.chats.filter(c=>c.id!==id);S.dead.push({id,mu:Date.now()});
  if(S.cur===id)S.cur=null;
@@ -639,6 +951,8 @@ sendBtn.onclick=()=>busy?stopAnswer():send();
 ta.addEventListener("input",fit);
 ta.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();send()}});
 $("new").onclick=newChat;
+if(searchInput){searchInput.addEventListener("input",renderList);searchInput.addEventListener("keydown",e=>{if(e.key==="Escape"&&searchInput.value){searchInput.value="";renderList();searchInput.blur()}})}
+if(searchClear)searchClear.onclick=()=>{searchInput.value="";renderList();searchInput.focus()};
 const mob=()=>matchMedia("(max-width:640px)").matches;
 $("mopen").innerHTML=ic('<path d="M4 6h16M4 12h16M4 18h16"/>',20,2.1);
 $("mopen").onclick=()=>side(!$("side").classList.contains("open"));
@@ -648,14 +962,18 @@ $("expand").onclick=()=>mob()?side(true):collapse(false);
 $("cren").onclick=()=>{const id=mid;closeMenu();renamingId=id;renderList();const i=list.querySelector(".rn");if(i){i.focus();i.select()}};
 $("cpin").onclick=()=>{const c=S.chats.find(x=>x.id===mid);if(c){c.p=!c.p;touch(c);save();renderList()}else closeMenu()};
 $("cdel").onclick=()=>{const id=mid;closeMenu();delChat(id)};
+$("cgen").onclick=()=>{const id=mid;closeMenu();retitle(id)};
 list.addEventListener("scroll",closeMenu);
 document.addEventListener("click",e=>{if(!$("cmenu").contains(e.target))closeMenu()});
 $("scrim").onclick=()=>side(false);
 window.addEventListener("resize",()=>{if(!mob()){$("side").classList.remove("open");$("scrim").classList.remove("show");$("mopen").setAttribute("aria-expanded","false")}});
-$("clip").onclick=()=>toast("Attachments aren't available yet.");
-$("model").onclick=e=>{e.stopPropagation();pop($("pop").hidden)};
-$("mi").onclick=()=>pop(false);
-document.addEventListener("click",e=>{if(!$("pop").contains(e.target))pop(false)});
+$("model").onclick=e=>{e.stopPropagation();$("aries-info-pop").hidden=true;pop($("pop").hidden)};
+$("aries-info").onclick=e=>{e.stopPropagation();pop(false);$("aries-info-pop").hidden=!$("aries-info-pop").hidden};
+$("aries-info-dismiss").onclick=()=>{try{localStorage.setItem(ARIES_NOTICE_KEY,"1")}catch(e){}$("aries-info-pop").hidden=true;updateModelUI()};
+document.addEventListener("click",e=>{
+ if(!$("pop").contains(e.target)&&e.target!==$("model"))pop(false);
+ if(!$("aries-info-pop").contains(e.target)&&e.target!==$("aries-info"))$("aries-info-pop").hidden=true;
+});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){pop(false);side(false);closeMenu();closeSettings()}});
 /* ---------- settings + sync ---------- */
 const KEYLEN=6; /* must match KEY_DIGITS in the backend script */
@@ -676,6 +994,13 @@ $("mnew").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',18,2.4);$("mnew").onclick=
 const modal=$("modal"),mbody=$("mbody");
 let syncing=false,creatingSync=false,connectingSync=false,deletingSync=false,disconnectingSync=false,st=null,smsg="",revealNewKeyOnThisOpen=false,revealSyncKey=false,currentSettingsView="settings",syncError="",closeModalTimer=null,closingModal=false;
 const touch=c=>{c.mu=Date.now()};
+let syncRetryTimer=null,syncRetryCount=0,syncPending=false;
+function clearSyncRetry(){if(syncRetryTimer!==null){clearTimeout(syncRetryTimer);syncRetryTimer=null}}
+function scheduleSyncRetry(){
+ if(!S.key||syncRetryTimer!==null||syncRetryCount>=3||navigator.onLine===false)return;
+ const delays=[5000,15000,30000],delay=delays[syncRetryCount++];
+ syncRetryTimer=setTimeout(()=>{syncRetryTimer=null;if(!S.key)return;if(busy||syncing||creatingSync||connectingSync||deletingSync||disconnectingSync){scheduleSyncRetry();return}doSync()},delay);
+}
 function merge(a,b){
  const map={},dead={},t=c=>c.mu||c.u||0;
  [a,b].forEach(s=>{
@@ -686,16 +1011,19 @@ function merge(a,b){
 }
 function applyRemote(j){
  const sig=()=>JSON.stringify(S.chats.map(c=>[c.id,c.mu||c.u,c.t,c.p]));
- const before=sig(),m=merge({chats:S.chats,dead:S.dead},{chats:j.chats||[],dead:j.dead||[]});
- S.chats=m.chats;S.dead=m.dead;
+ const remoteChats=(Array.isArray(j.chats)?j.chats:[]).map(safeChat).filter(Boolean);
+ const before=sig(),m=merge({chats:S.chats.map(safeChat).filter(Boolean),dead:safeDead(S.dead)},{chats:remoteChats,dead:safeDead(j.dead)});
+ S.chats=m.chats.map(safeChat).filter(Boolean);S.dead=safeDead(m.dead);
  if(S.cur&&!S.chats.some(c=>c.id===S.cur))S.cur=null;
  if(sig()!==before){renderList();renderChat()}
 }
 const errText=e=>({badkey:"That key wasn't found.",slow:"Too many attempts. Wait a minute and try again.",confirmrequired:"Confirmation was missing. Return to the deletion menu and confirm again.",toobig:"Your chats are too large to sync.",busy:"The server is busy. Try again soon."}[e&&e.message]||"Couldn't reach the server. Try again.");
 async function doSync(msg){
  if(!S.key||syncing||deletingSync||disconnectingSync)return;
- syncing=true;syncError="";updateSyncIndicator();
- const lockThisSettingsView=!modal.hidden&&currentSettingsView==="settings";
+ clearTimeout(st);st=null;clearSyncRetry();
+ const revisionAtStart=localRevision;
+ syncing=true;syncPending=true;syncError="";updateSyncIndicator();
+ const lockThisSettingsView=!modal.hidden&&currentSettingsView==="sync";
  if(lockThisSettingsView)lockSettingsForSync(true);
  let invalidKey=false;
  try{
@@ -705,18 +1033,22 @@ async function doSync(msg){
    renderList();renderChat();smsg="A synced-data deletion request reached this browser. Its local WHWai chats and sync connection were removed.";
    return;
   }
-  applyRemote(j);S.deviceCount=Math.max(1,Number(j.deviceCount)||1);S.last=Date.now();save(1);if(msg)smsg=msg;
+  if(!j||!Array.isArray(j.chats))throw new Error("sync_response");
+  const changedDuringSync=localRevision!==revisionAtStart;
+  applyRemote(j);S.deviceCount=Math.max(1,Number(j.deviceCount)||1);S.last=Date.now();syncPending=changedDuringSync;save(1);smsg=msg||"";
+  syncError="";syncRetryCount=0;clearSyncRetry();
+  if(changedDuringSync)syncSoon();
  }
  catch(e){
-  if(e&&e.message==="badkey"){S.key=null;S.last=0;S.deviceCount=0;save(1);smsg="This key is no longer valid, so sync was turned off.";syncError="Sync key no longer valid";invalidKey=true}
-  else{syncError=errText(e);if(msg)smsg=syncError}
+  if(e&&e.message==="badkey"){S.key=null;S.last=0;S.deviceCount=0;syncPending=false;syncRetryCount=0;clearSyncRetry();save(1);smsg="This key is no longer valid, so sync was turned off.";syncError="Sync key no longer valid";invalidKey=true}
+  else{syncPending=true;syncError=errText(e);if(msg)smsg=syncError;scheduleSyncRetry()}
  }
  finally{
   syncing=false;updateSyncIndicator();
   if(lockThisSettingsView)lockSettingsForSync(false);
-  if(!modal.hidden&&(currentSettingsView==="settings"||currentSettingsView==="data")){
+  if(!modal.hidden&&(currentSettingsView==="sync"||currentSettingsView==="settings"||currentSettingsView==="data")){
    if(invalidKey)refreshAfterSyncSetup();
-   else if(currentSettingsView==="settings")updateSettingsSyncSummary();
+   else if(currentSettingsView==="sync")updateSettingsSyncSummary();
   }
  }
 }
@@ -737,11 +1069,11 @@ function updateSyncIndicator(){
  if(sideEl)sideEl.classList.toggle("has-sync-control",enabled);
  if(!enabled)return;
  b.innerHTML=ic('<path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M5.64 5.64A9 9 0 0 1 20 12"/><path d="M4 12a9 9 0 0 0 14.36 6.36"/>',18,2);
- b.classList.toggle("syncing",syncing);b.classList.toggle("ok",!syncing&&!syncError&&!!S.last);b.disabled=syncing||busy;
- const status=syncing?"Syncing…":syncError?"Sync issue":S.last?"Synced "+ago(S.last):"Sync needed";
- b.title=syncing?"Syncing your chats…":syncError?syncError:"Click to sync now";
+ b.classList.toggle("syncing",syncing);b.classList.toggle("ok",!syncing&&!syncPending&&!syncError&&!!S.last);b.disabled=syncing||busy;
+ const status=syncing?"Syncing…":navigator.onLine===false&&syncPending?"Offline · waiting":syncError?"Sync issue":syncPending?"Changes waiting":S.last?"Synced "+ago(S.last):"Sync needed";
+ b.title=syncing?"Syncing your chats…":syncError?syncError:syncPending?"Local changes are waiting to sync. Click to retry.":"Click to sync now";
  b.setAttribute("aria-label",b.title);
- if(label){label.textContent=status;label.title=syncError||(S.last?"Last synced "+ago(S.last):"Chats have not synced yet")}
+ if(label){label.textContent=status;label.title=syncError||(syncPending?"Local changes are saved on this device and are waiting to sync.":S.last?"Last synced "+ago(S.last):"Chats have not synced yet")}
 }
 function updateSettingsSyncSummary(){
  const el=$("sync-last");
@@ -749,11 +1081,13 @@ function updateSettingsSyncSummary(){
  const status=$("s-msg");if(status&&smsg)status.textContent=smsg;
 }
 function syncSoon(){
- clearTimeout(st);
+ if(!S.key)return;syncPending=true;syncRetryCount=0;clearSyncRetry();updateSyncIndicator();clearTimeout(st);
  st=setTimeout(()=>{
-  if(busy||syncing||creatingSync||connectingSync||deletingSync||disconnectingSync){syncSoon();return}
-  doSync();
- },2500);
+  st=null;if(!S.key)return;
+  if(navigator.onLine===false){updateSyncIndicator();return}
+  if(busy||syncing||creatingSync||connectingSync||deletingSync||disconnectingSync){st=null;syncSoon();return}
+  st=null;doSync();
+ },1800);
 }
 function setMsg(t){smsg=t;const m=mbody.querySelector("#s-msg");if(m)m.textContent=t}
 const EXPORT_COOLDOWN_MS=10*60*1000;
@@ -850,7 +1184,8 @@ function makeChatExport(){
   id:c.id,title:String(c.t||"Untitled chat"),createdAt:c.u||null,updatedAt:c.mu||c.u||null,pinned:!!c.p,
   messages:(Array.isArray(c.m)?c.m:[]).filter(m=>m&&!m.err).map(m=>({role:m.r==="u"?"user":"assistant",content:String(m.x||""),timestamp:m.at||null}))
  }));
- const data={chats:chats};
+ // Keep chats.json focused on chat data plus this key safety detail only.
+ const data={syncKeyIncluded:false,chats:chats};
  const exportedAt=new Date();
  const files=[{
   name:"chats.json",
@@ -908,11 +1243,11 @@ function clearLocalWhwData(removeDeviceId){
  mem=null;
  try{localStorage.removeItem(KEY);if(removeDeviceId)localStorage.removeItem(DEVICE_STORAGE_KEY)}
  catch(e){mem=JSON.stringify({chats:[],cur:null,dead:[]})}
- if(removeDeviceId){
-  cachedDeviceId="";
-  exportCooldownMemory=0;
-  try{localStorage.removeItem(EXPORT_COOLDOWN_KEY)}catch(e){}
- }
+   if(removeDeviceId){
+   cachedDeviceId="";
+   exportCooldownMemory=0;
+   try{localStorage.removeItem(EXPORT_COOLDOWN_KEY);localStorage.removeItem(ARIES_NOTICE_KEY)}catch(e){}
+  }
  updateSyncIndicator();
 }
 function setDeleteStatus(message){const el=$("delete-status");if(el)el.textContent=message;else smsg=message}
@@ -928,7 +1263,7 @@ function renderDeleteOptions(){
  $("modal-title").textContent="Delete synced data";
  mbody.innerHTML=`<p class="sm">Choose a deletion option. Offline devices can only be wiped when they reconnect.</p>
   <div class="delete-choice"><span class="choice-icon">${iconForDelete("server")}</span><div class="choice-copy"><strong>Server copy only</strong><p>Remove synced data. Local chats on all devices stay.</p></div><button type="button" class="pbtn danger" data-delete-mode="server">Choose</button></div>
-  ${Number(S.deviceCount)>1?`<div class="delete-choice"><span class="choice-icon">${iconForDelete("others")}</span><div class="choice-copy"><strong>Server + other devices</strong><p>Erase chats on other tracked browsers when they reconnect.</p></div><button type="button" class="pbtn danger" data-delete-mode="others">Choose</button></div>`:""}
+  ${Number(S.deviceCount)>1?<div class="delete-choice"><span class="choice-icon">${iconForDelete("others")}</span><div class="choice-copy"><strong>Server + other devices</strong><p>Erase chats on other tracked browsers when they reconnect.</p></div><button type="button" class="pbtn danger" data-delete-mode="others">Choose</button></div>:""}
   <div class="delete-choice danger"><span class="choice-icon">${iconForDelete("everything")}</span><div class="choice-copy"><strong>Everything</strong><p>Also erase this browser's chats and sync information.</p></div><button type="button" class="pbtn danger" data-delete-mode="everything">Choose</button></div>
   <p class="sm">Other devices must reconnect to receive a remote wipe. Offline or untracked devices cannot be erased immediately.</p>
   <div class="data-toolbar"><button class="pbtn" id="delete-back">Back to data tools</button></div>`;
@@ -1005,6 +1340,23 @@ function renderSettings(){
  currentSettingsView="settings";
  if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}
  $("modal-title").textContent="Settings";
+ const syncIcon=ic('<path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M5.64 5.64A9 9 0 0 1 20 12"/><path d="M4 12a9 9 0 0 0 14.36 6.36"/>',17);
+ const dataIcon=ic('<path d="M4 5h16v14H4z"/><path d="M8 9h8M8 12h8M8 15h5"/>',17);
+ mbody.innerHTML='<h3>Appearance</h3><div class="theme-switch" role="group" aria-label="Appearance"><button class="pbtn theme-choice" type="button" data-theme-choice="light" aria-pressed="'+String(S.theme!=="dark")+'">Light</button><button class="pbtn theme-choice" type="button" data-theme-choice="dark" aria-pressed="'+String(S.theme==="dark")+'">Dark</button></div><h3>Sync across devices</h3><p class="sm">'+(S.key?"Sync is on. Your chats are kept up to date across your devices.":"Keep your chats on more than one device with a sync key.")+'</p><button class="pbtn data-manage-button" id="sync-open" type="button"><span class="manage-icon">'+syncIcon+'</span><span>Sync settings</span></button><h3>Data & privacy</h3><p class="sm">Export a backup, review or delete chat data, and manage synced copies.</p><button class="pbtn data-manage-button" id="data-tools-open" type="button"><span class="manage-icon">'+dataIcon+'</span><span>Manage your data</span></button><p class="sm" id="s-msg" role="status"></p><div class="privacy-row"><a href="#" class="privacy-link" id="privacy-open">Privacy Policy</a>'+(accessRequired?'<button type="button" class="lock-link" id="lock-whwai-now">Lock WHWai</button>':'')+'</div>';
+ setMsg(smsg);
+ updateSyncIndicator();
+ const q=id=>mbody.querySelector("#"+id);
+ mbody.querySelectorAll("[data-theme-choice]").forEach(button=>button.onclick=()=>{const next=button.dataset.themeChoice==="dark"?"dark":"light";if(S.theme===next)return;applyTheme(next);save(true);renderSettings()});
+ q("sync-open").onclick=renderSync;
+ q("data-tools-open").onclick=renderDataManagement;
+ q("privacy-open").onclick=e=>{e.preventDefault();renderPrivacyPolicy()};
+ const lockButton=q("lock-whwai-now");
+ if(lockButton)lockButton.onclick=()=>{closeSettings();side(false);lockEarlyAccess(true)};
+}
+function renderSync(){
+ currentSettingsView="sync";
+ if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}
+ $("modal-title").textContent="Sync across devices";
  const on=!!S.key,k=S.key||"",keyVisible=revealNewKeyOnThisOpen||revealSyncKey,deviceCount=Math.max(0,Number(S.deviceCount)||0);
  const shownKey=k.replace(/(\d{3})(?=\d)/g,"$1 ");
  const eyeOn=ic('<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',17);
@@ -1012,19 +1364,17 @@ function renderSettings(){
  mbody.innerHTML=on?
  '<div class="sync-panel" id="sync-panel"><h3>Sync across devices</h3><p>Sync is on. Your key:</p><div class="key"><span class="key-value" id="s-key-value">'+(keyVisible?shownKey:"••••••")+'</span><div class="key-actions"><button id="s-toggle-key" title="'+(keyVisible?"Hide sync key":"Show sync key")+'" aria-label="'+(keyVisible?"Hide sync key":"Show sync key")+'" aria-pressed="'+String(keyVisible)+'">'+(keyVisible?eyeOff:eyeOn)+'</button><button id="s-copy" title="Copy key" aria-label="Copy key">'+I.copy+'</button></div></div><p class="sm">On another device, open Settings and enter this key under Connect. Anyone who has this key can read your synced chats, so keep it private.</p><p class="sm" id="sync-last">'+(S.last?"Last synced "+ago(S.last):"Not synced yet")+'</p><div class="btns"><button class="pbtn" id="s-now">Sync now</button>'+(deviceCount>1?'<button class="pbtn" id="s-off">Turn off on this device</button>':'')+'</div></div>':
  '<div class="sync-panel" id="sync-panel"><h3>Sync across devices</h3><p>Your chats stay on this device until you turn sync on. With sync on, a copy is stored on the WHWai server so you can open your chats on other devices. If you have lost your key or need assistance, please contact We Hate Windows Support.</p><div class="btns"><button class="pbtn" id="s-on">Turn on sync</button></div><p class="sm">Already have a key?</p><div class="join"><input id="s-key" inputmode="numeric" autocomplete="off" maxlength="'+KEYLEN+'" placeholder="'+KEYLEN+'-digit key" aria-label="Sync key"><button class="pbtn" id="s-join">Connect</button></div></div>';
- mbody.insertAdjacentHTML("beforeend",'<h3>Early access</h3><p class="sm">WHWai is currently restricted to early access testers. This browser unlocks for 24 hours at a time.</p><button class="pbtn data-manage-button" id="lock-whwai-now" type="button"><span class="manage-icon">'+ic('<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',17)+'</span><span>Lock WHWai now</span></button><h3>Data & privacy</h3><p class="sm">Export a backup, review or delete chat data, and manage synced copies.</p><button class="pbtn data-manage-button" id="data-tools-open" type="button"><span class="manage-icon">'+ic('<path d="M4 5h16v14H4z"/><path d="M8 9h8M8 12h8M8 15h5"/>',17)+'</span><span>Manage your data</span></button><p class="sm" id="s-msg" role="status"></p><div class="privacy-row"><a href="#" class="privacy-link" id="privacy-open">Privacy Policy</a></div>');
+ mbody.insertAdjacentHTML("beforeend",'<p class="sm" id="s-msg" role="status"></p><div class="data-toolbar"><button class="pbtn" id="sync-back" type="button">Back to Settings</button></div>');
  setMsg(smsg);
  updateSyncIndicator();
  if(syncing)lockSettingsForSync(true);
  const q=id=>mbody.querySelector("#"+id);
- q("privacy-open").onclick=e=>{e.preventDefault();renderPrivacyPolicy()};
- q("lock-whwai-now").onclick=()=>lockEarlyAccess(true);
- q("data-tools-open").onclick=renderDataManagement;
+ q("sync-back").onclick=renderSettings;
  if(on){
   q("s-toggle-key").onclick=()=>{
    if(revealNewKeyOnThisOpen||revealSyncKey){revealNewKeyOnThisOpen=false;revealSyncKey=false}
    else revealSyncKey=true;
-   renderSettings();
+   renderSync();
   };
   q("s-copy").onclick=()=>copy(S.key,q("s-copy"));
   q("s-now").onclick=async()=>{
@@ -1086,21 +1436,18 @@ function renderDataManagement(){
  $("modal-title").textContent="Manage your data";
  const syncAvailable=!!S.key;
  const exportIcon=ic('<path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 17v3h14v-3"/>',19,1.8);
- const importIcon=ic('<path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 17v3h14v-3"/>',19,1.8);
  const localIcon=ic('<path d="M4 7h16M10 11v6M14 11v6"/><path d="M5 7l1 13h12l1-13M9 7V4h6v3"/>',19,1.8);
  const serverIcon=ic('<path d="M4 5h16v5H4zM4 14h16v5H4z"/><path d="M7 7.5h.01M7 16.5h.01M11 7.5h6M11 16.5h6"/>',19,1.8);
  mbody.innerHTML=`<p class="sm">Choose a data action below. Downloads are local backups; deletions cannot remove copies already downloaded or held by third-party services.</p>
   <div class="data-tools-list">
    <button class="data-tool" id="open-export-info" type="button"><span class="tool-icon">${exportIcon}</span><span class="tool-copy"><strong>Download / export chats</strong><small>Review contents and privacy details before creating a ZIP.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>
-   <button class="data-tool" id="open-import-info" type="button"><span class="tool-icon">${importIcon}</span><span class="tool-copy"><strong>Import chat backup</strong><small>Restore chats from a WHWai ZIP or chats.json backup.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>
-   ${syncAvailable?`<button class="data-tool danger" id="open-delete-synced" type="button"><span class="tool-icon">${serverIcon}</span><span class="tool-copy"><strong>Delete synced data</strong><small>Choose server-only, tracked devices, or everything.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>`:''}
+   ${syncAvailable?<button class="data-tool danger" id="open-delete-synced" type="button"><span class="tool-icon">${serverIcon}</span><span class="tool-copy"><strong>Delete synced data</strong><small>Choose server-only, tracked devices, or everything.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>:''}
    <button class="data-tool danger" id="open-delete-local" type="button"><span class="tool-icon">${localIcon}</span><span class="tool-copy"><strong>Delete data on this device</strong><small>Remove this browser's local chats and sync information.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>
   </div>
   <p class="sm" id="s-msg" role="status"></p>
   <div class="data-toolbar"><button class="pbtn" id="data-back">Back to Settings</button></div>`;
  const q=id=>mbody.querySelector("#"+id);
  q("open-export-info").onclick=renderExportInfo;
- q("open-import-info").onclick=renderImportInfo;
  const delSync=q("open-delete-synced");
  if(delSync)delSync.onclick=()=>{
   if(syncing||disconnectingSync||creatingSync||connectingSync){smsg="Wait for the current sync action to finish before deleting.";renderDataManagement();return}
@@ -1110,70 +1457,13 @@ function renderDataManagement(){
  q("data-back").onclick=renderSettings;
  setMsg(smsg);
 }
-function renderImportInfo(){
- currentSettingsView="import-info";
- if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}
- $("modal-title").textContent="Import chat backup";
- mbody.innerHTML=`<p>Choose a WHWai ZIP backup or a <strong>chats.json</strong> file. The backup is checked first; existing chats are kept, and imported chats are added without replacing your current conversations.</p>
-  <p class="sm">For ZIP backups, WHWai reads chats.json. Other files in the ZIP are ignored.</p>
-  <input id="backup-file" type="file" accept=".zip,.json,application/zip,application/json" style="display:block;width:100%;margin:14px 0" />
-  <p id="import-preview" class="sm" role="status">No file selected.</p>
-  <div class="data-toolbar"><button type="button" class="pbtn" id="import-back">Back</button><button type="button" class="pbtn" id="import-confirm" disabled>Import chats</button></div>`;
- const q=id=>mbody.querySelector("#"+id);let prepared=null;
- q("import-back").onclick=renderDataManagement;
- q("backup-file").onchange=async()=>{
-  prepared=null;q("import-confirm").disabled=true;const f=q("backup-file").files[0];
-  if(!f){q("import-preview").textContent="No file selected.";return}
-  q("import-preview").textContent="Reading and checking backup…";
-  try{const data=await readBackupFile(f);const chats=normalizeImportedChats(data);if(!chats.length)throw Error("No chats were found in this backup.");prepared=chats;q("import-preview").textContent=`Ready to import ${chats.length} chat${chats.length===1?"":"s"}. Existing chats will be preserved.`;q("import-confirm").disabled=false}
-  catch(e){q("import-preview").textContent=e.message||"Could not read this backup. Choose a valid WHWai ZIP or chats.json file."}
- };
- q("import-confirm").onclick=()=>{
-  if(!prepared||!prepared.length)return;
-  const existing=new Set(S.chats.map(c=>c.id));let added=0;
-  prepared.forEach((c,index)=>{let id=c.id;if(!id||existing.has(id))id=uid();while(existing.has(id))id=uid();existing.add(id);c.id=id;S.chats.push(c);added++});
-  S.chats.sort((a,b)=>(b.mu||b.u||0)-(a.mu||a.u||0));if(!S.cur&&S.chats.length)S.cur=S.chats[0].id;save();renderList();renderChat();smsg=`Imported ${added} chat${added===1?"":"s"}.`;renderDataManagement();
- };
-}
-async function readBackupFile(file){
- if(/\.json$/i.test(file.name)){return JSON.parse(await file.text())}
- const bytes=new Uint8Array(await file.arrayBuffer());
- const u16=(i)=>bytes[i]|(bytes[i+1]<<8),u32=(i)=>(bytes[i]|(bytes[i+1]<<8)|(bytes[i+2]<<16)|(bytes[i+3]<<24))>>>0;
- let eocd=-1;for(let i=bytes.length-22;i>=Math.max(0,bytes.length-65557);i--){if(u32(i)===0x06054b50){eocd=i;break}}
- if(eocd<0)throw Error("This ZIP file is invalid or unsupported.");
- const count=u16(eocd+10),central=u32(eocd+16);let pos=central,entry=null;
- for(let i=0;i<count;i++){
-  if(u32(pos)!==0x02014b50)throw Error("This ZIP file is invalid.");
-  const method=u16(pos+10),compressed=u32(pos+20),nameLen=u16(pos+28),extraLen=u16(pos+30),commentLen=u16(pos+32),local=u32(pos+42);
-  const name=new TextDecoder().decode(bytes.slice(pos+46,pos+46+nameLen));
-  if(name.toLowerCase()==="chats.json")entry={method,compressed,local};
-  pos+=46+nameLen+extraLen+commentLen;
- }
- if(!entry)throw Error("No chats.json file was found inside this ZIP.");
- const nameLen=u16(entry.local+26),extraLen=u16(entry.local+28),start=entry.local+30+nameLen+extraLen;
- let raw=bytes.slice(start,start+entry.compressed);
- if(entry.method===8){if(typeof DecompressionStream==="undefined")throw Error("This browser cannot unpack ZIP files. Please select chats.json instead.");const stream=new Blob([raw]).stream().pipeThrough(new DecompressionStream("deflate-raw"));raw=new Uint8Array(await new Response(stream).arrayBuffer())}
- else if(entry.method!==0)throw Error("This ZIP compression method is not supported.");
- return JSON.parse(new TextDecoder().decode(raw));
-}
-function normalizeImportedChats(data){
- const source=Array.isArray(data)?data:data&&Array.isArray(data.chats)?data.chats:null;
- if(!source)throw Error("The backup doesn't contain a valid chats list.");
- return source.map((raw,index)=>{
-  if(!raw||typeof raw!=="object")throw Error("A chat in this backup is invalid.");
-  const messages=Array.isArray(raw.messages)?raw.messages:Array.isArray(raw.m)?raw.m:[];
-  const c={id:String(raw.id||"import-"+uid()+"-"+index),t:String(raw.title||raw.t||"Imported chat").slice(0,60),auto:0,p:!!raw.pinned||!!raw.p,u:Number(raw.createdAt||raw.u)||Date.now(),mu:Number(raw.updatedAt||raw.mu||raw.createdAt||raw.u)||Date.now(),m:[]};
-  c.m=messages.filter(m=>m&&typeof m==="object").map(m=>({r:(m.role==="user"||m.r==="u")?"u":"a",x:String(m.content??m.x??""),at:Number(m.timestamp||m.at)||Date.now()}));
-  return c;
- });
-}
 function renderExportInfo(){
  currentSettingsView="export-info";
  if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}
  $("modal-title").textContent="Download your data";
  mbody.innerHTML=`<p>WHWai creates the ZIP in this browser from the chat data currently saved on this device. It does not download a fresh copy from the server.</p>
   <div class="export-contents"><strong>What's inside</strong><ul><li><strong>chats.json</strong> — structured chat data.</li><li><strong>chats/</strong> — a readable text file for each chat.</li><li><strong>README.txt</strong> — export scope and general notes.</li></ul></div>
-  <p><strong>Privacy:</strong> your sync key and browser-installation identifier are not part of the chat export.</p>
+  <p><strong>Key and device privacy:</strong> your six-digit sync key and random browser-installation identifier are not included. The JSON contains only chat data and one key-safety field confirming the sync key is not included.</p>
   <p><strong>Local copy only:</strong> chats may differ from the shared server copy until syncing completes. Choose Sync now first if you need the latest shared changes. Deleted-chat markers are not included.</p>
   <p><strong>Keep the ZIP private:</strong> anyone who gets the file can read its conversations. </p>
   <p class="sm" id="export-status" role="status">A 10-minute cooldown starts after an export is prepared.</p>
@@ -1195,7 +1485,7 @@ function renderPrivacyPolicy(){
  <p>Groq's current documentation says usage metadata is collected and ordinary inference prompts and outputs are not retained by default. Inputs and outputs may be temporarily logged for platform reliability or suspected-abuse investigations for up to 30 days, unless a longer period is legally required. Zero Data Retention can prevent this limited retention, but WHWai's code cannot verify whether it is enabled for its account. See <a href="https://console.groq.com/docs/your-data" target="_blank" rel="noopener noreferrer">Groq's data documentation</a> and its <a href="https://console.groq.com/docs/legal/services-agreement" target="_blank" rel="noopener noreferrer">Services Agreement</a>.</p>
  <h3>Sync, deletion, and downloads</h3><p>You can delete the server copy only, request deletion on other tracked browsers, or choose Everything to delete the server copy and this browser's local chats while requesting a wipe on other tracked browsers. A temporary wipe marker is associated with the sync key and contains a deletion time and the device identifiers still awaiting a wipe; it contains no chat text and expires after up to 30 days. A device must reconnect while the marker is active to receive the wipe. Offline, untracked, or disconnected devices may keep local chats.</p>
  <p>Deleting the active server record does not necessarily erase backups or historical versions held by hosting or infrastructure providers, and WHW cannot guarantee instant removal from every system. Turning sync off on one browser disconnects that browser but does not delete the server copy.</p>
- <p>The ZIP export is created in this browser from its local chats. Anyone who obtains the ZIP or extracted files may be able to read the conversations, so keep them private. Deleting chats in WHWai does not delete downloaded copies.</p>
+ <p>The ZIP export is created in this browser from its local chats. It does not include the sync key or browser-installation identifier. Anyone who obtains the ZIP or extracted files may be able to read the conversations, so keep them private. Deleting chats in WHWai does not delete downloaded copies.</p>
  <h3>Security and contact</h3><p>WHW intends to take reasonable steps to protect conversation data, but no online service can guarantee complete security. If a serious security issue is identified, WHW will investigate and take appropriate protective steps, which may include restricting access, disabling sync, or deleting active server-stored data. These actions may not remove local copies, provider backups, or historical versions. For privacy questions or support, contact <a href="mailto:wehatewindows.help@gmail.com">wehatewindows.help@gmail.com</a>.</p>
  <p class="sm">This policy may change as WHWai's features, providers, or data practices change.</p><div class="btns"><button class="pbtn" id="privacy-back">Back to Settings</button></div>`;
  $("privacy-back").onclick=renderSettings;
@@ -1208,6 +1498,7 @@ function animateMenuContent(){
 mbody.addEventListener("animationend",e=>{if(e.target===mbody&&e.animationName==="menuScreenIn")mbody.classList.remove("menu-content-enter")});
 function withMenuTransition(fn){return function(){fn.apply(this,arguments);if(!modal.hidden)animateMenuContent()}}
 renderSettings=withMenuTransition(renderSettings);
+renderSync=withMenuTransition(renderSync);
 renderDataManagement=withMenuTransition(renderDataManagement);
 renderDeleteOptions=withMenuTransition(renderDeleteOptions);
 renderDeleteConfirm=withMenuTransition(renderDeleteConfirm);
@@ -1217,6 +1508,7 @@ renderPrivacyPolicy=withMenuTransition(renderPrivacyPolicy);
 function refreshAfterSyncSetup(){
  if(modal.hidden||closingModal)return;
  if(currentSettingsView==="settings")renderSettings();
+ else if(currentSettingsView==="sync")renderSync();
  else if(currentSettingsView==="data")renderDataManagement();
 }
 function finishModalClose(){
@@ -1243,8 +1535,10 @@ $("gear").onclick=openSettings;
 $("mx").onclick=closeSettings;
 $("sync-indicator").onclick=()=>{if(S.key&&!syncing&&!busy)doSync("Synced just now.")};
 modal.onclick=e=>{if(e.target===modal)closeSettings()};
-document.addEventListener("visibilitychange",()=>{if(!document.hidden&&S.key&&!busy)doSync()});
-setInterval(()=>{document.querySelectorAll(".bar span,.cm").forEach(s=>s.textContent=ago(+s.dataset.t));if(S&&S.key&&!syncing&&!syncError){const label=$("sync-status-label");if(label&&S.last)label.textContent="Synced "+ago(S.last)}},1000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&S.key&&!busy){syncRetryCount=0;doSync()}});
+window.addEventListener("online",()=>{if(S.key&&(syncPending||syncError)){syncRetryCount=0;clearSyncRetry();syncSoon()}});
+window.addEventListener("offline",()=>{if(S.key){syncPending=true;updateSyncIndicator()}});
+setInterval(()=>{document.querySelectorAll(".bar span,.cm").forEach(s=>s.textContent=ago(+s.dataset.t));if(S&&S.key&&!syncing&&!syncError&&!syncPending){const label=$("sync-status-label");if(label&&S.last)label.textContent="Synced "+ago(S.last)}},1000);
 const fr=document.querySelector(".frame");fr.classList.add("no-anim");fr.classList.toggle("collapsed",!!S.col);
 requestAnimationFrame(()=>requestAnimationFrame(()=>fr.classList.remove("no-anim")));
 renderList();renderChat();updateSyncIndicator();
