@@ -279,11 +279,12 @@ body.access-locked .frame{filter:blur(6px);transform:scale(1.004);transform-orig
 @media(prefers-reduced-motion:reduce){.access-card{animation:none}}
 
 
-/* ---------- chat search, code copying, and light/dark appearance ---------- */
-.chat-search{display:flex;align-items:center;gap:8px;flex:none;margin:0 0 10px;padding:0 10px;height:40px;border-radius:12px;background:var(--chip);color:var(--mute);border:1px solid transparent}
-.chat-search:focus-within{border-color:rgba(106,160,255,.65);box-shadow:0 0 0 2px rgba(106,160,255,.12)}
+/* ---------- chat search and code copying ---------- */
+.chat-search{display:flex;align-items:center;gap:8px;flex:none;margin:0 0 10px;padding:0 10px;height:40px;border-radius:999px;background:var(--chip);color:var(--mute);border:1px solid transparent;box-shadow:none}
+.chat-search:focus-within{border-color:transparent;box-shadow:none}
 .chat-search svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
-.chat-search input{min-width:0;width:100%;height:100%;border:0;outline:0;background:transparent;color:var(--ink);font:inherit;font-size:13.5px}
+.chat-search input{min-width:0;width:100%;height:100%;border:0;outline:0;box-shadow:none;background:transparent;color:var(--ink);font:inherit;font-size:13.5px}
+.chat-search input:focus,.chat-search input:focus-visible{outline:none;box-shadow:none;border-color:transparent}
 .chat-search input::-webkit-search-cancel-button{display:none}
 .chat-search input::placeholder{color:var(--mute);opacity:1}
 .chat-search button{width:23px;height:23px;flex:none;border:0;border-radius:50%;background:rgba(0,0,0,.06);color:var(--ink);font-size:19px;line-height:1;padding:0;cursor:pointer}
@@ -1252,18 +1253,24 @@ async function performLocalOnlyDelete(){
  if(deletingSync)return;
  const initiatingView=currentSettingsView;
  if(syncing||creatingSync||connectingSync||disconnectingSync){setDeleteStatus("Wait for the current sync action to finish, then try again.");return}
- deletingSync=true;mbody.querySelectorAll("button").forEach(b=>b.disabled=true);const localButton=$("confirm-local-delete");if(localButton)localButton.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Deleting…';setDeleteStatus("Removing local data…");
- let disconnected=!S.key;
+ deletingSync=true;mbody.querySelectorAll("button").forEach(b=>b.disabled=true);const localButton=$("confirm-local-delete");if(localButton){localButton.setAttribute("aria-busy","true");localButton.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Deleting…'}setDeleteStatus("Removing local data…");
+ const animationStarted=Date.now();
+ // Give the browser a chance to paint the loading state before fast local deletion finishes.
+ await new Promise(resolve=>setTimeout(resolve,30));
+ let disconnected=!S.key,shouldReturnToTools=false;
  try{
   if(S.key){
    try{await post({action:"sync_device_off",key:S.key,deviceId:getDeviceId()});disconnected=true}
    catch(e){disconnected=false}
   }
+  const wait=Math.max(0,520-(Date.now()-animationStarted));if(wait)await new Promise(resolve=>setTimeout(resolve,wait));
   clearLocalWhwData(true);renderList();renderChat();
   smsg=disconnected?"This device's WHWai chat data and local sync connection were removed. The server copy and other devices are unchanged.":"This device's local WHWai chat data was removed. The server copy remains unchanged; because this browser could not disconnect, its device record may remain until it expires.";
-  updateSyncIndicator();
-  if(!modal.hidden&&currentSettingsView==="local-delete-confirm"&&initiatingView==="local-delete-confirm")renderDataManagement();
- }finally{deletingSync=false}
+  updateSyncIndicator();shouldReturnToTools=true;
+ }finally{
+  deletingSync=false;
+  if(shouldReturnToTools&&!modal.hidden&&currentSettingsView==="local-delete-confirm"&&initiatingView==="local-delete-confirm")renderDataManagement();
+ }
 }
 
 function renderSettings(){
@@ -1403,7 +1410,27 @@ function renderDataManagement(){
  const q=id=>mbody.querySelector("#"+id);
  q("open-export-info").onclick=renderExportInfo;
  q("open-import-backup").onclick=()=>q("import-backup-file").click();
- q("import-backup-file").onchange=async ev=>{const file=ev.target.files&&ev.target.files[0];if(!file)return;try{const data=await readBackupFile(file);const imported=normalizeBackupChats(data);if(!imported.length){setMsg("No chats were found in that backup.");return}const existing=new Set(S.chats.map(c=>c.id));let added=0;for(const chat of imported){if(existing.has(chat.id))chat.id="import-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,9);existing.add(chat.id);S.chats.push(chat);added++}S.chats.sort((a,b)=>(Number(b.mu||b.u)||0)-(Number(a.mu||a.u)||0));S.cur=S.chats.length?S.chats[0].id:null;save();renderList();renderChat();setMsg("Imported "+added+" chat"+(added===1?"":"s")+". Syncing if sync is enabled.");}catch(err){setMsg("Could not import that backup. Choose a valid WHWai JSON or ZIP backup.")}finally{ev.target.value=""}};
+ q("import-backup-file").onchange=async ev=>{
+  const file=ev.target.files&&ev.target.files[0];if(!file)return;
+  const importButton=q("open-import-backup"),originalButtonHTML=importButton.innerHTML,started=Date.now();
+  importButton.disabled=true;importButton.setAttribute("aria-busy","true");
+  importButton.innerHTML='<span class="tool-icon"><span class="sync-spinner" aria-hidden="true"></span></span><span class="tool-copy"><strong>Importing backup…</strong><small>Reading and restoring your chats</small></span>';
+  setMsg("Importing chat backup…");
+  // Yield once so the loading animation is visible even when the backup is small.
+  await new Promise(resolve=>setTimeout(resolve,30));
+  try{
+   const data=await readBackupFile(file),imported=normalizeBackupChats(data);
+   if(!imported.length){setMsg("No chats were found in that backup.");return}
+   const existing=new Set(S.chats.map(c=>c.id));let added=0;
+   for(const chat of imported){if(existing.has(chat.id))chat.id="import-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,9);existing.add(chat.id);S.chats.push(chat);added++}
+   S.chats.sort((a,b)=>(Number(b.mu||b.u)||0)-(Number(a.mu||a.u)||0));S.cur=S.chats.length?S.chats[0].id:null;save();renderList();renderChat();setMsg("Imported "+added+" chat"+(added===1?"":"s")+". Syncing if sync is enabled.");
+  }catch(err){setMsg("Could not import that backup. Choose a valid WHWai JSON or ZIP backup.")}
+  finally{
+   const wait=Math.max(0,520-(Date.now()-started));if(wait)await new Promise(resolve=>setTimeout(resolve,wait));
+   ev.target.value="";
+   if(importButton.isConnected){importButton.innerHTML=originalButtonHTML;importButton.disabled=false;importButton.removeAttribute("aria-busy")}
+  }
+ };
  const delSync=q("open-delete-synced");
  if(delSync)delSync.onclick=()=>{
   if(syncing||disconnectingSync||creatingSync||connectingSync){smsg="Wait for the current sync action to finish before deleting.";renderDataManagement();return}
