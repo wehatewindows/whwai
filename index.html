@@ -62,18 +62,20 @@ svg{display:block}
 .input{display:flex;gap:10px;align-items:flex-end;position:relative}
 .field{flex:1;display:flex;align-items:flex-end;background:var(--bub);border-radius:26px;padding:0 14px 0 20px;min-height:50px}
 .field textarea{flex:1;border:0;background:none;outline:0;resize:none;min-width:0;padding:14px 0;max-height:120px;line-height:22px;height:50px}
-.mwrap{position:relative;align-self:center;margin-left:8px;display:flex;align-items:center;gap:2px}
+.mwrap{position:relative;align-self:center;margin-left:8px;display:flex;align-items:center;gap:4px}
 .model{border:0;background:none;font-weight:700;cursor:pointer;white-space:nowrap;padding:6px;border-radius:10px;display:flex;align-items:center;gap:5px}
 .model:hover{background:#e4e4e4}
-.model-info{flex:none;border:0;border-radius:8px;background:#e5edff;color:#2458b8;padding:3px 6px;min-height:22px;font-size:11px;line-height:1;font-weight:700;cursor:pointer;white-space:nowrap}
-.model-info:hover{background:#d6e3ff}.model-info[hidden]{display:none!important}
-.info-pop{position:absolute;right:0;bottom:calc(100% + 14px);width:min(270px,calc(100vw - 44px));background:#fff;border:1px solid #ddd;border-radius:14px;box-shadow:0 8px 26px rgba(0,0,0,.14);padding:12px;z-index:12;animation:rise .15s ease-out}
-.info-pop[hidden]{display:none!important}.info-pop p{margin:0 0 10px;font-size:13px;line-height:1.45;color:#222}.info-pop button{border:0;background:#e7e7e7;border-radius:9px;padding:6px 10px;font:inherit;font-size:12px;cursor:pointer}.info-pop button:hover{background:#d9d9d9}
-.pop{position:absolute;right:0;bottom:calc(100% + 14px);width:240px;background:#fff;border:1px solid #ddd;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.16);padding:6px;z-index:10;animation:rise .15s ease-out}
+.model-info{flex:none;display:grid;place-items:center;width:19px;height:19px;padding:0;border:0;border-radius:50%;background:#e5edff;color:#2458b8;font-size:12px;line-height:1;font-weight:700;cursor:help;white-space:nowrap}
+.model-info:hover,.model-info:focus-visible{background:#d6e3ff}.model-info:focus-visible{outline:2px solid rgba(76,130,239,.65);outline-offset:2px}.model-info[hidden]{display:none!important}
+.info-pop{position:absolute;right:0;bottom:calc(100% + 12px);width:min(286px,calc(100vw - 44px));background:#fff;border:1px solid #dcdce1;border-radius:17px;box-shadow:0 8px 26px rgba(0,0,0,.14);padding:12px 14px;z-index:12;animation:rise .15s ease-out}
+.info-pop::after{content:"";position:absolute;right:15px;bottom:-7px;width:12px;height:12px;background:#fff;border-right:1px solid #dcdce1;border-bottom:1px solid #dcdce1;transform:rotate(45deg)}
+.info-pop[hidden]{display:none!important}.info-pop p{margin:0;font-size:12.5px;line-height:1.5;color:#333}
+.pop{position:absolute;right:0;bottom:calc(100% + 14px);width:260px;background:#fff;border:1px solid #ddd;border-radius:24px;box-shadow:0 8px 30px rgba(0,0,0,.16);padding:9px;z-index:10;animation:rise .15s ease-out}
 .pop[hidden]{display:none}
-.pop .ph{font-size:12.5px;color:var(--mute);padding:6px 10px 4px}
-.mi{display:flex;width:100%;align-items:center;gap:8px;border:0;background:#f3f3f3;border-radius:11px;padding:8px 10px;cursor:pointer;text-align:left}
-.mi div{flex:1}.mi small{display:block;color:var(--mute);font-size:12.5px}.mi i{display:flex;color:var(--blue)}
+.pop .ph{font-size:12.5px;color:var(--mute);padding:7px 12px 9px}
+#model-options{display:flex;flex-direction:column;gap:7px}
+.mi{display:flex;width:100%;align-items:center;gap:8px;border:0;background:#f3f3f3;border-radius:17px;padding:10px 12px;cursor:pointer;text-align:left}
+.mi div{flex:1;min-width:0}.mi small{display:block;color:var(--mute);font-size:12.5px;line-height:1.35;margin-top:2px}.mi i{display:flex;color:var(--blue);flex:none}
 .mi:disabled{opacity:.58;cursor:not-allowed;background:#f5f5f5}.mi:disabled small{color:#888}
 .round{width:48px;height:48px;border-radius:50%;border:0;background:var(--bub);cursor:pointer;flex:none;display:grid;place-items:center;transition:background .15s,opacity .15s;margin-bottom:1px}
 .round:hover{background:#e2e2e2}.round:disabled{opacity:.45;cursor:default}
@@ -218,7 +220,7 @@ html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(
  .field textarea{min-width:0;width:0;flex:1;line-height:24px;padding:12px 0;max-height:112px;height:48px}
  .mwrap{flex:none;margin-left:4px;gap:2px}
  .model{max-width:88px;overflow:hidden;font-size:13px;padding:6px 4px;gap:3px}.model .sep{display:none}.model span{overflow:hidden;text-overflow:ellipsis}
- .model-info{padding:3px 5px;font-size:10px;min-height:20px}.info-pop{width:min(260px,calc(100vw - 40px))}
+ .model-info{width:18px;height:18px;font-size:11px;min-height:0}.info-pop{width:min(270px,calc(100vw - 40px))}
  .round{width:44px;height:44px;margin-bottom:2px;background:rgba(255,255,255,.88);box-shadow:0 2px 12px rgba(106,160,255,.25)}
  .orb{width:46px;height:46px;right:0;bottom:calc(100% + 12px)}
  .pop{width:min(240px,calc(100vw - 2 * var(--edge)));right:0}
@@ -337,10 +339,9 @@ body.access-locked .frame{filter:blur(6px);transform:scale(1.004);transform-orig
     <textarea id="in" rows="1" placeholder="Message WHWai" aria-label="Message"></textarea>
     <div class="mwrap">
      <button class="model" id="model" aria-haspopup="menu" aria-expanded="false"></button>
-     <button class="model-info" id="aries-info" type="button" aria-label="About Aries" title="About Aries" hidden>Info</button>
-     <div class="info-pop" id="aries-info-pop" role="dialog" aria-label="About Aries" hidden>
-      <p>Aries’ knowledge is current to around mid-2024 and it has no web access.</p>
-      <button type="button" id="aries-info-dismiss">Got it</button>
+     <button class="model-info" id="aries-info" type="button" aria-label="About Aries" aria-describedby="aries-info-pop" aria-expanded="false" title="About Aries" hidden>i</button>
+     <div class="info-pop" id="aries-info-pop" role="tooltip" aria-label="About Aries" hidden>
+      <p>Aries is built for quick, straightforward reasoning and everyday questions. It uses OpenAI open-weight models through Groq, so requests are processed by Groq rather than sent directly to OpenAI. It has no web access, and its knowledge may not include recent events.</p>
      </div>
      <div class="pop" id="pop" role="menu" hidden>
       <div class="ph">Model</div>
@@ -453,8 +454,7 @@ let S=null;
 try{S=safeState(JSON.parse(store.get()||"null"))}catch(e){S=safeState(null)}
 // Rewrite existing storage immediately to remove any legacy/unrecognized fields.
 try{store.set(JSON.stringify(S))}catch(e){}
-let availableModels=[{id:"aries-1",name:"Aries",description:"Powered by OpenAI"}];
-const ARIES_NOTICE_KEY="whwai.ariesInfoSeen.v1";
+let availableModels=[{id:"aries-1",name:"Aries",description:"Best for quick, straightforward reasoning. Powered by OpenAI models via Groq."}];
 const clean=()=>({chats:S.chats.map(safeChat).filter(Boolean),dead:safeDead(S.dead)});
 const persistedState=()=>({
  chats:clean().chats,
@@ -604,8 +604,8 @@ function selectedModelId(){
 function updateModelUI(){
  const id=selectedModelId(),selected=availableModels.find(m=>m.id===id)||availableModels[0];
  $("model").innerHTML='<span class="sep">|</span><span class="model-name">'+esc(selected.name)+'</span>'+I.chev;
- let seen=false;try{seen=localStorage.getItem(ARIES_NOTICE_KEY)==="1"}catch(e){}
- const info=$("aries-info");info.hidden=id!=="aries-1"||seen;
+ const info=$("aries-info");info.hidden=id!=="aries-1";
+ if(info.hidden){$("aries-info-pop").hidden=true;info.setAttribute("aria-expanded","false")}
  const options=$("model-options");if(!options)return;options.innerHTML="";
  availableModels.forEach(m=>{
   const b=document.createElement("button");b.type="button";b.className="mi";b.setAttribute("role","menuitemradio");b.setAttribute("aria-checked",String(m.id===id));
@@ -616,7 +616,7 @@ function updateModelUI(){
    const c=C();
    S.model=m.id;
    if(c){c.model=m.id;touch(c)}
-   save();pop(false);$("aries-info-pop").hidden=true;updateModelUI();
+   save();pop(false);$("aries-info-pop").hidden=true;$("aries-info").setAttribute("aria-expanded","false");updateModelUI();
    if(c)renderChat();
   };
   options.appendChild(b);
@@ -631,7 +631,7 @@ function updateModelUI(){
   placeholder.setAttribute("role","menuitem");
   placeholder.setAttribute("aria-disabled","true");
   const copy=document.createElement("div");
-  copy.textContent="New AI";
+  copy.textContent="Vela";
   const small=document.createElement("small");
   small.textContent="Coming soon";
   copy.appendChild(small);
@@ -644,8 +644,8 @@ function updateModelUI(){
 }
 function updateAvailableModels(models){
  if(!Array.isArray(models))return;
- const cleanModels=models.filter(m=>m&&typeof m.id==="string"&&typeof m.name==="string"&&m.name.trim()).map(m=>({id:m.id,name:m.name,description:String(m.description||"")}));
- if(!cleanModels.some(m=>m.id==="aries-1"))cleanModels.unshift({id:"aries-1",name:"Aries",description:"Powered by OpenAI"});
+ const cleanModels=models.filter(m=>m&&typeof m.id==="string"&&typeof m.name==="string"&&m.name.trim()).map(m=>({id:m.id,name:m.id==="future-1"?"Vela":m.name,description:m.id==="aries-1"?"Best for quick, straightforward reasoning. Powered by OpenAI models via Groq.":String(m.description||"")}));
+ if(!cleanModels.some(m=>m.id==="aries-1"))cleanModels.unshift({id:"aries-1",name:"Aries",description:"Best for quick, straightforward reasoning. Powered by OpenAI models via Groq."});
  availableModels=cleanModels;
  let repaired=false;
  S.chats.forEach(c=>{if(!availableModels.some(m=>m.id===c.model)){c.model="aries-1";repaired=true}});
@@ -900,11 +900,10 @@ document.addEventListener("click",e=>{if(!$("cmenu").contains(e.target))closeMen
 $("scrim").onclick=()=>side(false);
 window.addEventListener("resize",()=>{if(!mob()){$("side").classList.remove("open");$("scrim").classList.remove("show");$("mopen").setAttribute("aria-expanded","false")}});
 $("model").onclick=e=>{e.stopPropagation();$("aries-info-pop").hidden=true;pop($("pop").hidden)};
-$("aries-info").onclick=e=>{e.stopPropagation();pop(false);$("aries-info-pop").hidden=!$("aries-info-pop").hidden};
-$("aries-info-dismiss").onclick=()=>{try{localStorage.setItem(ARIES_NOTICE_KEY,"1")}catch(e){}$("aries-info-pop").hidden=true;updateModelUI()};
+$("aries-info").onclick=e=>{e.stopPropagation();pop(false);const tip=$("aries-info-pop");tip.hidden=!tip.hidden;$("aries-info").setAttribute("aria-expanded",String(!tip.hidden))};
 document.addEventListener("click",e=>{
  if(!$("pop").contains(e.target)&&e.target!==$("model"))pop(false);
- if(!$("aries-info-pop").contains(e.target)&&e.target!==$("aries-info"))$("aries-info-pop").hidden=true;
+ if(!$("aries-info-pop").contains(e.target)&&e.target!==$("aries-info")){$("aries-info-pop").hidden=true;$("aries-info").setAttribute("aria-expanded","false")}
 });
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){pop(false);side(false);closeMenu();closeSettings()}});
 /* ---------- settings + sync ---------- */
@@ -1177,7 +1176,7 @@ function clearLocalWhwData(removeDeviceId){
    if(removeDeviceId){
    cachedDeviceId="";
    exportCooldownMemory=0;
-   try{localStorage.removeItem(EXPORT_COOLDOWN_KEY);localStorage.removeItem(ARIES_NOTICE_KEY)}catch(e){}
+   try{localStorage.removeItem(EXPORT_COOLDOWN_KEY)}catch(e){}
   }
  updateSyncIndicator();
 }
