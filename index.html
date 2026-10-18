@@ -17,7 +17,7 @@ svg{display:block}
 .frame{height:100%;min-height:420px;border:5px solid var(--frame);border-radius:36px;display:flex;gap:16px;padding:12px;position:relative;overflow:hidden}
 .side{width:var(--sw);flex:none;background:var(--side);border-radius:22px;padding:14px;display:flex;flex-direction:column;position:relative;transition:margin-left .32s cubic-bezier(.4,0,.2,1),opacity .22s ease}
 .brand{display:flex;align-items:center;justify-content:space-between;padding:0 4px 12px;border-bottom:3px solid #c4c4c4;margin-bottom:12px}
-.profile-btn{width:30px;height:30px;border-radius:50%;border:0;background:#4f7cf0;color:#fff;font:600 13px Inter,sans-serif;cursor:pointer;flex:none;margin-right:8px;padding:0}.profile-btn:hover{filter:brightness(1.08)}.profile-btn[hidden]{display:none}.brand h1{font-size:26px;font-weight:400;margin:0}.brand b{font-weight:700}
+.profile-btn{position:absolute;left:50px;bottom:12px;width:30px;height:30px;border-radius:50%;border:0;background:#4f7cf0;color:#fff;font:600 13px Inter,sans-serif;cursor:pointer;padding:0;margin:0;z-index:2}.profile-btn .sync-dot{position:absolute;right:-2px;bottom:-2px;width:10px;height:10px;border-radius:50%;border:2px solid var(--side,#eeeef2);background:#9aa0a6}.profile-btn[data-sync="ok"] .sync-dot{background:#2fa35a}.profile-btn[data-sync="busy"] .sync-dot{background:#3b82f6}.profile-btn[data-sync="off"] .sync-dot{background:#d99a1e}.profile-btn:hover{filter:brightness(1.08)}.profile-btn[hidden]{display:none}.brand h1{font-size:26px;font-weight:400;margin:0}.brand b{font-weight:700}
 .logo,.expand{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#9cc0ff,#4a7df0);border:0;padding:0;cursor:pointer;flex:none;transition:transform .15s}
 .logo:hover,.expand:hover{transform:scale(1.07)}
 .expand{position:absolute;left:4px;top:2px;z-index:4;opacity:0;pointer-events:none;transition:opacity .15s ease,transform .15s}
@@ -234,7 +234,7 @@ html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(
  .side .new{bottom:64px}.side .gear{bottom:12px;padding-right:38px}
  .side .new::after{content:"New chat";font-size:15px;font-weight:500}
  .side .gear::after{content:"Settings";font-size:15px;font-weight:500}
- .side .new:hover,.side .gear:hover{background:#d4d4dc}
+ .side .new:hover,.side .gear:hover{background:#d4d4dc}.side .gear{right:calc(var(--edge) + 54px)}.side .profile-btn{left:auto;right:var(--edge);bottom:12px;width:44px;height:44px;font-size:15px;border-radius:14px}.side .profile-btn .sync-dot{right:-3px;bottom:-3px}
  .modal{padding:10px}.mcard{width:min(420px,100%);max-height:calc(100% - 20px);padding:16px}
 }
 @media (max-width:360px){
@@ -369,12 +369,12 @@ body.access-locked .frame{filter:blur(6px);transform:scale(1.004);transform-orig
 </div>
 <div class="frame" id="app-frame">
  <aside class="side" id="side">
-  <div class="brand"><h1>WHW<b>ai</b></h1><button class="profile-btn" id="profile-btn" title="Account settings" aria-label="Account settings" hidden></button><button class="logo" id="logo" title="Collapse sidebar" aria-label="Collapse sidebar"></button></div>
-  <div class="sync-status" id="sync-status" role="status" aria-live="polite" hidden></div>
+  <div class="brand"><h1>WHW<b>ai</b></h1><button class="logo" id="logo" title="Collapse sidebar" aria-label="Collapse sidebar"></button></div>
   <div class="chat-search" role="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4.5 4.5"></path></svg><input id="chat-search" type="search" placeholder="Search chats" aria-label="Search chats" autocomplete="off" spellcheck="false"><button id="chat-search-clear" type="button" aria-label="Clear search" title="Clear search" hidden>×</button></div>
   <div class="list" id="list"></div>
   <button class="new" id="new" title="New chat" aria-label="New chat">+</button>
   <button class="gear" id="gear" title="Settings" aria-label="Settings"></button>
+  <button class="profile-btn" id="profile-btn" title="Account settings" aria-label="Account settings" hidden></button>
   <div class="cmenu" id="cmenu" role="menu" hidden><button id="cren" role="menuitem"></button><button id="cgen" role="menuitem"></button><button id="cpin" role="menuitem"></button><button id="cdel" class="danger" role="menuitem"></button></div>
  </aside>
  <div class="scrim" id="scrim"></div>
@@ -798,7 +798,7 @@ try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_T
 const accessGate=$("access-gate"),accessCard=$("access-card"),accessTitle=$("access-title"),accessForm=$("access-form"),accessInput=$("access-code"),accessError=$("access-error"),accessButton=$("access-unlock");
 let aiDisabled=false,accessRequired=true;
 function hasEarlyAccess(){return false}
-function openApp(force){if(aiDisabled&&!force)return;document.body.classList.remove("access-locked");accessGate.hidden=true;$("app-frame").removeAttribute("aria-hidden");if(accountSession&&accountSession.token&&!accountSession.user)resumeAccountSession();setTimeout(showAriesIntroOnce,650)}
+function openApp(force){if(aiDisabled&&!force)return;document.body.classList.remove("access-locked");accessGate.hidden=true;$("app-frame").removeAttribute("aria-hidden");setTimeout(showAriesIntroOnce,650)}
 function unlockEarlyAccess(token,expiresAt){if(aiDisabled)return;try{const until=Number(expiresAt)||Date.now()+ACCESS_TTL;localStorage.setItem(ACCESS_STORAGE_KEY,String(until));localStorage.setItem(ACCESS_TOKEN_KEY,String(token||""))}catch(e){}openApp()}
 function lockEarlyAccess(showGate){try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.remove("disabled-mode");accessTitle.textContent="Enter access code";accessForm.hidden=false;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false;$("access-admin-form").hidden=true;if(showGate){accessInput.value="";setTimeout(()=>accessInput.focus(),50)}}
 function showAIDisabled(){aiDisabled=true;try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");accessTitle.textContent="WHWai is currently disabled";accessForm.hidden=true;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false}
@@ -1026,17 +1026,18 @@ async function syncAccountChatsNow(){
   if(localRevision!==revision||accountSyncAgain)scheduleAccountSync();
  }
 }
-function renderProfileButton(){const b=$("profile-btn");if(!b)return;const name=accountSession&&accountSession.token&&accountSession.user&&accountSession.user.username?String(accountSession.user.username):"";if(!name){b.hidden=true;return}b.hidden=false;b.textContent=name.charAt(0).toUpperCase();b.title="Signed in as "+name;b.setAttribute("aria-label","Account settings, signed in as "+name)}
 function renderSyncStatus(){
- renderProfileButton();
- const el=$("sync-status");if(!el)return;
- if(!accountSession||!accountSession.token){el.hidden=true;el.innerHTML="";return}
- let state,text,title="",dot='<span class="dot" aria-hidden="true"></span>';
- if(accountSyncing){state="busy";text="Syncing chats…";dot='<span class="sync-spinner" aria-hidden="true"></span>'}
+ const b=$("profile-btn");if(!b)return;
+ const name=accountSession&&accountSession.token&&accountSession.user&&accountSession.user.username?String(accountSession.user.username):"";
+ if(!name){b.hidden=true;b.innerHTML="";return}
+ let state,text;
+ if(accountSyncing){state="busy";text="Syncing chats…"}
  else if(navigator.onLine===false||accountSyncFailed){state="off";text="Offline · saved on this device"}
- else if(accountLastSync){state="ok";text="Chats synced";title="Last synced "+new Date(accountLastSync).toLocaleTimeString()}
+ else if(accountLastSync){state="ok";text="Chats synced · last synced "+new Date(accountLastSync).toLocaleTimeString()}
  else{state="idle";text="Not synced yet"}
- el.hidden=false;el.dataset.state=state;el.title=title;el.innerHTML=dot+'<span>'+esc(text)+'</span>';
+ b.hidden=false;b.dataset.sync=state;b.textContent=name.charAt(0).toUpperCase();
+ b.insertAdjacentHTML("beforeend",'<span class="sync-dot" aria-hidden="true"></span>');
+ b.title=name+" · "+text;b.setAttribute("aria-label","Account settings, signed in as "+name+". "+text);
 }
 function mergeLocalAndRemote(first,second){
  const map={},dead={};const t=c=>Number(c.mu||c.u||0);
@@ -1612,7 +1613,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden&&accountSe
 window.addEventListener("online",()=>{renderSyncStatus();if(accountSession&&accountSession.token)scheduleAccountSync()});window.addEventListener("offline",renderSyncStatus);
 setInterval(()=>document.querySelectorAll(".bar span,.cm").forEach(el=>el.textContent=ago(+el.dataset.t)),1000);
 renderList();renderChat();renderSiteNotice();
-if(accountSession&&accountSession.token)accountReady=false;
+if(accountSession&&accountSession.token){accountReady=false;resumeAccountSession()}
 const fr=document.querySelector(".frame");fr.classList.add("no-anim");fr.classList.toggle("collapsed",!!S.col);requestAnimationFrame(()=>requestAnimationFrame(()=>fr.classList.remove("no-anim")));
 
 </script>
