@@ -256,7 +256,7 @@ html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(
 
 
 body.access-locked{overflow:hidden!important}
-body.access-locked .frame{filter:blur(6px);transform:scale(1.004);transform-origin:center;pointer-events:none;user-select:none}
+body.access-locked .frame{filter:blur(6px);pointer-events:none;user-select:none}
 .access-gate{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(255,255,255,.72)}
 .access-gate[hidden]{display:none!important}
 .access-card{width:min(100%,340px);box-sizing:border-box;padding:22px;background:#fff;border:1px solid #dedede;border-radius:12px;color:#111}
@@ -966,7 +966,7 @@ list.addEventListener("scroll",closeMenu);
 document.addEventListener("click",e=>{if(!$("cmenu").contains(e.target))closeMenu()});
 $("scrim").onclick=()=>side(false);
 window.addEventListener("resize",()=>{if(!mob()){$("side").classList.remove("open");$("scrim").classList.remove("show");$("mopen").setAttribute("aria-expanded","false")}});
-$("model").onclick=e=>{e.stopPropagation();pop($("pop").hidden)};
+$("model").onclick=e=>{e.stopPropagation();if($("pop").hidden)hideAriesIntro(false);pop($("pop").hidden)};
 document.addEventListener("click",e=>{
  if(!$("pop").contains(e.target)&&e.target!==$("model"))pop(false);
 });
