@@ -643,7 +643,7 @@ function selectedModelId(){
 }
 function updateModelUI(){
  const id=selectedModelId(),selected=availableModels.find(m=>m.id===id)||availableModels[0];
- $("model").innerHTML='<span class="sep">|</span><span class="model-name">'+esc(selected.name)+'</span>'+I.chev;
+ $("model").innerHTML='<span class="model-name">'+esc(selected.name)+'</span>'+I.chev;
  const options=$("model-options");if(!options)return;options.innerHTML="";
  availableModels.forEach(m=>{
   const b=document.createElement("button");b.type="button";b.className="mi";b.setAttribute("role","menuitemradio");b.setAttribute("aria-checked",String(m.id===id));
@@ -841,7 +841,7 @@ async function answer(c,q){
  const run=++answerRunId,controller=new AbortController();
  responseWasStopped=false;activeAnswerController=controller;setBusy(true);
  const tmp=document.createElement("div");tmp.className="msg dim fresh";tmp.setAttribute("role","status");
- const thinkingLines=["Thinking…","Working on it…","One moment…","Putting it together…","Checking that…","Almost there…","Aries is working…"];
+ const activeModelName=(availableModels.find(m=>m.id===selectedModelId())||availableModels[0]||{name:"WHWai"}).name;const thinkingLines=[activeModelName+" is thinking…",activeModelName+" is working on it…",activeModelName+" is putting it together…",activeModelName+" is checking that…",activeModelName+" is almost there…",activeModelName+" is working…"];
  const rareThinkingLines=["idk ask chatgpt","The tiny calculators are meeting…","Consulting the office plant…","My last two neurons are syncing…","The pixels are negotiating…"];
  const thinkingLine=Math.random()<0.08?rareThinkingLines[Math.floor(Math.random()*rareThinkingLines.length)]:thinkingLines[Math.floor(Math.random()*thinkingLines.length)];tmp.setAttribute("aria-label",thinkingLine);tmp.innerHTML='<span class="typing-indicator" aria-hidden="true"><span></span><span></span><span></span></span><span class="thinking-label"></span>';tmp.querySelector(".thinking-label").textContent=thinkingLine;chatEl.appendChild(tmp);toBottom();
  try{
@@ -1415,57 +1415,108 @@ function renderDeleteAccountConfirm(){
  $("delete-account-form").onsubmit=async e=>{e.preventDefault();const b=$("delete-account-submit");b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Deleting…';try{const result=await post({action:"account_delete",password:$("delete-account-password").value});if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});clearSignedInLocalCache();smsg="Your account and active server-stored chats were deleted.";toast("Account deleted.");renderSettings()}catch(err){const el=$("delete-account-error");el.textContent=err&&err.payload&&err.payload.message||"Couldn't delete the account.";el.hidden=false;b.disabled=false;b.textContent="Delete account"}}
 }
 function escapeAttr(text){return String(text||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
-let adminPanelGeneration=0,adminContentRequest=0,adminActionPending=false;
-function renderAdminPanel(tab,query){
- currentSettingsView="admin";tab=tab||"site";const generation=++adminPanelGeneration;adminContentRequest++;
- $("modal-title").textContent="Admin panel";
- mbody.innerHTML=`<div class="admin-nav"><button type="button" class="pbtn ${tab==="site"?"active":""}" data-admin-tab="site">Site controls</button><button type="button" class="pbtn ${tab==="accounts"?"active":""}" data-admin-tab="accounts">Accounts</button><button type="button" class="pbtn ${tab==="usage"?"active":""}" data-admin-tab="usage">Usage</button><button type="button" class="pbtn ${tab==="audit"?"active":""}" data-admin-tab="audit">Audit log</button></div><div id="admin-content" aria-live="polite"><p class="sm"><span class="sync-spinner" aria-hidden="true"></span>Loading admin data…</p></div><div class="data-toolbar"><button type="button" class="pbtn" id="admin-back">Back to Settings</button></div>`;
- mbody.querySelectorAll("[data-admin-tab]").forEach(b=>b.onclick=()=>renderAdminPanel(b.dataset.adminTab));$("admin-back").onclick=renderSettings;
- if(tab==="site")loadAdminSiteSettings(generation);else if(tab==="accounts")loadAdminAccounts(query||"",generation);else if(tab==="usage")loadAdminUsage(generation);else loadAdminAudit(generation);
-}
-function adminRequestIsCurrent(generation,request){
- return generation===adminPanelGeneration&&request===adminContentRequest&&currentSettingsView==="admin"&&!modal.hidden&&!!$("admin-content");
-}
-async function loadAdminSiteSettings(generation){
- generation=generation==null?adminPanelGeneration:generation;const request=++adminContentRequest;let box=$("admin-content");
- if(!box)return;box.innerHTML='<p class="sm"><span class="sync-spinner" aria-hidden="true"></span>Loading site controls…</p>';
- try{
-  const result=await post({action:"admin_settings"});
-  if(!adminRequestIsCurrent(generation,request))return;
-  if(!result||!result.settings)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});
-  const v=result.settings;box=$("admin-content");
-  box.innerHTML=`<p class="sm">These controls are enforced by the backend. Admin panel responses never include chat titles or messages.</p><form id="admin-settings-form" class="account-form"><label class="check-row"><input id="admin-ai-enabled" type="checkbox"> AI enabled</label><label class="check-row"><input id="admin-access-required" type="checkbox"> Require access code screen on page load</label><label for="admin-signup-mode">Sign-up mode</label><select id="admin-signup-mode"><option value="code">Access code required</option><option value="open">Open sign-up</option><option value="closed">Closed</option></select><label for="admin-site-notice">Site-wide notice (optional)</label><textarea id="admin-site-notice" rows="3" maxlength="240" placeholder="Leave blank to clear the notice"></textarea><label for="admin-new-access-code">Change access code (leave blank to keep current)</label><input id="admin-new-access-code" type="password" maxlength="80" autocomplete="new-password"><p class="sm">Usage limits are enforced by the server and configured separately in Script Properties.</p><p class="access-error" id="admin-settings-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar"><button class="pbtn" id="admin-settings-refresh" type="button">Reload</button><button class="pbtn" id="admin-settings-save" type="submit">Save changes</button></div></form>`;
-  $("admin-ai-enabled").checked=!!v.aiEnabled;$("admin-access-required").checked=!!v.accessCodeRequired;$("admin-signup-mode").value=v.signupMode||"code";$("admin-site-notice").value=v.siteNotice||"";
-  $("admin-settings-refresh").onclick=()=>loadAdminSiteSettings(generation);
-  $("admin-settings-form").onsubmit=async e=>{
-   e.preventDefault();const formGeneration=generation,formRequest=adminContentRequest,b=$("admin-settings-save"),error=$("admin-settings-error");error.hidden=true;b.disabled=true;b.setAttribute("aria-busy","true");b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Saving…';
-   const settings={aiEnabled:$("admin-ai-enabled").checked,accessCodeRequired:$("admin-access-required").checked,signupMode:$("admin-signup-mode").value,siteNotice:$("admin-site-notice").value,newAccessCode:$("admin-new-access-code").value};
-   try{
-    const saved=await post({action:"admin_update_settings",settings});
-    if(formGeneration!==adminPanelGeneration||formRequest!==adminContentRequest||currentSettingsView!=="admin"||modal.hidden)return;
-    if(!saved||!saved.ok)throw Object.assign(new Error(saved&&saved.error||"failed"),{payload:saved});
-    siteSignupMode=saved.settings.signupMode||"code";siteNoticeText=saved.settings.siteNotice||"";aiDisabled=!saved.settings.aiEnabled;accessRequired=!!saved.settings.accessCodeRequired;renderSiteNotice();const codeField=$("admin-new-access-code");if(codeField)codeField.value="";const currentButton=$("admin-settings-save");if(currentButton){currentButton.disabled=false;currentButton.removeAttribute("aria-busy");currentButton.textContent="Save changes"}toast("Site settings saved.");
-   }catch(err){if(formGeneration!==adminPanelGeneration||formRequest!==adminContentRequest||currentSettingsView!=="admin"||modal.hidden)return;const currentError=$("admin-settings-error"),currentButton=$("admin-settings-save");if(currentError){currentError.textContent=err&&err.payload&&err.payload.message||"Couldn't save settings.";currentError.hidden=false}if(currentButton){currentButton.disabled=false;currentButton.removeAttribute("aria-busy");currentButton.textContent="Save changes"}}
-  };
- }catch(err){if(!adminRequestIsCurrent(generation,request))return;box=$("admin-content");box.innerHTML=`<p class="access-error" role="status">${esc(err&&err.payload&&err.payload.message||"Couldn't load site settings. Check the account session and sheet setup.")}</p><button type="button" class="pbtn" id="admin-settings-retry">Retry</button>`;$("admin-settings-retry").onclick=()=>loadAdminSiteSettings(generation)}
-}
-async function loadAdminAccounts(query,generation){
- generation=generation==null?adminPanelGeneration:generation;const request=++adminContentRequest;let box=$("admin-content");if(!box)return;
- box.innerHTML=`<form id="admin-account-search" class="admin-search"><input id="admin-account-query" type="search" maxlength="20" placeholder="Search usernames" value="${escapeAttr(query||"")}"><button type="submit" class="pbtn">Search</button><button type="button" class="pbtn" id="admin-create-admin">Create admin</button></form><div id="admin-account-results"><p class="sm"><span class="sync-spinner" aria-hidden="true"></span>Loading account list…</p></div>`;
- $("admin-account-search").onsubmit=e=>{e.preventDefault();loadAdminAccounts($("admin-account-query").value.trim(),generation)};$("admin-create-admin").onclick=renderCreateAdmin;
- try{
-  const result=await post({action:"admin_list_accounts",query:query||""});if(!adminRequestIsCurrent(generation,request))return;
-  if(!result||!Array.isArray(result.accounts))throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});const target=$("admin-account-results");if(!target)return;
-  if(!result.accounts.length){target.innerHTML='<p class="sm">No accounts matched that search.</p>';return}
-  target.innerHTML=result.accounts.map(a=>`<article class="admin-account"><div class="admin-account-head"><strong>${esc(a.username)}</strong><span class="account-role">${esc(a.role)} · ${esc(a.status)}</span></div><div class="admin-account-meta">Created ${adminDate(a.createdAt)} · Last sign-in ${adminDate(a.lastLoginAt)} · ${Number(a.chatCount)||0} chats</div><div class="admin-account-actions">${a.status==="active"?`<button type="button" class="pbtn" data-account-action="disable" data-target-id="${escapeAttr(a.id)}">Disable</button>`:`<button type="button" class="pbtn" data-account-action="enable" data-target-id="${escapeAttr(a.id)}">Enable</button>`}<button type="button" class="pbtn" data-account-action="reset_password" data-target-id="${escapeAttr(a.id)}">Temp password</button><button type="button" class="pbtn" data-account-action="force_signout" data-target-id="${escapeAttr(a.id)}">Sign out all</button>${a.role==="admin"?`<button type="button" class="pbtn" data-account-action="demote" data-target-id="${escapeAttr(a.id)}" ${a.isBootstrap?"disabled":""}>Demote</button>`:`<button type="button" class="pbtn" data-account-action="promote" data-target-id="${escapeAttr(a.id)}">Make admin</button>`}<button type="button" class="pbtn danger" data-account-action="delete" data-target-id="${escapeAttr(a.id)}" ${a.isBootstrap?"disabled":""}>Delete</button></div></article>`).join("")+(result.truncated?'<p class="sm">Showing the first 200 matching accounts. Narrow your search for more specific results.</p>':"");
-  target.querySelectorAll("[data-account-action]").forEach(button=>button.onclick=()=>runAdminAccountAction(button.dataset.accountAction,button.dataset.targetId,query||""));
- }catch(err){if(!adminRequestIsCurrent(generation,request))return;const target=$("admin-account-results");if(target)target.innerHTML=`<p class="access-error" role="status">${esc(err&&err.payload&&err.payload.message||"Couldn't load accounts.")}</p><button type="button" class="pbtn" id="admin-account-retry">Retry</button>`;const retry=$("admin-account-retry");if(retry)retry.onclick=()=>loadAdminAccounts(query,generation)}
-}
+let adminPanelGeneration=0,adminActionPending=false,adminData=null,adminDataAt=0,adminLoading=null,adminTab="site",adminQuery="";
 function adminDate(value){const n=Number(value||0);return n?new Date(n).toLocaleString():"Never"}
-function renderCreateAdmin(){
- currentSettingsView="admin-create";$("modal-title").textContent="Create admin account";
- mbody.innerHTML=`<p class="sm">This creates an administrator account with a temporary password that is displayed only once. The new admin must change it at first sign-in.</p><form id="create-admin-form" class="account-form"><label for="create-admin-username">Username</label><input id="create-admin-username" type="text" minlength="3" maxlength="20" pattern="[a-zA-Z0-9_]{3,20}" required><p class="access-error" id="create-admin-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar"><button type="button" class="pbtn" id="create-admin-cancel">Cancel</button><button type="submit" class="pbtn" id="create-admin-submit">Create admin</button></div></form>`;
- $("create-admin-cancel").onclick=()=>renderAdminPanel("accounts");$("create-admin-form").onsubmit=async e=>{e.preventDefault();const b=$("create-admin-submit");b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Creating…';try{const result=await post({action:"admin_account_action",accountAction:"create_admin",username:$("create-admin-username").value.trim().toLowerCase()});if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});renderOneTimePassword("New admin account created",result.username,result.temporaryPassword,result.expiresAt,"accounts")}catch(err){const error=$("create-admin-error");if(!error)return;error.textContent=err&&err.payload&&err.payload.message||"Couldn't create the admin account.";error.hidden=false;b.disabled=false;b.textContent="Create admin"}}
+function adminFetch(force){
+ if(!force&&adminData)return Promise.resolve(adminData);
+ if(!adminLoading)adminLoading=post({action:"admin_overview"}).then(r=>{
+  if(!r||!r.ok)throw Object.assign(new Error(r&&r.error||"failed"),{payload:r});
+  adminData=r;adminDataAt=Date.now();return r;
+ }).finally(()=>{adminLoading=null});
+ return adminLoading;
+}
+function showAdminError(err){
+ const box=$("admin-content");if(!box)return;
+ box.innerHTML=`<p class="access-error" role="status">${esc(err&&err.payload&&err.payload.message||"Couldn't load admin data. Check the account session and sheet setup.")}</p><button type="button" class="pbtn" id="admin-retry">Retry</button>`;
+ $("admin-retry").onclick=()=>refreshAdmin();
+}
+function refreshAdmin(){
+ const g=adminPanelGeneration;
+ return adminFetch(true).then(()=>{if(g===adminPanelGeneration&&currentSettingsView==="admin")paintAdminTab()}).catch(err=>{if(g===adminPanelGeneration)showAdminError(err)});
+}
+function renderAdminPanel(tab,query){
+ currentSettingsView="admin";if(tab)adminTab=tab;if(query!=null)adminQuery=query;
+ const generation=++adminPanelGeneration;
+ $("modal-title").textContent="Admin panel";
+ mbody.innerHTML=`<div class="admin-nav">${[["site","Site controls"],["accounts","Accounts"],["usage","Usage"],["audit","Audit log"]].map(t=>`<button type="button" class="pbtn ${adminTab===t[0]?"active":""}" data-admin-tab="${t[0]}">${t[1]}</button>`).join("")}</div><div id="admin-content" aria-live="polite"></div><div class="data-toolbar"><button type="button" class="pbtn" id="admin-refresh">Refresh</button><button type="button" class="pbtn" id="admin-back">Back to Settings</button></div>`;
+ mbody.querySelectorAll("[data-admin-tab]").forEach(b=>b.onclick=()=>renderAdminPanel(b.dataset.adminTab));
+ $("admin-back").onclick=renderSettings;$("admin-refresh").onclick=()=>refreshAdmin();
+ if(adminData){paintAdminTab();if(Date.now()-adminDataAt>60000)refreshAdmin();return}
+ $("admin-content").innerHTML='<p class="sm"><span class="sync-spinner" aria-hidden="true"></span>Loading admin data…</p>';
+ adminFetch().then(()=>{if(generation===adminPanelGeneration&&currentSettingsView==="admin")paintAdminTab()}).catch(err=>{if(generation===adminPanelGeneration)showAdminError(err)});
+}
+function paintAdminTab(){
+ const box=$("admin-content");if(!box||!adminData)return;
+ mbody.querySelectorAll("[data-admin-tab]").forEach(b=>b.classList.toggle("active",b.dataset.adminTab===adminTab));
+ if(adminTab==="site")paintAdminSite(box);else if(adminTab==="accounts")paintAdminAccounts(box);else if(adminTab==="usage")paintAdminUsage(box);else paintAdminAudit(box);
+}
+function paintAdminSite(box){
+ const v=adminData.settings||{};
+ box.innerHTML=`<p class="sm">These controls are enforced by the backend. Admin responses never include chat titles or messages.</p><form id="admin-settings-form" class="account-form"><label class="check-row"><input id="admin-ai-enabled" type="checkbox"> AI enabled</label><label class="check-row"><input id="admin-access-required" type="checkbox"> Require access code screen on page load</label><label for="admin-signup-mode">Sign-up mode</label><select id="admin-signup-mode"><option value="code">Access code required</option><option value="open">Open sign-up</option><option value="closed">Closed</option></select><label for="admin-site-notice">Site-wide notice (optional)</label><textarea id="admin-site-notice" rows="3" maxlength="240" placeholder="Leave blank to clear the notice"></textarea><label for="admin-new-access-code">Change access code (leave blank to keep current)</label><input id="admin-new-access-code" type="password" maxlength="80" autocomplete="new-password"><p class="access-error" id="admin-settings-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar"><button class="pbtn" id="admin-settings-save" type="submit">Save changes</button></div></form>`;
+ $("admin-ai-enabled").checked=!!v.aiEnabled;$("admin-access-required").checked=!!v.accessCodeRequired;$("admin-signup-mode").value=v.signupMode||"code";$("admin-site-notice").value=v.siteNotice||"";
+ $("admin-settings-form").onsubmit=async e=>{
+  e.preventDefault();const b=$("admin-settings-save"),error=$("admin-settings-error");error.hidden=true;b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Saving…';
+  const settings={aiEnabled:$("admin-ai-enabled").checked,accessCodeRequired:$("admin-access-required").checked,signupMode:$("admin-signup-mode").value,siteNotice:$("admin-site-notice").value,newAccessCode:$("admin-new-access-code").value};
+  try{
+   const saved=await post({action:"admin_update_settings",settings});
+   if(!saved||!saved.ok)throw Object.assign(new Error(saved&&saved.error||"failed"),{payload:saved});
+   siteSignupMode=saved.settings.signupMode||"code";siteNoticeText=saved.settings.siteNotice||"";aiDisabled=!saved.settings.aiEnabled;accessRequired=!!saved.settings.accessCodeRequired;renderSiteNotice();
+   if(adminData)adminData.settings=saved.settings;toast("Site settings saved.");
+   const current=$("admin-content");if(current&&adminTab==="site"&&currentSettingsView==="admin"&&adminData)paintAdminSite(current);
+  }catch(err){const el=$("admin-settings-error"),cb=$("admin-settings-save");if(el){el.textContent=err&&err.payload&&err.payload.message||"Couldn't save settings.";el.hidden=false}if(cb){cb.disabled=false;cb.textContent="Save changes"}}
+ };
+}
+function paintAdminAccounts(box){
+ box.innerHTML=`<div class="admin-search"><input id="admin-account-query" type="search" maxlength="20" placeholder="Search usernames" value="${escapeAttr(adminQuery)}"><button type="button" class="pbtn" id="admin-create-account">Create account</button></div><div id="admin-account-results"></div>`;
+ $("admin-account-query").oninput=e=>{adminQuery=e.target.value.trim();paintAccountList()};
+ $("admin-create-account").onclick=renderCreateAccount;
+ paintAccountList();
+}
+function paintAccountList(){
+ const target=$("admin-account-results");if(!target||!adminData)return;
+ const q=String(adminQuery||"").trim().toLowerCase(),all=adminData.accounts||[];
+ const list=q?all.filter(a=>String(a.username).toLowerCase().indexOf(q)!==-1):all;
+ if(!list.length){target.innerHTML='<p class="sm">No accounts matched that search.</p>';return}
+ target.innerHTML=list.map(a=>`<article class="admin-account"><div class="admin-account-head"><strong>${esc(a.username)}</strong><span class="account-role">${esc(a.role)} · ${esc(a.status)}</span></div><div class="admin-account-meta">Created ${adminDate(a.createdAt)} · Last sign-in ${adminDate(a.lastLoginAt)} · ${Number(a.chatCount)||0} chats</div><div class="admin-account-actions">${a.status==="active"?`<button type="button" class="pbtn" data-account-action="disable" data-target-id="${escapeAttr(a.id)}">Disable</button>`:`<button type="button" class="pbtn" data-account-action="enable" data-target-id="${escapeAttr(a.id)}">Enable</button>`}<button type="button" class="pbtn" data-account-action="reset_password" data-target-id="${escapeAttr(a.id)}">Temp password</button><button type="button" class="pbtn" data-account-action="force_signout" data-target-id="${escapeAttr(a.id)}">Sign out all</button>${a.role==="admin"?`<button type="button" class="pbtn" data-account-action="demote" data-target-id="${escapeAttr(a.id)}" ${a.isBootstrap?"disabled":""}>Demote</button>`:`<button type="button" class="pbtn" data-account-action="promote" data-target-id="${escapeAttr(a.id)}">Make admin</button>`}<button type="button" class="pbtn danger" data-account-action="delete" data-target-id="${escapeAttr(a.id)}" ${a.isBootstrap?"disabled":""}>Delete</button></div></article>`).join("")+(adminData.truncated?'<p class="sm">Showing the first 500 accounts. Narrow your search for more specific results.</p>':"");
+ target.querySelectorAll("[data-account-action]").forEach(button=>button.onclick=()=>runAdminAccountAction(button.dataset.accountAction,button.dataset.targetId));
+}
+function paintAdminUsage(box){
+ const r=adminData.usage||{today:{},week:{},accountCount:0};
+ box.innerHTML=`<div class="admin-stat-grid"><div class="admin-stat"><span>Requests today</span><strong>${Number(r.today.total)||0}</strong></div><div class="admin-stat"><span>Requests in 7 days</span><strong>${Number(r.week.total)||0}</strong></div><div class="admin-stat"><span>Accounts</span><strong>${Number(r.accountCount)||0}</strong></div><div class="admin-stat"><span>Failed sign-ins today</span><strong>${Number(r.today.failedSignins)||0}</strong></div><div class="admin-stat"><span>Guest requests today</span><strong>${Number(r.today.guests)||0}</strong></div><div class="admin-stat"><span>Account requests today</span><strong>${Number(r.today.accounts)||0}</strong></div></div><p class="sm">Usage counts contain totals only; no prompts, responses, or chat text are included.</p>`;
+}
+function paintAdminAudit(box){
+ const items=adminData.audit||[];
+ box.innerHTML=`<p class="sm">Latest ${items.length} admin and account-security events. Chat titles and messages are never recorded here.</p>${items.length?items.map(item=>`<article class="admin-audit-item"><strong>${esc(item.action)}</strong><span>${adminDate(item.timestamp)}</span><p>${esc(item.actor)} → ${esc(item.target||"—")}</p><small>${esc(item.detail||"")}</small></article>`).join(""):'<p class="sm">No audit entries yet.</p>'}`;
+}
+function renderCreateAccount(){
+ currentSettingsView="admin-create";$("modal-title").textContent="Create account";
+ mbody.innerHTML=`<p class="sm">Creates a WHWai account with a temporary password that is shown only once. The new account must choose its own password at first sign-in.</p><form id="create-account-form" class="account-form"><label for="create-account-username">Username</label><input id="create-account-username" type="text" minlength="3" maxlength="20" pattern="[a-zA-Z0-9_]{3,20}" required><label for="create-account-role">Role</label><select id="create-account-role"><option value="user">User</option><option value="admin">Admin</option></select><p class="access-error" id="create-account-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar"><button type="button" class="pbtn" id="create-account-cancel">Cancel</button><button type="submit" class="pbtn" id="create-account-submit">Create account</button></div></form>`;
+ $("create-account-cancel").onclick=()=>renderAdminPanel("accounts");
+ $("create-account-form").onsubmit=async e=>{
+  e.preventDefault();const b=$("create-account-submit");b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Creating…';
+  try{
+   const result=await post({action:"admin_account_action",accountAction:"create_account",username:$("create-account-username").value.trim().toLowerCase(),role:$("create-account-role").value});
+   if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});
+   await adminFetch(true).catch(()=>{});
+   renderOneTimePassword(result.role==="admin"?"New admin account created":"New account created",result.username,result.temporaryPassword,result.expiresAt,"accounts");
+  }catch(err){const error=$("create-account-error");if(!error)return;error.textContent=err&&err.payload&&err.payload.message||"Couldn't create the account.";error.hidden=false;b.disabled=false;b.textContent="Create account"}
+ };
+}
+async function runAdminAccountAction(action,targetId){
+ const choices={disable:{title:"Disable account?",message:"This account will no longer be able to sign in, and its active sessions will be revoked.",label:"Disable"},enable:{title:"Enable account?",message:"This account will be allowed to sign in again.",label:"Enable",danger:false},reset_password:{title:"Issue temporary password?",message:"A new one-time password will replace the current password and sign out this account everywhere. It expires after 72 hours.",label:"Issue password"},force_signout:{title:"Sign out everywhere?",message:"All active sessions for this account will be revoked.",label:"Sign out all"},promote:{title:"Make administrator?",message:"This account will gain access to administrative controls.",label:"Make admin"},demote:{title:"Remove administrator role?",message:"This account will lose access to administrative controls.",label:"Demote"},delete:{title:"Delete account permanently?",message:"The account and its active server-stored chats will be deleted. This cannot be undone from WHWai.",label:"Delete account"}};
+ const choice=choices[action];if(!choice)return;
+ const accepted=await appConfirm({title:choice.title,message:choice.message,confirmLabel:choice.label,danger:choice.danger!==false});
+ if(!accepted){if(!modal.hidden&&!closingModal)renderAdminPanel("accounts");return}
+ if(modal.hidden||currentSettingsView!=="app-confirm")return;
+ adminActionPending=true;$("modal-title").textContent="Working…";mbody.innerHTML='<div class="confirm-panel"><span class="choice-icon"><span class="sync-spinner" aria-hidden="true"></span></span><div><strong>Applying admin action…</strong><p>Please keep this window open while WHWai updates the account.</p></div></div>';animateMenuContent();
+ try{
+  const result=await post({action:"admin_account_action",accountAction:action,targetId:targetId});
+  if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});
+  await adminFetch(true).catch(()=>{});
+  if(result.temporaryPassword){renderOneTimePassword("Temporary password",result.username,result.temporaryPassword,result.expiresAt,"accounts");return}
+  toast("Account updated.");if(!modal.hidden)renderAdminPanel("accounts");
+ }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't update that account.");if(!modal.hidden)renderAdminPanel("accounts")}
+ finally{adminActionPending=false}
 }
 async function appConfirm(options){
  options=options||{};
@@ -1493,34 +1544,11 @@ async function appConfirm(options){
 }
 let pendingAppConfirmation=null,confirmOverlayGeneration=0;
 function resolvePendingConfirmation(value){if(!pendingAppConfirmation)return false;pendingAppConfirmation(value);return true}
-async function runAdminAccountAction(action,targetId,query){
- const choices={disable:{title:"Disable account?",message:"This account will no longer be able to sign in, and its active sessions will be revoked.",label:"Disable"},enable:{title:"Enable account?",message:"This account will be allowed to sign in again.",label:"Enable",danger:false},reset_password:{title:"Issue temporary password?",message:"A new one-time password will replace the current password and sign out this account everywhere. It expires after 72 hours.",label:"Issue password"},force_signout:{title:"Sign out everywhere?",message:"All active sessions for this account will be revoked.",label:"Sign out all"},promote:{title:"Make administrator?",message:"This account will gain access to administrative controls.",label:"Make admin"},demote:{title:"Remove administrator role?",message:"This account will lose access to administrative controls.",label:"Demote"},delete:{title:"Delete account permanently?",message:"The account and its active server-stored chats will be deleted. This cannot be undone from WHWai.",label:"Delete account"}};
- const choice=choices[action];if(!choice)return;
- const accepted=await appConfirm({title:choice.title,message:choice.message,confirmLabel:choice.label,danger:choice.danger!==false});
- if(!accepted){if(!modal.hidden&&!closingModal)renderAdminPanel("accounts",query||"");return}
- if(modal.hidden||currentSettingsView!=="app-confirm")return;
- const returnQuery=query||"";adminActionPending=true;$("modal-title").textContent="Working…";mbody.innerHTML='<div class="confirm-panel"><span class="choice-icon"><span class="sync-spinner" aria-hidden="true"></span></span><div><strong>Applying admin action…</strong><p>Please keep this window open while WHWai updates the account.</p></div></div>';animateMenuContent();toast(action==="reset_password"?"Issuing temporary password…":"Applying account change…");
- try{const result=await post({action:"admin_account_action",accountAction:action,targetId:targetId});if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});if(result.temporaryPassword){renderOneTimePassword("Temporary password",result.username,result.temporaryPassword,result.expiresAt,"accounts");return}toast("Account updated.");if(!modal.hidden)renderAdminPanel("accounts",returnQuery)}catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't update that account.");if(!modal.hidden)renderAdminPanel("accounts",returnQuery)}finally{adminActionPending=false}
-}
 function renderOneTimePassword(title,username,password,expiresAt,returnTab){
  currentSettingsView="one-time-password";$("modal-title").textContent=title;
  mbody.innerHTML=`<p><strong>${esc(username||"")}</strong></p><p class="sm">Copy this password now. WHWai will not display it again after you leave this screen. The password expires ${adminDate(expiresAt)} and must be changed at first sign-in.</p><div class="key"><span class="key-value" id="one-time-password-value">${escapeAttr(password||"")}</span><button type="button" id="one-time-password-copy" class="pbtn">Copy</button></div><p class="sm" id="one-time-password-status" role="status"></p><div class="data-toolbar"><button type="button" class="pbtn" id="one-time-password-done">I have saved it</button></div>`;
  $("one-time-password-copy").onclick=async()=>{try{await navigator.clipboard.writeText(password);$("one-time-password-status").textContent="Copied to clipboard."}catch(e){const el=$("one-time-password-value"),range=document.createRange();range.selectNodeContents(el);const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);$("one-time-password-status").textContent="Select the password above and copy it manually."}};
  $("one-time-password-done").onclick=()=>renderAdminPanel(returnTab||"accounts");
-}
-async function loadAdminUsage(generation){
- generation=generation==null?adminPanelGeneration:generation;const request=++adminContentRequest;let box=$("admin-content");if(!box)return;box.innerHTML='<p class="sm"><span class="sync-spinner" aria-hidden="true"></span>Loading usage…</p>';
- try{const r=await post({action:"admin_usage"});if(!adminRequestIsCurrent(generation,request))return;if(!r||!r.ok)throw Object.assign(new Error(r&&r.error||"failed"),{payload:r});
-  box=$("admin-content");box.innerHTML=`<div class="admin-stat-grid"><div class="admin-stat"><span>Requests today</span><strong>${Number(r.today.total)||0}</strong></div><div class="admin-stat"><span>Requests in 7 days</span><strong>${Number(r.week.total)||0}</strong></div><div class="admin-stat"><span>Accounts</span><strong>${Number(r.accountCount)||0}</strong></div><div class="admin-stat"><span>Failed sign-ins today</span><strong>${Number(r.today.failedSignins)||0}</strong></div><div class="admin-stat"><span>Guest requests today</span><strong>${Number(r.today.guests)||0}</strong></div><div class="admin-stat"><span>Account requests today</span><strong>${Number(r.today.accounts)||0}</strong></div></div><p class="sm">Usage counts contain totals only; no prompts, responses, or chat text are included.</p><button type="button" class="pbtn" id="admin-usage-reload">Refresh</button>`;
-  $("admin-usage-reload").onclick=()=>loadAdminUsage(generation);
- }catch(err){if(!adminRequestIsCurrent(generation,request))return;box=$("admin-content");box.innerHTML=`<p class="access-error" role="status">${esc(err&&err.payload&&err.payload.message||"Couldn't load usage stats.")}</p><button type="button" class="pbtn" id="admin-usage-retry">Retry</button>`;$("admin-usage-retry").onclick=()=>loadAdminUsage(generation)}
-}
-async function loadAdminAudit(generation){
- generation=generation==null?adminPanelGeneration:generation;const request=++adminContentRequest;let box=$("admin-content");if(!box)return;box.innerHTML='<p class="sm"><span class="sync-spinner" aria-hidden="true"></span>Loading audit log…</p>';
- try{const r=await post({action:"admin_audit"});if(!adminRequestIsCurrent(generation,request))return;if(!r||!r.ok)throw Object.assign(new Error(r&&r.error||"failed"),{payload:r});
-  box=$("admin-content");box.innerHTML=`<p class="sm">Latest ${r.entries.length} admin and account-security events. Chat titles and messages are never recorded here.</p>${r.entries.length?r.entries.map(item=>`<article class="admin-audit-item"><strong>${esc(item.action)}</strong><span>${adminDate(item.timestamp)}</span><p>${esc(item.actor)} → ${esc(item.target||"—")}</p><small>${esc(item.detail||"")}</small></article>`).join(""):'<p class="sm">No audit entries yet.</p>'}<button type="button" class="pbtn" id="admin-audit-reload">Refresh</button>`;
-  $("admin-audit-reload").onclick=()=>loadAdminAudit(generation);
- }catch(err){if(!adminRequestIsCurrent(generation,request))return;box=$("admin-content");box.innerHTML=`<p class="access-error" role="status">${esc(err&&err.payload&&err.payload.message||"Couldn't load the audit log.")}</p><button type="button" class="pbtn" id="admin-audit-retry">Retry</button>`;$("admin-audit-retry").onclick=()=>loadAdminAudit(generation)}
 }
 
 function wrapViewTransition(fn){return function(){const result=fn.apply(this,arguments);if(!modal.hidden)animateMenuContent();return result}}
@@ -1530,7 +1558,7 @@ renderAccount=wrapViewTransition(renderAccount);
 renderPasswordChange=wrapViewTransition(renderPasswordChange);
 renderDeleteAccountConfirm=wrapViewTransition(renderDeleteAccountConfirm);
 renderAdminPanel=wrapViewTransition(renderAdminPanel);
-renderCreateAdmin=wrapViewTransition(renderCreateAdmin);
+renderCreateAccount=wrapViewTransition(renderCreateAccount);
 renderOneTimePassword=wrapViewTransition(renderOneTimePassword);
 renderDataManagement=wrapViewTransition(renderDataManagement);
 renderExportInfo=wrapViewTransition(renderExportInfo);
