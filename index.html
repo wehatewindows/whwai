@@ -99,7 +99,7 @@ svg{display:block}
 .key{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--bub);border-radius:14px;padding:10px 14px;margin-bottom:10px;font-size:20px;font-weight:700;letter-spacing:.06em}.key-value{min-width:0;overflow-wrap:anywhere}.btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
 .pbtn{border:0;background:var(--chip);border-radius:12px;padding:8px 14px;cursor:pointer;font-weight:500;transition:background .15s}
 @keyframes syncspin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-.pbtn:hover{background:#cfcfcf}.pbtn:disabled{opacity:.62;cursor:wait}.pbtn:disabled:hover{background:var(--chip)}.pbtn.danger{color:#d93b3b}.sync-spinner{display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;vertical-align:-2px;margin-right:7px;animation:syncspin .7s linear infinite}.round .sync-spinner{width:19px;height:19px;border-width:2.5px;margin:0;vertical-align:middle}.privacy-row{margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:12px}.lock-link{border:0;background:none;padding:0;margin:0;font:inherit;font-size:14px;color:#2f6ee0;cursor:pointer;text-decoration:none}.lock-link:hover,.lock-link:focus{color:#2458b8}.lock-link:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:3px}.privacy-link{color:#2f6ee0;text-decoration:none;cursor:pointer;font-size:14px}.privacy-link:hover,.privacy-link:focus{text-decoration:none;color:#2458b8}.privacy-link:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:3px}.policy-takeaways{background:#eef4ff;border:1px solid #d8e5ff;border-radius:14px;padding:12px 14px;margin:10px 0 14px}.policy-takeaways ul{margin:6px 0 0;padding-left:19px}.policy-takeaways li{font-size:13px;margin:4px 0}.policy-placeholder{background:#f3f3f3;border-radius:12px;padding:10px 12px;font-size:13px;color:#555}
+.pbtn:hover{background:#cfcfcf}.pbtn:disabled{opacity:.62;cursor:wait}.pbtn:disabled:hover{background:var(--chip)}.pbtn.danger{color:#d93b3b}.sync-status{display:flex;align-items:center;gap:6px;margin:0 14px 8px;font-size:12px;color:#6b6b6b}.sync-status .dot{width:7px;height:7px;border-radius:50%;background:#9aa0a6;flex:none}.sync-status[data-state="ok"] .dot{background:#2fa35a}.sync-status[data-state="off"] .dot{background:#d99a1e}.sync-status .sync-spinner{width:10px;height:10px;flex:none}.sync-spinner{display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;vertical-align:-2px;margin-right:7px;animation:syncspin .7s linear infinite}.round .sync-spinner{width:19px;height:19px;border-width:2.5px;margin:0;vertical-align:middle}.privacy-row{margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:12px}.lock-link{border:0;background:none;padding:0;margin:0;font:inherit;font-size:14px;color:#2f6ee0;cursor:pointer;text-decoration:none}.lock-link:hover,.lock-link:focus{color:#2458b8}.lock-link:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:3px}.privacy-link{color:#2f6ee0;text-decoration:none;cursor:pointer;font-size:14px}.privacy-link:hover,.privacy-link:focus{text-decoration:none;color:#2458b8}.privacy-link:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:3px}.policy-takeaways{background:#eef4ff;border:1px solid #d8e5ff;border-radius:14px;padding:12px 14px;margin:10px 0 14px}.policy-takeaways ul{margin:6px 0 0;padding-left:19px}.policy-takeaways li{font-size:13px;margin:4px 0}.policy-placeholder{background:#f3f3f3;border-radius:12px;padding:10px 12px;font-size:13px;color:#555}
 .data-tools-list{display:flex;flex-direction:column;gap:8px;margin:12px 0 16px}
 .data-tool{display:flex;align-items:center;gap:11px;width:100%;min-width:0;padding:11px 12px;border:1px solid #e4e4e4;border-radius:14px;background:#f7f7f7;text-align:left;cursor:pointer}
 .data-tool:hover{background:#eee}.data-tool:active{background:#e7e7e7}
@@ -370,6 +370,7 @@ body.access-locked .frame{filter:blur(6px);transform:scale(1.004);transform-orig
 <div class="frame" id="app-frame">
  <aside class="side" id="side">
   <div class="brand"><h1>WHW<b>ai</b></h1><button class="logo" id="logo" title="Collapse sidebar" aria-label="Collapse sidebar"></button></div>
+  <div class="sync-status" id="sync-status" role="status" aria-live="polite" hidden></div>
   <div class="chat-search" role="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4.5 4.5"></path></svg><input id="chat-search" type="search" placeholder="Search chats" aria-label="Search chats" autocomplete="off" spellcheck="false"><button id="chat-search-clear" type="button" aria-label="Clear search" title="Clear search" hidden>×</button></div>
   <div class="list" id="list"></div>
   <button class="new" id="new" title="New chat" aria-label="New chat">+</button>
@@ -423,7 +424,7 @@ $("new").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',16,2.6);$("send").innerHTML
 
 let mem=null;
 const ACCOUNT_SESSION_STORAGE_KEY="whwai.account.session.v1";
-let accountSession=null,accountReady=true,accountSyncTimer=null,accountSyncing=false,accountSyncAgain=false,accountLastSync=0,accountInitialSyncPending=false,accountMergePendingToast=false;
+let accountSyncFailed=false;let accountSession=null,accountReady=true,accountSyncTimer=null,accountSyncing=false,accountSyncAgain=false,accountLastSync=0,accountInitialSyncPending=false,accountMergePendingToast=false;
 try{const savedSession=localStorage.getItem(ACCOUNT_SESSION_STORAGE_KEY);if(savedSession&&savedSession.length<300){accountSession={token:savedSession,user:null};accountReady=false}}catch(e){}
 const store={get(){try{return localStorage.getItem(KEY)}catch(e){return mem}},set(v){mem=v;try{localStorage.setItem(KEY,v)}catch(e){}}};
 let canSave=true;try{localStorage.setItem(KEY+".t","1");localStorage.removeItem(KEY+".t")}catch(e){canSave=false}
@@ -983,7 +984,7 @@ $("mnew").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',18,2.4);$("mnew").onclick=
 const modal=$("modal"),mbody=$("mbody");
 let smsg="",currentSettingsView="settings",closeModalTimer=null,closingModal=false,siteSignupMode="code",siteNoticeText="",siteStatusLoaded=false;
 const touch=c=>{c.mu=Date.now()};
-function clearAccountSession(){if(accountSyncTimer!==null){clearTimeout(accountSyncTimer);accountSyncTimer=null}accountSession=null;accountReady=true;accountInitialSyncPending=false;accountMergePendingToast=false;try{localStorage.removeItem(ACCOUNT_SESSION_STORAGE_KEY)}catch(e){}}
+function clearAccountSession(){if(accountSyncTimer!==null){clearTimeout(accountSyncTimer);accountSyncTimer=null}accountSession=null;accountSyncFailed=false;renderSyncStatus();accountReady=true;accountInitialSyncPending=false;accountMergePendingToast=false;try{localStorage.removeItem(ACCOUNT_SESSION_STORAGE_KEY)}catch(e){}}
 function scheduleAccountSync(){
  if(!accountSession||!accountSession.token||!accountReady||accountSession.user&&accountSession.user.mustChange)return;
  if(accountSyncTimer!==null)clearTimeout(accountSyncTimer);
@@ -993,7 +994,7 @@ async function syncAccountChatsNow(){
  if(!accountSession||!accountSession.token||!accountReady||accountSession.user&&accountSession.user.mustChange)return;
  if(accountSyncing){accountSyncAgain=true;return}
  if(navigator.onLine===false){accountSyncAgain=true;if(accountInitialSyncPending){accountInitialSyncPending=false;renderChat()}return}
- accountSyncing=true;accountSyncAgain=false;const revision=localRevision;
+ accountSyncing=true;accountSyncAgain=false;const revision=localRevision;renderSyncStatus();
  try{
   const result=await post({action:"account_chats_sync",sessionToken:accountSession.token,chats:clean().chats,dead:clean().dead,cur:S.cur});
   if(result&&Array.isArray(result.chats)){
@@ -1009,7 +1010,7 @@ async function syncAccountChatsNow(){
    const after=JSON.stringify({cur:S.cur,chats:S.chats.map(c=>[c.id,c.mu||c.u,c.t,c.p,c.model||"aries-1"]),dead:S.dead});
    accountInitialSyncPending=false;
    if(before!==after||wasInitialSync){renderList();renderChat()}
-   accountLastSync=Date.now();
+   accountLastSync=Date.now();accountSyncFailed=false;
    if(accountMergePendingToast){accountMergePendingToast=false;toast("Your existing chats were merged into your account.")}
    if(!modal.hidden&&currentSettingsView==="account")updateAccountSyncStatus();
   }
@@ -1019,11 +1020,21 @@ async function syncAccountChatsNow(){
    clearAccountSession();accountMergePendingToast=false;S={chats:[],cur:null,dead:[],model:S.model||"aries-1",col:!!S.col};save(true);renderList();renderChat();toast("Your sign-in expired. Sign in again to load your account chats.");
   }else if(e&&e.message==="password_change_required"){
    if(accountSession&&accountSession.user)accountSession.user.mustChange=true;renderRequiredPasswordChange();
-  }else{accountSyncAgain=true;renderChat();if(!modal.hidden&&currentSettingsView==="account")updateAccountSyncStatus("Offline or unable to sync right now. Your local changes remain saved.")}
+  }else{accountSyncAgain=true;accountSyncFailed=true;renderChat();if(!modal.hidden&&currentSettingsView==="account")updateAccountSyncStatus("Offline or unable to sync right now. Your local changes remain saved.")}
  }finally{
-  accountSyncing=false;
+  accountSyncing=false;renderSyncStatus();
   if(localRevision!==revision||accountSyncAgain)scheduleAccountSync();
  }
+}
+function renderSyncStatus(){
+ const el=$("sync-status");if(!el)return;
+ if(!accountSession||!accountSession.token){el.hidden=true;el.innerHTML="";return}
+ let state,text,title="",dot='<span class="dot" aria-hidden="true"></span>';
+ if(accountSyncing){state="busy";text="Syncing chats…";dot='<span class="sync-spinner" aria-hidden="true"></span>'}
+ else if(navigator.onLine===false||accountSyncFailed){state="off";text="Offline · saved on this device"}
+ else if(accountLastSync){state="ok";text="Chats synced";title="Last synced "+new Date(accountLastSync).toLocaleTimeString()}
+ else{state="idle";text="Not synced yet"}
+ el.hidden=false;el.dataset.state=state;el.title=title;el.innerHTML=dot+'<span>'+esc(text)+'</span>';
 }
 function mergeLocalAndRemote(first,second){
  const map={},dead={};const t=c=>Number(c.mu||c.u||0);
@@ -1440,8 +1451,13 @@ function showAdminError(err){
  $("admin-retry").onclick=()=>refreshAdmin();
 }
 function refreshAdmin(){
- const g=adminPanelGeneration;
- return adminFetch(true).then(()=>{if(g===adminPanelGeneration&&currentSettingsView==="admin")paintAdminTab()}).catch(err=>{if(g===adminPanelGeneration)showAdminError(err)});
+ const g=adminPanelGeneration,b=$("admin-refresh");
+ if(b){b.disabled=true;b.setAttribute("aria-busy","true");b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Refreshing…'}
+ const finish=()=>{const nb=$("admin-refresh");if(nb){nb.disabled=false;nb.removeAttribute("aria-busy");nb.textContent="Refresh"}};
+ return adminFetch(true).then(()=>{
+  finish();
+  if(g===adminPanelGeneration&&currentSettingsView==="admin"){paintAdminTab();toast("Admin data refreshed.")}
+ }).catch(err=>{finish();if(g===adminPanelGeneration)showAdminError(err)});
 }
 function renderAdminPanel(tab,query){
  currentSettingsView="admin";if(tab)adminTab=tab;if(query!=null)adminQuery=query;
@@ -1591,7 +1607,7 @@ $("access-admin-form").onsubmit=async e=>{
 };
 $("gear").onclick=openSettings;$("mx").onclick=closeSettings;modal.onclick=e=>{if(e.target===modal)closeSettings()};
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&accountSession&&accountSession.token&&!busy)scheduleAccountSync()});
-window.addEventListener("online",()=>{if(accountSession&&accountSession.token)scheduleAccountSync()});
+window.addEventListener("online",()=>{renderSyncStatus();if(accountSession&&accountSession.token)scheduleAccountSync()});window.addEventListener("offline",renderSyncStatus);
 setInterval(()=>document.querySelectorAll(".bar span,.cm").forEach(el=>el.textContent=ago(+el.dataset.t)),1000);
 renderList();renderChat();renderSiteNotice();
 if(accountSession&&accountSession.token)accountReady=false;
