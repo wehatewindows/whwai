@@ -451,13 +451,14 @@ function safeSources(value){
  return out;
 }
 function safeMessage(value){
- if(!value||typeof value!=="object"||value.err)return null;
+ if(!value||typeof value!=="object")return null;
  const role=value.r||value.role;
  const r=(role==="u"||role==="user")?"u":((role==="a"||role==="assistant")?"a":"");
  if(!r)return null;
  const x=safeText(value.x!=null?value.x:value.content);
  const item={r,x};
  const at=Number(value.at!=null?value.at:value.timestamp);if(Number.isFinite(at)&&at>0)item.at=at;
+ if(value.err)item.err=1;
  if(r==="a"){
   const sources=safeSources(value.sources);if(sources.length)item.sources=sources;
   const model=safeText(value.model,80);if(model)item.model=model;
@@ -1028,7 +1029,7 @@ function mergeLocalAndRemote(first,second){
  const map={},dead={};const t=c=>Number(c.mu||c.u||0);
  [first||{},second||{}].forEach(state=>{
   (Array.isArray(state.dead)?state.dead:[]).forEach(d=>{if(d&&d.id!=null){const id=String(d.id),mu=Number(d.mu)||0;if(!(id in dead)||dead[id]<mu)dead[id]=mu}});
-  (Array.isArray(state.chats)?state.chats:[]).forEach(c=>{if(c&&c.id&&(!map[c.id]||t(c)>=t(map[c.id])))map[c.id]=safeChat(c)});
+  (Array.isArray(state.chats)?state.chats:[]).forEach(c=>{if(!c||!c.id)return;const cand=safeChat(c);if(!cand)return;const cur=map[c.id];if(!cur||t(cand)>t(cur)||(t(cand)===t(cur)&&cand.m.length>cur.m.length))map[c.id]=cand});
  });
  const chats=Object.keys(map).map(id=>map[id]).filter(c=>!(c.id in dead)||dead[c.id]<t(c));
  const deadList=Object.keys(dead).map(id=>({id,mu:dead[id]}));let cur=String((second&&second.cur)||(first&&first.cur)||"");if(!chats.some(c=>c.id===cur))cur=chats.length?chats[0].id:null;
@@ -1435,7 +1436,7 @@ function adminFetch(force){
 }
 function showAdminError(err){
  const box=$("admin-content");if(!box)return;
- box.innerHTML=`<p class="access-error" role="status">${esc(err&&err.payload&&err.payload.message||"Couldn't load admin data. Check the account session and sheet setup.")}</p><button type="button" class="pbtn" id="admin-retry">Retry</button>`;
+ const p=err&&err.payload||{};box.innerHTML=`<p class="access-error" role="status">${esc(p.message||"Couldn't load admin data. Check the account session and sheet setup.")}${p.detail?esc(" ("+p.detail+")"):""}</p><p class="sm">Server build: ${esc(p.build||"unknown")}</p><button type="button" class="pbtn" id="admin-retry">Retry</button>`;
  $("admin-retry").onclick=()=>refreshAdmin();
 }
 function refreshAdmin(){
@@ -1457,7 +1458,7 @@ function paintAdminTab(){
  const box=$("admin-content");if(!box||!adminData)return;
  mbody.querySelectorAll("[data-admin-tab]").forEach(b=>b.classList.toggle("active",b.dataset.adminTab===adminTab));
  if(adminTab==="site")paintAdminSite(box);else if(adminTab==="accounts")paintAdminAccounts(box);else if(adminTab==="usage")paintAdminUsage(box);else paintAdminAudit(box);
- if(adminData.problems&&adminData.problems.length)box.insertAdjacentHTML("afterbegin",'<p class="access-error" role="status">Some admin data could not load: '+adminData.problems.map(p=>esc(p.part+" – "+p.error)).join("; ")+'</p>');
+ box.insertAdjacentHTML("beforeend",'<p class="sm">Server build: '+esc(adminData.build||"unknown")+'</p>');if(adminData.problems&&adminData.problems.length)box.insertAdjacentHTML("afterbegin",'<p class="access-error" role="status">Some admin data could not load: '+adminData.problems.map(p=>esc(p.part+" – "+p.error)).join("; ")+'</p>');
 }
 function paintAdminSite(box){
  const v=adminData.settings||{};
