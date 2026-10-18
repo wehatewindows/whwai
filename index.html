@@ -17,7 +17,7 @@ svg{display:block}
 .frame{height:100%;min-height:420px;border:5px solid var(--frame);border-radius:36px;display:flex;gap:16px;padding:12px;position:relative;overflow:hidden}
 .side{width:var(--sw);flex:none;background:var(--side);border-radius:22px;padding:14px;display:flex;flex-direction:column;position:relative;transition:margin-left .32s cubic-bezier(.4,0,.2,1),opacity .22s ease}
 .brand{display:flex;align-items:center;justify-content:space-between;padding:0 4px 12px;border-bottom:3px solid #c4c4c4;margin-bottom:12px}
-.brand h1{font-size:26px;font-weight:400;margin:0}.brand b{font-weight:700}
+.profile-btn{width:30px;height:30px;border-radius:50%;border:0;background:#4f7cf0;color:#fff;font:600 13px Inter,sans-serif;cursor:pointer;flex:none;margin-right:8px;padding:0}.profile-btn:hover{filter:brightness(1.08)}.profile-btn[hidden]{display:none}.brand h1{font-size:26px;font-weight:400;margin:0}.brand b{font-weight:700}
 .logo,.expand{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#9cc0ff,#4a7df0);border:0;padding:0;cursor:pointer;flex:none;transition:transform .15s}
 .logo:hover,.expand:hover{transform:scale(1.07)}
 .expand{position:absolute;left:4px;top:2px;z-index:4;opacity:0;pointer-events:none;transition:opacity .15s ease,transform .15s}
@@ -369,7 +369,7 @@ body.access-locked .frame{filter:blur(6px);transform:scale(1.004);transform-orig
 </div>
 <div class="frame" id="app-frame">
  <aside class="side" id="side">
-  <div class="brand"><h1>WHW<b>ai</b></h1><button class="logo" id="logo" title="Collapse sidebar" aria-label="Collapse sidebar"></button></div>
+  <div class="brand"><h1>WHW<b>ai</b></h1><button class="profile-btn" id="profile-btn" title="Account settings" aria-label="Account settings" hidden></button><button class="logo" id="logo" title="Collapse sidebar" aria-label="Collapse sidebar"></button></div>
   <div class="sync-status" id="sync-status" role="status" aria-live="polite" hidden></div>
   <div class="chat-search" role="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4.5 4.5"></path></svg><input id="chat-search" type="search" placeholder="Search chats" aria-label="Search chats" autocomplete="off" spellcheck="false"><button id="chat-search-clear" type="button" aria-label="Clear search" title="Clear search" hidden>×</button></div>
   <div class="list" id="list"></div>
@@ -980,7 +980,7 @@ function getDeviceId(){
 }
 const SLIDERS='<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>';
 $("gear").innerHTML=ic(SLIDERS,16,2.2);
-$("mnew").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',18,2.4);$("mnew").onclick=newChat;
+$("mnew").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',18,2.4);$("mnew").onclick=newChat;$("profile-btn").onclick=()=>openSettings(()=>renderAccount());
 const modal=$("modal"),mbody=$("mbody");
 let smsg="",currentSettingsView="settings",closeModalTimer=null,closingModal=false,siteSignupMode="code",siteNoticeText="",siteStatusLoaded=false;
 const touch=c=>{c.mu=Date.now()};
@@ -1026,7 +1026,9 @@ async function syncAccountChatsNow(){
   if(localRevision!==revision||accountSyncAgain)scheduleAccountSync();
  }
 }
+function renderProfileButton(){const b=$("profile-btn");if(!b)return;const name=accountSession&&accountSession.token&&accountSession.user&&accountSession.user.username?String(accountSession.user.username):"";if(!name){b.hidden=true;return}b.hidden=false;b.textContent=name.charAt(0).toUpperCase();b.title="Signed in as "+name;b.setAttribute("aria-label","Account settings, signed in as "+name)}
 function renderSyncStatus(){
+ renderProfileButton();
  const el=$("sync-status");if(!el)return;
  if(!accountSession||!accountSession.token){el.hidden=true;el.innerHTML="";return}
  let state,text,title="",dot='<span class="dot" aria-hidden="true"></span>';
@@ -1057,7 +1059,7 @@ async function resumeAccountSession(){
   accountInitialSyncPending=true;renderChat();
   await syncAccountChatsNow();
  }catch(e){
-  if(e&&e.message==="accesslocked"){accountReady=false;accountInitialSyncPending=false;return}
+  if(e&&e.message==="accesslocked"){accountReady=true;accountInitialSyncPending=false;renderSyncStatus();return}
   if(e&&e.message==="invalid_session"){
    clearAccountSession();S={chats:[],cur:null,dead:[],model:S.model||"aries-1",col:!!S.col};save(true);renderList();renderChat();toast("Your account session expired. Sign in again to restore your chats.");
   }else{accountReady=true;accountSyncAgain=true;}
@@ -1307,11 +1309,11 @@ function renderExportInfo(){
 }
 function renderPrivacyPolicy(){
  currentSettingsView="privacy";$("modal-title").textContent="Privacy Policy";
- mbody.innerHTML=`<div class="policy-takeaways"><strong>Key takeaways</strong><ul><li>Guest chats remain in this browser; signed-in chats are stored on the WHWai server to sync across devices.</li><li>Passwords are stored as salted, iterated hashes, not plain text.</li><li>Admins cannot view chat titles, messages, or other chat content through the WHWai admin panel.</li><li>The owner of the underlying Google account and spreadsheet could technically access stored data outside the WHWai interface.</li></ul></div>
+ mbody.innerHTML=`<div class="policy-takeaways"><strong>Key takeaways</strong><ul><li>Guest chats remain in this browser; signed-in chats are stored on the WHWai server to sync across devices.</li><li>Passwords are stored as salted, iterated hashes, not plain text.</li><li>Admins cannot view chat titles, messages, or other chat content through the WHWai admin panel.</li><li>The owner of the WHWai server could technically access stored data outside the WHWai interface.</li></ul></div>
  <p class="sm">Effective date: October 17, 2026</p>
- <h3>Guest use and accounts</h3><p>WHWai can be used without an account. Guest chats are stored locally in this browser and do not sync. If you create an account or sign in, the chats currently on the device are merged into your account, and the browser keeps a local cache for display and syncing. Accounts use a username and password; no email address is required. Usernames, salted password hashes, account role/status, creation and sign-in timestamps, session-token hashes, and account chat data are stored in the account spreadsheet. The browser stores the session token so it can reconnect to your account. Sessions expire after 30 days and can be revoked.</p>
+ <h3>Guest use and accounts</h3><p>WHWai can be used without an account. Guest chats are stored locally in this browser and do not sync. If you create an account or sign in, the chats currently on the device are merged into your account, and the browser keeps a local cache for display and syncing. Accounts use a username and password; no email address is required. Usernames, salted password hashes, account role/status, creation and sign-in timestamps, session-token hashes, and account chat data are stored on the WHWai server. The browser stores the session token so it can reconnect to your account. Sessions expire after 30 days and can be revoked.</p>
  <h3>How data is used</h3><p>Conversation data is used to display, save, restore, and sync chats and to generate replies and titles you request. WHW does not intend to sell conversations, use them for advertising or profiling, or train its own models on them. Admin tools show account metadata and chat counts only. They are designed not to return chat titles, messages, or chat content.</p>
- <h3>Hosting, storage, and access</h3><p>WHWai uses Google Apps Script and a Google spreadsheet to operate its backend and store account/chat data. The owner of the Google account and spreadsheet that host the service could technically access that data directly through Google's tools, independently of the WHWai admin panel. Administrators using the WHWai interface cannot read chat content through admin features. Google and other infrastructure providers may process technical data under their own terms and policies.</p>
+ <h3>Hosting, storage, and access</h3><p>WHWai runs on a server that operates its backend and stores account and chat data. The person who operates that server could technically access that data directly, independently of the WHWai admin panel. Administrators using the WHWai interface cannot read chat content through admin features. Infrastructure providers may process technical data under their own terms and policies.</p>
  <h3>AI processing</h3><p>WHWai sends the prompt and recent conversation context (up to the latest 14 messages) to Groq to generate replies and chat titles. The models are OpenAI open-weight gpt-oss models running on Groq; requests go to Groq, not directly to OpenAI. Groq's documentation says ordinary inference prompts and outputs are not retained by default, but they may be temporarily logged for system reliability or suspected-abuse investigations for up to 30 days unless legally required longer. Zero Data Retention can prevent this limited retention, but WHWai cannot verify whether it is enabled for this account. See <a href="https://console.groq.com/docs/your-data" target="_blank" rel="noopener noreferrer">Groq's data documentation</a> and its <a href="https://console.groq.com/docs/legal/services-agreement" target="_blank" rel="noopener noreferrer">Services Agreement</a>.</p>
  <h3>Usage limits and security</h3><p>The second model, when enabled, uses a server-enforced daily limit. Guest use is limited per browser and by a shared daily guest pool; signed-in use is limited per account. A separate global daily cap adds protection. Browser identifiers are pseudonymous and can be cleared, so the guest pool and global cap are also used to reduce easy limit circumvention.</p>
  <p>Passwords are never intentionally stored or logged in plain text. Account sessions can be revoked, and temporary passwords issued by an admin expire after 72 hours and must be changed at sign-in. WHW intends to take reasonable steps to protect data, but no online service can guarantee complete security. If a serious security issue is identified, WHW may restrict access, disable accounts or the service, revoke sessions, or delete active server-stored data.</p>
@@ -1348,7 +1350,7 @@ function renderSettings(){
  currentSettingsView="settings";if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}
  $("modal-title").textContent="Settings";
  const signed=!!(accountSession&&accountSession.token&&accountSession.user),user=signed?accountSession.user:null;
- const accountCopy=signed?`Signed in as ${esc(user.username)}${user.role==="admin"?" · Administrator":""}.`:(accountSession&&accountSession.token?"Checking your account session…":"Guest mode. Chats stay in this browser until you sign in.");
+ const accountCopy=signed?`Signed in as ${esc(user.username)}${user.role==="admin"?" · Administrator":""}.`:(accountSession&&accountSession.token?(accountReady?"Signed in. Your account will sync once the server is reachable and the access code is entered.":"Checking your account session…"):"Guest mode. Chats stay in this browser until you sign in.");
  mbody.innerHTML=`<h3>Account</h3><p class="sm">${accountCopy}</p>
   <div class="data-tools-list">
    ${signed?`<button class="data-tool" id="account-open" type="button"><span class="tool-icon">${ic('<circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>',19,1.8)}</span><span class="tool-copy"><strong>Account settings</strong><small>Change password, sign out, or delete your account.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>`:`<button class="data-tool" id="account-signin" type="button"><span class="tool-icon">${ic('<path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/>',19,1.8)}</span><span class="tool-copy"><strong>Sign in</strong><small>Access your account chats on this browser.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>${siteSignupMode!=="closed"?`<button class="data-tool" id="account-signup" type="button"><span class="tool-icon">${ic('<path d="M12 5v14M5 12h14"/>',19,1.8)}</span><span class="tool-copy"><strong>Create account</strong><small>Make an account to keep chats across devices.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>`:""}`}
