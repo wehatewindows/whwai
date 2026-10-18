@@ -175,10 +175,11 @@ button:focus-visible,.chat:focus-visible,.model:focus-visible{outline:2px solid 
 .typing-indicator span{width:6px;height:6px;border-radius:50%;background:currentColor;animation:typingDot 1s ease-in-out infinite;opacity:.45}
 .typing-indicator span:nth-child(2){animation-delay:.14s}.typing-indicator span:nth-child(3){animation-delay:.28s}
 .msg a{color:#2f6ee0;text-decoration:none;overflow-wrap:anywhere}.msg a:hover{text-decoration:underline}
-.answer-sources{align-self:flex-start;max-width:86%;margin-top:-8px;font-size:12.5px;color:#555}
-.answer-sources details{background:#f7f7f7;border:1px solid #e5e5e5;border-radius:11px;padding:7px 10px}
-.answer-sources summary{cursor:pointer;user-select:none;color:#444;font-weight:500}
-.answer-sources ul{margin:7px 0 0;padding-left:17px}.answer-sources li{margin:4px 0;overflow-wrap:anywhere}.answer-sources a{color:#2f6ee0;text-decoration:none}.answer-sources a:hover{text-decoration:underline}
+.answer-sources{align-self:flex-start;max-width:86%;margin-top:4px;font-size:12.5px;color:#555;background:#f7f7f7;border:1px solid #e5e5e5;border-radius:11px;padding:7px 10px}
+.answer-sources[hidden]{display:none}.answer-sources ul{margin:0;padding-left:18px}.answer-sources li{margin:4px 0;overflow-wrap:anywhere}.answer-sources a{color:#2f6ee0;text-decoration:none}.answer-sources a:hover{text-decoration:underline}
+.bar .src{display:inline-flex;align-items:center;gap:5px;width:auto;height:26px;padding:0 9px;border-radius:13px;color:#333}.bar .src em{font-style:normal;margin-left:0;font-size:12.5px;color:#333}.bar .src[aria-expanded="true"]{background:#ddd}
+.thinking{align-self:flex-start;max-width:86%;font-size:13px;color:#555;margin:2px 0 -2px}.thinking summary{cursor:pointer;user-select:none;list-style:none;display:inline-flex;align-items:center;gap:6px;color:#666;padding:4px 2px}.thinking summary::-webkit-details-marker{display:none}.thinking summary::before{content:"\25B8";display:inline-block;transition:transform .15s}.thinking[open] summary::before{transform:rotate(90deg)}
+.thinking-body{white-space:pre-wrap;overflow-wrap:anywhere;border-left:2px solid #d6d6dc;margin:4px 0 0;padding:4px 0 4px 12px;color:#666;max-height:320px;overflow:auto}
 @keyframes typingDot{0%,60%,100%{transform:translateY(0);opacity:.38}30%{transform:translateY(-4px);opacity:1}}
 #export-data.cooldown{letter-spacing:.06em;font-variant-numeric:tabular-nums}
 @media (prefers-reduced-motion:reduce){.modal,.modal .mcard,.modal.closing,.modal.closing .mcard,.app-confirm-overlay,.app-confirm-card,#mbody.menu-content-enter,.fresh,.orb.think,.sync-spinner{animation:none!important;transition:none!important}}
@@ -234,7 +235,7 @@ html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(
  .side .new{bottom:64px}.side .gear{bottom:12px;padding-right:38px}
  .side .new::after{content:"New chat";font-size:15px;font-weight:500}
  .side .gear::after{content:"Settings";font-size:15px;font-weight:500}
- .side .new:hover,.side .gear:hover{background:#d4d4dc}.side .gear{right:calc(var(--edge) + 54px)}.side .profile-btn{left:auto;right:var(--edge);bottom:12px;width:44px;height:44px;font-size:15px;border-radius:14px}.side .profile-btn .sync-dot{right:-3px;bottom:-3px}
+ .side .new:hover,.side .gear:hover{background:#d4d4dc}.side .gear{right:var(--edge)}.side.has-profile .gear{right:calc(var(--edge) + 54px)}.side .profile-btn{left:auto;right:var(--edge);bottom:12px;width:44px;height:44px;font-size:15px;border-radius:14px}.side .profile-btn .sync-dot{right:-3px;bottom:-3px}
  .modal{padding:10px}.mcard{width:min(420px,100%);max-height:calc(100% - 20px);padding:16px}
 }
 @media (max-width:360px){
@@ -463,6 +464,7 @@ function safeMessage(value){
  if(r==="a"){
   const sources=safeSources(value.sources);if(sources.length)item.sources=sources;
   const model=safeText(value.model,80);if(model)item.model=model;
+  const thinking=safeText(value.thinking,6000);if(thinking)item.thinking=thinking;
  }
  return item;
 }
@@ -702,23 +704,17 @@ function renderChat(fresh){
  c.m.forEach((m,i)=>{
   const d=document.createElement("div");d.className="msg"+(m.r==="u"?" u":"");
    if(m.r==="u")d.textContent=m.x;else d.innerHTML=md(m.x);
+   if(m.r==="a"&&m.thinking){const th=document.createElement("details");th.className="thinking";th.innerHTML="<summary>Thought process</summary>";const tb=document.createElement("div");tb.className="thinking-body";tb.textContent=m.thinking;th.appendChild(tb);chatEl.appendChild(th)}
    chatEl.appendChild(d);
-   if(m.r==="a"&&Array.isArray(m.sources)&&m.sources.length){
-    const wrap=document.createElement("div");wrap.className="answer-sources";
-    const details=document.createElement("details");const summary=document.createElement("summary");summary.textContent="Sources ("+m.sources.length+")";details.appendChild(summary);
-    const ul=document.createElement("ul");
-    m.sources.slice(0,5).forEach(source=>{
-     if(!source||typeof source.title!=="string"||typeof source.url!=="string"||!/^https:\/\//i.test(source.url)||/[\s<>"']/.test(source.url))return;
-     const li=document.createElement("li"),a=document.createElement("a");a.textContent=source.title;a.href=source.url;a.target="_blank";a.rel="noopener noreferrer";li.appendChild(a);ul.appendChild(li);
-    });
-    if(ul.children.length){details.appendChild(ul);wrap.appendChild(details);chatEl.appendChild(wrap)}
-   }
    if(m.r==="a"){
     const canRegen=i===c.m.length-1,b=document.createElement("div");b.className="bar";
-   b.innerHTML='<button class="cp" title="Copy" aria-label="Copy">'+I.copy+'</button>'+(canRegen?'<button class="rg" title="Regenerate" aria-label="Regenerate">'+I.regen+'</button>':'')+'<span data-t="'+m.at+'">'+ago(m.at)+'</span>';
-   const cp=b.querySelector(".cp"),rg=b.querySelector(".rg");
+   const srcs=Array.isArray(m.sources)?m.sources.filter(source=>source&&typeof source.title==="string"&&typeof source.url==="string"&&/^https:\/\//i.test(source.url)&&!/[\s<>"']/.test(source.url)).slice(0,5):[];
+   const srcIcon='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>';
+   b.innerHTML='<button class="cp" title="Copy" aria-label="Copy">'+I.copy+'</button>'+(canRegen?'<button class="rg" title="Regenerate" aria-label="Regenerate">'+I.regen+'</button>':'')+(srcs.length?'<button class="src" type="button" aria-expanded="false" aria-label="Show sources" title="Show sources">'+srcIcon+'<em>'+srcs.length+(srcs.length===1?' source':' sources')+'</em></button>':'')+'<span data-t="'+m.at+'">'+ago(m.at)+'</span>';
+   const cp=b.querySelector(".cp"),rg=b.querySelector(".rg"),sb=b.querySelector(".src");
    cp.onclick=()=>copy(m.x,cp);if(rg)rg.onclick=regen;
    chatEl.appendChild(b);
+   if(sb){const panel=document.createElement("div");panel.className="answer-sources";panel.hidden=true;const ol=document.createElement("ul");srcs.forEach(source=>{const li=document.createElement("li"),a=document.createElement("a");a.textContent=source.title;a.href=source.url;a.target="_blank";a.rel="noopener noreferrer";li.appendChild(a);ol.appendChild(li)});panel.appendChild(ol);chatEl.appendChild(panel);sb.onclick=()=>{const open=panel.hidden;panel.hidden=!open;sb.setAttribute("aria-expanded",String(open))}}
   }
  });
  if(fresh){const ms=chatEl.querySelectorAll(".msg");ms[ms.length-1].classList.add("fresh")}
@@ -848,15 +844,16 @@ async function answer(c,q){
  const activeModelName=(availableModels.find(m=>m.id===selectedModelId())||availableModels[0]||{name:"WHWai"}).name;const thinkingLines=[activeModelName+" is thinking…",activeModelName+" is working on it…",activeModelName+" is putting it together…",activeModelName+" is checking that…",activeModelName+" is almost there…",activeModelName+" is working…"];
  const rareThinkingLines=["idk ask chatgpt","The tiny calculators are meeting…","Consulting the office plant…","My last two neurons are syncing…","The pixels are negotiating…"];
  const thinkingLine=Math.random()<0.08?rareThinkingLines[Math.floor(Math.random()*rareThinkingLines.length)]:thinkingLines[Math.floor(Math.random()*thinkingLines.length)];tmp.setAttribute("aria-label",thinkingLine);tmp.innerHTML='<span class="typing-indicator" aria-hidden="true"><span></span><span></span><span></span></span><span class="thinking-label"></span>';tmp.querySelector(".thinking-label").textContent=thinkingLine;chatEl.appendChild(tmp);toBottom();
+ if(selectedModelId()!=="aries-1"){const steps=[activeModelName+" is searching the web…",activeModelName+" is reading sources…",activeModelName+" is thinking…"];let si=0;tmp.querySelector(".thinking-label").textContent=steps[0];const timer=setInterval(()=>{const lab=tmp.querySelector(".thinking-label");if(!lab||!tmp.isConnected){clearInterval(timer);return}si=(si+1)%steps.length;lab.textContent=steps[si]},2600)}
  try{
-  let full,err=0,sources=[];
+  let full,err=0,sources=[],thinking="";
   if(API_URL){
    try{
     const modelId=availableModels.some(m=>m.id===c.model)?c.model:(S.model||"aries-1");
     if(c.model!==modelId)c.model=modelId;
     const j=await post({action:"chat",model:modelId,deviceId:getDeviceId(),messages:hist(c)},controller.signal);
     if(responseWasStopped||run!==answerRunId)return;
-    full=j.text||ERR_TEXT;sources=Array.isArray(j.sources)?j.sources:[];if(!j.text||j.disabled)err=1;
+    full=j.text||ERR_TEXT;sources=Array.isArray(j.sources)?j.sources:[];thinking=typeof j.thinking==="string"?j.thinking:"";if(!j.text||j.disabled)err=1;
    }catch(e){
     if(responseWasStopped||run!==answerRunId||e&&e.name==="AbortError"&&controller.signal.aborted)return;
     full=e&&e.message==="daily_limit"?(e.payload&&e.payload.message||"You've reached this model's daily limit. Please try again tomorrow."):e&&e.message==="model_unavailable"?"That model is not available right now.":e&&e.payload&&e.payload.message?e.payload.message:ERR_TEXT;err=1;
@@ -875,7 +872,7 @@ async function answer(c,q){
   if(responseWasStopped||run!==answerRunId)return;
   const target=S.chats.find(x=>x.id===c.id);
   if(!target)return;
-  target.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1}:{r:"a",x:full,at:Date.now(),sources:sources,model:target.model||S.model||"aries-1",_l:1});target.u=Date.now();touch(target);save();renderList();renderChat();
+  target.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1}:{r:"a",x:full,at:Date.now(),sources:sources,thinking:thinking,model:target.model||S.model||"aries-1",_l:1});target.u=Date.now();touch(target);save();renderList();renderChat();
   if(API_URL&&!err&&target.auto)genTitle(target);
 
  }finally{
@@ -1028,6 +1025,7 @@ async function syncAccountChatsNow(){
 }
 function renderSyncStatus(){
  const b=$("profile-btn");if(!b)return;
+ const sideEl=$("side");if(sideEl)sideEl.classList.toggle("has-profile",!!(accountSession&&accountSession.token&&accountSession.user&&accountSession.user.username));
  const name=accountSession&&accountSession.token&&accountSession.user&&accountSession.user.username?String(accountSession.user.username):"";
  if(!name){b.hidden=true;b.innerHTML="";return}
  let state,text;
