@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>WHWai</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap">
+<style>
+:root{--sw:clamp(210px,26vw,280px);--frame:#bdbdbd;--side:#e6e6e6;--chip:#dcdcdc;--sel:#c9c9c9;--bub:#f1f1f1;--ink:#111;--mute:#666;--blue:#6aa0ff;--f:"Helvetica Neue",Inter,sans-serif}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font:15px/1.45 var(--f);color:var(--ink);background:#fff;padding:12px}
+button,textarea{font:inherit;color:inherit}
+svg{display:block}
+.frame{height:100%;min-height:420px;border:5px solid var(--frame);border-radius:36px;display:flex;gap:16px;padding:12px;position:relative;overflow:hidden}
+.side{width:var(--sw);flex:none;background:var(--side);border-radius:22px;padding:14px;display:flex;flex-direction:column;position:relative;transition:margin-left .32s cubic-bezier(.4,0,.2,1),opacity .22s ease}
+.brand{display:flex;align-items:center;justify-content:space-between;padding:0 4px 12px;border-bottom:3px solid #c4c4c4;margin-bottom:12px}
+.brand h1{font-size:26px;font-weight:400;margin:0}.brand b{font-weight:700}
+.logo,.expand{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#9cc0ff,#4a7df0);border:0;padding:0;cursor:pointer;flex:none;transition:transform .15s}
+.logo:hover,.expand:hover{transform:scale(1.07)}
+.expand{position:absolute;left:4px;top:2px;z-index:4;opacity:0;pointer-events:none;transition:opacity .15s ease,transform .15s}
+.list{flex:1;overflow:auto;display:flex;flex-direction:column;gap:7px;padding-bottom:40px}
+.hint{color:var(--mute);font-size:13.5px;padding:4px 6px}
+.hint.warn{color:#7a4f00;background:#fff3d6;border-radius:10px;padding:8px 10px;margin-top:6px}
+.row{position:relative;display:flex}
+.chat{flex:1;min-width:0;border:0;text-align:left;background:var(--chip);border-radius:14px;padding:9px 36px 9px 13px;cursor:pointer;display:block;transition:background .15s,box-shadow .15s}
+.ct{display:block;font-weight:500;line-height:1.3;overflow-wrap:anywhere}.ct svg{display:inline-block;vertical-align:-1px;margin-right:5px;opacity:.6}
+.cm{display:block;font-size:12px;color:var(--mute);margin-top:3px}
+.chat.edit{cursor:default;padding:7px 8px}
+.rn{width:100%;border:0;outline:0;background:#fff;border-radius:9px;padding:6px 9px;font:inherit;font-weight:500;box-shadow:0 0 0 1.5px #9bb9f5}
+.chat:hover{background:#d2d2d2}.chat.on{background:var(--sel);box-shadow:inset 0 0 0 1px #aaa}
+.more{position:absolute;right:5px;top:50%;transform:translateY(-50%);border:0;background:none;width:26px;height:26px;border-radius:50%;cursor:pointer;color:#555;display:grid;place-items:center;padding:0;opacity:0;transition:opacity .15s,background .15s}
+.row:hover .more,.row.on .more,.more:focus-visible,.more[aria-expanded=true]{opacity:1}.more:hover,.more[aria-expanded=true]{background:rgba(0,0,0,.1)}
+.cmenu{position:absolute;right:12px;width:185px;background:#fff;border:1px solid #ddd;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.16);padding:5px;z-index:8;animation:rise .15s ease-out}
+.cmenu[hidden]{display:none}
+.cmenu button{display:flex;align-items:center;gap:9px;width:100%;border:0;background:none;border-radius:9px;padding:8px 10px;cursor:pointer;text-align:left}
+.cmenu button:hover{background:#f0f0f0}.cmenu .danger{color:#d93b3b}
+.new{position:absolute;right:12px;bottom:12px;width:30px;height:30px;border-radius:50%;border:0;background:#bbb;color:#fff;padding:0;display:grid;place-items:center;cursor:pointer;transition:background .15s}
+.new:hover{background:#999}
+.main{flex:1;min-width:0;display:flex;flex-direction:column;position:relative}
+.menu{display:none;align-self:flex-start;border:0;background:var(--chip);border-radius:12px;padding:5px 12px;cursor:pointer;margin-bottom:8px}
+.scroll{flex:1;overflow:auto;padding:14px 8px 112px;display:flex;flex-direction:column;gap:14px;overscroll-behavior:contain;transition:padding-top .3s ease;scrollbar-width:thin;scrollbar-color:#cfcfcf transparent}
+.scroll::-webkit-scrollbar{width:8px}.scroll::-webkit-scrollbar-thumb{background:#cfcfcf;border-radius:4px}
+.msg{max-width:78%;background:var(--bub);border-radius:20px;padding:12px 16px;overflow-wrap:anywhere;flex:none}
+.msg.u{align-self:flex-end;border-radius:26px;padding:13px 24px;white-space:pre-wrap}
+.msg.dim{color:#777}
+.msg p{margin:0 0 8px}.msg p:last-child{margin:0}.msg ul{margin:0 0 8px;padding-left:18px}.msg li{margin-bottom:4px}
+.msg pre{margin:0 0 8px;padding:10px 12px;background:#e4e4e4;border-radius:12px;overflow:auto;white-space:pre;font-size:13.5px;line-height:1.5}.msg pre:last-child{margin:0}
+.msg code{background:#e4e4e4;border-radius:6px;padding:1px 5px;font-size:.92em}
+.fresh{animation:rise .35s cubic-bezier(.2,.7,.2,1)}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}}
+.bar{align-self:flex-start;display:flex;align-items:center;gap:2px;background:var(--bub);border-radius:18px;padding:3px 12px 3px 6px;margin-top:-8px;flex:none}
+.bar button{border:0;background:none;padding:5px;cursor:pointer;border-radius:8px;display:grid;place-items:center}
+.bar button:hover{background:#ddd}.bar span{margin-left:70px;font-size:13px;color:#333}
+.empty{margin:auto;text-align:center;color:var(--mute)}.empty h2{font-size:28px;font-weight:400;color:var(--ink);margin:0 0 6px}
+.orb{position:absolute;right:26px;bottom:calc(100% + 22px);z-index:3;width:68px;height:68px;border-radius:50%;background:#78a4fa;box-shadow:0 0 0 6px rgba(120,164,250,.38);pointer-events:none;will-change:transform}
+.orb.think{animation:breathe 3s ease-in-out infinite,morph 4.6s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:translate(0,0) scale(.94) rotate(0);box-shadow:0 0 0 5px rgba(120,164,250,.42)}25%{transform:translate(-3px,-6px) scale(1.04) rotate(10deg)}50%{transform:translate(0,-11px) scale(1.1) rotate(22deg);box-shadow:0 0 0 14px rgba(120,164,250,.12)}75%{transform:translate(3px,-4px) scale(1.02) rotate(8deg)}}
+@keyframes morph{0%,100%{border-radius:50%}25%{border-radius:62% 38% 54% 46%/46% 58% 42% 54%}50%{border-radius:44% 56% 40% 60%/58% 42% 58% 42%}75%{border-radius:54% 46% 62% 38%/40% 60% 46% 54%}}
+.input{display:flex;gap:10px;align-items:flex-end;position:relative}
+.field{flex:1;display:flex;align-items:flex-end;background:var(--bub);border-radius:26px;padding:0 14px 0 20px;min-height:50px}
+.field textarea{flex:1;border:0;background:none;outline:0;resize:none;min-width:0;padding:14px 0;max-height:120px;line-height:22px;height:50px}
+.mwrap{position:relative;align-self:center;margin-left:8px;display:flex;align-items:center;gap:4px}
+.model{border:0;background:none;font-weight:700;cursor:pointer;white-space:nowrap;padding:6px;border-radius:10px;display:flex;align-items:center;gap:5px}
+.model:hover{background:#e4e4e4}
+.info-pop{position:absolute;right:0;bottom:calc(100% + 12px);width:min(286px,calc(100vw - 44px));background:#fff;border:1px solid #dcdce1;border-radius:17px;box-shadow:0 8px 26px rgba(0,0,0,.14);padding:12px 14px;z-index:12;animation:rise .15s ease-out}
+.info-pop::after{content:"";position:absolute;right:15px;bottom:-7px;width:12px;height:12px;background:#fff;border-right:1px solid #dcdce1;border-bottom:1px solid #dcdce1;transform:rotate(45deg)}
+.info-pop[hidden]{display:none!important}.info-pop p{margin:0 0 10px;font-size:12.5px;line-height:1.5;color:#333}.info-pop button{border:0;border-radius:999px;background:#e8efff;color:#2458b8;font:500 12px/1.2 var(--f);padding:7px 12px;cursor:pointer}.info-pop button:hover{background:#dce7ff}
+.site-notice{box-sizing:border-box;display:block;flex:0 0 auto;align-self:center;width:calc(100% - 24px);min-width:0;max-width:840px;margin:8px auto 0;padding:10px 13px;border-radius:13px;background:#eef4ff;border:1px solid #d9e6ff;color:#24477e;font-size:13px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal;animation:noticeIn .22s cubic-bezier(.2,.7,.2,1) both}.site-notice[hidden]{display:none!important}.main.has-site-notice .scroll{padding-top:12px}@keyframes noticeIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+.pop{position:absolute;right:0;bottom:calc(100% + 14px);width:260px;background:#fff;border:1px solid #ddd;border-radius:24px;box-shadow:0 8px 30px rgba(0,0,0,.16);padding:9px;z-index:10;animation:rise .15s ease-out}
+.pop[hidden]{display:none}
+.pop .ph{font-size:12.5px;color:var(--mute);padding:7px 12px 9px}
+#model-options{display:flex;flex-direction:column;gap:7px}
+.mi{display:flex;width:100%;align-items:center;gap:8px;border:0;background:#f3f3f3;border-radius:17px;padding:10px 12px;cursor:pointer;text-align:left}
+.mi div{flex:1;min-width:0}.mi small{display:block;color:var(--mute);font-size:12.5px;line-height:1.35;margin-top:2px}.mi i{display:flex;color:var(--blue);flex:none}
+.mi:disabled{opacity:.58;cursor:not-allowed;background:#f5f5f5}.mi:disabled small{color:#888}
+.round{width:48px;height:48px;border-radius:50%;border:0;background:var(--bub);cursor:pointer;flex:none;display:grid;place-items:center;transition:background .15s,opacity .15s;margin-bottom:1px}
+.round:hover{background:#e2e2e2}.round:disabled{opacity:.45;cursor:default}
+.note{font-size:13px;margin:8px 0 0 4px}
+.toast{position:absolute;left:50%;bottom:64px;transform:translate(-50%,8px);background:#222;color:#fff;border-radius:14px;padding:7px 14px;font-size:13.5px;opacity:0;pointer-events:none;transition:.2s;white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis;z-index:25}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.scrim{display:none;position:absolute;inset:0;background:rgba(0,0,0,.25);z-index:5}
+.gear{position:absolute;left:12px;bottom:12px;width:30px;height:30px;border-radius:50%;border:0;background:#bbb;color:#fff;padding:0;display:grid;place-items:center;cursor:pointer;transition:background .15s}
+.gear:hover{background:#999}
+
+
+.modal{position:absolute;inset:0;background:rgba(0,0,0,.28);display:grid;place-items:center;z-index:20;animation:rise .2s ease-out}
+.modal[hidden]{display:none}
+.app-confirm-overlay{position:absolute;inset:0;z-index:60;display:grid;place-items:center;padding:18px;background:rgba(20,28,44,.22);opacity:0;transition:opacity .18s ease}.app-confirm-overlay[hidden]{display:none!important}.app-confirm-overlay.open{opacity:1}.app-confirm-overlay.closing{opacity:0;pointer-events:none}.app-confirm-card{width:min(420px,96%);max-height:86%;overflow:auto;background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:22px;padding:18px 20px;box-shadow:0 12px 40px rgba(0,0,0,.2);opacity:0;transform:translateY(8px) scale(.992);transition:opacity .2s ease,transform .2s cubic-bezier(.2,.7,.2,1)}.app-confirm-overlay.open .app-confirm-card{opacity:1;transform:translateY(0) scale(1)}.app-confirm-overlay.closing .app-confirm-card{opacity:0;transform:translateY(6px) scale(.994)}
+.mcard{width:min(420px,92%);max-height:88%;overflow:auto;background:#fff;border-radius:22px;padding:18px 20px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+.mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;font-size:18px}
+.mh button{border:0;background:var(--bub);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:18px;line-height:1;padding:0}
+.mcard a{color:#2f6ee0}
+.mcard h3{margin:10px 0 6px;font-size:16px}.mcard p{margin:0 0 10px}.sm{font-size:13px;color:var(--mute)}
+
+
+.key{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--bub);border-radius:14px;padding:10px 14px;margin-bottom:10px;font-size:20px;font-weight:700;letter-spacing:.06em}.key-value{min-width:0;overflow-wrap:anywhere}.btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.pbtn{border:0;background:var(--chip);border-radius:12px;padding:8px 14px;cursor:pointer;font-weight:500;transition:background .15s}
+@keyframes syncspin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.pbtn:hover{background:#cfcfcf}.pbtn:disabled{opacity:.62;cursor:wait}.pbtn:disabled:hover{background:var(--chip)}.pbtn.danger{color:#d93b3b}.sync-spinner{display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;vertical-align:-2px;margin-right:7px;animation:syncspin .7s linear infinite}.round .sync-spinner{width:19px;height:19px;border-width:2.5px;margin:0;vertical-align:middle}.privacy-row{margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:12px}.lock-link{border:0;background:none;padding:0;margin:0;font:inherit;font-size:14px;color:#2f6ee0;cursor:pointer;text-decoration:none}.lock-link:hover,.lock-link:focus{color:#2458b8}.lock-link:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:3px}.privacy-link{color:#2f6ee0;text-decoration:none;cursor:pointer;font-size:14px}.privacy-link:hover,.privacy-link:focus{text-decoration:none;color:#2458b8}.privacy-link:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:3px}.policy-takeaways{background:#eef4ff;border:1px solid #d8e5ff;border-radius:14px;padding:12px 14px;margin:10px 0 14px}.policy-takeaways ul{margin:6px 0 0;padding-left:19px}.policy-takeaways li{font-size:13px;margin:4px 0}.policy-placeholder{background:#f3f3f3;border-radius:12px;padding:10px 12px;font-size:13px;color:#555}
+.data-tools-list{display:flex;flex-direction:column;gap:8px;margin:12px 0 16px}
+.data-tool{display:flex;align-items:center;gap:11px;width:100%;min-width:0;padding:11px 12px;border:1px solid #e4e4e4;border-radius:14px;background:#f7f7f7;text-align:left;cursor:pointer}
+.data-tool:hover{background:#eee}.data-tool:active{background:#e7e7e7}
+.data-tool .tool-icon{width:36px;height:36px;flex:none;border-radius:11px;background:#e8e8e8;display:grid;place-items:center;color:#333}
+.data-tool.danger .tool-icon{background:#fbe9e9;color:#c33333}.data-tool .tool-copy{flex:1;min-width:0}.data-tool strong{display:block;font-size:14px;line-height:1.25}.data-tool small{display:block;font-size:12px;line-height:1.35;color:#666;margin-top:3px}.data-tool .tool-arrow{flex:none;color:#777}
+.delete-choice{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;background:#f7f7f7;border:1px solid #e5e5e5;border-radius:13px;padding:10px;margin:8px 0}
+.delete-choice .choice-icon{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;background:#e8e8e8;color:#444}
+.delete-choice.danger .choice-icon{background:#fae7e7;color:#c33333}.delete-choice .choice-copy{min-width:0}.delete-choice strong{display:block;font-size:13.5px;line-height:1.25}.delete-choice p{font-size:12px;line-height:1.35;color:#666;margin:3px 0 0}.delete-choice .pbtn{padding:7px 10px;font-size:12.5px;white-space:nowrap}
+.confirm-panel{display:flex;gap:12px;align-items:flex-start;padding:12px;background:#f7f7f7;border:1px solid #e5e5e5;border-radius:14px;margin:12px 0}.confirm-panel .choice-icon{width:38px;height:38px;flex:none;display:grid;place-items:center;border-radius:12px;background:#fae7e7;color:#c33333}.confirm-panel p{margin:0;font-size:13px;color:#555}
+.data-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.data-toolbar .pbtn{flex:1}.data-toolbar .pbtn.danger{background:#fbeaea}.data-toolbar .pbtn.danger:hover{background:#f4dada}
+.export-contents{padding:10px 12px;background:#f5f5f5;border-radius:12px;margin:10px 0}.export-contents ul{margin:6px 0;padding-left:20px}.export-contents li{font-size:13px;margin:3px 0}
+
+.join{display:flex;gap:8px;margin-bottom:6px}.join input{flex:1;min-width:0;border:0;outline:0;background:var(--bub);border-radius:12px;padding:9px 12px;font:inherit;letter-spacing:.1em}
+.no-anim,.no-anim *{transition:none!important}
+button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+@media (min-width:641px){.frame.collapsed .side{margin-left:calc(-1 * var(--sw) - 16px);opacity:0;visibility:hidden;transition:margin-left .32s cubic-bezier(.4,0,.2,1),opacity .2s ease,visibility 0s .32s}.frame.collapsed .expand{opacity:1;pointer-events:auto;transition:opacity .25s ease .15s}.frame.collapsed .scroll{padding-top:50px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@supports (height:100dvh){html,body{height:100dvh}}
+button,.chat{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.model .sep{margin-right:1px}
+@media (hover:none){.more{opacity:1}.chat:hover{background:var(--chip)}.chat.on:hover{background:var(--sel)}}
+@keyframes glow{0%,100%{box-shadow:-6px 4px 20px rgba(106,160,255,.35),6px 4px 20px rgba(244,114,182,.22),0 -4px 20px rgba(167,139,250,.22)}50%{box-shadow:6px 6px 28px rgba(106,160,255,.5),-6px 2px 28px rgba(244,114,182,.38),0 -6px 26px rgba(251,191,36,.28)}}
+
+
+html,body{width:100%;min-width:0}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{overflow:hidden}
+.frame{min-width:0}
+.main{min-height:0;min-width:0;height:100%}
+.scroll{min-height:0;min-width:0}
+.input,.note{flex-shrink:0}
+.field{box-shadow:-6px 4px 20px rgba(106,160,255,.24),6px 4px 20px rgba(244,114,182,.16),0 -4px 20px rgba(167,139,250,.15);transition:box-shadow .25s ease,background .2s ease}
+.field:focus-within{box-shadow:-6px 4px 24px rgba(106,160,255,.34),6px 4px 24px rgba(244,114,182,.23),0 -4px 24px rgba(167,139,250,.22)}
+.busy .field{animation:glow 2.4s ease-in-out infinite}
+.msg.u{background:linear-gradient(180deg,#7fa9ff,#5b8df0);color:#fff}
+.empty p{margin:0;color:var(--mute)}
+.mbar,.menubtn{display:none}
+
+
+button,.chat,.model,.mi,.pbtn,.round,.new,.gear,.menubtn,.mnew,.logo,.expand,.more,.bar button,.mh button{transition:background-color .16s ease,color .16s ease,box-shadow .18s ease,opacity .16s ease}
+.field:focus-within{border-color:rgba(106,160,255,.42)}
+.field textarea::placeholder{color:#858585;opacity:1}
+button:focus-visible,.chat:focus-visible,.model:focus-visible{outline:2px solid rgba(76,130,239,.85);outline-offset:3px}
+.modal{animation:modalFadeIn .18s ease-out both}
+.modal .mcard{animation:menuIn .2s cubic-bezier(.2,.7,.2,1) both;transform-origin:center}
+.modal.closing{animation:modalFadeOut .16s ease-in both;pointer-events:none}
+.modal.closing .mcard{animation:menuOut .16s ease-in both}
+#mbody.menu-content-enter{animation:menuScreenIn .17s ease-out both}
+@keyframes modalFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes modalFadeOut{from{opacity:1}to{opacity:0}}
+@keyframes menuIn{from{opacity:0;transform:translateY(7px) scale(.993)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes menuOut{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(7px) scale(.993)}}
+@keyframes menuScreenIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+
+
+
+
+
+
+
+
+
+
+
+.data-manage-button{box-sizing:border-box;width:100%;height:44px;min-height:44px;max-height:44px;margin:4px 0 10px;padding:0 14px;display:flex;flex-flow:row nowrap;align-items:center;justify-content:center;gap:9px;text-align:center;line-height:1.2;white-space:nowrap;overflow:hidden}
+.data-manage-button .manage-icon{display:inline-flex;flex:none;align-items:center;justify-content:center}
+.data-manage-button .manage-icon svg{display:block;width:17px;height:17px}
+.policy-takeaways{background:#f1f1f1;border:1px solid #dedede;color:#222}
+.policy-takeaways strong{color:#444}
+#export-data:disabled{background:#dedede!important;color:#686868!important;opacity:1;cursor:wait;min-width:100px;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:center}
+.typing-indicator{display:inline-flex;align-items:center;gap:5px;height:18px;margin-right:7px;vertical-align:middle;color:#777}
+.typing-indicator span{width:6px;height:6px;border-radius:50%;background:currentColor;animation:typingDot 1s ease-in-out infinite;opacity:.45}
+.typing-indicator span:nth-child(2){animation-delay:.14s}.typing-indicator span:nth-child(3){animation-delay:.28s}
+.msg a{color:#2f6ee0;text-decoration:none;overflow-wrap:anywhere}.msg a:hover{text-decoration:underline}
+.answer-sources{align-self:flex-start;max-width:86%;margin-top:-8px;font-size:12.5px;color:#555}
+.answer-sources details{background:#f7f7f7;border:1px solid #e5e5e5;border-radius:11px;padding:7px 10px}
+.answer-sources summary{cursor:pointer;user-select:none;color:#444;font-weight:500}
+.answer-sources ul{margin:7px 0 0;padding-left:17px}.answer-sources li{margin:4px 0;overflow-wrap:anywhere}.answer-sources a{color:#2f6ee0;text-decoration:none}.answer-sources a:hover{text-decoration:underline}
+@keyframes typingDot{0%,60%,100%{transform:translateY(0);opacity:.38}30%{transform:translateY(-4px);opacity:1}}
+#export-data.cooldown{letter-spacing:.06em;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){.modal,.modal .mcard,.modal.closing,.modal.closing .mcard,.app-confirm-overlay,.app-confirm-card,#mbody.menu-content-enter,.fresh,.orb.think,.sync-spinner{animation:none!important;transition:none!important}}
+
+
+
+:root{--edge:14px;--bar:52px;--gap-top:env(safe-area-inset-top,0px);--gap-bottom:env(safe-area-inset-bottom,0px)}
+html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(32px,env(safe-area-inset-bottom,0px))}
+
+@media (max-width:640px){
+ body{height:100dvh;min-height:320px;padding:var(--gap-top) 0 var(--gap-bottom);background:radial-gradient(120% 50% at 50% 108%,rgba(120,150,255,.2),transparent 70%),#fff}
+ .frame{width:100%;height:100%;min-height:0;border:0;border-radius:0;padding:0;gap:0;background:transparent}
+ .main{width:100%;padding:0}
+ .expand,.scrim{display:none!important}
+
+ 
+ .mbar{display:flex;align-items:center;justify-content:center;position:absolute;left:0;right:0;top:0;height:var(--bar);z-index:3;background:rgba(255,255,255,.74);-webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);border-bottom:1px solid rgba(0,0,0,.06)}
+ .mt{font-size:17px;font-weight:500;pointer-events:none}.mt b{font-weight:700}
+ .menubtn,.mnew{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;padding:0;border:0;border-radius:50%;background:rgba(0,0,0,.06);color:#222;display:grid;place-items:center;cursor:pointer;transition:background .15s}
+ .menubtn{left:var(--edge)}.mnew{right:var(--edge)}
+ .menubtn:hover,.mnew:hover{background:rgba(0,0,0,.1)}
+
+ 
+ .site-notice{width:calc(100% - var(--edge) - var(--edge));max-width:840px;margin:calc(var(--bar) + 6px) auto 0;align-self:center}.scroll{padding:calc(var(--bar) + 12px) var(--edge) 12px;gap:10px;overscroll-behavior:contain}
+ .msg{max-width:86%;min-width:0;background:#f0f0f3;border-radius:20px;padding:10px 15px}
+ .msg.u{background:linear-gradient(180deg,#7fa9ff,#5b8df0);color:#fff;border-radius:20px;padding:10px 15px}
+ .bar{background:none;padding:0 4px;margin-top:-6px;max-width:100%}.bar span{margin-left:12px;font-size:12px}
+ .empty{max-width:100%;padding:12px}.empty h2{font-size:30px}
+
+ 
+ .input{margin:0 var(--edge);gap:8px;padding-top:6px;min-width:0}
+ .field{min-width:0;min-height:48px;padding:0 6px 0 16px;border-radius:24px;background:rgba(255,255,255,.88);-webkit-backdrop-filter:blur(20px) saturate(1.6);backdrop-filter:blur(20px) saturate(1.6);border:1px solid rgba(255,255,255,.95)}
+ .field textarea{min-width:0;width:0;flex:1;line-height:24px;padding:12px 0;max-height:112px;height:48px}
+ .mwrap{flex:none;margin-left:4px;gap:2px}
+ .model{max-width:88px;overflow:hidden;font-size:13px;padding:6px 4px;gap:3px}.model .sep{display:none}.model span{overflow:hidden;text-overflow:ellipsis}
+ .info-pop{width:min(270px,calc(100vw - 40px))}
+ .round{width:44px;height:44px;margin-bottom:2px;background:rgba(255,255,255,.88);box-shadow:0 2px 12px rgba(106,160,255,.25)}
+ .orb{width:46px;height:46px;right:0;bottom:calc(100% + 12px)}
+ .pop{width:min(240px,calc(100vw - 2 * var(--edge)));right:0}
+ .note{text-align:center;font-size:12px;margin:6px var(--edge) 8px}
+
+ 
+ .side{position:absolute;inset:0;z-index:12;width:100%;height:100%;max-width:none;border-radius:0;padding:14px var(--edge) 124px;background:#eeeef2;box-shadow:none;transform:translateX(-101%);visibility:hidden;transition:transform .24s ease,visibility 0s .24s}
+ .side.open{transform:none;visibility:visible;transition:transform .24s ease}
+ .side .brand{flex:none;margin-bottom:12px;padding:0 2px 12px}.side .brand h1{font-size:25px}
+ .side .logo{background:rgba(0,0,0,.07)!important;background-image:none!important}
+ .side.open #logo::after{content:"×";display:block;font-size:27px;line-height:1;color:#333}
+ .side .list{flex:1;min-height:0;padding:0 0 14px}
+ .side .chat{padding-top:12px;padding-bottom:12px}
+ .side .more{opacity:1}
+ .side .cmenu{right:var(--edge);z-index:14}
+ .side .new,.side .gear{position:absolute;left:var(--edge);right:var(--edge);width:auto;height:44px;display:flex;align-items:center;justify-content:flex-start;gap:10px;padding:0 14px;border:0;border-radius:14px;color:#222;background:#dedee5;box-shadow:none}
+ .side .new{bottom:64px}.side .gear{bottom:12px;padding-right:38px}
+ .side .new::after{content:"New chat";font-size:15px;font-weight:500}
+ .side .gear::after{content:"Settings";font-size:15px;font-weight:500}
+ .side .new:hover,.side .gear:hover{background:#d4d4dc}
+ .modal{padding:10px}.mcard{width:min(420px,100%);max-height:calc(100% - 20px);padding:16px}
+}
+@media (max-width:360px){
+ :root{--edge:10px}
+ .round{width:40px;height:40px}.model{max-width:84px;font-size:12px}
+}
+@media (max-height:480px) and (max-width:640px){
+ :root{--bar:46px}
+ .menubtn,.mnew{width:32px;height:32px}
+}
+
+
+@media (max-width:640px),(hover:none) and (pointer:coarse){
+ input,textarea,select,.field textarea,.mcard .join input,.list .rn,.access-form input{font-size:max(18px,1rem)!important}
+}
+@supports (-webkit-touch-callout:none){
+ input,textarea,select{font-size:max(18px,1rem)!important}
+}
+
+
+body.access-locked{overflow:hidden!important}
+body.access-locked .frame{filter:blur(6px);transform:scale(1.004);transform-origin:center;pointer-events:none;user-select:none}
+.access-gate{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(255,255,255,.72)}
+.access-gate[hidden]{display:none!important}
+.access-card{width:min(100%,340px);box-sizing:border-box;padding:22px;background:#fff;border:1px solid #dedede;border-radius:12px;color:#111}
+.access-card h2{font-size:17px;line-height:1.35;font-weight:500;margin:0 0 14px;letter-spacing:0;color:#111}
+.access-form{display:flex;gap:8px;align-items:center}
+.access-form input{min-width:0;flex:1;height:42px;box-sizing:border-box;border:1px solid #d5d5d5;border-radius:10px;padding:0 12px;font:inherit;font-size:16px;letter-spacing:.04em;outline:none;background:#fff;color:#111;box-shadow:none}
+.access-form input:focus{border-color:#999;box-shadow:0 0 0 1px #999}
+.access-form button{height:42px;width:42px;flex:none;border:1px solid #ddd;border-radius:10px;background:#f5f5f5;color:#111;font-size:21px;line-height:1;cursor:pointer;padding:0}
+.access-form button:hover{background:#ebebeb}
+.access-form button:disabled{opacity:.55;cursor:wait}
+.access-form[hidden],.access-error[hidden]{display:none!important}
+.access-error{font-size:12px;line-height:1.4;color:#333;margin:10px 0 0}
+.access-card.disabled-mode{width:auto;max-width:340px;padding:22px 26px}
+.access-card.disabled-mode h2{margin:0;font-weight:500}
+@media(prefers-reduced-motion:reduce){.access-card{animation:none}}
+
+
+
+.chat-search{display:flex;align-items:center;gap:8px;flex:none;margin:0 0 10px;padding:0 10px;height:40px;border-radius:999px;background:var(--chip);color:var(--mute);border:1px solid transparent;box-shadow:none}
+.chat-search:focus-within{border-color:transparent;box-shadow:none}
+.chat-search svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.chat-search input{min-width:0;width:100%;height:100%;border:0;outline:0;box-shadow:none;background:transparent;color:var(--ink);font:inherit;font-size:13.5px}
+.chat-search input:focus,.chat-search input:focus-visible{outline:none;box-shadow:none;border-color:transparent}
+.chat-search input::-webkit-search-cancel-button{display:none}
+.chat-search input::placeholder{color:var(--mute);opacity:1}
+.chat-search button{width:23px;height:23px;flex:none;border:0;border-radius:50%;background:rgba(0,0,0,.06);color:var(--ink);font-size:19px;line-height:1;padding:0;cursor:pointer}
+.chat-search button[hidden]{display:none}
+.search-empty{padding:12px 8px;color:var(--mute);font-size:13px;line-height:1.45}
+.search-snippet{display:-webkit-box;margin-top:4px;color:var(--mute);font-size:11.5px;line-height:1.35;overflow:hidden;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere;font-weight:400}
+.msg .codeblock{position:relative;max-width:100%;min-width:0;margin:0 0 8px}
+.msg .codeblock:last-child{margin-bottom:0}
+.msg .codeblock pre{margin:0;padding-top:35px;max-width:100%}
+.msg .codeblock pre code{background:transparent;padding:0;font-size:inherit}
+.code-copy{position:absolute;top:6px;right:6px;z-index:2;display:flex;align-items:center;justify-content:center;gap:5px;min-height:25px;padding:4px 8px;border:1px solid #d4d4d4;border-radius:8px;background:#f7f7f7;color:#222;font:500 11.5px/1.1 var(--f);cursor:pointer;white-space:nowrap}
+.code-copy:hover{background:#e8e8e8}
+.code-copy:disabled{opacity:.7;cursor:default}
+@media (max-width:640px){
+ .chat-search{margin-bottom:12px;height:42px}
+ .chat-search input{font-size:18px}
+}
+@media (max-width:360px){.chat-search{height:40px}}
+
+
+.access-admin-link{display:inline-flex;align-items:center;justify-content:center;margin:12px auto 0;padding:6px 10px;border:0;border-radius:999px;background:transparent;color:#2f6ee0;font:500 13px/1.2 var(--f);cursor:pointer}
+.access-admin-link:hover{background:#eef4ff}
+.access-admin-link[hidden],.access-admin-form[hidden]{display:none!important}
+.access-admin-form{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.access-admin-form label{font-size:13px;color:#555}
+.access-admin-form input{width:100%;min-width:0;height:42px;border:1px solid #d8d8d8;border-radius:10px;padding:0 12px;background:#fff;color:#111;font:inherit;font-size:16px;outline:none}
+.access-admin-form input:focus{border-color:#8dafff;box-shadow:0 0 0 2px rgba(106,160,255,.14)}
+.access-admin-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
+.access-admin-actions button{min-height:38px;padding:7px 13px;border:0;border-radius:10px;background:#e8e8e8;cursor:pointer}
+.access-admin-actions button[type=submit]{background:#e8efff;color:#2458b8;font-weight:600}
+.access-admin-actions button:disabled{opacity:.6;cursor:wait}
+.account-form{display:flex;flex-direction:column;gap:8px;min-width:0}
+.account-form>label{font-size:13px;line-height:1.35;color:#555;font-weight:500;margin-top:3px}
+.account-form>input,.account-form>select,.account-form>textarea,.admin-search input{box-sizing:border-box;width:100%;min-width:0;border:1px solid #dedede;border-radius:12px;background:#fafafa;color:#111;padding:10px 12px;font:inherit;outline:none}
+.account-form>input,.account-form>select{height:44px}
+.account-form>textarea{resize:vertical;min-height:74px}
+.account-form>input:focus,.account-form>select:focus,.account-form>textarea:focus,.admin-search input:focus{border-color:#95b4fa;box-shadow:0 0 0 2px rgba(106,160,255,.12)}
+.account-form .data-toolbar{margin-top:6px}
+.check-row{display:flex;align-items:center;gap:9px;padding:8px 10px;background:#f5f5f5;border-radius:10px;color:#333;font-size:13.5px}
+.check-row input{width:17px;height:17px;flex:none;accent-color:#6aa0ff}
+.admin-nav{display:flex;gap:6px;overflow:auto;margin:4px 0 13px;padding-bottom:3px}
+.admin-nav .pbtn{flex:none;white-space:nowrap;font-size:12.5px;padding:8px 10px}
+.admin-nav .pbtn.active{background:#dce7ff;color:#2458b8;box-shadow:inset 0 0 0 1px #c8d9ff}
+.admin-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(88px,130px);gap:8px;align-items:center;padding:10px;background:#f6f6f6;border-radius:12px}
+.admin-grid label{font-size:12.5px;color:#555}
+.admin-grid input{min-width:0;width:100%;height:38px;border:1px solid #ddd;border-radius:9px;padding:0 9px;background:#fff;font:inherit;font-size:14px}
+.admin-stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0 16px}
+.admin-stat{padding:11px 12px;border:1px solid #e5e5e5;border-radius:13px;background:#f7f7f7;min-width:0}
+.admin-stat span{display:block;font-size:11.5px;line-height:1.35;color:#666}
+.admin-stat strong{display:block;margin-top:4px;font-size:23px;line-height:1.2;font-weight:600;overflow-wrap:anywhere}
+.admin-table-wrap{max-width:100%;overflow:auto;margin:8px 0 14px;border:1px solid #e4e4e4;border-radius:12px}
+.admin-table{border-collapse:collapse;width:100%;min-width:210px;font-size:13px}
+.admin-table th,.admin-table td{padding:9px 11px;border-bottom:1px solid #e8e8e8;text-align:left}
+.admin-table th{background:#f3f3f3;font-weight:600;color:#444}
+.admin-table tr:last-child td{border-bottom:0}
+.admin-search{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+.admin-search input{flex:1 1 120px;height:40px;font-size:14px}
+.admin-search .pbtn{flex:0 0 auto}
+.admin-account{padding:12px;border:1px solid #e4e4e4;border-radius:14px;background:#fafafa;margin:8px 0}
+.admin-account-head{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap}
+.account-role{font-size:11.5px;color:#555;background:#eee;border-radius:999px;padding:4px 7px;white-space:nowrap}
+.admin-account-meta{font-size:12px;line-height:1.4;color:#666;margin:7px 0 10px;overflow-wrap:anywhere}
+.admin-account-actions{display:flex;flex-wrap:wrap;gap:6px}
+.admin-account-actions .pbtn{font-size:11.5px;padding:6px 8px}
+.admin-account-actions .pbtn:disabled{opacity:.4;cursor:not-allowed}
+.admin-audit-item{padding:10px 11px;border:1px solid #e6e6e6;background:#fafafa;border-radius:11px;margin:7px 0;font-size:12.5px;overflow-wrap:anywhere}
+.admin-audit-item strong{display:block;font-size:13px;margin-bottom:3px}
+.one-time-password{font-size:20px;line-height:1.5;letter-spacing:.08em;overflow-wrap:anywhere;background:#f1f1f1;border-radius:12px;padding:12px;margin:12px 0}
+@media(max-width:360px){.admin-grid{grid-template-columns:minmax(0,1fr) minmax(75px,100px)}.admin-stat-grid{gap:6px}.admin-stat{padding:9px}}
+
+</style>
+</head>
+<body class="access-locked">
+<div class="access-gate" id="access-gate" hidden role="dialog" aria-modal="true" aria-labelledby="access-title">
+ <div class="access-card" id="access-card">
+  <h2 id="access-title">Enter access code</h2>
+  <form class="access-form" id="access-form" autocomplete="off"><input id="access-code" type="text" inputmode="numeric" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="32" aria-label="Enter access code" required><button id="access-unlock" type="submit" aria-label="Submit access code" title="Submit access code">→</button></form>
+  <p class="access-error" id="access-error" role="status" aria-live="polite" hidden></p>
+  <button type="button" class="access-admin-link" id="access-admin-open">Admin</button>
+  <form class="access-admin-form" id="access-admin-form" hidden autocomplete="off">
+   <label for="access-admin-user">Username</label><input id="access-admin-user" type="text" maxlength="20" autocomplete="username" autocapitalize="off" spellcheck="false" required>
+   <label for="access-admin-password">Password</label><input id="access-admin-password" type="password" maxlength="200" autocomplete="current-password" required>
+   <div class="access-admin-actions"><button type="button" id="access-admin-back">Back</button><button type="submit" id="access-admin-submit">Sign in</button></div>
+   <p class="access-error" id="access-admin-error" role="status" aria-live="polite" hidden></p>
+  </form>
+ </div>
+</div>
+<div class="frame" id="app-frame">
+ <aside class="side" id="side">
+  <div class="brand"><h1>WHW<b>ai</b></h1><button class="logo" id="logo" title="Collapse sidebar" aria-label="Collapse sidebar"></button></div>
+  <div class="chat-search" role="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4.5 4.5"></path></svg><input id="chat-search" type="search" placeholder="Search chats" aria-label="Search chats" autocomplete="off" spellcheck="false"><button id="chat-search-clear" type="button" aria-label="Clear search" title="Clear search" hidden>×</button></div>
+  <div class="list" id="list"></div>
+  <button class="new" id="new" title="New chat" aria-label="New chat">+</button>
+  <button class="gear" id="gear" title="Settings" aria-label="Settings"></button>
+  <div class="cmenu" id="cmenu" role="menu" hidden><button id="cren" role="menuitem"></button><button id="cgen" role="menuitem"></button><button id="cpin" role="menuitem"></button><button id="cdel" class="danger" role="menuitem"></button></div>
+ </aside>
+ <div class="scrim" id="scrim"></div>
+ <div class="modal" id="modal" hidden><div class="mcard" role="dialog" aria-label="Settings"><div class="mh"><b id="modal-title">Settings</b><button id="mx" aria-label="Close">&times;</button></div><div id="mbody"></div></div></div>
+ <div class="app-confirm-overlay" id="confirm-overlay" hidden role="alertdialog" aria-modal="true" aria-label="Confirm action"></div>
+ <section class="main">
+  <button class="expand" id="expand" title="Show sidebar" aria-label="Show sidebar"></button>
+  <div class="mbar"><button class="menubtn" id="mopen" title="Open chats and settings" aria-label="Open chats and settings" aria-expanded="false"></button><span class="mt">WHW<b>ai</b></span><button class="mnew" id="mnew" title="New chat" aria-label="New chat"></button></div>
+  <div class="site-notice" id="site-notice" hidden role="status"></div>
+  <div class="scroll" id="chat"></div>
+  <div class="toast" id="toast" role="status"></div>
+  <div class="input">
+   <div class="orb" id="orb" aria-hidden="true"></div>
+   <div class="field">
+    <textarea id="in" rows="1" placeholder="Message WHWai" aria-label="Message"></textarea>
+    <div class="mwrap">
+     <button class="model" id="model" aria-haspopup="menu" aria-expanded="false"></button>
+     <div class="info-pop" id="aries-info-pop" role="status" aria-live="polite" aria-label="About Aries" hidden>
+      <p>Aries's knowledge goes up to around mid-2024, and it cannot browse the web.</p>
+      <button type="button" id="aries-info-got-it">Got it</button>
+     </div>
+     <div class="pop" id="pop" role="menu" hidden>
+      <div class="ph">Model</div>
+      <div id="model-options"></div>
+     </div>
+    </div>
+   </div>
+   <button class="round" id="send" title="Send" aria-label="Send"></button>
+  </div>
+  <div class="note">WHW<b>ai</b> is not human and can make mistakes.</div>
+ </section>
+</div>
+<script>
+const LOGO="data:image/webp;base64,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";
+const API_URL="https://script.google.com/macros/s/AKfycbzoXvUigJ1gri6Yyeoj6CRh-wsqJB4A9SOV0OA_6rZ43NsJIsTLNpQdDyqC-lVd8Wbv/exec";
+try{if(self!==top)document.documentElement.classList.add("embedded")}catch(e){document.documentElement.classList.add("embedded")}
+const MIN=60000,KEY="whwai.v2",$=id=>document.getElementById(id);
+const ic=(d,s=18,w=2)=>`<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const I={
+ copy:ic('<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>',16),
+ regen:ic('<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/>',16),
+ check:ic('<path d="M5 12.5l4.5 4.5L19 7.5"/>',16,2.4),
+ send:ic('<path d="M5 12h14"/><path d="M13 6l6 6-6 6"/>',22,2.6),
+ chev:ic('<path d="M6 9l6 6 6-6"/>',14,2.4)
+};
+$("new").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',16,2.6);$("send").innerHTML=I.send;
+
+let mem=null;
+const ACCOUNT_SESSION_STORAGE_KEY="whwai.account.session.v1";
+let accountSession=null,accountReady=true,accountSyncTimer=null,accountSyncing=false,accountSyncAgain=false,accountLastSync=0,accountInitialSyncPending=false,accountMergePendingToast=false;
+try{const savedSession=localStorage.getItem(ACCOUNT_SESSION_STORAGE_KEY);if(savedSession&&savedSession.length<300){accountSession={token:savedSession,user:null};accountReady=false}}catch(e){}
+const store={get(){try{return localStorage.getItem(KEY)}catch(e){return mem}},set(v){mem=v;try{localStorage.setItem(KEY,v)}catch(e){}}};
+let canSave=true;try{localStorage.setItem(KEY+".t","1");localStorage.removeItem(KEY+".t")}catch(e){canSave=false}
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const RULES=[
+ [/coffee|shop|marketing|customers|business/,`For a local coffee shop, your best marketing is usually hyper-local and relationship-driven, which is also the cheapest kind. Here are a few things worth trying:\n\n- **Start a simple loyalty program.** A punch card gives regulars a reason to come back and costs almost nothing to run.\n- **Partner with nearby businesses.** Offer a discount to employees of the office next door, or swap flyers with a bookstore or gym.\n- **Make your Google Business Profile shine.** Fresh photos, accurate hours, and steady reviews matter more than almost any ad.\n- **Post behind-the-scenes content.** Latte art and new menu items build familiarity for free.\n\nIf you only have time for two, start with the Google Business Profile and a loyalty program.`],
+ [/meal|prep|dinner|lunch|cook/,`Meal prep works best when you keep it simple:\n\n- **Cook two proteins and two grains** on Sunday, then mix them all week.\n- **Chop vegetables** right after shopping so they get used.\n- **Freeze one portion** of everything as a backup.\n\nWant a shopping list for five lunches?`],
+ [/python|bug|error|code|script/,`Paste the script and the full error message and I'll walk through it. In the meantime, check these first:\n\n- **The last line of the traceback** names the real problem.\n- **Indentation and typos** cause most beginner errors.\n- **Print the variable** just before the line that fails.`],
+ [/resume|cv|job/,`Happy to review it. Good resumes lead with results, so for each job, swap duties for outcomes ("cut wait times by 20%" beats "answered phones"). Paste your resume and tell me the role you're aiming for.`],
+ [/japan|trip|travel|tokyo|kyoto/,`Japan is great for a first visit of 10 days or so:\n\n- **Tokyo (4 nights):** neighborhoods, food, day trips.\n- **Kyoto (3 nights):** temples and gardens.\n- **Osaka (2 nights):** street food and nightlife.\n\nWhen are you thinking of going?`],
+ [/stock|invest|money/,`I can explain how stocks and funds work, but I can't tell you what to buy. Tell me your time horizon and how much risk you're comfortable with and I'll lay out the common options.`],
+ [/^(hi|hello|hey)\b|who are you|your name/,`Hi! I'm Aries, the model behind WHWai. Ask me about marketing, meal plans, code, or trip planning.`]
+];
+const FALLBACK=`That's an interesting question. This demo only knows a few topics, but the real version will answer anything. Try asking about **marketing**, **meal prep**, **Python**, **resumes**, or **a trip**.`;
+function safeText(value,max=40000){return String(value==null?"":value).slice(0,max)}
+function safeSources(value){
+ if(!Array.isArray(value))return [];
+ const out=[];const seen=new Set();
+ for(const source of value){
+  if(!source||typeof source!=="object")continue;
+  const title=safeText(source.title,180).trim(),url=safeText(source.url,1000).trim();
+  if(!title||!/^https:\/\//i.test(url)||/[\s<>"']/.test(url)||seen.has(url))continue;
+  seen.add(url);out.push({title,url});if(out.length>=5)break;
+ }
+ return out;
+}
+function safeMessage(value){
+ if(!value||typeof value!=="object"||value.err)return null;
+ const role=value.r||value.role;
+ const r=(role==="u"||role==="user")?"u":((role==="a"||role==="assistant")?"a":"");
+ if(!r)return null;
+ const x=safeText(value.x!=null?value.x:value.content);
+ const item={r,x};
+ const at=Number(value.at!=null?value.at:value.timestamp);if(Number.isFinite(at)&&at>0)item.at=at;
+ if(r==="a"){
+  const sources=safeSources(value.sources);if(sources.length)item.sources=sources;
+  const model=safeText(value.model,80);if(model)item.model=model;
+ }
+ return item;
+}
+function safeChat(value){
+ if(!value||typeof value!=="object")return null;
+ const id=safeText(value.id,120);if(!id)return null;
+ const title=safeText(value.t!=null?value.t:value.title,300);
+ const created=Number(value.u!=null?value.u:value.createdAt)||Date.now();
+ const chat={id,t:title||"New chat",u:created,m:[]};
+ const updated=Number(value.mu!=null?value.mu:value.updatedAt);if(Number.isFinite(updated)&&updated>0)chat.mu=updated;
+ if(value.auto)chat.auto=1;if(value.p||value.pinned)chat.p=1;
+ const model=safeText(value.model,80);if(model)chat.model=model;
+ const messages=Array.isArray(value.m)?value.m:(Array.isArray(value.messages)?value.messages:[]);
+ chat.m=messages.map(safeMessage).filter(Boolean);
+ return chat;
+}
+function safeDead(value){
+ if(!Array.isArray(value))return [];
+ return value.filter(d=>d&&typeof d==="object"&&d.id!=null).map(d=>({id:safeText(d.id,120),mu:Number(d.mu)||0})).filter(d=>d.id&&d.mu>0).slice(-5000);
+}
+function safeState(value){
+ const raw=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
+ const chats=(Array.isArray(raw.chats)?raw.chats:[]).map(safeChat).filter(Boolean);
+ const model=safeText(raw.model,80);
+ const state={
+  chats,
+  cur:raw.cur!=null&&chats.some(c=>c.id===String(raw.cur))?String(raw.cur):null,
+  dead:safeDead(raw.dead),
+  model:model||"aries-1",
+  col:!!raw.col
+ };
+ chats.forEach(c=>{if(!c.model)c.model="aries-1"});
+ return state;
+}
+let S=null;
+try{S=safeState(JSON.parse(store.get()||"null"))}catch(e){S=safeState(null)}
+try{store.set(JSON.stringify(S))}catch(e){}
+let availableModels=[{id:"aries-1",name:"Aries",description:"Best for quick, straightforward reasoning and everyday questions."}];
+const clean=()=>({chats:S.chats.map(safeChat).filter(Boolean),dead:safeDead(S.dead)});
+const persistedState=()=>({
+ chats:clean().chats,
+ cur:S.cur&&S.chats.some(c=>c.id===S.cur)?S.cur:null,
+ dead:clean().dead,
+ model:safeText(S.model||"aries-1",80),
+ col:!!S.col
+});
+let localRevision=0;
+const save=ns=>{localRevision++;store.set(JSON.stringify(persistedState()));if(!ns&&accountSession&&accountSession.token&&!(accountSession.user&&accountSession.user.mustChange))scheduleAccountSync()};
+let repairedTitle=false;
+S.chats.forEach(c=>{
+ if(!c||!Array.isArray(c.m)||!/^NO_TITLE[.!]*$/i.test(String(c.t||"")))return;
+ const firstUser=c.m.find(m=>m&&m.r==="u"&&String(m.x||"").trim());
+ if(firstUser){c.t=makeTitle(firstUser.x);c.auto=1;repairedTitle=true}
+});
+if(repairedTitle)save(true);
+const C=()=>S.chats.find(c=>c.id===S.cur)||null;
+const sorted=()=>[...S.chats].sort((a,b)=>(b.p?1:0)-(a.p?1:0)||b.u-a.u);
+const searchInput=$("chat-search"),searchClear=$("chat-search-clear");
+function normalizeSearch(value){return String(value||"").toLocaleLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g,"").replace(/[^\p{L}\p{N}]+/gu," ").trim()}
+function countOccurrences(text,term){if(!term)return 0;let count=0,at=0;while((at=text.indexOf(term,at))!==-1&&count<20){count++;at+=Math.max(1,term.length)}return count}
+function scoreChat(chat,query){
+ const q=normalizeSearch(query);if(!q)return 0;
+ const title=normalizeSearch(chat.t),messages=normalizeSearch((chat.m||[]).map(m=>m.x||"").join(" ")),terms=[...new Set(q.split(/\s+/).filter(Boolean))];
+ if(!terms.length)return 0;let score=0;
+ if(title===q)score+=180;else if(title.startsWith(q))score+=100;else if(title.includes(q))score+=65;
+ if(messages.includes(q)){const pos=messages.indexOf(q);score+=42+Math.max(0,12-Math.floor(pos/180))}
+ let found=0;terms.forEach(term=>{const titleCount=countOccurrences(title,term),messageCount=countOccurrences(messages,term);if(titleCount||messageCount)found++;if(titleCount)score+=Math.min(titleCount,3)*22+(title.startsWith(term)?8:0);if(messageCount)score+=Math.min(messageCount,8)*4+Math.max(0,7-Math.floor(messages.indexOf(term)/250));});
+ if(found===terms.length)score+=35;else if(found>1)score+=found*3;
+ if(!terms.some(t=>title.includes(t)||messages.includes(t)))return 0;
+ return score;
+}
+function searchSnippet(chat,query){
+ const q=normalizeSearch(query),terms=q.split(/\s+/).filter(Boolean),messages=(chat.m||[]).map(m=>String(m.x||""));
+ let candidate=messages.find(text=>normalizeSearch(text).includes(q));
+ if(!candidate)candidate=messages.find(text=>{const n=normalizeSearch(text);return terms.some(term=>n.includes(term))});
+ if(!candidate)return "Title match · Updated "+ago(chat.u);
+ const normal=normalizeSearch(candidate);let at=normal.indexOf(q);if(at<0){const positions=terms.map(t=>normal.indexOf(t)).filter(n=>n>=0);at=positions.length?Math.min(...positions):0}
+ const original=candidate;let start=Math.max(0,at-42),end=Math.min(original.length,start+118);if(end-start<118)start=Math.max(0,end-118);return (start>0?"…":"")+original.slice(start,end).replace(/\s+/g," ").trim()+(end<original.length?"…":"");
+}
+
+const chatEl=$("chat"),ta=$("in"),orb=$("orb"),list=$("list"),sendBtn=$("send");
+let busy=false,activeAnswerController=null,responseWasStopped=false,answerRunId=0;
+if(LOGO)document.querySelectorAll(".logo,.expand").forEach(l=>l.style.background="url("+LOGO+") center/cover no-repeat");
+
+const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+function md(s){
+ const normalize=t=>String(t||"")
+  .replace(/\r\n?/g,"\n")
+  .replace(/&(?:#x0*20|#0*32|nbsp);/gi," ")
+  .replace(/[ \t]*\\[ \t]*(?=\n|$)/g,"")
+  .replace(/(^|\n)[ \t]*\\([*-])[ \t]+/g,"$1$2 ")
+  .replace(/\\([*_`-])/g,"$1")
+  .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g,"$1$2");
+ const inl=t=>esc(t).replace(/`([^`\n]+)`/g,"<code>$1</code>").replace(/\*\*(.+?)\*\*/g,"<b>$1</b>");
+ const blocks=t=>t.split(/\n\n+/).filter(b=>b.trim()).map(b=>{
+  const html=[];let para=[],items=[];
+  const flushPara=()=>{if(para.length){html.push("<p>"+para.map(inl).join("<br>")+"</p>");para=[]}};
+  const flushList=()=>{if(items.length){html.push("<ul>"+items.map(l=>"<li>"+inl(l.replace(/^[-*]\s+/,""))+"</li>").join("")+"</ul>");items=[]}};
+  b.split("\n").forEach(line=>{
+   if(/^\s*[-*]\s+/.test(line)){flushPara();items.push(line.trim())}
+   else{flushList();para.push(line)}
+  });
+  flushList();flushPara();return html.join("");
+ }).join("");
+ return String(s||"").split(/```[\w+-]*\n?([\s\S]*?)(?:```|$)/).map((p,i)=>i%2?'<div class="codeblock"><button class="code-copy" type="button" aria-label="Copy code">Copy code</button><pre><code>'+esc(p.replace(/\n+$/,""))+'</code></pre></div>':blocks(normalize(p))).join("");
+}
+function ago(t){
+ const m=Math.floor((Date.now()-t)/MIN);
+ if(m<1)return"just now";if(m<60)return m+(m===1?" minute ago":" minutes ago");
+ const h=Math.floor(m/60);if(h<24)return h+(h===1?" hour ago":" hours ago");
+ const d=Math.floor(h/24);if(d<7)return d+(d===1?" day ago":" days ago");
+ return new Date(t).toLocaleDateString();
+}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function sleepUntilAbort(ms,signal){return new Promise(resolve=>{
+ let done=false;const finish=()=>{if(done)return;done=true;clearTimeout(t);if(signal)signal.removeEventListener("abort",finish);resolve()};
+ const t=setTimeout(finish,ms);
+ if(signal){if(signal.aborted)finish();else signal.addEventListener("abort",finish,{once:true})}
+})}
+const near=()=>chatEl.scrollHeight-chatEl.scrollTop-chatEl.clientHeight<140;
+const toBottom=()=>chatEl.scrollTo({top:chatEl.scrollHeight});
+
+const PIN='<path d="M12 17v5"/><path d="M9 3h6l-1 7 3 3v2H7v-2l3-3z"/>',
+ TRASH='<path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/>',
+ DOTS='<circle cx="5" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.7" fill="currentColor" stroke="none"/>';
+const PEN='<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>';
+const SPARK='<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16v4M17 18h4"/>';
+let renamingId=null;
+let mid=null;
+function renderList(){
+ list.innerHTML="";closeMenu();
+ const query=searchInput?searchInput.value.trim():"";
+ if(searchClear)searchClear.hidden=!query;
+ let entries;
+ if(query){entries=S.chats.map(c=>({c,score:scoreChat(c,query)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||(b.c.u||0)-(a.c.u||0));
+  if(!entries.length){list.insertAdjacentHTML("beforeend",'<div class="search-empty">No chats match your search.</div>');if(!canSave)list.insertAdjacentHTML("beforeend",'<div class="hint warn">Chats can&#39;t be saved in this browser, so they will be lost when you leave this page.</div>');return}
+ }else{entries=sorted().map(c=>({c,score:0}));if(!S.chats.length)list.insertAdjacentHTML("beforeend",'<div class="hint">Your chats will show up here.</div>')}
+ entries.forEach(entry=>{const c=entry.c;
+  if(renamingId===c.id){
+   const e=document.createElement("div");e.className="chat on edit";
+   const i=document.createElement("input");i.className="rn";i.value=c.t;i.maxLength=60;i.setAttribute("aria-label","Chat name");
+   let done=0;
+   const fin=ok=>{if(done)return;done=1;const v=i.value.trim();if(ok&&v){c.t=v.slice(0,60);c.auto=0;touch(c);save()}renamingId=null;renderList()};
+   i.onkeydown=ev=>{if(ev.key==="Enter")fin(true);else if(ev.key==="Escape")fin(false)};
+   i.onblur=()=>fin(true);
+   e.appendChild(i);list.appendChild(e);return;
+  }
+  const on=c.id===S.cur,r=document.createElement("div");r.className="row"+(on?" on":"");
+  const b=document.createElement("button");b.className="chat"+(on?" on":"");b.title=c.t;
+  b.innerHTML='<span class="ct">'+(c.p?ic(PIN,12):"")+esc(c.t)+'</span>'+(query?'<span class="search-snippet"></span>':'<span class="cm" data-t="'+c.u+'">'+ago(c.u)+'</span>');
+  if(query){const snippet=b.querySelector(".search-snippet");snippet.textContent=searchSnippet(c,query);b.title=c.t+" — "+snippet.textContent;}
+  b.onclick=()=>openChat(c.id);
+  const x=document.createElement("button");x.className="more";x.innerHTML=ic(DOTS,18);x.title="Chat options";
+  x.setAttribute("aria-label","Chat options");x.setAttribute("aria-haspopup","menu");x.setAttribute("aria-expanded","false");
+  x.onclick=e=>{e.stopPropagation();if(mid===c.id)closeMenu();else openMenu(c.id,x)};
+  r.append(b,x);list.appendChild(r);
+ });
+ if(!canSave)list.insertAdjacentHTML("beforeend",'<div class="hint warn">Chats can\'t be saved in this browser, so they will be lost when you leave this page.</div>');
+}
+function openMenu(id,btn){
+ const c=S.chats.find(x=>x.id===id);if(!c)return;
+ closeMenu();mid=id;
+ const m=$("cmenu");
+ $("cren").innerHTML=ic(PEN,16)+"<span>Rename</span>";
+ $("cgen").innerHTML=ic(SPARK,16)+"<span>Generate title</span>";
+ $("cpin").innerHTML=ic(PIN,16)+"<span>"+(c.p?"Unpin":"Pin")+"</span>";
+ $("cdel").innerHTML=ic(TRASH,16)+"<span>Delete</span>";
+ m.hidden=false;
+ const sr=$("side").getBoundingClientRect(),br=btn.getBoundingClientRect();
+ m.style.top=Math.max(8,Math.min(br.bottom-sr.top+4,sr.height-m.offsetHeight-8))+"px";
+ btn.setAttribute("aria-expanded","true");
+}
+function closeMenu(){
+ $("cmenu").hidden=true;mid=null;
+ document.querySelectorAll(".more").forEach(b=>b.setAttribute("aria-expanded","false"));
+}
+function selectedModelId(){
+ const c=C();const id=(c&&c.model)||S.model||"aries-1";
+ return availableModels.some(m=>m.id===id)?id:"aries-1";
+}
+function updateModelUI(){
+ const id=selectedModelId(),selected=availableModels.find(m=>m.id===id)||availableModels[0];
+ $("model").innerHTML='<span class="model-name">'+esc(selected.name)+'</span>'+I.chev;
+ const options=$("model-options");if(!options)return;options.innerHTML="";
+ availableModels.forEach(m=>{
+  const b=document.createElement("button");b.type="button";b.className="mi";b.setAttribute("role","menuitemradio");b.setAttribute("aria-checked",String(m.id===id));
+  const copy=document.createElement("div");copy.textContent=m.name;
+  const small=document.createElement("small");small.textContent=m.description||"";copy.appendChild(small);
+  const tick=document.createElement("i");tick.innerHTML=m.id===id?I.check:"";b.append(copy,tick);
+  b.onclick=()=>{
+   const c=C();
+   S.model=m.id;
+   if(c){c.model=m.id;touch(c)}
+   save();pop(false);updateModelUI();
+   if(c)renderChat();
+   if(m.id==="aries-1")setTimeout(showAriesIntroOnce,100);
+  };
+  options.appendChild(b);
+ });
+ if(!availableModels.some(m=>m.id==="future-1")){
+  const placeholder=document.createElement("button");
+  placeholder.type="button";
+  placeholder.className="mi future-placeholder";
+  placeholder.disabled=true;
+  placeholder.setAttribute("role","menuitem");
+  placeholder.setAttribute("aria-disabled","true");
+  const copy=document.createElement("div");
+  copy.textContent="More models";
+  const small=document.createElement("small");
+  small.textContent="Coming soon";
+  copy.appendChild(small);
+  const marker=document.createElement("i");
+  marker.textContent="···";
+  marker.style.color="#888";
+  placeholder.append(copy,marker);
+  options.appendChild(placeholder);
+ }
+}
+function updateAvailableModels(models){
+ if(!Array.isArray(models))return;
+ const cleanModels=models.filter(m=>m&&typeof m.id==="string"&&typeof m.name==="string"&&m.name.trim()).map(m=>({id:m.id,name:m.name,description:m.id==="aries-1"?"Best for quick, straightforward reasoning and everyday questions.":String(m.description||"")}));
+ if(!cleanModels.some(m=>m.id==="aries-1"))cleanModels.unshift({id:"aries-1",name:"Aries",description:"Best for quick, straightforward reasoning and everyday questions."});
+ availableModels=cleanModels;
+ let repaired=false;
+ S.chats.forEach(c=>{if(!availableModels.some(m=>m.id===c.model)){c.model="aries-1";repaired=true}});
+ if(!availableModels.some(m=>m.id===S.model)){S.model="aries-1";repaired=true}
+ if(repaired)save(true);
+ updateModelUI();
+}
+function renderChat(fresh){
+ const c=C();updateModelUI();chatEl.innerHTML="";
+ if(!c||!c.m.length){
+  if(accountInitialSyncPending&&accountSession&&accountSession.token&&!S.chats.length)chatEl.innerHTML='<div class="empty"><h2>WHW<b>ai</b></h2><p><span class="sync-spinner" aria-hidden="true"></span>Loading your account chats…</p></div>';
+  else chatEl.innerHTML='<div class="empty"><h2>WHW<b>ai</b></h2><p>Ask anything to get started.</p></div>';
+  return
+ }
+ c.m.forEach((m,i)=>{
+  const d=document.createElement("div");d.className="msg"+(m.r==="u"?" u":"");
+   if(m.r==="u")d.textContent=m.x;else d.innerHTML=md(m.x);
+   chatEl.appendChild(d);
+   if(m.r==="a"&&Array.isArray(m.sources)&&m.sources.length){
+    const wrap=document.createElement("div");wrap.className="answer-sources";
+    const details=document.createElement("details");const summary=document.createElement("summary");summary.textContent="Sources ("+m.sources.length+")";details.appendChild(summary);
+    const ul=document.createElement("ul");
+    m.sources.slice(0,5).forEach(source=>{
+     if(!source||typeof source.title!=="string"||typeof source.url!=="string"||!/^https:\/\//i.test(source.url)||/[\s<>"']/.test(source.url))return;
+     const li=document.createElement("li"),a=document.createElement("a");a.textContent=source.title;a.href=source.url;a.target="_blank";a.rel="noopener noreferrer";li.appendChild(a);ul.appendChild(li);
+    });
+    if(ul.children.length){details.appendChild(ul);wrap.appendChild(details);chatEl.appendChild(wrap)}
+   }
+   if(m.r==="a"){
+    const canRegen=i===c.m.length-1,b=document.createElement("div");b.className="bar";
+   b.innerHTML='<button class="cp" title="Copy" aria-label="Copy">'+I.copy+'</button>'+(canRegen?'<button class="rg" title="Regenerate" aria-label="Regenerate">'+I.regen+'</button>':'')+'<span data-t="'+m.at+'">'+ago(m.at)+'</span>';
+   const cp=b.querySelector(".cp"),rg=b.querySelector(".rg");
+   cp.onclick=()=>copy(m.x,cp);if(rg)rg.onclick=regen;
+   chatEl.appendChild(b);
+  }
+ });
+ if(fresh){const ms=chatEl.querySelectorAll(".msg");ms[ms.length-1].classList.add("fresh")}
+ toBottom();
+}
+const plain=t=>t.replace(/\*\*(.+?)\*\*/g,"$1").replace(/^[-*] /gm,"\u2022 ");
+async function copyCode(text,button){
+ const original=button.textContent;button.disabled=true;
+ try{
+  if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(String(text));button.textContent="Copied";}
+  else throw new Error("clipboard unavailable");
+ }catch(e){
+  const a=document.createElement("textarea");a.value=String(text);a.style.cssText="position:fixed;top:0;left:0;opacity:0";document.body.appendChild(a);a.focus();a.select();a.setSelectionRange(0,a.value.length);
+  try{if(document.execCommand("copy"))button.textContent="Copied";else toast("Couldn't copy code. Select it and copy manually.")}catch(err){toast("Couldn't copy code. Select it and copy manually.")}a.remove();
+ }
+ setTimeout(()=>{if(button.isConnected){button.textContent=original;button.disabled=false}},1300);
+}
+chatEl.addEventListener("click",e=>{const button=e.target.closest(".code-copy");if(!button)return;const block=button.closest(".codeblock"),code=block&&block.querySelector("code");if(code)copyCode(code.textContent,button)});
+async function copy(t,btn){
+ const ok=()=>{btn.innerHTML=I.check;setTimeout(()=>btn.innerHTML=I.copy,1200)};
+ try{
+  if(window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write){
+   await navigator.clipboard.write([new ClipboardItem({"text/plain":new Blob([plain(t)],{type:"text/plain"}),"text/html":new Blob([md(t).replace(/<button class="code-copy"[^>]*>Copy code<\/button>/g,"")],{type:"text/html"})})]);
+   return ok();
+  }
+  await navigator.clipboard.writeText(plain(t));return ok();
+ }catch(e){}
+ const a=document.createElement("textarea");a.value=plain(t);a.style.cssText="position:fixed;top:0;opacity:0";
+ document.body.appendChild(a);a.focus();a.select();a.setSelectionRange(0,a.value.length);
+ try{if(document.execCommand("copy"))ok()}catch(e){}
+ a.remove();
+}
+function orbStart(){orb.style.transition="";orb.classList.add("think")}
+function orbStop(){
+ if(!orb.classList.contains("think"))return;
+ const cs=getComputedStyle(orb),t=cs.transform,br=cs.borderRadius,bs=cs.boxShadow;
+ orb.classList.remove("think");
+ orb.style.transition="none";orb.style.transform=t;orb.style.borderRadius=br;orb.style.boxShadow=bs;
+ void orb.offsetWidth;
+ orb.style.transition="transform 1s cubic-bezier(.25,.8,.25,1),border-radius 1s ease,box-shadow 1s ease";
+ orb.style.transform="";orb.style.borderRadius="";orb.style.boxShadow="";
+}
+function setBusy(b){
+ busy=b;sendBtn.disabled=false;
+ sendBtn.innerHTML=b?ic('<path d="M7 7h10v10H7z" fill="currentColor" stroke="none"/>',18):I.send;
+ sendBtn.title=b?"Stop response":"Send";
+ sendBtn.setAttribute("aria-label",b?"Stop response":"Send");
+ sendBtn.setAttribute("aria-pressed",String(b));
+ document.querySelector(".frame").classList.toggle("busy",b);b?orbStart():orbStop()
+}
+function stopAnswer(){
+ if(!busy)return;
+ responseWasStopped=true;
+ sendBtn.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>';
+ sendBtn.title="Stopping response…";sendBtn.setAttribute("aria-label","Stopping response");
+ if(activeAnswerController)activeAnswerController.abort();
+}
+const ERR_TEXT="WHWai is busy or can't be reached right now. Wait a moment, then press regenerate.";
+const hist=c=>c.m.filter(m=>!m.err).slice(-14).map(m=>({r:m.r,x:m.x}));
+async function post(body,externalSignal){
+ const action=body.action;
+ if(action!=="access_check"&&action!=="status_check"){try{const token=localStorage.getItem(ACCESS_TOKEN_KEY);if(token)body={...body,accessToken:token}}catch(e){}}
+ if(accountSession&&accountSession.token&&["auth_login","auth_signup","auth_admin_login","status_check","access_check"].indexOf(action)===-1)body={...body,sessionToken:accountSession.token};
+ const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),45000);
+ const forwardAbort=()=>ctl.abort();
+ if(externalSignal){if(externalSignal.aborted)ctl.abort();else externalSignal.addEventListener("abort",forwardAbort,{once:true})}
+ try{
+  const r=await fetch(API_URL,{method:"POST",body:JSON.stringify(body),signal:ctl.signal});
+  const j=await r.json();if(j.error){const error=new Error(j.error);error.payload=j;throw error}return j;
+ }finally{
+  clearTimeout(tm);
+  if(externalSignal)externalSignal.removeEventListener("abort",forwardAbort);
+ }
+}
+const ACCESS_STORAGE_KEY="whwai.earlyAccessUntil.v1",ACCESS_TOKEN_KEY="whwai.earlyAccessToken.v1",ACCESS_OFF_KEY="whwai.accessCodeOff.v1",ACCESS_TTL=24*60*60*1000;
+try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}
+const accessGate=$("access-gate"),accessCard=$("access-card"),accessTitle=$("access-title"),accessForm=$("access-form"),accessInput=$("access-code"),accessError=$("access-error"),accessButton=$("access-unlock");
+let aiDisabled=false,accessRequired=true;
+function hasEarlyAccess(){return false}
+function openApp(force){if(aiDisabled&&!force)return;document.body.classList.remove("access-locked");accessGate.hidden=true;$("app-frame").removeAttribute("aria-hidden");if(accountSession&&accountSession.token&&!accountSession.user)resumeAccountSession();setTimeout(showAriesIntroOnce,650)}
+function unlockEarlyAccess(token,expiresAt){if(aiDisabled)return;try{const until=Number(expiresAt)||Date.now()+ACCESS_TTL;localStorage.setItem(ACCESS_STORAGE_KEY,String(until));localStorage.setItem(ACCESS_TOKEN_KEY,String(token||""))}catch(e){}openApp()}
+function lockEarlyAccess(showGate){try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.remove("disabled-mode");accessTitle.textContent="Enter access code";accessForm.hidden=false;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false;$("access-admin-form").hidden=true;if(showGate){accessInput.value="";setTimeout(()=>accessInput.focus(),50)}}
+function showAIDisabled(){aiDisabled=true;try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");accessTitle.textContent="WHWai is currently disabled";accessForm.hidden=true;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false}
+try{if(localStorage.getItem(ACCESS_OFF_KEY)==="1"){accessRequired=false;openApp()}else{document.body.classList.add("access-locked")}}catch(e){document.body.classList.add("access-locked")}
+accessForm.addEventListener("submit",async e=>{e.preventDefault();const code=accessInput.value.trim();if(!code)return;accessButton.disabled=true;accessError.hidden=true;accessError.textContent="";try{if(!API_URL)throw new Error("backend");const result=await post({action:"access_check",code});if(result&&result.aiEnabled===false){showAIDisabled();return}if(result&&result.ok&&result.token){unlockEarlyAccess(result.token,result.expiresAt)}else{accessError.textContent="Incorrect code";accessError.hidden=false;accessInput.select()}}catch(err){accessError.textContent="Unable to verify code";accessError.hidden=false}finally{accessButton.disabled=false}});
+(async function checkBackendStatus(){if(!API_URL){lockEarlyAccess(false);return}try{const status=await post({action:"status_check"});if(status&&Array.isArray(status.models))updateAvailableModels(status.models);siteStatusLoaded=true;siteSignupMode=status.signupMode||"code";siteNoticeText=String(status.siteNotice||"").slice(0,240);renderSiteNotice();if(status&&status.aiEnabled===false){showAIDisabled();return}
+ if(status&&status.accessRequired===false){accessRequired=false;try{localStorage.setItem(ACCESS_OFF_KEY,"1")}catch(e){}openApp();return}
+ accessRequired=true;try{localStorage.removeItem(ACCESS_OFF_KEY)}catch(e){}
+ const typed=accessInput.value;lockEarlyAccess(false);accessInput.value=typed
+}catch(e){lockEarlyAccess(false)}})();
+
+const titleRequests=new Set();
+async function genTitle(c){
+ if(!c||!c.auto||titleRequests.has(c.id))return;
+ titleRequests.add(c.id);
+ try{
+  const j=await post({action:"title",messages:hist(c)});
+  const raw=(j.text||"").split("\n")[0].trim();
+  if(!raw||/^NO_TITLE[.!]*$/i.test(raw))return;
+  const t=raw.replace(/["*.]+/g,"").trim().slice(0,40);
+  if(t&&c.auto){c.t=t;c.auto=0;touch(c);save();renderList()}
+ }catch(e){}
+ finally{titleRequests.delete(c.id)}
+}
+async function retitle(id){
+ const c=S.chats.find(x=>x.id===id);
+ if(!c)return;
+ if(!API_URL){toast("Title generation needs the live backend.");return}
+ if(titleRequests.has(c.id))return;
+ if(!c.m.some(m=>m.r==="u")){toast("Nothing to title yet.");return}
+ titleRequests.add(c.id);toast("Generating a new title…");
+ try{
+  const j=await post({action:"title",messages:hist(c)});
+  const raw=(j.text||"").split("\n")[0].trim();
+  if(!raw||/^NO_TITLE[.!]*$/i.test(raw)){toast("Not enough conversation to make a title yet.");return}
+  const t=raw.replace(/["*.]+/g,"").trim().slice(0,40);
+  if(t){c.t=t;c.auto=0;touch(c);save();renderList();toast("Title updated.")}
+ }catch(e){toast("Couldn't generate a title right now.")}
+ finally{titleRequests.delete(c.id)}
+}
+async function answer(c,q){
+ const run=++answerRunId,controller=new AbortController();
+ responseWasStopped=false;activeAnswerController=controller;setBusy(true);
+ const tmp=document.createElement("div");tmp.className="msg dim fresh";tmp.setAttribute("role","status");
+ const activeModelName=(availableModels.find(m=>m.id===selectedModelId())||availableModels[0]||{name:"WHWai"}).name;const thinkingLines=[activeModelName+" is thinking…",activeModelName+" is working on it…",activeModelName+" is putting it together…",activeModelName+" is checking that…",activeModelName+" is almost there…",activeModelName+" is working…"];
+ const rareThinkingLines=["idk ask chatgpt","The tiny calculators are meeting…","Consulting the office plant…","My last two neurons are syncing…","The pixels are negotiating…"];
+ const thinkingLine=Math.random()<0.08?rareThinkingLines[Math.floor(Math.random()*rareThinkingLines.length)]:thinkingLines[Math.floor(Math.random()*thinkingLines.length)];tmp.setAttribute("aria-label",thinkingLine);tmp.innerHTML='<span class="typing-indicator" aria-hidden="true"><span></span><span></span><span></span></span><span class="thinking-label"></span>';tmp.querySelector(".thinking-label").textContent=thinkingLine;chatEl.appendChild(tmp);toBottom();
+ try{
+  let full,err=0,sources=[];
+  if(API_URL){
+   try{
+    const modelId=availableModels.some(m=>m.id===c.model)?c.model:(S.model||"aries-1");
+    if(c.model!==modelId)c.model=modelId;
+    const j=await post({action:"chat",model:modelId,deviceId:getDeviceId(),messages:hist(c)},controller.signal);
+    if(responseWasStopped||run!==answerRunId)return;
+    full=j.text||ERR_TEXT;sources=Array.isArray(j.sources)?j.sources:[];if(!j.text||j.disabled)err=1;
+   }catch(e){
+    if(responseWasStopped||run!==answerRunId||e&&e.name==="AbortError"&&controller.signal.aborted)return;
+    full=e&&e.message==="daily_limit"?(e.payload&&e.payload.message||"You've reached this model's daily limit. Please try again tomorrow."):e&&e.message==="model_unavailable"?"That model is not available right now.":e&&e.payload&&e.payload.message?e.payload.message:ERR_TEXT;err=1;
+   }
+  }else{
+   await sleepUntilAbort(800+Math.random()*700,controller.signal);
+   if(responseWasStopped||run!==answerRunId)return;
+   full=(RULES.find(([r])=>r.test(q.toLowerCase()))||[0,FALLBACK])[1]
+  }
+  const w=full.split(/(\s+)/),step=Math.max(2,Math.ceil(w.length/300));let out="";
+  for(let i=0;i<w.length;i++){
+   if(responseWasStopped||run!==answerRunId)return;
+   out+=w[i];
+   if(i%step===0){tmp.classList.remove("dim");tmp.innerHTML=md(out);if(near())toBottom();await sleepUntilAbort(22,controller.signal)}
+  }
+  if(responseWasStopped||run!==answerRunId)return;
+  c.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1}:{r:"a",x:full,at:Date.now(),sources:sources,model:c.model||S.model||"aries-1",_l:1});c.u=Date.now();touch(c);save();renderList();renderChat();
+  if(API_URL&&!err&&c.auto)genTitle(c);
+
+ }finally{
+  if(run===answerRunId){
+   if(responseWasStopped&&tmp.isConnected)tmp.remove();
+   if(activeAnswerController===controller)activeAnswerController=null;
+   setBusy(false);
+   if(responseWasStopped)renderChat();
+  }
+ }
+}
+
+function makeTitle(q){
+ const text=String(q||"").trim().replace(/\s+/g," ");
+ return text.length>60?text.slice(0,59).trimEnd()+"…":text;
+}
+function send(){
+ const q=ta.value.trim();if(!q||busy)return;
+ if(!accountReady){toast("Checking your account session. Please wait.");return}
+ if(accountSession&&accountSession.user&&accountSession.user.mustChange){renderRequiredPasswordChange();return}
+ ta.value="";fit();let c=C();
+   if(!c){c={id:uid(),t:makeTitle(q),auto:1,u:Date.now(),model:S.model||"aries-1",m:[]};S.chats.push(c);S.cur=c.id}
+ c.m.push({r:"u",x:q,at:Date.now()});
+ c.u=Date.now();touch(c);save();renderList();renderChat(true);answer(c,q);
+}
+function regen(){
+ const c=C();if(busy||!c)return;c.m.pop();touch(c);
+ const q=[...c.m].reverse().find(m=>m.r==="u");save();renderChat();if(q)answer(c,q.x);
+}
+function openChat(id){if(busy)return;S.cur=id;save();renderList();renderChat();side(false)}
+function newChat(){if(busy)return;S.cur=null;save();renderList();renderChat();side(false);ta.focus()}
+async function confirmDeleteChat(id){
+ if(busy)return;const chat=S.chats.find(c=>c.id===id);if(!chat)return;
+ const accepted=await appConfirm({title:"Delete chat?",message:"“"+chat.t+"” and its messages will be removed from this browser"+(accountSession&&accountSession.token?" and from your account chat history.":".")+" This cannot be undone.",confirmLabel:"Delete chat",standalone:true});
+ if(!accepted||busy||!S.chats.some(c=>c.id===id))return;delChat(id);toast("Chat deleted.");
+}
+function delChat(id){
+ if(busy)return;S.chats=S.chats.filter(c=>c.id!==id);S.dead.push({id,mu:Date.now()});
+ if(S.cur===id)S.cur=null;
+ save();renderList();renderChat();
+}
+function side(open){
+ const mobile=mob();
+ $("side").classList.toggle("open",open);
+ $("scrim").classList.toggle("show",open&&!mobile);
+ const menuButton=$("mopen");
+ if(menuButton)menuButton.setAttribute("aria-expanded",String(open&&mobile));
+ const logoButton=$("logo");
+ if(mobile){logoButton.setAttribute("aria-label",open?"Close chats and settings":"Open chats and settings");logoButton.title=open?"Close chats and settings":"Open chats and settings";}
+}
+function fit(){ta.style.height="auto";ta.style.height=Math.min(ta.scrollHeight,120)+"px"}
+function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(toast.h);toast.h=setTimeout(()=>e.classList.remove("show"),2200)}
+const ARIES_INTRO_KEY="whwai.ariesIntroShown.v1";
+let ariesIntroShownThisPage=false,ariesIntroTimer=null;
+function hideAriesIntro(markSeen){
+ const tip=$("aries-info-pop");if(tip)tip.hidden=true;
+ if(markSeen){ariesIntroShownThisPage=true;try{localStorage.setItem(ARIES_INTRO_KEY,"1")}catch(e){}}
+ if(ariesIntroTimer!==null){clearTimeout(ariesIntroTimer);ariesIntroTimer=null}
+}
+function showAriesIntroOnce(){
+ if(ariesIntroShownThisPage||document.body.classList.contains("access-locked")||$("app-frame").getAttribute("aria-hidden")==="true")return;
+ if(selectedModelId()!=="aries-1")return;
+ try{if(localStorage.getItem(ARIES_INTRO_KEY)==="1"){ariesIntroShownThisPage=true;return}}catch(e){}
+ const tip=$("aries-info-pop");if(!tip)return;
+ ariesIntroShownThisPage=true;
+ tip.hidden=false;
+}
+function pop(open){$("pop").hidden=!open;$("model").setAttribute("aria-expanded",open)}
+$("aries-info-got-it").onclick=()=>hideAriesIntro(true);
+
+sendBtn.onclick=()=>busy?stopAnswer():send();
+ta.addEventListener("input",fit);
+ta.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();send()}});
+$("new").onclick=newChat;
+if(searchInput){searchInput.addEventListener("input",renderList);searchInput.addEventListener("keydown",e=>{if(e.key==="Escape"&&searchInput.value){searchInput.value="";renderList();searchInput.blur()}})}
+if(searchClear)searchClear.onclick=()=>{searchInput.value="";renderList();searchInput.focus()};
+const mob=()=>matchMedia("(max-width:640px)").matches;
+$("mopen").innerHTML=ic('<path d="M4 6h16M4 12h16M4 18h16"/>',20,2.1);
+$("mopen").onclick=()=>side(!$("side").classList.contains("open"));
+function collapse(c){S.col=c;document.querySelector(".frame").classList.toggle("collapsed",c);save()}
+$("logo").onclick=()=>mob()?side(false):collapse(true);
+$("expand").onclick=()=>mob()?side(true):collapse(false);
+$("cren").onclick=()=>{const id=mid;closeMenu();renamingId=id;renderList();const i=list.querySelector(".rn");if(i){i.focus();i.select()}};
+$("cpin").onclick=()=>{const c=S.chats.find(x=>x.id===mid);if(c){c.p=!c.p;touch(c);save();renderList()}else closeMenu()};
+$("cdel").onclick=()=>{const id=mid;closeMenu();confirmDeleteChat(id)};
+$("cgen").onclick=()=>{const id=mid;closeMenu();retitle(id)};
+list.addEventListener("scroll",closeMenu);
+document.addEventListener("click",e=>{if(!$("cmenu").contains(e.target))closeMenu()});
+$("scrim").onclick=()=>side(false);
+window.addEventListener("resize",()=>{if(!mob()){$("side").classList.remove("open");$("scrim").classList.remove("show");$("mopen").setAttribute("aria-expanded","false")}});
+$("model").onclick=e=>{e.stopPropagation();pop($("pop").hidden)};
+document.addEventListener("click",e=>{
+ if(!$("pop").contains(e.target)&&e.target!==$("model"))pop(false);
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(resolvePendingConfirmation(false))return;pop(false);side(false);closeMenu();closeSettings()}});
+const DEVICE_STORAGE_KEY="whwai.device.v1";
+let cachedDeviceId="";
+function getDeviceId(){
+ if(cachedDeviceId)return cachedDeviceId;
+ try{cachedDeviceId=localStorage.getItem(DEVICE_STORAGE_KEY)||"";if(!/^[A-Za-z0-9_-]{8,80}$/.test(cachedDeviceId))cachedDeviceId="";if(!cachedDeviceId){cachedDeviceId="d"+uid()+uid();localStorage.setItem(DEVICE_STORAGE_KEY,cachedDeviceId)}}catch(e){if(!cachedDeviceId)cachedDeviceId="d"+uid()+uid()}
+ return cachedDeviceId;
+}
+const SLIDERS='<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>';
+$("gear").innerHTML=ic(SLIDERS,16,2.2);
+$("mnew").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',18,2.4);$("mnew").onclick=newChat;
+const modal=$("modal"),mbody=$("mbody");
+let smsg="",currentSettingsView="settings",closeModalTimer=null,closingModal=false,siteSignupMode="code",siteNoticeText="",siteStatusLoaded=false;
+const touch=c=>{c.mu=Date.now()};
+function clearAccountSession(){if(accountSyncTimer!==null){clearTimeout(accountSyncTimer);accountSyncTimer=null}accountSession=null;accountReady=true;accountInitialSyncPending=false;accountMergePendingToast=false;try{localStorage.removeItem(ACCOUNT_SESSION_STORAGE_KEY)}catch(e){}}
+function scheduleAccountSync(){
+ if(!accountSession||!accountSession.token||!accountReady||accountSession.user&&accountSession.user.mustChange)return;
+ if(accountSyncTimer!==null)clearTimeout(accountSyncTimer);
+ accountSyncTimer=setTimeout(()=>{accountSyncTimer=null;syncAccountChatsNow()},1200);
+}
+async function syncAccountChatsNow(){
+ if(!accountSession||!accountSession.token||!accountReady||accountSession.user&&accountSession.user.mustChange)return;
+ if(accountSyncing){accountSyncAgain=true;return}
+ if(navigator.onLine===false){accountSyncAgain=true;if(accountInitialSyncPending){accountInitialSyncPending=false;renderChat()}return}
+ accountSyncing=true;accountSyncAgain=false;const revision=localRevision;
+ try{
+  const result=await post({action:"account_chats_sync",sessionToken:accountSession.token,chats:clean().chats,dead:clean().dead,cur:S.cur});
+  if(result&&Array.isArray(result.chats)){
+   const wasInitialSync=accountInitialSyncPending;
+   const before=JSON.stringify({cur:S.cur,chats:S.chats.map(c=>[c.id,c.mu||c.u,c.t,c.p,c.model||"aries-1"]),dead:S.dead});
+   const merged=mergeLocalAndRemote({chats:S.chats,dead:S.dead,cur:S.cur},{chats:result.chats,dead:result.dead,cur:result.cur});
+   S.chats=merged.chats;S.dead=merged.dead;S.cur=merged.cur&&S.chats.some(c=>c.id===merged.cur)?merged.cur:(S.chats[0]&&S.chats[0].id)||null;
+   store.set(JSON.stringify(persistedState()));
+   const after=JSON.stringify({cur:S.cur,chats:S.chats.map(c=>[c.id,c.mu||c.u,c.t,c.p,c.model||"aries-1"]),dead:S.dead});
+   accountInitialSyncPending=false;
+   if(before!==after||wasInitialSync){renderList();renderChat()}
+   accountLastSync=Date.now();
+   if(accountMergePendingToast){accountMergePendingToast=false;toast("Your existing chats were merged into your account.")}
+   if(!modal.hidden&&currentSettingsView==="account")updateAccountSyncStatus();
+  }
+ }catch(e){
+  accountInitialSyncPending=false;
+  if(e&&e.message==="invalid_session"){
+   clearAccountSession();accountMergePendingToast=false;S={chats:[],cur:null,dead:[],model:S.model||"aries-1",col:!!S.col};save(true);renderList();renderChat();toast("Your sign-in expired. Sign in again to load your account chats.");
+  }else if(e&&e.message==="password_change_required"){
+   if(accountSession&&accountSession.user)accountSession.user.mustChange=true;renderRequiredPasswordChange();
+  }else{accountSyncAgain=true;renderChat();if(!modal.hidden&&currentSettingsView==="account")updateAccountSyncStatus("Offline or unable to sync right now. Your local changes remain saved.")}
+ }finally{
+  accountSyncing=false;
+  if(localRevision!==revision||accountSyncAgain)scheduleAccountSync();
+ }
+}
+function mergeLocalAndRemote(first,second){
+ const map={},dead={};const t=c=>Number(c.mu||c.u||0);
+ [first||{},second||{}].forEach(state=>{
+  (Array.isArray(state.dead)?state.dead:[]).forEach(d=>{if(d&&d.id!=null){const id=String(d.id),mu=Number(d.mu)||0;if(!(id in dead)||dead[id]<mu)dead[id]=mu}});
+  (Array.isArray(state.chats)?state.chats:[]).forEach(c=>{if(c&&c.id&&(!map[c.id]||t(c)>=t(map[c.id])))map[c.id]=safeChat(c)});
+ });
+ const chats=Object.keys(map).map(id=>map[id]).filter(c=>!(c.id in dead)||dead[c.id]<t(c));
+ const deadList=Object.keys(dead).map(id=>({id,mu:dead[id]}));let cur=String((second&&second.cur)||(first&&first.cur)||"");if(!chats.some(c=>c.id===cur))cur=chats.length?chats[0].id:null;
+ return{chats,dead:deadList,cur};
+}
+async function resumeAccountSession(){
+ if(!accountSession||!accountSession.token)return;
+ accountReady=false;
+ try{
+  const result=await post({action:"account_me",sessionToken:accountSession.token});
+  if(!result||!result.user)throw new Error("invalid_session");
+  accountSession.user=result.user;accountReady=true;
+  if(result.user.mustChange){renderRequiredPasswordChange();return}
+  accountInitialSyncPending=true;renderChat();
+  await syncAccountChatsNow();
+ }catch(e){
+  if(e&&e.message==="accesslocked"){accountReady=false;accountInitialSyncPending=false;return}
+  if(e&&e.message==="invalid_session"){
+   clearAccountSession();S={chats:[],cur:null,dead:[],model:S.model||"aries-1",col:!!S.col};save(true);renderList();renderChat();toast("Your account session expired. Sign in again to restore your chats.");
+  }else{accountReady=true;accountSyncAgain=true;}
+ }
+}
+function clearLocalWhwData(removeSession){
+ S={chats:[],cur:null,dead:[],model:"aries-1",col:!!S.col};mem=null;
+ try{localStorage.removeItem(KEY);localStorage.removeItem(ARIES_INTRO_KEY);localStorage.removeItem(EXPORT_COOLDOWN_KEY);localStorage.removeItem(DEVICE_STORAGE_KEY)}catch(e){mem=JSON.stringify({chats:[],cur:null,dead:[],model:"aries-1",col:!!S.col})}
+ cachedDeviceId="";exportCooldownMemory=0;ariesIntroShownThisPage=false;hideAriesIntro(false);
+ if(removeSession)clearAccountSession();
+ try{store.set(JSON.stringify(persistedState()))}catch(e){}
+}
+const EXPORT_COOLDOWN_MS=10*60*1000;
+const EXPORT_COOLDOWN_KEY=KEY+".exportCooldownUntil.v1";
+let exportCooldownMemory=0,exportingData=false,exportCooldownPersistent=true;
+function readExportCooldown(){
+ try{return Number(localStorage.getItem(EXPORT_COOLDOWN_KEY)||0)||0}
+ catch(e){exportCooldownPersistent=false;return exportCooldownMemory}
+}
+function writeExportCooldown(value){
+ exportCooldownMemory=value;
+ try{localStorage.setItem(EXPORT_COOLDOWN_KEY,String(value));exportCooldownPersistent=true}
+ catch(e){exportCooldownPersistent=false}
+}
+function countdownLabel(ms){
+ const seconds=Math.max(0,Math.ceil(ms/1000));
+ const minutes=Math.floor(seconds/60),remainder=seconds%60;
+ return String(minutes).padStart(2,"0")+":"+String(remainder).padStart(2,"0");
+}
+let exportCooldownTicker=null;
+function updateExportStatus(){
+ const button=$("export-data"),status=$("export-status");
+ if(!button)return;
+ const remaining=Math.max(0,readExportCooldown()-Date.now());
+ button.disabled=exportingData||remaining>0;
+ button.setAttribute("aria-busy",String(exportingData));
+ button.innerHTML=exportingData?'<span class="sync-spinner" aria-hidden="true"></span>Preparing ZIP…':remaining>0?countdownLabel(remaining):"Download chats (.zip)";
+ button.title=remaining>0?"Available again in "+countdownLabel(remaining):"Create a ZIP backup of chats stored in this browser";
+ button.classList.toggle("cooldown",remaining>0);
+ if(status){
+  status.hidden=remaining>0&&!exportingData;
+  if(exportingData)status.textContent="Preparing the ZIP locally in this browser…";
+  else if(remaining>0)status.textContent="";
+  else status.textContent=exportCooldownPersistent?"A 10-minute cooldown starts after an export is prepared.":"A 10-minute cooldown starts after an export is prepared. This browser cannot persist the cooldown across reloads.";
+ }
+}
+function startExportCooldownTicker(){
+ if(exportCooldownTicker!==null)clearInterval(exportCooldownTicker);
+ updateExportStatus();
+ exportCooldownTicker=setInterval(()=>{
+  if(!$("export-data")){clearInterval(exportCooldownTicker);exportCooldownTicker=null;return}
+  updateExportStatus();
+ },1000);
+}
+function crc32_(bytes){
+ let crc=0xffffffff;
+ for(let i=0;i<bytes.length;i++){
+  crc^=bytes[i];
+  for(let j=0;j<8;j++)crc=(crc>>>1)^((crc&1)?0xedb88320:0);
+ }
+ return (crc^0xffffffff)>>>0;
+}
+function zipStored_(files){
+ const encoder=new TextEncoder(),locals=[],centrals=[];
+ let offset=0;
+ const stamp=new Date();
+ const dosTime=(stamp.getHours()<<11)|(stamp.getMinutes()<<5)|Math.floor(stamp.getSeconds()/2);
+ const dosDate=((Math.max(1980,stamp.getFullYear())-1980)<<9)|((stamp.getMonth()+1)<<5)|stamp.getDate();
+ function header(size,fill){const a=new Uint8Array(size);fill(new DataView(a.buffer));return a}
+ function join(parts){let size=0;parts.forEach(p=>size+=p.length);const out=new Uint8Array(size);let pos=0;parts.forEach(p=>{out.set(p,pos);pos+=p.length});return out}
+ files.forEach(file=>{
+  const name=encoder.encode(file.name),data=encoder.encode(file.text),crc=crc32_(data),start=offset;
+  const local=header(30,v=>{
+   v.setUint32(0,0x04034b50,true);v.setUint16(4,20,true);v.setUint16(6,0x0800,true);v.setUint16(8,0,true);
+   v.setUint16(10,dosTime,true);v.setUint16(12,dosDate,true);v.setUint32(14,crc,true);v.setUint32(18,data.length,true);
+   v.setUint32(22,data.length,true);v.setUint16(26,name.length,true);v.setUint16(28,0,true);
+  });
+  locals.push(local,name,data);offset+=local.length+name.length+data.length;
+  const central=header(46,v=>{
+   v.setUint32(0,0x02014b50,true);v.setUint16(4,20,true);v.setUint16(6,20,true);v.setUint16(8,0x0800,true);
+   v.setUint16(10,0,true);v.setUint16(12,dosTime,true);v.setUint16(14,dosDate,true);v.setUint32(16,crc,true);
+   v.setUint32(20,data.length,true);v.setUint32(24,data.length,true);v.setUint16(28,name.length,true);v.setUint16(30,0,true);
+   v.setUint16(32,0,true);v.setUint16(34,0,true);v.setUint32(36,0,true);v.setUint32(38,0,true);v.setUint32(42,start,true);
+  });
+  centrals.push(central,name);
+ });
+ const centralBytes=join(centrals),localBytes=join(locals);
+ const end=header(22,v=>{
+  v.setUint32(0,0x06054b50,true);v.setUint16(4,0,true);v.setUint16(6,0,true);
+  v.setUint16(8,files.length,true);v.setUint16(10,files.length,true);
+  v.setUint32(12,centralBytes.length,true);v.setUint32(16,localBytes.length,true);v.setUint16(20,0,true);
+ });
+ return new Blob([localBytes,centralBytes,end],{type:"application/zip"});
+}
+function safeFilePart(value){
+ const name=String(value||"Untitled chat").normalize?String(value||"Untitled chat").normalize("NFKD"):String(value||"Untitled chat");
+ return name.replace(/[^A-Za-z0-9 _.-]+/g,"").replace(/[ ._-]+/g,"-").replace(/^-+|-+$/g,"").slice(0,64)||"chat";
+}
+function dateLabel(value){
+ const time=Number(value||0);return time?new Date(time).toLocaleString():"Unknown date";
+}
+function makeChatExport(){
+ const chats=S.chats.map(c=>({
+  id:c.id,title:String(c.t||"Untitled chat"),createdAt:c.u||null,updatedAt:c.mu||c.u||null,pinned:!!c.p,
+  messages:(Array.isArray(c.m)?c.m:[]).filter(m=>m&&!m.err).map(m=>({role:m.r==="u"?"user":"assistant",content:String(m.x||""),timestamp:m.at||null}))
+ }));
+ const data={chats:chats};
+ const exportedAt=new Date();
+ const files=[{
+  name:"chats.json",
+  text:JSON.stringify(data,null,2)
+ },{
+  name:"README.txt",
+  text:"WHWai chat export\n"+
+   "==================\n\n"+
+   "Created: "+exportedAt.toLocaleString()+"\n"+
+   "Chats included: "+chats.length+"\n\n"+
+   "WHAT IS IN THIS ZIP\n"+
+   "- chats.json: structured chat data, including chat titles, timestamps, pin state, and message text.\n"+
+   "- chats/: one readable text file for each chat.\n"+
+   "- README.txt: this file, with export details and limitations.\n\n"+
+   "SOURCE AND SCOPE\n"+
+   "This ZIP is created locally in your browser and contains the chats currently stored on this device. It is not fetched directly from the WHWai server. When signed in, the local copy may differ from your account copy until account syncing completes. Return to WHWai and wait for account syncing before exporting if you need the latest account changes. Deleted-chat markers are not included.\n\n"+
+   "KEEP THIS FILE PRIVATE\n"+
+   "Anyone who obtains the ZIP or an extracted text file may be able to read the conversations. Store it in a private location.\n"
+ }];
+ chats.forEach((c,index)=>{
+  const lines=["WHWai chat: "+c.title,"Created: "+dateLabel(c.createdAt),"Last updated: "+dateLabel(c.updatedAt),"", "=".repeat(60),""];
+  c.messages.forEach(m=>{lines.push((m.role==="user"?"YOU":"ARIES")+"  — "+dateLabel(m.timestamp),m.content,"", "-".repeat(40),"")});
+  const ordinal=String(index+1).padStart(3,"0");
+  files.push({name:"chats/"+ordinal+"-"+safeFilePart(c.title)+".txt",text:lines.join("\n")});
+ });
+ return {data:data,files:files};
+}
+async function exportLocalData(){
+ if(exportingData||Date.now()<readExportCooldown())return;
+ exportingData=true;updateExportStatus();
+ try{
+  const prepared=makeChatExport();
+  const blob=zipStored_(prepared.files);
+  const filename="whwai-chat-export-"+new Date().toISOString().slice(0,10)+".zip";
+  let shared=false;
+  if(typeof File!=="undefined"&&navigator.share&&navigator.canShare){
+   try{
+    const file=new File([blob],filename,{type:"application/zip"});
+    if(navigator.canShare({files:[file]})){await navigator.share({title:"WHWai chat export",files:[file]});shared=true}
+   }catch(shareError){if(shareError&&shareError.name==="AbortError")return}
+  }
+  if(!shared){
+   const url=URL.createObjectURL(blob),a=document.createElement("a");
+   a.href=url;a.download=filename;a.style.display="none";document.body.appendChild(a);a.click();a.remove();
+   setTimeout(()=>URL.revokeObjectURL(url),10*60*1000);
+  }
+  writeExportCooldown(Date.now()+EXPORT_COOLDOWN_MS);
+  const st=$("export-status");if(st)st.textContent="Your ZIP is ready. The 10-minute cooldown has started.";
+ }catch(e){
+  const st=$("export-status");if(st)st.textContent="Could not prepare the ZIP. Please try again.";
+ }finally{exportingData=false;updateExportStatus()}
+}
+async function readBackupFile(file){
+ const bytes=new Uint8Array(await file.arrayBuffer());
+ if(/\.json$/i.test(file.name)||file.type==="application/json")return JSON.parse(new TextDecoder().decode(bytes));
+ const view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength),decoder=new TextDecoder();let offset=0;
+ while(offset+30<=bytes.length&&view.getUint32(offset,true)===0x04034b50){
+  const method=view.getUint16(offset+8,true),size=view.getUint32(offset+18,true),nameLen=view.getUint16(offset+26,true),extraLen=view.getUint16(offset+28,true);
+  const nameStart=offset+30,name=decoder.decode(bytes.slice(nameStart,nameStart+nameLen)),dataStart=nameStart+nameLen+extraLen,dataEnd=dataStart+size;
+  if(dataEnd>bytes.length)throw new Error("Invalid ZIP");
+  if(name.replace(/\\/g,"/").split("/").pop()==="chats.json"){
+   if(method!==0)throw new Error("Compressed ZIP not supported");
+   return JSON.parse(decoder.decode(bytes.slice(dataStart,dataEnd)));
+  }
+  offset=dataEnd;
+ }
+ throw new Error("No chats.json in ZIP");
+}
+function normalizeBackupChats(data){
+ const list=Array.isArray(data)?data:(data&&Array.isArray(data.chats)?data.chats:[]);
+ return list.map((item,index)=>{
+  const messages=Array.isArray(item.m)?item.m:(Array.isArray(item.messages)?item.messages:[]);
+  const chat=safeChat({id:item.id||("import-"+Date.now().toString(36)+"-"+index+"-"+Math.random().toString(36).slice(2,7)),t:item.t!=null?item.t:(item.title||"Imported chat"),u:item.u||item.createdAt||Date.now(),mu:item.mu||item.updatedAt||Date.now(),p:item.p||item.pinned,m:messages.map(m=>({r:(m.role==="user"||m.r==="u")?"u":"a",x:m.content!=null?m.content:m.x,at:m.timestamp||m.at,sources:m.sources,model:m.model}))});
+  return chat;
+ }).filter(Boolean);
+}
+function renderDataManagement(){
+ currentSettingsView="data";
+ if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}
+ $("modal-title").textContent="Manage your data";
+ const exportIcon=ic('<path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 17v3h14v-3"/>',19,1.8);
+ const localIcon=ic('<path d="M4 7h16M10 11v6M14 11v6"/><path d="M5 7l1 13h12l1-13M9 7V4h6v3"/>',19,1.8);
+ mbody.innerHTML=`<p class="sm">Manage the chats saved in this browser. Account chats are also stored on the server when you are signed in.</p>
+  <div class="data-tools-list">
+   <button class="data-tool" id="open-export-info" type="button"><span class="tool-icon">${exportIcon}</span><span class="tool-copy"><strong>Download / export chats</strong><small>Create a private ZIP backup of chats currently stored here.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>
+   <button class="data-tool" id="open-import-backup" type="button"><span class="tool-icon">${ic('<path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v4h16v-4"/>',19,1.8)}</span><span class="tool-copy"><strong>Import chat backup</strong><small>Restore chats from a WHWai JSON or ZIP backup.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>
+   <input id="import-backup-file" type="file" accept=".json,.zip,application/json,application/zip" hidden>
+   <button class="data-tool danger" id="open-delete-local" type="button"><span class="tool-icon">${localIcon}</span><span class="tool-copy"><strong>Delete data on this device</strong><small>Remove this browser's local chats and sign-in session.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>
+  </div>
+  <p class="sm" id="s-msg" role="status"></p><div class="data-toolbar"><button class="pbtn" id="data-back">Back to Settings</button></div>`;
+ const q=id=>mbody.querySelector("#"+id);
+ q("open-export-info").onclick=renderExportInfo;
+ q("open-import-backup").onclick=()=>q("import-backup-file").click();
+ q("import-backup-file").onchange=async ev=>{
+  const file=ev.target.files&&ev.target.files[0];if(!file)return;
+  const importButton=q("open-import-backup"),originalButtonHTML=importButton.innerHTML,started=Date.now();
+  importButton.disabled=true;importButton.setAttribute("aria-busy","true");
+  importButton.innerHTML='<span class="tool-icon"><span class="sync-spinner" aria-hidden="true"></span></span><span class="tool-copy"><strong>Importing backup…</strong><small>Reading and restoring your chats</small></span>';
+  setMsg("Importing chat backup…");await new Promise(resolve=>setTimeout(resolve,30));
+  try{
+   const data=await readBackupFile(file),imported=normalizeBackupChats(data);
+   if(!imported.length){setMsg("No chats were found in that backup.");return}
+   const existing=new Set(S.chats.map(c=>c.id));let added=0;
+   for(const chat of imported){if(existing.has(chat.id))chat.id="import-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,9);existing.add(chat.id);S.chats.push(chat);added++}
+   S.chats.sort((a,b)=>(Number(b.mu||b.u)||0)-(Number(a.mu||a.u)||0));S.cur=S.chats.length?S.chats[0].id:null;save();renderList();renderChat();setMsg("Imported "+added+" chat"+(added===1?"":"s")+(accountSession?". Saving to your account…":"."));
+  }catch(err){setMsg("Could not import that backup. Choose a valid WHWai JSON or ZIP backup.")}
+  finally{const wait=Math.max(0,520-(Date.now()-started));if(wait)await new Promise(resolve=>setTimeout(resolve,wait));ev.target.value="";if(importButton.isConnected){importButton.innerHTML=originalButtonHTML;importButton.disabled=false;importButton.removeAttribute("aria-busy")}}
+ };
+ q("open-delete-local").onclick=renderLocalDeleteConfirm;q("data-back").onclick=renderSettings;setMsg(smsg);
+}
+function renderLocalDeleteConfirm(){
+ currentSettingsView="local-delete-confirm";$("modal-title").textContent="Delete local data";
+ mbody.innerHTML=`<div class="confirm-panel"><span class="choice-icon">${ic('<path d="M4 7h16M10 11v6M14 11v6"/><path d="M5 7l1 13h12l1-13M9 7V4h6v3"/>',19,1.8)}</span><div><strong>Delete this browser's WHWai data?</strong><p>This removes local chats, the local account session, the browser identifier, the export cooldown, and the Aries first-use notice. If you are signed in, your server-stored account chats remain unchanged.</p></div></div>
+  <p class="sm">This cannot be undone locally unless you have a backup. If signed in, WHWai will try to revoke this browser's session before clearing its local copy.</p><p class="sm" id="delete-status" role="status"></p>
+  <div class="data-toolbar"><button class="pbtn" id="delete-cancel">Cancel</button><button class="pbtn danger" id="confirm-local-delete">Delete local data</button></div>`;
+ $("delete-cancel").onclick=renderDataManagement;$("confirm-local-delete").onclick=performLocalOnlyDelete;
+}
+async function performLocalOnlyDelete(){
+ if(deletingLocalData)return;deletingLocalData=true;
+ const button=$("confirm-local-delete"),started=Date.now();mbody.querySelectorAll("button").forEach(b=>b.disabled=true);
+ if(button){button.setAttribute("aria-busy","true");button.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Deleting…'}
+ setDeleteStatus("Removing local data…");await new Promise(resolve=>setTimeout(resolve,30));
+ let revoked=!accountSession||!accountSession.token;
+ try{if(accountSession&&accountSession.token){try{await post({action:"account_logout",sessionToken:accountSession.token});revoked=true}catch(e){revoked=false}}
+  const wait=Math.max(0,520-(Date.now()-started));if(wait)await new Promise(resolve=>setTimeout(resolve,wait));clearLocalWhwData(true);renderList();renderChat();smsg=revoked?"This browser's local WHWai data and sign-in session were removed. Server-stored account chats are unchanged.":"Local WHWai data was removed. The server-stored account is unchanged; this browser's server-side session may remain active until it expires.";
+ }finally{deletingLocalData=false;if(!modal.hidden&&currentSettingsView==="local-delete-confirm")renderDataManagement()}
+}
+function setDeleteStatus(message){const el=$("delete-status");if(el)el.textContent=message;else smsg=message}
+function renderExportInfo(){
+ currentSettingsView="export-info";if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}
+ $("modal-title").textContent="Download your data";
+ mbody.innerHTML=`<p>WHWai creates this ZIP in your browser from chats currently cached on this device. When you're signed in, that cache syncs with your account after changes and when you return to the page.</p>
+  <div class="export-contents"><strong>What's inside</strong><ul><li><strong>chats.json</strong> — structured chat data.</li><li><strong>chats/</strong> — a readable text file for each chat.</li><li><strong>README.txt</strong> — export scope and general notes.</li></ul></div>
+  <p><strong>Private data:</strong> the export contains conversation text. It does not include the account session token or browser identifier.</p>
+  <p><strong>Sync first:</strong> if signed in and you need the newest account changes, wait for account syncing to finish before exporting. Deleted-chat markers are not included.</p>
+  <p><strong>Keep the ZIP private:</strong> anyone who gets the file can read the conversations. Deleting chats in WHWai does not erase downloaded copies.</p>
+  <p class="sm" id="export-status" role="status">A 10-minute cooldown starts after an export is prepared.</p>
+  <div class="data-toolbar"><button type="button" class="pbtn" id="export-back">Back to data tools</button><button type="button" class="pbtn" id="export-data">Download chats (.zip)</button></div>`;
+ const q=id=>mbody.querySelector("#"+id);q("export-back").onclick=renderDataManagement;q("export-data").onclick=exportLocalData;startExportCooldownTicker();
+}
+function renderPrivacyPolicy(){
+ currentSettingsView="privacy";$("modal-title").textContent="Privacy Policy";
+ mbody.innerHTML=`<div class="policy-takeaways"><strong>Key takeaways</strong><ul><li>Guest chats remain in this browser; signed-in chats are stored on the WHWai server to sync across devices.</li><li>Passwords are stored as salted, iterated hashes, not plain text.</li><li>Admins cannot view chat titles, messages, or other chat content through the WHWai admin panel.</li><li>The owner of the underlying Google account and spreadsheet could technically access stored data outside the WHWai interface.</li></ul></div>
+ <p class="sm">Effective date: October 17, 2026</p>
+ <h3>Guest use and accounts</h3><p>WHWai can be used without an account. Guest chats are stored locally in this browser and do not sync. If you create an account or sign in, the chats currently on the device are merged into your account, and the browser keeps a local cache for display and syncing. Accounts use a username and password; no email address is required. Usernames, salted password hashes, account role/status, creation and sign-in timestamps, session-token hashes, and account chat data are stored in the account spreadsheet. The browser stores the session token so it can reconnect to your account. Sessions expire after 30 days and can be revoked.</p>
+ <h3>How data is used</h3><p>Conversation data is used to display, save, restore, and sync chats and to generate replies and titles you request. WHW does not intend to sell conversations, use them for advertising or profiling, or train its own models on them. Admin tools show account metadata and chat counts only. They are designed not to return chat titles, messages, or chat content.</p>
+ <h3>Hosting, storage, and access</h3><p>WHWai uses Google Apps Script and a Google spreadsheet to operate its backend and store account/chat data. The owner of the Google account and spreadsheet that host the service could technically access that data directly through Google's tools, independently of the WHWai admin panel. Administrators using the WHWai interface cannot read chat content through admin features. Google and other infrastructure providers may process technical data under their own terms and policies.</p>
+ <h3>AI processing</h3><p>WHWai sends the prompt and recent conversation context (up to the latest 14 messages) to Groq to generate replies and chat titles. The models are OpenAI open-weight gpt-oss models running on Groq; requests go to Groq, not directly to OpenAI. Groq's documentation says ordinary inference prompts and outputs are not retained by default, but they may be temporarily logged for system reliability or suspected-abuse investigations for up to 30 days unless legally required longer. Zero Data Retention can prevent this limited retention, but WHWai cannot verify whether it is enabled for this account. See <a href="https://console.groq.com/docs/your-data" target="_blank" rel="noopener noreferrer">Groq's data documentation</a> and its <a href="https://console.groq.com/docs/legal/services-agreement" target="_blank" rel="noopener noreferrer">Services Agreement</a>.</p>
+ <h3>Usage limits and security</h3><p>The second model, when enabled, uses a server-enforced daily limit. Guest use is limited per browser and by a shared daily guest pool; signed-in use is limited per account. A separate global daily cap adds protection. Browser identifiers are pseudonymous and can be cleared, so the guest pool and global cap are also used to reduce easy limit circumvention.</p>
+ <p>Passwords are never intentionally stored or logged in plain text. Account sessions can be revoked, and temporary passwords issued by an admin expire after 72 hours and must be changed at sign-in. WHW intends to take reasonable steps to protect data, but no online service can guarantee complete security. If a serious security issue is identified, WHW may restrict access, disable accounts or the service, revoke sessions, or delete active server-stored data.</p>
+ <h3>Export, deletion, and contact</h3><p>You can export chats to a ZIP created in this browser. Anyone who obtains an export can read its conversations, so keep it private. Deleting data on this device removes the local cache and session but does not delete your account or server-stored account chats. You can delete your account from Account settings; this deletes its active server-stored chats and account record. WHW cannot guarantee immediate erasure of backups or historical versions held by infrastructure providers, and downloaded copies or chats retained in a browser that was offline may remain.</p>
+ <p>For privacy questions or support, contact <a href="mailto:wehatewindows.help@gmail.com">wehatewindows.help@gmail.com</a>.</p><p class="sm">This policy may change as WHWai's features, providers, or data practices change.</p><div class="btns"><button class="pbtn" id="privacy-back">Back to Settings</button></div>`;
+ $("privacy-back").onclick=renderSettings;
+}
+let deletingLocalData=false;
+function setMsg(t){smsg=String(t||"");const status=mbody.querySelector("#s-msg");if(status)status.textContent=smsg}
+function renderSiteNotice(){const el=$("site-notice");if(!el)return;el.textContent=siteNoticeText;el.hidden=!siteNoticeText;const main=el.closest(".main");if(main)main.classList.toggle("has-site-notice",!!siteNoticeText)}
+function animateMenuContent(){mbody.classList.remove("menu-content-enter");void mbody.offsetWidth;mbody.classList.add("menu-content-enter")}
+mbody.addEventListener("animationend",e=>{if(e.target===mbody&&e.animationName==="menuScreenIn")mbody.classList.remove("menu-content-enter")});
+function setAccountFromResult(result){
+ accountSession={token:String(result.token||""),user:result.user||null};accountReady=true;
+ try{if(accountSession.token)localStorage.setItem(ACCOUNT_SESSION_STORAGE_KEY,accountSession.token)}catch(e){}
+}
+function setGuestState(clearChats){
+ clearAccountSession();
+ if(clearChats){S={chats:[],cur:null,dead:[],model:"aries-1",col:!!S.col};store.set(JSON.stringify(persistedState()));renderList();renderChat()}
+}
+function applyLoginChats(result){
+ const hadLocalChats=S.chats.length>0;
+ const merged=mergeLocalAndRemote({chats:S.chats,dead:S.dead,cur:S.cur},{chats:result.chats||[],dead:result.dead||[],cur:result.cur||null});
+ S.chats=merged.chats;S.dead=merged.dead;S.cur=merged.cur&&S.chats.some(c=>c.id===merged.cur)?merged.cur:(S.chats[0]&&S.chats[0].id)||null;
+ store.set(JSON.stringify(persistedState()));renderList();renderChat();
+ if(hadLocalChats&&result.mergedLocalChats)toast("Your existing chats were merged into your account.");
+ else if(accountInitialSyncPending)toast("Signed in. Loading your account chats…");
+ else toast("Signed in successfully.");
+ if(accountSession&&accountSession.user&&accountSession.user.mustChange)renderRequiredPasswordChange();
+ else if(!modal.hidden&&currentSettingsView==="account-auth")renderAccount();
+}
+function showAccountAuthError(message){const el=mbody.querySelector("#account-auth-error");if(el){el.textContent=message||"The account action could not be completed.";el.hidden=false}else setMsg(message)}
+function renderSettings(){
+ currentSettingsView="settings";if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}
+ $("modal-title").textContent="Settings";
+ const signed=!!(accountSession&&accountSession.token&&accountSession.user),user=signed?accountSession.user:null;
+ const accountCopy=signed?`Signed in as ${esc(user.username)}${user.role==="admin"?" · Administrator":""}.`:(accountSession&&accountSession.token?"Checking your account session…":"Guest mode. Chats stay in this browser until you sign in.");
+ mbody.innerHTML=`<h3>Account</h3><p class="sm">${accountCopy}</p>
+  <div class="data-tools-list">
+   ${signed?`<button class="data-tool" id="account-open" type="button"><span class="tool-icon">${ic('<circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>',19,1.8)}</span><span class="tool-copy"><strong>Account settings</strong><small>Change password, sign out, or delete your account.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>`:`<button class="data-tool" id="account-signin" type="button"><span class="tool-icon">${ic('<path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/>',19,1.8)}</span><span class="tool-copy"><strong>Sign in</strong><small>Access your account chats on this browser.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>${siteSignupMode!=="closed"?`<button class="data-tool" id="account-signup" type="button"><span class="tool-icon">${ic('<path d="M12 5v14M5 12h14"/>',19,1.8)}</span><span class="tool-copy"><strong>Create account</strong><small>Make an account to keep chats across devices.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>`:""}`}
+  </div>
+  <h3>Data & privacy</h3><p class="sm">Export a backup, import chats, or remove the local copy on this browser.</p><button class="pbtn data-manage-button" id="data-tools-open" type="button"><span class="manage-icon">${ic('<path d="M4 5h16v14H4z"/><path d="M8 9h8M8 12h8M8 15h5"/>',17)}</span><span>Manage your data</span></button>
+  ${signed&&user.role==="admin"?`<h3>Administration</h3><button class="pbtn data-manage-button" id="admin-open" type="button"><span class="manage-icon">${ic('<path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z"/>',17)}</span><span>Admin panel</span></button>`:""}
+  <p class="sm" id="s-msg" role="status">${esc(smsg)}</p><div class="privacy-row"><a href="#" class="privacy-link" id="privacy-open">Privacy Policy</a>${accessRequired?'<button type="button" class="lock-link" id="lock-whwai-now">Lock WHWai</button>':''}</div>`;
+ const q=id=>mbody.querySelector("#"+id);
+ if(q("account-open"))q("account-open").onclick=renderAccount;
+ if(q("account-signin"))q("account-signin").onclick=()=>renderAccountAuth("login");
+ if(q("account-signup"))q("account-signup").onclick=()=>renderAccountAuth("signup");
+ q("data-tools-open").onclick=renderDataManagement;q("privacy-open").onclick=e=>{e.preventDefault();renderPrivacyPolicy()};
+ if(q("admin-open"))q("admin-open").onclick=()=>renderAdminPanel("site");
+ if(q("lock-whwai-now"))q("lock-whwai-now").onclick=()=>{closeSettings();side(false);lockEarlyAccess(true)};
+}
+function renderAccountAuth(mode){
+ currentSettingsView="account-auth";const signup=mode==="signup";$("modal-title").textContent=signup?"Create account":"Sign in";
+ const codeField=signup&&siteSignupMode==="code"?'<label for="account-invite-code">Access code</label><input id="account-invite-code" type="password" maxlength="80" autocomplete="off" required>':'';
+ mbody.innerHTML=`<p class="sm">${signup?(siteSignupMode==="code"?"Create a username and password. The current access code is required for sign-up.":"Create a username and password. No email is required."):"Enter your username and password. Account passwords are case-sensitive."}</p>
+  <form id="account-auth-form" class="account-form" autocomplete="off"><label for="account-username">Username</label><input id="account-username" name="username" type="text" minlength="3" maxlength="20" pattern="[a-zA-Z0-9_]{3,20}" autocapitalize="off" autocomplete="username" required><label for="account-password">Password</label><input id="account-password" name="password" type="password" maxlength="200" autocomplete="${signup?"new-password":"current-password"}" required>${signup?'<label for="account-password-confirm">Confirm password</label><input id="account-password-confirm" type="password" maxlength="200" autocomplete="new-password" required>':''}${codeField}<p class="access-error" id="account-auth-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar"><button type="button" class="pbtn" id="account-auth-back">Back</button><button type="submit" class="pbtn" id="account-auth-submit">${signup?"Create account":"Sign in"}</button></div></form>`;
+ const form=mbody.querySelector("#account-auth-form");
+ mbody.querySelector("#account-auth-back").onclick=renderSettings;
+ form.onsubmit=async e=>{
+  e.preventDefault();const username=mbody.querySelector("#account-username").value.trim().toLowerCase(),password=mbody.querySelector("#account-password").value;
+  if(!/^[a-z0-9_]{3,20}$/.test(username)){showAccountAuthError("Use 3–20 characters: lowercase letters, numbers, or underscores.");return}
+  if(signup&&password!==mbody.querySelector("#account-password-confirm").value){showAccountAuthError("The passwords do not match.");return}
+  const submit=mbody.querySelector("#account-auth-submit");submit.disabled=true;submit.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>'+(signup?"Creating…":"Signing in…");
+  try{
+   const body={action:signup?"auth_signup":"auth_login",username,password};
+   if(signup&&siteSignupMode==="code")body.inviteCode=mbody.querySelector("#account-invite-code").value.trim();
+   const result=await post(body);
+   if(!result||!result.ok||!result.token)throw Object.assign(new Error(result&&result.error||"account_action_failed"),{payload:result});
+   setAccountFromResult(result);
+   accountInitialSyncPending=!accountSession.user.mustChange;
+   accountMergePendingToast=!accountSession.user.mustChange&&S.chats.length>0;
+   applyLoginChats(result);
+   if(!accountSession.user.mustChange){syncAccountChatsNow();renderAccount()}
+  }catch(err){showAccountAuthError(err&&err.payload&&err.payload.message||"Couldn't complete sign-in. Check your details and try again.");submit.disabled=false;submit.textContent=signup?"Create account":"Sign in"}
+ };
+}
+function renderAccount(){
+ currentSettingsView="account";$("modal-title").textContent="Account settings";
+ if(!accountSession||!accountSession.token||!accountSession.user){renderSettings();return}
+ const u=accountSession.user;
+ mbody.innerHTML=`<p><strong>${esc(u.username)}</strong>${u.role==="admin"?" · Administrator":""}</p><p class="sm">Your account chats sync to the server when you make changes and when you return to WHWai. You can use the same account on multiple browsers.</p><p class="sm" id="account-sync-status" role="status">${accountSyncing?"Syncing account chats…":accountLastSync?"Last synced "+ago(accountLastSync):"Account chat sync runs automatically."}</p>
+  <div class="data-tools-list"><button class="data-tool" id="change-password-open" type="button"><span class="tool-icon">${ic('<rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 1 1 8 0v3"/>',19,1.8)}</span><span class="tool-copy"><strong>Change password</strong><small>Use a new password for future sign-ins.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button><button class="data-tool" id="signout-everywhere" type="button"><span class="tool-icon">${ic('<path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/>',19,1.8)}</span><span class="tool-copy"><strong>Sign out everywhere</strong><small>Revoke every session for this account and clear this browser's account cache.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button><button class="data-tool danger" id="delete-account-open" type="button"><span class="tool-icon">${ic('<path d="M4 7h16M10 11v6M14 11v6"/><path d="M5 7l1 13h12l1-13M9 7V4h6v3"/>',19,1.8)}</span><span class="tool-copy"><strong>Delete account</strong><small>Permanently remove this account and its server-stored chats.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button></div>
+  <p class="sm" id="s-msg" role="status">${esc(smsg)}</p><div class="data-toolbar"><button class="pbtn" id="account-back">Back to Settings</button><button class="pbtn" id="signout-current">Sign out</button></div>`;
+ $("change-password-open").onclick=()=>renderPasswordChange(false);$("signout-everywhere").onclick=performSignoutEverywhere;$("delete-account-open").onclick=renderDeleteAccountConfirm;$("account-back").onclick=renderSettings;$("signout-current").onclick=performSignoutCurrent;
+}
+function updateAccountSyncStatus(custom){const el=$("account-sync-status");if(el)el.textContent=custom||(accountSyncing?"Syncing account chats…":accountLastSync?"Last synced "+ago(accountLastSync):"Account chat sync runs automatically.")}
+function renderRequiredPasswordChange(){renderPasswordChange(true)}
+function renderPasswordChange(required){
+ if(required&&modal.hidden)openSettings();
+ currentSettingsView=required?"password-required":"password-change";$("modal-title").textContent=required?"Set a new password":"Change password";
+ mbody.innerHTML=`<p class="sm">${required?"Your account must have a new password before you can continue.":"Choose a new password with at least 8 characters."}</p><form id="password-change-form" class="account-form" autocomplete="off">${required?"":'<label for="current-password">Current password</label><input id="current-password" type="password" maxlength="200" autocomplete="current-password" required>'}<label for="new-password">New password</label><input id="new-password" type="password" minlength="8" maxlength="200" autocomplete="new-password" required><label for="new-password-confirm">Confirm new password</label><input id="new-password-confirm" type="password" minlength="8" maxlength="200" autocomplete="new-password" required><p class="access-error" id="password-change-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar">${required?"":'<button type="button" class="pbtn" id="password-cancel">Cancel</button>'}<button type="submit" class="pbtn" id="password-change-submit">Save password</button></div></form>`;
+ const form=$("password-change-form");if(!required)$("password-cancel").onclick=renderAccount;
+ form.onsubmit=async e=>{e.preventDefault();const next=$("new-password").value,confirmPassword=$("new-password-confirm").value;if(next.length<8){passwordError("Choose a password with at least 8 characters.");return}if(next!==confirmPassword){passwordError("The passwords do not match.");return}
+  const b=$("password-change-submit");b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Saving…';
+  try{const result=await post({action:"account_password_change",currentPassword:required?"":($("current-password")?$("current-password").value:""),newPassword:next});if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});accountSession.user=result.user||accountSession.user;accountReady=true;toast("Password updated.");if(required&&accountSession.user&&accountSession.user.role==="admin")renderAdminPanel("site");else renderAccount()}
+  catch(err){passwordError(err&&err.payload&&err.payload.message||"Couldn't change the password. Try again.");b.disabled=false;b.textContent="Save password"}
+ };
+}
+function passwordError(message){const el=$("password-change-error");if(el){el.textContent=message;el.hidden=false}}
+function clearSignedInLocalCache(){clearAccountSession();S={chats:[],cur:null,dead:[],model:"aries-1",col:!!S.col};store.set(JSON.stringify(persistedState()));renderList();renderChat()}
+async function performSignoutCurrent(){
+ if(!accountSession||!accountSession.token)return;
+ const buttons=mbody.querySelectorAll("button");buttons.forEach(b=>b.disabled=true);setMsg("Signing out…");
+ try{await post({action:"account_logout"})}catch(e){}
+ clearSignedInLocalCache();smsg="Signed out. The server-stored account chats remain in your account.";toast("Signed out.");renderSettings();
+}
+async function performSignoutEverywhere(){
+ if(!accountSession||!accountSession.token)return;
+ const accepted=await appConfirm({title:"Sign out everywhere?",message:"This revokes all active sessions for your account on every browser. You will need to sign in again. Your server-stored chats will remain.",confirmLabel:"Sign out everywhere",danger:true});
+ if(!accepted){if(!modal.hidden&&!closingModal)renderAccount();return}
+ if(modal.hidden||currentSettingsView!=="app-confirm")return;
+ mbody.innerHTML='<div class="confirm-panel"><span class="choice-icon"><span class="sync-spinner" aria-hidden="true"></span></span><div><strong>Signing out everywhere…</strong><p>Revoking account sessions.</p></div></div>';animateMenuContent();
+ try{await post({action:"account_signout_everywhere"});clearSignedInLocalCache();smsg="All sessions were revoked. The server-stored account chats remain.";toast("Signed out everywhere.");renderSettings()}
+ catch(e){setMsg(e&&e.payload&&e.payload.message||"Couldn't revoke sessions. Try again.");renderAccount()}
+}
+function renderDeleteAccountConfirm(){
+ currentSettingsView="delete-account-confirm";$("modal-title").textContent="Delete account";
+ mbody.innerHTML=`<div class="confirm-panel"><span class="choice-icon">${ic('<path d="M4 7h16M10 11v6M14 11v6"/><path d="M5 7l1 13h12l1-13M9 7V4h6v3"/>',19,1.8)}</span><div><strong>Delete this account and its chats?</strong><p>This permanently deletes the account record and active server-stored chats. It also invalidates its sessions. Download a backup first if you need to keep any conversations.</p></div></div><form id="delete-account-form" class="account-form" autocomplete="off"><label for="delete-account-password">Confirm your password</label><input id="delete-account-password" type="password" maxlength="200" autocomplete="current-password" required><p class="access-error" id="delete-account-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar"><button type="button" class="pbtn" id="delete-account-cancel">Cancel</button><button type="submit" class="pbtn danger" id="delete-account-submit">Delete account</button></div></form>`;
+ $("delete-account-cancel").onclick=renderAccount;
+ $("delete-account-form").onsubmit=async e=>{e.preventDefault();const b=$("delete-account-submit");b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Deleting…';try{const result=await post({action:"account_delete",password:$("delete-account-password").value});if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});clearSignedInLocalCache();smsg="Your account and active server-stored chats were deleted.";toast("Account deleted.");renderSettings()}catch(err){const el=$("delete-account-error");el.textContent=err&&err.payload&&err.payload.message||"Couldn't delete the account.";el.hidden=false;b.disabled=false;b.textContent="Delete account"}}
+}
+function escapeAttr(text){return String(text||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
+let adminPanelGeneration=0,adminActionPending=false,adminData=null,adminDataAt=0,adminLoading=null,adminTab="site",adminQuery="";
+function adminDate(value){const n=Number(value||0);return n?new Date(n).toLocaleString():"Never"}
+function adminFetch(force){
+ if(!force&&adminData)return Promise.resolve(adminData);
+ if(!adminLoading)adminLoading=post({action:"admin_overview"}).then(r=>{
+  if(!r||!r.ok)throw Object.assign(new Error(r&&r.error||"failed"),{payload:r});
+  adminData=r;adminDataAt=Date.now();return r;
+ }).finally(()=>{adminLoading=null});
+ return adminLoading;
+}
+function showAdminError(err){
+ const box=$("admin-content");if(!box)return;
+ box.innerHTML=`<p class="access-error" role="status">${esc(err&&err.payload&&err.payload.message||"Couldn't load admin data. Check the account session and sheet setup.")}</p><button type="button" class="pbtn" id="admin-retry">Retry</button>`;
+ $("admin-retry").onclick=()=>refreshAdmin();
+}
+function refreshAdmin(){
+ const g=adminPanelGeneration;
+ return adminFetch(true).then(()=>{if(g===adminPanelGeneration&&currentSettingsView==="admin")paintAdminTab()}).catch(err=>{if(g===adminPanelGeneration)showAdminError(err)});
+}
+function renderAdminPanel(tab,query){
+ currentSettingsView="admin";if(tab)adminTab=tab;if(query!=null)adminQuery=query;
+ const generation=++adminPanelGeneration;
+ $("modal-title").textContent="Admin panel";
+ mbody.innerHTML=`<div class="admin-nav">${[["site","Site controls"],["accounts","Accounts"],["usage","Usage"],["audit","Audit log"]].map(t=>`<button type="button" class="pbtn ${adminTab===t[0]?"active":""}" data-admin-tab="${t[0]}">${t[1]}</button>`).join("")}</div><div id="admin-content" aria-live="polite"></div><div class="data-toolbar"><button type="button" class="pbtn" id="admin-refresh">Refresh</button><button type="button" class="pbtn" id="admin-back">Back to Settings</button></div>`;
+ mbody.querySelectorAll("[data-admin-tab]").forEach(b=>b.onclick=()=>renderAdminPanel(b.dataset.adminTab));
+ $("admin-back").onclick=renderSettings;$("admin-refresh").onclick=()=>refreshAdmin();
+ if(adminData){paintAdminTab();if(Date.now()-adminDataAt>60000)refreshAdmin();return}
+ $("admin-content").innerHTML='<p class="sm"><span class="sync-spinner" aria-hidden="true"></span>Loading admin data…</p>';
+ adminFetch().then(()=>{if(generation===adminPanelGeneration&&currentSettingsView==="admin")paintAdminTab()}).catch(err=>{if(generation===adminPanelGeneration)showAdminError(err)});
+}
+function paintAdminTab(){
+ const box=$("admin-content");if(!box||!adminData)return;
+ mbody.querySelectorAll("[data-admin-tab]").forEach(b=>b.classList.toggle("active",b.dataset.adminTab===adminTab));
+ if(adminTab==="site")paintAdminSite(box);else if(adminTab==="accounts")paintAdminAccounts(box);else if(adminTab==="usage")paintAdminUsage(box);else paintAdminAudit(box);
+ if(adminData.problems&&adminData.problems.length)box.insertAdjacentHTML("afterbegin",'<p class="access-error" role="status">Some admin data could not load: '+adminData.problems.map(p=>esc(p.part+" – "+p.error)).join("; ")+'</p>');
+}
+function paintAdminSite(box){
+ const v=adminData.settings||{};
+ box.innerHTML=`<p class="sm">These controls are enforced by the backend. Admin responses never include chat titles or messages.</p><form id="admin-settings-form" class="account-form"><label class="check-row"><input id="admin-ai-enabled" type="checkbox"> AI enabled</label><label class="check-row"><input id="admin-access-required" type="checkbox"> Require access code screen on page load</label><label for="admin-signup-mode">Sign-up mode</label><select id="admin-signup-mode"><option value="code">Access code required</option><option value="open">Open sign-up</option><option value="closed">Closed</option></select><label for="admin-site-notice">Site-wide notice (optional)</label><textarea id="admin-site-notice" rows="3" maxlength="240" placeholder="Leave blank to clear the notice"></textarea><label for="admin-new-access-code">Change access code (leave blank to keep current)</label><input id="admin-new-access-code" type="password" maxlength="80" autocomplete="new-password"><p class="access-error" id="admin-settings-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar"><button class="pbtn" id="admin-settings-save" type="submit">Save changes</button></div></form>`;
+ $("admin-ai-enabled").checked=!!v.aiEnabled;$("admin-access-required").checked=!!v.accessCodeRequired;$("admin-signup-mode").value=v.signupMode||"code";$("admin-site-notice").value=v.siteNotice||"";
+ $("admin-settings-form").onsubmit=async e=>{
+  e.preventDefault();const b=$("admin-settings-save"),error=$("admin-settings-error");error.hidden=true;b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Saving…';
+  const settings={aiEnabled:$("admin-ai-enabled").checked,accessCodeRequired:$("admin-access-required").checked,signupMode:$("admin-signup-mode").value,siteNotice:$("admin-site-notice").value,newAccessCode:$("admin-new-access-code").value};
+  try{
+   const saved=await post({action:"admin_update_settings",settings});
+   if(!saved||!saved.ok)throw Object.assign(new Error(saved&&saved.error||"failed"),{payload:saved});
+   siteSignupMode=saved.settings.signupMode||"code";siteNoticeText=saved.settings.siteNotice||"";aiDisabled=!saved.settings.aiEnabled;accessRequired=!!saved.settings.accessCodeRequired;renderSiteNotice();
+   if(adminData)adminData.settings=saved.settings;toast("Site settings saved.");
+   const current=$("admin-content");if(current&&adminTab==="site"&&currentSettingsView==="admin"&&adminData)paintAdminSite(current);
+  }catch(err){const el=$("admin-settings-error"),cb=$("admin-settings-save");if(el){el.textContent=err&&err.payload&&err.payload.message||"Couldn't save settings.";el.hidden=false}if(cb){cb.disabled=false;cb.textContent="Save changes"}}
+ };
+}
+function paintAdminAccounts(box){
+ box.innerHTML=`<div class="admin-search"><input id="admin-account-query" type="search" maxlength="20" placeholder="Search usernames" value="${escapeAttr(adminQuery)}"><button type="button" class="pbtn" id="admin-create-account">Create account</button></div><div id="admin-account-results"></div>`;
+ $("admin-account-query").oninput=e=>{adminQuery=e.target.value.trim();paintAccountList()};
+ $("admin-create-account").onclick=renderCreateAccount;
+ paintAccountList();
+}
+function paintAccountList(){
+ const target=$("admin-account-results");if(!target||!adminData)return;
+ const q=String(adminQuery||"").trim().toLowerCase(),all=adminData.accounts||[];
+ const list=q?all.filter(a=>String(a.username).toLowerCase().indexOf(q)!==-1):all;
+ if(!list.length){target.innerHTML='<p class="sm">No accounts matched that search.</p>';return}
+ target.innerHTML=list.map(a=>`<article class="admin-account"><div class="admin-account-head"><strong>${esc(a.username)}</strong><span class="account-role">${esc(a.role)} · ${esc(a.status)}</span></div><div class="admin-account-meta">Created ${adminDate(a.createdAt)} · Last sign-in ${adminDate(a.lastLoginAt)} · ${Number(a.chatCount)||0} chats</div><div class="admin-account-actions">${a.status==="active"?`<button type="button" class="pbtn" data-account-action="disable" data-target-id="${escapeAttr(a.id)}">Disable</button>`:`<button type="button" class="pbtn" data-account-action="enable" data-target-id="${escapeAttr(a.id)}">Enable</button>`}<button type="button" class="pbtn" data-account-action="reset_password" data-target-id="${escapeAttr(a.id)}">Temp password</button><button type="button" class="pbtn" data-account-action="force_signout" data-target-id="${escapeAttr(a.id)}">Sign out all</button>${a.role==="admin"?`<button type="button" class="pbtn" data-account-action="demote" data-target-id="${escapeAttr(a.id)}" ${a.isBootstrap?"disabled":""}>Demote</button>`:`<button type="button" class="pbtn" data-account-action="promote" data-target-id="${escapeAttr(a.id)}">Make admin</button>`}<button type="button" class="pbtn danger" data-account-action="delete" data-target-id="${escapeAttr(a.id)}" ${a.isBootstrap?"disabled":""}>Delete</button></div></article>`).join("")+(adminData.truncated?'<p class="sm">Showing the first 500 accounts. Narrow your search for more specific results.</p>':"");
+ target.querySelectorAll("[data-account-action]").forEach(button=>button.onclick=()=>runAdminAccountAction(button.dataset.accountAction,button.dataset.targetId));
+}
+function paintAdminUsage(box){
+ const r=adminData.usage||{},t=r.today||{},w=r.week||{};
+ box.innerHTML=`<div class="admin-stat-grid"><div class="admin-stat"><span>Requests today</span><strong>${Number(t.total)||0}</strong></div><div class="admin-stat"><span>Requests in 7 days</span><strong>${Number(w.total)||0}</strong></div><div class="admin-stat"><span>Accounts</span><strong>${Number(r.accountCount)||0}</strong></div><div class="admin-stat"><span>Failed sign-ins today</span><strong>${Number(t.failedSignins)||0}</strong></div><div class="admin-stat"><span>Guest requests today</span><strong>${Number(t.guests)||0}</strong></div><div class="admin-stat"><span>Account requests today</span><strong>${Number(t.accounts)||0}</strong></div></div><p class="sm">Usage counts contain totals only; no prompts, responses, or chat text are included.</p>`;
+}
+function paintAdminAudit(box){
+ const items=adminData.audit||[];
+ box.innerHTML=`<p class="sm">Latest ${items.length} admin and account-security events. Chat titles and messages are never recorded here.</p>${items.length?items.map(item=>`<article class="admin-audit-item"><strong>${esc(item.action)}</strong><span>${adminDate(item.timestamp)}</span><p>${esc(item.actor)} → ${esc(item.target||"—")}</p><small>${esc(item.detail||"")}</small></article>`).join(""):'<p class="sm">No audit entries yet.</p>'}`;
+}
+function renderCreateAccount(){
+ currentSettingsView="admin-create";$("modal-title").textContent="Create account";
+ mbody.innerHTML=`<p class="sm">Creates a WHWai account with a temporary password that is shown only once. The new account must choose its own password at first sign-in.</p><form id="create-account-form" class="account-form"><label for="create-account-username">Username</label><input id="create-account-username" type="text" minlength="3" maxlength="20" pattern="[a-zA-Z0-9_]{3,20}" required><label for="create-account-role">Role</label><select id="create-account-role"><option value="user">User</option><option value="admin">Admin</option></select><p class="access-error" id="create-account-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar"><button type="button" class="pbtn" id="create-account-cancel">Cancel</button><button type="submit" class="pbtn" id="create-account-submit">Create account</button></div></form>`;
+ $("create-account-cancel").onclick=()=>renderAdminPanel("accounts");
+ $("create-account-form").onsubmit=async e=>{
+  e.preventDefault();const b=$("create-account-submit");b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Creating…';
+  try{
+   const result=await post({action:"admin_account_action",accountAction:"create_account",username:$("create-account-username").value.trim().toLowerCase(),role:$("create-account-role").value});
+   if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});
+   await adminFetch(true).catch(()=>{});
+   renderOneTimePassword(result.role==="admin"?"New admin account created":"New account created",result.username,result.temporaryPassword,result.expiresAt,"accounts");
+  }catch(err){const error=$("create-account-error");if(!error)return;error.textContent=err&&err.payload&&err.payload.message||"Couldn't create the account.";error.hidden=false;b.disabled=false;b.textContent="Create account"}
+ };
+}
+async function runAdminAccountAction(action,targetId){
+ const choices={disable:{title:"Disable account?",message:"This account will no longer be able to sign in, and its active sessions will be revoked.",label:"Disable"},enable:{title:"Enable account?",message:"This account will be allowed to sign in again.",label:"Enable",danger:false},reset_password:{title:"Issue temporary password?",message:"A new one-time password will replace the current password and sign out this account everywhere. It expires after 72 hours.",label:"Issue password"},force_signout:{title:"Sign out everywhere?",message:"All active sessions for this account will be revoked.",label:"Sign out all"},promote:{title:"Make administrator?",message:"This account will gain access to administrative controls.",label:"Make admin"},demote:{title:"Remove administrator role?",message:"This account will lose access to administrative controls.",label:"Demote"},delete:{title:"Delete account permanently?",message:"The account and its active server-stored chats will be deleted. This cannot be undone from WHWai.",label:"Delete account"}};
+ const choice=choices[action];if(!choice)return;
+ const accepted=await appConfirm({title:choice.title,message:choice.message,confirmLabel:choice.label,danger:choice.danger!==false});
+ if(!accepted){if(!modal.hidden&&!closingModal)renderAdminPanel("accounts");return}
+ if(modal.hidden||currentSettingsView!=="app-confirm")return;
+ adminActionPending=true;$("modal-title").textContent="Working…";mbody.innerHTML='<div class="confirm-panel"><span class="choice-icon"><span class="sync-spinner" aria-hidden="true"></span></span><div><strong>Applying admin action…</strong><p>Please keep this window open while WHWai updates the account.</p></div></div>';animateMenuContent();
+ try{
+  const result=await post({action:"admin_account_action",accountAction:action,targetId:targetId});
+  if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});
+  await adminFetch(true).catch(()=>{});
+  if(result.temporaryPassword){renderOneTimePassword("Temporary password",result.username,result.temporaryPassword,result.expiresAt,"accounts");return}
+  toast("Account updated.");if(!modal.hidden)renderAdminPanel("accounts");
+ }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't update that account.");if(!modal.hidden)renderAdminPanel("accounts")}
+ finally{adminActionPending=false}
+}
+async function appConfirm(options){
+ options=options||{};
+ const title=String(options.title||"Confirm action"),message=String(options.message||"Are you sure you want to continue?"),confirmLabel=String(options.confirmLabel||"Continue"),standalone=options.standalone===true&&modal.hidden,dialogGeneration=standalone?++confirmOverlayGeneration:0;
+ if(pendingAppConfirmation)resolvePendingConfirmation(false);
+ return await new Promise(resolve=>{
+  let settled=false;
+  const settle=value=>{
+   if(settled)return;settled=true;if(pendingAppConfirmation===settle)pendingAppConfirmation=null;
+   if(standalone){const overlay=$("confirm-overlay");overlay.classList.remove("open");overlay.classList.add("closing");setTimeout(()=>{if(dialogGeneration===confirmOverlayGeneration){overlay.hidden=true;overlay.classList.remove("closing");overlay.innerHTML="";overlay.onclick=null}resolve(value)},170)}else resolve(value);
+  };
+  pendingAppConfirmation=settle;
+  const icon=ic(options.danger===false?'<path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z"/>':'<path d="M12 3l9 17H3z"/><path d="M12 9v4M12 17h.01"/>',19,1.8);
+  const panel=`<div class="confirm-panel"><span class="choice-icon">${icon}</span><div><strong>${esc(title)}</strong><p>${esc(message)}</p></div></div><div class="data-toolbar"><button type="button" class="pbtn" id="app-confirm-cancel">Cancel</button><button type="button" class="pbtn ${options.danger===false?"":"danger"}" id="app-confirm-accept">${esc(confirmLabel)}</button></div>`;
+  if(standalone){
+   const overlay=$("confirm-overlay");overlay.innerHTML=`<div class="app-confirm-card">${panel}</div>`;overlay.hidden=false;overlay.classList.remove("closing","open");overlay.setAttribute("aria-label",title);
+   overlay.onclick=e=>{if(e.target===overlay)settle(false)};
+   const card=overlay.querySelector(".app-confirm-card");card.onclick=e=>e.stopPropagation();
+   requestAnimationFrame(()=>{if(dialogGeneration===confirmOverlayGeneration)overlay.classList.add("open")});
+  }else{
+   currentSettingsView="app-confirm";$("modal-title").textContent=title;mbody.innerHTML=panel;animateMenuContent();
+  }
+  $("app-confirm-cancel").onclick=()=>settle(false);$("app-confirm-accept").onclick=()=>settle(true);$("app-confirm-cancel").focus();
+ });
+}
+let pendingAppConfirmation=null,confirmOverlayGeneration=0;
+function resolvePendingConfirmation(value){if(!pendingAppConfirmation)return false;pendingAppConfirmation(value);return true}
+function renderOneTimePassword(title,username,password,expiresAt,returnTab){
+ currentSettingsView="one-time-password";$("modal-title").textContent=title;
+ mbody.innerHTML=`<p><strong>${esc(username||"")}</strong></p><p class="sm">Copy this password now. WHWai will not display it again after you leave this screen. The password expires ${adminDate(expiresAt)} and must be changed at first sign-in.</p><div class="key"><span class="key-value" id="one-time-password-value">${escapeAttr(password||"")}</span><button type="button" id="one-time-password-copy" class="pbtn">Copy</button></div><p class="sm" id="one-time-password-status" role="status"></p><div class="data-toolbar"><button type="button" class="pbtn" id="one-time-password-done">I have saved it</button></div>`;
+ $("one-time-password-copy").onclick=async()=>{try{await navigator.clipboard.writeText(password);$("one-time-password-status").textContent="Copied to clipboard."}catch(e){const el=$("one-time-password-value"),range=document.createRange();range.selectNodeContents(el);const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);$("one-time-password-status").textContent="Select the password above and copy it manually."}};
+ $("one-time-password-done").onclick=()=>renderAdminPanel(returnTab||"accounts");
+}
+
+function wrapViewTransition(fn){return function(){const result=fn.apply(this,arguments);if(!modal.hidden)animateMenuContent();return result}}
+renderSettings=wrapViewTransition(renderSettings);
+renderAccountAuth=wrapViewTransition(renderAccountAuth);
+renderAccount=wrapViewTransition(renderAccount);
+renderPasswordChange=wrapViewTransition(renderPasswordChange);
+renderDeleteAccountConfirm=wrapViewTransition(renderDeleteAccountConfirm);
+renderAdminPanel=wrapViewTransition(renderAdminPanel);
+renderCreateAccount=wrapViewTransition(renderCreateAccount);
+renderOneTimePassword=wrapViewTransition(renderOneTimePassword);
+renderDataManagement=wrapViewTransition(renderDataManagement);
+renderExportInfo=wrapViewTransition(renderExportInfo);
+renderPrivacyPolicy=wrapViewTransition(renderPrivacyPolicy);
+renderLocalDeleteConfirm=wrapViewTransition(renderLocalDeleteConfirm);
+function finishModalClose(){if(!closingModal)return;if(closeModalTimer!==null){clearTimeout(closeModalTimer);closeModalTimer=null}modal.hidden=true;modal.classList.remove("closing");closingModal=false}
+function closeSettings(){if(adminActionPending){toast("Please wait for the admin action to finish.");return}resolvePendingConfirmation(false);if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}if(modal.hidden||closingModal)return;closingModal=true;modal.classList.add("closing");closeModalTimer=setTimeout(finishModalClose,190)}
+function openSettings(initialRenderer){if(closeModalTimer!==null){clearTimeout(closeModalTimer);closeModalTimer=null}closingModal=false;modal.classList.remove("closing");modal.hidden=false;smsg="";if(typeof initialRenderer==="function")initialRenderer();else renderSettings()}
+function gateAdminMode(open){
+ const form=$("access-admin-form"),link=$("access-admin-open");form.hidden=!open;link.hidden=!!open;accessForm.hidden=!!open||aiDisabled;accessError.hidden=true;$("access-admin-error").hidden=true;
+ if(open){$("access-admin-user").focus()}else if(!aiDisabled)accessInput.focus();
+}
+$("access-admin-open").onclick=()=>gateAdminMode(true);$("access-admin-back").onclick=()=>gateAdminMode(false);
+$("access-admin-form").onsubmit=async e=>{
+ e.preventDefault();const username=$("access-admin-user").value.trim().toLowerCase(),password=$("access-admin-password").value,b=$("access-admin-submit"),error=$("access-admin-error");if(!username||!password)return;
+ b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Signing in…';error.hidden=true;
+ try{const result=await post({action:"auth_admin_login",username,password});if(!result||!result.ok||!result.token)throw Object.assign(new Error(result&&result.error||"invalid_admin_credentials"),{payload:result});setAccountFromResult(result);$("access-admin-password").value="";accessGate.hidden=true;openApp(true);if(result.user&&result.user.mustChange){openSettings();renderRequiredPasswordChange()}else{openSettings(()=>renderAdminPanel("site"))}}
+ catch(err){error.textContent=err&&err.payload&&err.payload.message||"Invalid admin username or password.";error.hidden=false}
+ finally{b.disabled=false;b.textContent="Sign in"}
+};
+$("gear").onclick=openSettings;$("mx").onclick=closeSettings;modal.onclick=e=>{if(e.target===modal)closeSettings()};
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&accountSession&&accountSession.token&&!busy)scheduleAccountSync()});
+window.addEventListener("online",()=>{if(accountSession&&accountSession.token)scheduleAccountSync()});
+setInterval(()=>document.querySelectorAll(".bar span,.cm").forEach(el=>el.textContent=ago(+el.dataset.t)),1000);
+renderList();renderChat();renderSiteNotice();
+if(accountSession&&accountSession.token)accountReady=false;
+const fr=document.querySelector(".frame");fr.classList.add("no-anim");fr.classList.toggle("collapsed",!!S.col);requestAnimationFrame(()=>requestAnimationFrame(()=>fr.classList.remove("no-anim")));
+
+</script>
+</body>
+</html>
