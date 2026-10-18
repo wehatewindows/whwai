@@ -68,7 +68,7 @@ svg{display:block}
 .info-pop{position:absolute;right:0;bottom:calc(100% + 12px);width:min(286px,calc(100vw - 44px));background:#fff;border:1px solid #dcdce1;border-radius:17px;box-shadow:0 8px 26px rgba(0,0,0,.14);padding:12px 14px;z-index:12;animation:rise .15s ease-out}
 .info-pop::after{content:"";position:absolute;right:15px;bottom:-7px;width:12px;height:12px;background:#fff;border-right:1px solid #dcdce1;border-bottom:1px solid #dcdce1;transform:rotate(45deg)}
 .info-pop[hidden]{display:none!important}.info-pop p{margin:0 0 10px;font-size:12.5px;line-height:1.5;color:#333}.info-pop button{border:0;border-radius:999px;background:#e8efff;color:#2458b8;font:500 12px/1.2 var(--f);padding:7px 12px;cursor:pointer}.info-pop button:hover{background:#dce7ff}
-.site-notice{flex:none;margin:8px 8px 0;padding:9px 13px;border-radius:13px;background:#eef4ff;border:1px solid #d9e6ff;color:#24477e;font-size:13px}.site-notice[hidden]{display:none!important}
+.site-notice{box-sizing:border-box;display:block;flex:0 0 auto;align-self:center;width:calc(100% - 24px);min-width:0;max-width:840px;margin:8px auto 0;padding:10px 13px;border-radius:13px;background:#eef4ff;border:1px solid #d9e6ff;color:#24477e;font-size:13px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal;animation:noticeIn .22s cubic-bezier(.2,.7,.2,1) both}.site-notice[hidden]{display:none!important}.main.has-site-notice .scroll{padding-top:12px}@keyframes noticeIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
 .pop{position:absolute;right:0;bottom:calc(100% + 14px);width:260px;background:#fff;border:1px solid #ddd;border-radius:24px;box-shadow:0 8px 30px rgba(0,0,0,.16);padding:9px;z-index:10;animation:rise .15s ease-out}
 .pop[hidden]{display:none}
 .pop .ph{font-size:12.5px;color:var(--mute);padding:7px 12px 9px}
@@ -88,6 +88,7 @@ svg{display:block}
 
 .modal{position:absolute;inset:0;background:rgba(0,0,0,.28);display:grid;place-items:center;z-index:20;animation:rise .2s ease-out}
 .modal[hidden]{display:none}
+.app-confirm-overlay{position:absolute;inset:0;z-index:60;display:grid;place-items:center;padding:18px;background:rgba(20,28,44,.22);opacity:0;transition:opacity .18s ease}.app-confirm-overlay[hidden]{display:none!important}.app-confirm-overlay.open{opacity:1}.app-confirm-overlay.closing{opacity:0;pointer-events:none}.app-confirm-card{width:min(420px,96%);max-height:86%;overflow:auto;background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:22px;padding:18px 20px;box-shadow:0 12px 40px rgba(0,0,0,.2);opacity:0;transform:translateY(8px) scale(.992);transition:opacity .2s ease,transform .2s cubic-bezier(.2,.7,.2,1)}.app-confirm-overlay.open .app-confirm-card{opacity:1;transform:translateY(0) scale(1)}.app-confirm-overlay.closing .app-confirm-card{opacity:0;transform:translateY(6px) scale(.994)}
 .mcard{width:min(420px,92%);max-height:88%;overflow:auto;background:#fff;border-radius:22px;padding:18px 20px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
 .mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;font-size:18px}
 .mh button{border:0;background:var(--bub);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:18px;line-height:1;padding:0}
@@ -180,7 +181,7 @@ button:focus-visible,.chat:focus-visible,.model:focus-visible{outline:2px solid 
 .answer-sources ul{margin:7px 0 0;padding-left:17px}.answer-sources li{margin:4px 0;overflow-wrap:anywhere}.answer-sources a{color:#2f6ee0;text-decoration:none}.answer-sources a:hover{text-decoration:underline}
 @keyframes typingDot{0%,60%,100%{transform:translateY(0);opacity:.38}30%{transform:translateY(-4px);opacity:1}}
 #export-data.cooldown{letter-spacing:.06em;font-variant-numeric:tabular-nums}
-@media (prefers-reduced-motion:reduce){.modal,.modal .mcard,.modal.closing,.modal.closing .mcard,#mbody.menu-content-enter,.fresh,.orb.think,.sync-spinner{animation:none!important;transition:none!important}}
+@media (prefers-reduced-motion:reduce){.modal,.modal .mcard,.modal.closing,.modal.closing .mcard,.app-confirm-overlay,.app-confirm-card,#mbody.menu-content-enter,.fresh,.orb.think,.sync-spinner{animation:none!important;transition:none!important}}
 
 
 
@@ -201,7 +202,7 @@ html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(
  .menubtn:hover,.mnew:hover{background:rgba(0,0,0,.1)}
 
  
- .site-notice{margin:calc(var(--bar) + 6px) var(--edge) 0}.scroll{padding:calc(var(--bar) + 12px) var(--edge) 12px;gap:10px;overscroll-behavior:contain}
+ .site-notice{width:calc(100% - var(--edge) - var(--edge));max-width:840px;margin:calc(var(--bar) + 6px) auto 0;align-self:center}.scroll{padding:calc(var(--bar) + 12px) var(--edge) 12px;gap:10px;overscroll-behavior:contain}
  .msg{max-width:86%;min-width:0;background:#f0f0f3;border-radius:20px;padding:10px 15px}
  .msg.u{background:linear-gradient(180deg,#7fa9ff,#5b8df0);color:#fff;border-radius:20px;padding:10px 15px}
  .bar{background:none;padding:0 4px;margin-top:-6px;max-width:100%}.bar span{margin-left:12px;font-size:12px}
@@ -377,6 +378,7 @@ body.access-locked .frame{filter:blur(6px);transform:scale(1.004);transform-orig
  </aside>
  <div class="scrim" id="scrim"></div>
  <div class="modal" id="modal" hidden><div class="mcard" role="dialog" aria-label="Settings"><div class="mh"><b id="modal-title">Settings</b><button id="mx" aria-label="Close">&times;</button></div><div id="mbody"></div></div></div>
+ <div class="app-confirm-overlay" id="confirm-overlay" hidden role="alertdialog" aria-modal="true" aria-label="Confirm action"></div>
  <section class="main">
   <button class="expand" id="expand" title="Show sidebar" aria-label="Show sidebar"></button>
   <div class="mbar"><button class="menubtn" id="mopen" title="Open chats and settings" aria-label="Open chats and settings" aria-expanded="false"></button><span class="mt">WHW<b>ai</b></span><button class="mnew" id="mnew" title="New chat" aria-label="New chat"></button></div>
@@ -421,7 +423,7 @@ $("new").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',16,2.6);$("send").innerHTML
 
 let mem=null;
 const ACCOUNT_SESSION_STORAGE_KEY="whwai.account.session.v1";
-let accountSession=null,accountReady=true,accountSyncTimer=null,accountSyncing=false,accountSyncAgain=false,accountLastSync=0;
+let accountSession=null,accountReady=true,accountSyncTimer=null,accountSyncing=false,accountSyncAgain=false,accountLastSync=0,accountInitialSyncPending=false,accountMergePendingToast=false;
 try{const savedSession=localStorage.getItem(ACCOUNT_SESSION_STORAGE_KEY);if(savedSession&&savedSession.length<300){accountSession={token:savedSession,user:null};accountReady=false}}catch(e){}
 const store={get(){try{return localStorage.getItem(KEY)}catch(e){return mem}},set(v){mem=v;try{localStorage.setItem(KEY,v)}catch(e){}}};
 let canSave=true;try{localStorage.setItem(KEY+".t","1");localStorage.removeItem(KEY+".t")}catch(e){canSave=false}
@@ -690,8 +692,11 @@ function updateAvailableModels(models){
 }
 function renderChat(fresh){
  const c=C();updateModelUI();chatEl.innerHTML="";
- if(!c||!c.m.length){chatEl.innerHTML='<div class="empty"><h2>WHW<b>ai</b></h2><p>Ask anything to get started.</p></div>';
-  return}
+ if(!c||!c.m.length){
+  if(accountInitialSyncPending&&accountSession&&accountSession.token&&!S.chats.length)chatEl.innerHTML='<div class="empty"><h2>WHW<b>ai</b></h2><p><span class="sync-spinner" aria-hidden="true"></span>Loading your account chats…</p></div>';
+  else chatEl.innerHTML='<div class="empty"><h2>WHW<b>ai</b></h2><p>Ask anything to get started.</p></div>';
+  return
+ }
  c.m.forEach((m,i)=>{
   const d=document.createElement("div");d.className="msg"+(m.r==="u"?" u":"");
    if(m.r==="u")d.textContent=m.x;else d.innerHTML=md(m.x);
@@ -791,7 +796,7 @@ try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_T
 const accessGate=$("access-gate"),accessCard=$("access-card"),accessTitle=$("access-title"),accessForm=$("access-form"),accessInput=$("access-code"),accessError=$("access-error"),accessButton=$("access-unlock");
 let aiDisabled=false,accessRequired=true;
 function hasEarlyAccess(){return false}
-function openApp(force){if(aiDisabled&&!force)return;document.body.classList.remove("access-locked");accessGate.hidden=true;$("app-frame").removeAttribute("aria-hidden");if(accountSession&&accountSession.token)resumeAccountSession();setTimeout(showAriesIntroOnce,650)}
+function openApp(force){if(aiDisabled&&!force)return;document.body.classList.remove("access-locked");accessGate.hidden=true;$("app-frame").removeAttribute("aria-hidden");if(accountSession&&accountSession.token&&!accountSession.user)resumeAccountSession();setTimeout(showAriesIntroOnce,650)}
 function unlockEarlyAccess(token,expiresAt){if(aiDisabled)return;try{const until=Number(expiresAt)||Date.now()+ACCESS_TTL;localStorage.setItem(ACCESS_STORAGE_KEY,String(until));localStorage.setItem(ACCESS_TOKEN_KEY,String(token||""))}catch(e){}openApp()}
 function lockEarlyAccess(showGate){try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.remove("disabled-mode");accessTitle.textContent="Enter access code";accessForm.hidden=false;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false;$("access-admin-form").hidden=true;if(showGate){accessInput.value="";setTimeout(()=>accessInput.focus(),50)}}
 function showAIDisabled(){aiDisabled=true;try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");accessTitle.textContent="WHWai is currently disabled";accessForm.hidden=true;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false}
@@ -896,6 +901,11 @@ function regen(){
 }
 function openChat(id){if(busy)return;S.cur=id;save();renderList();renderChat();side(false)}
 function newChat(){if(busy)return;S.cur=null;save();renderList();renderChat();side(false);ta.focus()}
+async function confirmDeleteChat(id){
+ if(busy)return;const chat=S.chats.find(c=>c.id===id);if(!chat)return;
+ const accepted=await appConfirm({title:"Delete chat?",message:"“"+chat.t+"” and its messages will be removed from this browser"+(accountSession&&accountSession.token?" and from your account chat history.":".")+" This cannot be undone.",confirmLabel:"Delete chat",standalone:true});
+ if(!accepted||busy||!S.chats.some(c=>c.id===id))return;delChat(id);toast("Chat deleted.");
+}
 function delChat(id){
  if(busy)return;S.chats=S.chats.filter(c=>c.id!==id);S.dead.push({id,mu:Date.now()});
  if(S.cur===id)S.cur=null;
@@ -944,7 +954,7 @@ $("logo").onclick=()=>mob()?side(false):collapse(true);
 $("expand").onclick=()=>mob()?side(true):collapse(false);
 $("cren").onclick=()=>{const id=mid;closeMenu();renamingId=id;renderList();const i=list.querySelector(".rn");if(i){i.focus();i.select()}};
 $("cpin").onclick=()=>{const c=S.chats.find(x=>x.id===mid);if(c){c.p=!c.p;touch(c);save();renderList()}else closeMenu()};
-$("cdel").onclick=()=>{const id=mid;closeMenu();delChat(id)};
+$("cdel").onclick=()=>{const id=mid;closeMenu();confirmDeleteChat(id)};
 $("cgen").onclick=()=>{const id=mid;closeMenu();retitle(id)};
 list.addEventListener("scroll",closeMenu);
 document.addEventListener("click",e=>{if(!$("cmenu").contains(e.target))closeMenu()});
@@ -954,7 +964,7 @@ $("model").onclick=e=>{e.stopPropagation();pop($("pop").hidden)};
 document.addEventListener("click",e=>{
  if(!$("pop").contains(e.target)&&e.target!==$("model"))pop(false);
 });
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){pop(false);side(false);closeMenu();closeSettings()}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(resolvePendingConfirmation(false))return;pop(false);side(false);closeMenu();closeSettings()}});
 const DEVICE_STORAGE_KEY="whwai.device.v1";
 let cachedDeviceId="";
 function getDeviceId(){
@@ -968,7 +978,7 @@ $("mnew").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',18,2.4);$("mnew").onclick=
 const modal=$("modal"),mbody=$("mbody");
 let smsg="",currentSettingsView="settings",closeModalTimer=null,closingModal=false,siteSignupMode="code",siteNoticeText="",siteStatusLoaded=false;
 const touch=c=>{c.mu=Date.now()};
-function clearAccountSession(){if(accountSyncTimer!==null){clearTimeout(accountSyncTimer);accountSyncTimer=null}accountSession=null;accountReady=true;try{localStorage.removeItem(ACCOUNT_SESSION_STORAGE_KEY)}catch(e){}}
+function clearAccountSession(){if(accountSyncTimer!==null){clearTimeout(accountSyncTimer);accountSyncTimer=null}accountSession=null;accountReady=true;accountInitialSyncPending=false;accountMergePendingToast=false;try{localStorage.removeItem(ACCOUNT_SESSION_STORAGE_KEY)}catch(e){}}
 function scheduleAccountSync(){
  if(!accountSession||!accountSession.token||!accountReady||accountSession.user&&accountSession.user.mustChange)return;
  if(accountSyncTimer!==null)clearTimeout(accountSyncTimer);
@@ -977,26 +987,30 @@ function scheduleAccountSync(){
 async function syncAccountChatsNow(){
  if(!accountSession||!accountSession.token||!accountReady||accountSession.user&&accountSession.user.mustChange)return;
  if(accountSyncing){accountSyncAgain=true;return}
- if(navigator.onLine===false){accountSyncAgain=true;return}
+ if(navigator.onLine===false){accountSyncAgain=true;if(accountInitialSyncPending){accountInitialSyncPending=false;renderChat()}return}
  accountSyncing=true;accountSyncAgain=false;const revision=localRevision;
  try{
   const result=await post({action:"account_chats_sync",sessionToken:accountSession.token,chats:clean().chats,dead:clean().dead,cur:S.cur});
   if(result&&Array.isArray(result.chats)){
-   const before=JSON.stringify({chats:S.chats.map(c=>[c.id,c.mu||c.u,c.t,c.p]),dead:S.dead});
+   const wasInitialSync=accountInitialSyncPending;
+   const before=JSON.stringify({cur:S.cur,chats:S.chats.map(c=>[c.id,c.mu||c.u,c.t,c.p,c.model||"aries-1"]),dead:S.dead});
    const merged=mergeLocalAndRemote({chats:S.chats,dead:S.dead,cur:S.cur},{chats:result.chats,dead:result.dead,cur:result.cur});
    S.chats=merged.chats;S.dead=merged.dead;S.cur=merged.cur&&S.chats.some(c=>c.id===merged.cur)?merged.cur:(S.chats[0]&&S.chats[0].id)||null;
    store.set(JSON.stringify(persistedState()));
-   const after=JSON.stringify({chats:S.chats.map(c=>[c.id,c.mu||c.u,c.t,c.p]),dead:S.dead});
-   if(before!==after){renderList();renderChat()}
+   const after=JSON.stringify({cur:S.cur,chats:S.chats.map(c=>[c.id,c.mu||c.u,c.t,c.p,c.model||"aries-1"]),dead:S.dead});
+   accountInitialSyncPending=false;
+   if(before!==after||wasInitialSync){renderList();renderChat()}
    accountLastSync=Date.now();
+   if(accountMergePendingToast){accountMergePendingToast=false;toast("Your existing chats were merged into your account.")}
    if(!modal.hidden&&currentSettingsView==="account")updateAccountSyncStatus();
   }
  }catch(e){
+  accountInitialSyncPending=false;
   if(e&&e.message==="invalid_session"){
-   clearAccountSession();S={chats:[],cur:null,dead:[],model:S.model||"aries-1",col:!!S.col};save(true);renderList();renderChat();toast("Your sign-in expired. Sign in again to load your account chats.");
+   clearAccountSession();accountMergePendingToast=false;S={chats:[],cur:null,dead:[],model:S.model||"aries-1",col:!!S.col};save(true);renderList();renderChat();toast("Your sign-in expired. Sign in again to load your account chats.");
   }else if(e&&e.message==="password_change_required"){
    if(accountSession&&accountSession.user)accountSession.user.mustChange=true;renderRequiredPasswordChange();
-  }else{accountSyncAgain=true;if(!modal.hidden&&currentSettingsView==="account")updateAccountSyncStatus("Offline or unable to sync right now. Your local changes remain saved.")}
+  }else{accountSyncAgain=true;renderChat();if(!modal.hidden&&currentSettingsView==="account")updateAccountSyncStatus("Offline or unable to sync right now. Your local changes remain saved.")}
  }finally{
   accountSyncing=false;
   if(localRevision!==revision||accountSyncAgain)scheduleAccountSync();
@@ -1006,7 +1020,7 @@ function mergeLocalAndRemote(first,second){
  const map={},dead={};const t=c=>Number(c.mu||c.u||0);
  [first||{},second||{}].forEach(state=>{
   (Array.isArray(state.dead)?state.dead:[]).forEach(d=>{if(d&&d.id!=null){const id=String(d.id),mu=Number(d.mu)||0;if(!(id in dead)||dead[id]<mu)dead[id]=mu}});
-  (Array.isArray(state.chats)?state.chats:[]).forEach(c=>{if(c&&c.id&&(!map[c.id]||t(c)>t(map[c.id])))map[c.id]=safeChat(c)});
+  (Array.isArray(state.chats)?state.chats:[]).forEach(c=>{if(c&&c.id&&(!map[c.id]||t(c)>=t(map[c.id])))map[c.id]=safeChat(c)});
  });
  const chats=Object.keys(map).map(id=>map[id]).filter(c=>!(c.id in dead)||dead[c.id]<t(c));
  const deadList=Object.keys(dead).map(id=>({id,mu:dead[id]}));let cur=String((second&&second.cur)||(first&&first.cur)||"");if(!chats.some(c=>c.id===cur))cur=chats.length?chats[0].id:null;
@@ -1020,9 +1034,10 @@ async function resumeAccountSession(){
   if(!result||!result.user)throw new Error("invalid_session");
   accountSession.user=result.user;accountReady=true;
   if(result.user.mustChange){renderRequiredPasswordChange();return}
+  accountInitialSyncPending=true;renderChat();
   await syncAccountChatsNow();
  }catch(e){
-  if(e&&e.message==="accesslocked"){accountReady=false;return}
+  if(e&&e.message==="accesslocked"){accountReady=false;accountInitialSyncPending=false;return}
   if(e&&e.message==="invalid_session"){
    clearAccountSession();S={chats:[],cur:null,dead:[],model:S.model||"aries-1",col:!!S.col};save(true);renderList();renderChat();toast("Your account session expired. Sign in again to restore your chats.");
   }else{accountReady=true;accountSyncAgain=true;}
@@ -1286,10 +1301,9 @@ function renderPrivacyPolicy(){
 }
 let deletingLocalData=false;
 function setMsg(t){smsg=String(t||"");const status=mbody.querySelector("#s-msg");if(status)status.textContent=smsg}
-function renderSiteNotice(){const el=$("site-notice");if(!el)return;el.textContent=siteNoticeText;el.hidden=!siteNoticeText}
+function renderSiteNotice(){const el=$("site-notice");if(!el)return;el.textContent=siteNoticeText;el.hidden=!siteNoticeText;const main=el.closest(".main");if(main)main.classList.toggle("has-site-notice",!!siteNoticeText)}
 function animateMenuContent(){mbody.classList.remove("menu-content-enter");void mbody.offsetWidth;mbody.classList.add("menu-content-enter")}
 mbody.addEventListener("animationend",e=>{if(e.target===mbody&&e.animationName==="menuScreenIn")mbody.classList.remove("menu-content-enter")});
-function withMenuTransition(fn){return function(){fn.apply(this,arguments);if(!modal.hidden)animateMenuContent()}}
 function setAccountFromResult(result){
  accountSession={token:String(result.token||""),user:result.user||null};accountReady=true;
  try{if(accountSession.token)localStorage.setItem(ACCOUNT_SESSION_STORAGE_KEY,accountSession.token)}catch(e){}
@@ -1304,6 +1318,7 @@ function applyLoginChats(result){
  S.chats=merged.chats;S.dead=merged.dead;S.cur=merged.cur&&S.chats.some(c=>c.id===merged.cur)?merged.cur:(S.chats[0]&&S.chats[0].id)||null;
  store.set(JSON.stringify(persistedState()));renderList();renderChat();
  if(hadLocalChats&&result.mergedLocalChats)toast("Your existing chats were merged into your account.");
+ else if(accountInitialSyncPending)toast("Signed in. Loading your account chats…");
  else toast("Signed in successfully.");
  if(accountSession&&accountSession.user&&accountSession.user.mustChange)renderRequiredPasswordChange();
  else if(!modal.hidden&&currentSettingsView==="account-auth")renderAccount();
@@ -1342,12 +1357,15 @@ function renderAccountAuth(mode){
   if(signup&&password!==mbody.querySelector("#account-password-confirm").value){showAccountAuthError("The passwords do not match.");return}
   const submit=mbody.querySelector("#account-auth-submit");submit.disabled=true;submit.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>'+(signup?"Creating…":"Signing in…");
   try{
-   const body={action:signup?"auth_signup":"auth_login",username,password,localChats:clean().chats,localDead:clean().dead,localCur:S.cur,deviceId:getDeviceId()};
+   const body={action:signup?"auth_signup":"auth_login",username,password};
    if(signup&&siteSignupMode==="code")body.inviteCode=mbody.querySelector("#account-invite-code").value.trim();
    const result=await post(body);
    if(!result||!result.ok||!result.token)throw Object.assign(new Error(result&&result.error||"account_action_failed"),{payload:result});
-   setAccountFromResult(result);applyLoginChats(result);
-   if(!accountSession.user.mustChange)renderAccount();
+   setAccountFromResult(result);
+   accountInitialSyncPending=!accountSession.user.mustChange;
+   accountMergePendingToast=!accountSession.user.mustChange&&S.chats.length>0;
+   applyLoginChats(result);
+   if(!accountSession.user.mustChange){syncAccountChatsNow();renderAccount()}
   }catch(err){showAccountAuthError(err&&err.payload&&err.payload.message||"Couldn't complete sign-in. Check your details and try again.");submit.disabled=false;submit.textContent=signup?"Create account":"Sign in"}
  };
 }
@@ -1383,9 +1401,12 @@ async function performSignoutCurrent(){
 }
 async function performSignoutEverywhere(){
  if(!accountSession||!accountSession.token)return;
- mbody.querySelectorAll("button").forEach(b=>b.disabled=true);setMsg("Revoking all account sessions…");
+ const accepted=await appConfirm({title:"Sign out everywhere?",message:"This revokes all active sessions for your account on every browser. You will need to sign in again. Your server-stored chats will remain.",confirmLabel:"Sign out everywhere",danger:true});
+ if(!accepted){if(!modal.hidden&&!closingModal)renderAccount();return}
+ if(modal.hidden||currentSettingsView!=="app-confirm")return;
+ mbody.innerHTML='<div class="confirm-panel"><span class="choice-icon"><span class="sync-spinner" aria-hidden="true"></span></span><div><strong>Signing out everywhere…</strong><p>Revoking account sessions.</p></div></div>';animateMenuContent();
  try{await post({action:"account_signout_everywhere"});clearSignedInLocalCache();smsg="All sessions were revoked. The server-stored account chats remain.";toast("Signed out everywhere.");renderSettings()}
- catch(e){setMsg(e&&e.payload&&e.payload.message||"Couldn't revoke sessions. Try again.");mbody.querySelectorAll("button").forEach(b=>b.disabled=false)}
+ catch(e){setMsg(e&&e.payload&&e.payload.message||"Couldn't revoke sessions. Try again.");renderAccount()}
 }
 function renderDeleteAccountConfirm(){
  currentSettingsView="delete-account-confirm";$("modal-title").textContent="Delete account";
@@ -1394,43 +1415,92 @@ function renderDeleteAccountConfirm(){
  $("delete-account-form").onsubmit=async e=>{e.preventDefault();const b=$("delete-account-submit");b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Deleting…';try{const result=await post({action:"account_delete",password:$("delete-account-password").value});if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});clearSignedInLocalCache();smsg="Your account and active server-stored chats were deleted.";toast("Account deleted.");renderSettings()}catch(err){const el=$("delete-account-error");el.textContent=err&&err.payload&&err.payload.message||"Couldn't delete the account.";el.hidden=false;b.disabled=false;b.textContent="Delete account"}}
 }
 function escapeAttr(text){return String(text||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
-function renderAdminPanel(tab){
- currentSettingsView="admin";tab=tab||"site";$("modal-title").textContent="Admin panel";
- mbody.innerHTML=`<div class="admin-nav"><button type="button" class="pbtn ${tab==="site"?"active":""}" data-admin-tab="site">Site controls</button><button type="button" class="pbtn ${tab==="accounts"?"active":""}" data-admin-tab="accounts">Accounts</button><button type="button" class="pbtn ${tab==="usage"?"active":""}" data-admin-tab="usage">Usage</button><button type="button" class="pbtn ${tab==="audit"?"active":""}" data-admin-tab="audit">Audit log</button></div><div id="admin-content"><p class="sm"><span class="sync-spinner" aria-hidden="true"></span>Loading admin data…</p></div><div class="data-toolbar"><button type="button" class="pbtn" id="admin-back">Back to Settings</button></div>`;
+let adminPanelGeneration=0,adminContentRequest=0,adminActionPending=false;
+function renderAdminPanel(tab,query){
+ currentSettingsView="admin";tab=tab||"site";const generation=++adminPanelGeneration;adminContentRequest++;
+ $("modal-title").textContent="Admin panel";
+ mbody.innerHTML=`<div class="admin-nav"><button type="button" class="pbtn ${tab==="site"?"active":""}" data-admin-tab="site">Site controls</button><button type="button" class="pbtn ${tab==="accounts"?"active":""}" data-admin-tab="accounts">Accounts</button><button type="button" class="pbtn ${tab==="usage"?"active":""}" data-admin-tab="usage">Usage</button><button type="button" class="pbtn ${tab==="audit"?"active":""}" data-admin-tab="audit">Audit log</button></div><div id="admin-content" aria-live="polite"><p class="sm"><span class="sync-spinner" aria-hidden="true"></span>Loading admin data…</p></div><div class="data-toolbar"><button type="button" class="pbtn" id="admin-back">Back to Settings</button></div>`;
  mbody.querySelectorAll("[data-admin-tab]").forEach(b=>b.onclick=()=>renderAdminPanel(b.dataset.adminTab));$("admin-back").onclick=renderSettings;
- if(tab==="site")loadAdminSiteSettings();else if(tab==="accounts")loadAdminAccounts("");else if(tab==="usage")loadAdminUsage();else loadAdminAudit();
+ if(tab==="site")loadAdminSiteSettings(generation);else if(tab==="accounts")loadAdminAccounts(query||"",generation);else if(tab==="usage")loadAdminUsage(generation);else loadAdminAudit(generation);
 }
-async function loadAdminSiteSettings(){
- const box=$("admin-content");try{const result=await post({action:"admin_settings"});if(!result||!result.settings)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});const v=result.settings;
- box.innerHTML=`<p class="sm">These controls are enforced by the backend. Admin panel responses never include chat titles or messages.</p><form id="admin-settings-form" class="account-form"><label class="check-row"><input id="admin-ai-enabled" type="checkbox"> AI enabled</label><label class="check-row"><input id="admin-access-required" type="checkbox"> Require access code screen on page load</label><label for="admin-signup-mode">Sign-up mode</label><select id="admin-signup-mode"><option value="code">Access code required</option><option value="open">Open sign-up</option><option value="closed">Closed</option></select><label class="check-row"><input id="admin-model-visible" type="checkbox"> Show second model in picker</label><label for="admin-model-name">Second model name</label><input id="admin-model-name" type="text" maxlength="40" autocomplete="off"><p class="sm">The model is shown only when visibility is enabled and a name is set.</p><div class="admin-grid"><label for="admin-guest-limit">Guest daily limit</label><input id="admin-guest-limit" type="number" min="1" max="10000"><label for="admin-guest-pool">Shared guest daily pool</label><input id="admin-guest-pool" type="number" min="1" max="1000000"><label for="admin-account-limit">Account daily limit</label><input id="admin-account-limit" type="number" min="1" max="10000"><label for="admin-global-limit">Global daily limit</label><input id="admin-global-limit" type="number" min="1" max="1000000"></div><label for="admin-site-notice">Site-wide notice (optional)</label><textarea id="admin-site-notice" rows="3" maxlength="240" placeholder="Leave blank to clear the notice"></textarea><label for="admin-new-access-code">Change access code (leave blank to keep current)</label><input id="admin-new-access-code" type="password" maxlength="80" autocomplete="new-password"><p class="access-error" id="admin-settings-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar"><button class="pbtn" id="admin-settings-refresh" type="button">Reload</button><button class="pbtn" id="admin-settings-save" type="submit">Save changes</button></div></form>`;
- $("admin-ai-enabled").checked=!!v.aiEnabled;$("admin-access-required").checked=!!v.accessCodeRequired;$("admin-signup-mode").value=v.signupMode||"code";$("admin-model-visible").checked=!!v.futureModelVisible;$("admin-model-name").value=v.futureModelName||"";$("admin-guest-limit").value=v.guestDailyLimit||8;$("admin-guest-pool").value=v.guestGlobalDailyLimit||100;$("admin-account-limit").value=v.accountDailyLimit||60;$("admin-global-limit").value=v.futureModelGlobalDailyLimit||300;$("admin-site-notice").value=v.siteNotice||"";
- $("admin-settings-refresh").onclick=()=>loadAdminSiteSettings();$("admin-settings-form").onsubmit=async e=>{e.preventDefault();const b=$("admin-settings-save"),error=$("admin-settings-error");error.hidden=true;b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Saving…';
-  const settings={aiEnabled:$("admin-ai-enabled").checked,accessCodeRequired:$("admin-access-required").checked,signupMode:$("admin-signup-mode").value,futureModelVisible:$("admin-model-visible").checked,futureModelName:$("admin-model-name").value.trim(),guestDailyLimit:Number($("admin-guest-limit").value),guestGlobalDailyLimit:Number($("admin-guest-pool").value),accountDailyLimit:Number($("admin-account-limit").value),futureModelGlobalDailyLimit:Number($("admin-global-limit").value),siteNotice:$("admin-site-notice").value,newAccessCode:$("admin-new-access-code").value};
-  try{const saved=await post({action:"admin_update_settings",settings});if(!saved||!saved.ok)throw Object.assign(new Error(saved&&saved.error||"failed"),{payload:saved});siteSignupMode=saved.settings.signupMode||"code";siteNoticeText=saved.settings.siteNotice||"";aiDisabled=!saved.settings.aiEnabled;accessRequired=!!saved.settings.accessCodeRequired;renderSiteNotice();if(Array.isArray(saved.models))updateAvailableModels(saved.models);toast("Site settings saved.");loadAdminSiteSettings()}
-  catch(err){error.textContent=err&&err.payload&&err.payload.message||"Couldn't save settings.";error.hidden=false;b.disabled=false;b.textContent="Save changes"}
- };
- }catch(err){box.innerHTML=`<p class="access-error" role="status">${esc(err&&err.payload&&err.payload.message||"Couldn't load site settings. Check the account session and sheet setup.")}</p><button type="button" class="pbtn" id="admin-settings-retry">Retry</button>`;$("admin-settings-retry").onclick=loadAdminSiteSettings}
+function adminRequestIsCurrent(generation,request){
+ return generation===adminPanelGeneration&&request===adminContentRequest&&currentSettingsView==="admin"&&!modal.hidden&&!!$("admin-content");
 }
-async function loadAdminAccounts(query){
- const box=$("admin-content");box.innerHTML=`<form id="admin-account-search" class="admin-search"><input id="admin-account-query" type="search" maxlength="20" placeholder="Search usernames" value="${escapeAttr(query||"")}"><button type="submit" class="pbtn">Search</button><button type="button" class="pbtn" id="admin-create-admin">Create admin</button></form><div id="admin-account-results"><p class="sm"><span class="sync-spinner" aria-hidden="true"></span>Loading account list…</p></div>`;
- $("admin-account-search").onsubmit=e=>{e.preventDefault();loadAdminAccounts($("admin-account-query").value.trim())};$("admin-create-admin").onclick=renderCreateAdmin;
- try{const result=await post({action:"admin_list_accounts",query:query||""});if(!result||!Array.isArray(result.accounts))throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});const target=$("admin-account-results");if(!target)return;
+async function loadAdminSiteSettings(generation){
+ generation=generation==null?adminPanelGeneration:generation;const request=++adminContentRequest;let box=$("admin-content");
+ if(!box)return;box.innerHTML='<p class="sm"><span class="sync-spinner" aria-hidden="true"></span>Loading site controls…</p>';
+ try{
+  const result=await post({action:"admin_settings"});
+  if(!adminRequestIsCurrent(generation,request))return;
+  if(!result||!result.settings)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});
+  const v=result.settings;box=$("admin-content");
+  box.innerHTML=`<p class="sm">These controls are enforced by the backend. Admin panel responses never include chat titles or messages.</p><form id="admin-settings-form" class="account-form"><label class="check-row"><input id="admin-ai-enabled" type="checkbox"> AI enabled</label><label class="check-row"><input id="admin-access-required" type="checkbox"> Require access code screen on page load</label><label for="admin-signup-mode">Sign-up mode</label><select id="admin-signup-mode"><option value="code">Access code required</option><option value="open">Open sign-up</option><option value="closed">Closed</option></select><label for="admin-site-notice">Site-wide notice (optional)</label><textarea id="admin-site-notice" rows="3" maxlength="240" placeholder="Leave blank to clear the notice"></textarea><label for="admin-new-access-code">Change access code (leave blank to keep current)</label><input id="admin-new-access-code" type="password" maxlength="80" autocomplete="new-password"><p class="sm">Usage limits are enforced by the server and configured separately in Script Properties.</p><p class="access-error" id="admin-settings-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar"><button class="pbtn" id="admin-settings-refresh" type="button">Reload</button><button class="pbtn" id="admin-settings-save" type="submit">Save changes</button></div></form>`;
+  $("admin-ai-enabled").checked=!!v.aiEnabled;$("admin-access-required").checked=!!v.accessCodeRequired;$("admin-signup-mode").value=v.signupMode||"code";$("admin-site-notice").value=v.siteNotice||"";
+  $("admin-settings-refresh").onclick=()=>loadAdminSiteSettings(generation);
+  $("admin-settings-form").onsubmit=async e=>{
+   e.preventDefault();const formGeneration=generation,formRequest=adminContentRequest,b=$("admin-settings-save"),error=$("admin-settings-error");error.hidden=true;b.disabled=true;b.setAttribute("aria-busy","true");b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Saving…';
+   const settings={aiEnabled:$("admin-ai-enabled").checked,accessCodeRequired:$("admin-access-required").checked,signupMode:$("admin-signup-mode").value,siteNotice:$("admin-site-notice").value,newAccessCode:$("admin-new-access-code").value};
+   try{
+    const saved=await post({action:"admin_update_settings",settings});
+    if(formGeneration!==adminPanelGeneration||formRequest!==adminContentRequest||currentSettingsView!=="admin"||modal.hidden)return;
+    if(!saved||!saved.ok)throw Object.assign(new Error(saved&&saved.error||"failed"),{payload:saved});
+    siteSignupMode=saved.settings.signupMode||"code";siteNoticeText=saved.settings.siteNotice||"";aiDisabled=!saved.settings.aiEnabled;accessRequired=!!saved.settings.accessCodeRequired;renderSiteNotice();const codeField=$("admin-new-access-code");if(codeField)codeField.value="";const currentButton=$("admin-settings-save");if(currentButton){currentButton.disabled=false;currentButton.removeAttribute("aria-busy");currentButton.textContent="Save changes"}toast("Site settings saved.");
+   }catch(err){if(formGeneration!==adminPanelGeneration||formRequest!==adminContentRequest||currentSettingsView!=="admin"||modal.hidden)return;const currentError=$("admin-settings-error"),currentButton=$("admin-settings-save");if(currentError){currentError.textContent=err&&err.payload&&err.payload.message||"Couldn't save settings.";currentError.hidden=false}if(currentButton){currentButton.disabled=false;currentButton.removeAttribute("aria-busy");currentButton.textContent="Save changes"}}
+  };
+ }catch(err){if(!adminRequestIsCurrent(generation,request))return;box=$("admin-content");box.innerHTML=`<p class="access-error" role="status">${esc(err&&err.payload&&err.payload.message||"Couldn't load site settings. Check the account session and sheet setup.")}</p><button type="button" class="pbtn" id="admin-settings-retry">Retry</button>`;$("admin-settings-retry").onclick=()=>loadAdminSiteSettings(generation)}
+}
+async function loadAdminAccounts(query,generation){
+ generation=generation==null?adminPanelGeneration:generation;const request=++adminContentRequest;let box=$("admin-content");if(!box)return;
+ box.innerHTML=`<form id="admin-account-search" class="admin-search"><input id="admin-account-query" type="search" maxlength="20" placeholder="Search usernames" value="${escapeAttr(query||"")}"><button type="submit" class="pbtn">Search</button><button type="button" class="pbtn" id="admin-create-admin">Create admin</button></form><div id="admin-account-results"><p class="sm"><span class="sync-spinner" aria-hidden="true"></span>Loading account list…</p></div>`;
+ $("admin-account-search").onsubmit=e=>{e.preventDefault();loadAdminAccounts($("admin-account-query").value.trim(),generation)};$("admin-create-admin").onclick=renderCreateAdmin;
+ try{
+  const result=await post({action:"admin_list_accounts",query:query||""});if(!adminRequestIsCurrent(generation,request))return;
+  if(!result||!Array.isArray(result.accounts))throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});const target=$("admin-account-results");if(!target)return;
   if(!result.accounts.length){target.innerHTML='<p class="sm">No accounts matched that search.</p>';return}
   target.innerHTML=result.accounts.map(a=>`<article class="admin-account"><div class="admin-account-head"><strong>${esc(a.username)}</strong><span class="account-role">${esc(a.role)} · ${esc(a.status)}</span></div><div class="admin-account-meta">Created ${adminDate(a.createdAt)} · Last sign-in ${adminDate(a.lastLoginAt)} · ${Number(a.chatCount)||0} chats</div><div class="admin-account-actions">${a.status==="active"?`<button type="button" class="pbtn" data-account-action="disable" data-target-id="${escapeAttr(a.id)}">Disable</button>`:`<button type="button" class="pbtn" data-account-action="enable" data-target-id="${escapeAttr(a.id)}">Enable</button>`}<button type="button" class="pbtn" data-account-action="reset_password" data-target-id="${escapeAttr(a.id)}">Temp password</button><button type="button" class="pbtn" data-account-action="force_signout" data-target-id="${escapeAttr(a.id)}">Sign out all</button>${a.role==="admin"?`<button type="button" class="pbtn" data-account-action="demote" data-target-id="${escapeAttr(a.id)}" ${a.isBootstrap?"disabled":""}>Demote</button>`:`<button type="button" class="pbtn" data-account-action="promote" data-target-id="${escapeAttr(a.id)}">Make admin</button>`}<button type="button" class="pbtn danger" data-account-action="delete" data-target-id="${escapeAttr(a.id)}" ${a.isBootstrap?"disabled":""}>Delete</button></div></article>`).join("")+(result.truncated?'<p class="sm">Showing the first 200 matching accounts. Narrow your search for more specific results.</p>':"");
   target.querySelectorAll("[data-account-action]").forEach(button=>button.onclick=()=>runAdminAccountAction(button.dataset.accountAction,button.dataset.targetId,query||""));
- }catch(err){const target=$("admin-account-results");if(target)target.innerHTML=`<p class="access-error" role="status">${esc(err&&err.payload&&err.payload.message||"Couldn't load accounts.")}</p>`}
+ }catch(err){if(!adminRequestIsCurrent(generation,request))return;const target=$("admin-account-results");if(target)target.innerHTML=`<p class="access-error" role="status">${esc(err&&err.payload&&err.payload.message||"Couldn't load accounts.")}</p><button type="button" class="pbtn" id="admin-account-retry">Retry</button>`;const retry=$("admin-account-retry");if(retry)retry.onclick=()=>loadAdminAccounts(query,generation)}
 }
 function adminDate(value){const n=Number(value||0);return n?new Date(n).toLocaleString():"Never"}
 function renderCreateAdmin(){
  currentSettingsView="admin-create";$("modal-title").textContent="Create admin account";
  mbody.innerHTML=`<p class="sm">This creates an administrator account with a temporary password that is displayed only once. The new admin must change it at first sign-in.</p><form id="create-admin-form" class="account-form"><label for="create-admin-username">Username</label><input id="create-admin-username" type="text" minlength="3" maxlength="20" pattern="[a-zA-Z0-9_]{3,20}" required><p class="access-error" id="create-admin-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar"><button type="button" class="pbtn" id="create-admin-cancel">Cancel</button><button type="submit" class="pbtn" id="create-admin-submit">Create admin</button></div></form>`;
- $("create-admin-cancel").onclick=()=>renderAdminPanel("accounts");$("create-admin-form").onsubmit=async e=>{e.preventDefault();const b=$("create-admin-submit");b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Creating…';try{const result=await post({action:"admin_account_action",accountAction:"create_admin",username:$("create-admin-username").value.trim().toLowerCase()});if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});renderOneTimePassword("New admin account created",result.username,result.temporaryPassword,result.expiresAt,"accounts")}catch(err){const error=$("create-admin-error");error.textContent=err&&err.payload&&err.payload.message||"Couldn't create the admin account.";error.hidden=false;b.disabled=false;b.textContent="Create admin"}}
+ $("create-admin-cancel").onclick=()=>renderAdminPanel("accounts");$("create-admin-form").onsubmit=async e=>{e.preventDefault();const b=$("create-admin-submit");b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Creating…';try{const result=await post({action:"admin_account_action",accountAction:"create_admin",username:$("create-admin-username").value.trim().toLowerCase()});if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});renderOneTimePassword("New admin account created",result.username,result.temporaryPassword,result.expiresAt,"accounts")}catch(err){const error=$("create-admin-error");if(!error)return;error.textContent=err&&err.payload&&err.payload.message||"Couldn't create the admin account.";error.hidden=false;b.disabled=false;b.textContent="Create admin"}}
 }
+async function appConfirm(options){
+ options=options||{};
+ const title=String(options.title||"Confirm action"),message=String(options.message||"Are you sure you want to continue?"),confirmLabel=String(options.confirmLabel||"Continue"),standalone=options.standalone===true&&modal.hidden,dialogGeneration=standalone?++confirmOverlayGeneration:0;
+ if(pendingAppConfirmation)resolvePendingConfirmation(false);
+ return await new Promise(resolve=>{
+  let settled=false;
+  const settle=value=>{
+   if(settled)return;settled=true;if(pendingAppConfirmation===settle)pendingAppConfirmation=null;
+   if(standalone){const overlay=$("confirm-overlay");overlay.classList.remove("open");overlay.classList.add("closing");setTimeout(()=>{if(dialogGeneration===confirmOverlayGeneration){overlay.hidden=true;overlay.classList.remove("closing");overlay.innerHTML="";overlay.onclick=null}resolve(value)},170)}else resolve(value);
+  };
+  pendingAppConfirmation=settle;
+  const icon=ic(options.danger===false?'<path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z"/>':'<path d="M12 3l9 17H3z"/><path d="M12 9v4M12 17h.01"/>',19,1.8);
+  const panel=`<div class="confirm-panel"><span class="choice-icon">${icon}</span><div><strong>${esc(title)}</strong><p>${esc(message)}</p></div></div><div class="data-toolbar"><button type="button" class="pbtn" id="app-confirm-cancel">Cancel</button><button type="button" class="pbtn ${options.danger===false?"":"danger"}" id="app-confirm-accept">${esc(confirmLabel)}</button></div>`;
+  if(standalone){
+   const overlay=$("confirm-overlay");overlay.innerHTML=`<div class="app-confirm-card">${panel}</div>`;overlay.hidden=false;overlay.classList.remove("closing","open");overlay.setAttribute("aria-label",title);
+   overlay.onclick=e=>{if(e.target===overlay)settle(false)};
+   const card=overlay.querySelector(".app-confirm-card");card.onclick=e=>e.stopPropagation();
+   requestAnimationFrame(()=>{if(dialogGeneration===confirmOverlayGeneration)overlay.classList.add("open")});
+  }else{
+   currentSettingsView="app-confirm";$("modal-title").textContent=title;mbody.innerHTML=panel;animateMenuContent();
+  }
+  $("app-confirm-cancel").onclick=()=>settle(false);$("app-confirm-accept").onclick=()=>settle(true);$("app-confirm-cancel").focus();
+ });
+}
+let pendingAppConfirmation=null,confirmOverlayGeneration=0;
+function resolvePendingConfirmation(value){if(!pendingAppConfirmation)return false;pendingAppConfirmation(value);return true}
 async function runAdminAccountAction(action,targetId,query){
- const labels={disable:"Disable this account?",enable:"Enable this account?",reset_password:"Issue a temporary password?",force_signout:"Sign out this account everywhere?",promote:"Make this user an administrator?",demote:"Remove administrator privileges?",delete:"Permanently delete this account and its server-stored chats?"};
- if(action==="delete"&&!confirm(labels[action]))return;if(action!=="delete"&&action!=="force_signout"&&action!=="reset_password"&&!confirm(labels[action]||"Apply this account action?"))return;
- if(action==="force_signout"&&!confirm(labels[action]))return;if(action==="reset_password"&&!confirm(labels[action]))return;
- try{const result=await post({action:"admin_account_action",accountAction:action,targetId:targetId});if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});if(result.temporaryPassword){renderOneTimePassword("Temporary password",result.username,result.temporaryPassword,result.expiresAt,"accounts");return}toast("Account updated.");loadAdminAccounts(query)}catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't update that account.")}
+ const choices={disable:{title:"Disable account?",message:"This account will no longer be able to sign in, and its active sessions will be revoked.",label:"Disable"},enable:{title:"Enable account?",message:"This account will be allowed to sign in again.",label:"Enable",danger:false},reset_password:{title:"Issue temporary password?",message:"A new one-time password will replace the current password and sign out this account everywhere. It expires after 72 hours.",label:"Issue password"},force_signout:{title:"Sign out everywhere?",message:"All active sessions for this account will be revoked.",label:"Sign out all"},promote:{title:"Make administrator?",message:"This account will gain access to administrative controls.",label:"Make admin"},demote:{title:"Remove administrator role?",message:"This account will lose access to administrative controls.",label:"Demote"},delete:{title:"Delete account permanently?",message:"The account and its active server-stored chats will be deleted. This cannot be undone from WHWai.",label:"Delete account"}};
+ const choice=choices[action];if(!choice)return;
+ const accepted=await appConfirm({title:choice.title,message:choice.message,confirmLabel:choice.label,danger:choice.danger!==false});
+ if(!accepted){if(!modal.hidden&&!closingModal)renderAdminPanel("accounts",query||"");return}
+ if(modal.hidden||currentSettingsView!=="app-confirm")return;
+ const returnQuery=query||"";adminActionPending=true;$("modal-title").textContent="Working…";mbody.innerHTML='<div class="confirm-panel"><span class="choice-icon"><span class="sync-spinner" aria-hidden="true"></span></span><div><strong>Applying admin action…</strong><p>Please keep this window open while WHWai updates the account.</p></div></div>';animateMenuContent();toast(action==="reset_password"?"Issuing temporary password…":"Applying account change…");
+ try{const result=await post({action:"admin_account_action",accountAction:action,targetId:targetId});if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});if(result.temporaryPassword){renderOneTimePassword("Temporary password",result.username,result.temporaryPassword,result.expiresAt,"accounts");return}toast("Account updated.");if(!modal.hidden)renderAdminPanel("accounts",returnQuery)}catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't update that account.");if(!modal.hidden)renderAdminPanel("accounts",returnQuery)}finally{adminActionPending=false}
 }
 function renderOneTimePassword(title,username,password,expiresAt,returnTab){
  currentSettingsView="one-time-password";$("modal-title").textContent=title;
@@ -1438,24 +1508,37 @@ function renderOneTimePassword(title,username,password,expiresAt,returnTab){
  $("one-time-password-copy").onclick=async()=>{try{await navigator.clipboard.writeText(password);$("one-time-password-status").textContent="Copied to clipboard."}catch(e){const el=$("one-time-password-value"),range=document.createRange();range.selectNodeContents(el);const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);$("one-time-password-status").textContent="Select the password above and copy it manually."}};
  $("one-time-password-done").onclick=()=>renderAdminPanel(returnTab||"accounts");
 }
-async function loadAdminUsage(){
- const box=$("admin-content");box.innerHTML='<p class="sm"><span class="sync-spinner" aria-hidden="true"></span>Loading usage…</p>';
- try{const r=await post({action:"admin_usage"});if(!r||!r.ok)throw Object.assign(new Error(r&&r.error||"failed"),{payload:r});
-  const modelRows=(obj)=>Object.keys(obj||{}).sort().map(key=>`<tr><td>${esc(key)}</td><td>${Number(obj[key])||0}</td></tr>`).join("")||'<tr><td colspan="2" class="sm">No usage recorded.</td></tr>';
-  box.innerHTML=`<div class="admin-stat-grid"><div class="admin-stat"><span>Requests today</span><strong>${Number(r.today.total)||0}</strong></div><div class="admin-stat"><span>Requests in 7 days</span><strong>${Number(r.week.total)||0}</strong></div><div class="admin-stat"><span>Accounts</span><strong>${Number(r.accountCount)||0}</strong></div><div class="admin-stat"><span>Failed sign-ins today</span><strong>${Number(r.today.failedSignins)||0}</strong></div><div class="admin-stat"><span>Guest requests today</span><strong>${Number(r.today.guests)||0}</strong></div><div class="admin-stat"><span>Account requests today</span><strong>${Number(r.today.accounts)||0}</strong></div></div><h3>Today by model</h3><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Model</th><th>Requests</th></tr></thead><tbody>${modelRows(r.today.byModel)}</tbody></table></div><h3>Last 7 days by model</h3><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Model</th><th>Requests</th></tr></thead><tbody>${modelRows(r.week.byModel)}</tbody></table></div><p class="sm">Usage counts include requests that reached the chat endpoint, including second-model requests refused by a daily quota. No prompts, responses, or chat text are included.</p><button type="button" class="pbtn" id="admin-usage-reload">Refresh</button>`;
-  $("admin-usage-reload").onclick=loadAdminUsage;
- }catch(err){box.innerHTML=`<p class="access-error" role="status">${esc(err&&err.payload&&err.payload.message||"Couldn't load usage stats.")}</p><button type="button" class="pbtn" id="admin-usage-retry">Retry</button>`;$("admin-usage-retry").onclick=loadAdminUsage}
+async function loadAdminUsage(generation){
+ generation=generation==null?adminPanelGeneration:generation;const request=++adminContentRequest;let box=$("admin-content");if(!box)return;box.innerHTML='<p class="sm"><span class="sync-spinner" aria-hidden="true"></span>Loading usage…</p>';
+ try{const r=await post({action:"admin_usage"});if(!adminRequestIsCurrent(generation,request))return;if(!r||!r.ok)throw Object.assign(new Error(r&&r.error||"failed"),{payload:r});
+  box=$("admin-content");box.innerHTML=`<div class="admin-stat-grid"><div class="admin-stat"><span>Requests today</span><strong>${Number(r.today.total)||0}</strong></div><div class="admin-stat"><span>Requests in 7 days</span><strong>${Number(r.week.total)||0}</strong></div><div class="admin-stat"><span>Accounts</span><strong>${Number(r.accountCount)||0}</strong></div><div class="admin-stat"><span>Failed sign-ins today</span><strong>${Number(r.today.failedSignins)||0}</strong></div><div class="admin-stat"><span>Guest requests today</span><strong>${Number(r.today.guests)||0}</strong></div><div class="admin-stat"><span>Account requests today</span><strong>${Number(r.today.accounts)||0}</strong></div></div><p class="sm">Usage counts contain totals only; no prompts, responses, or chat text are included.</p><button type="button" class="pbtn" id="admin-usage-reload">Refresh</button>`;
+  $("admin-usage-reload").onclick=()=>loadAdminUsage(generation);
+ }catch(err){if(!adminRequestIsCurrent(generation,request))return;box=$("admin-content");box.innerHTML=`<p class="access-error" role="status">${esc(err&&err.payload&&err.payload.message||"Couldn't load usage stats.")}</p><button type="button" class="pbtn" id="admin-usage-retry">Retry</button>`;$("admin-usage-retry").onclick=()=>loadAdminUsage(generation)}
 }
-async function loadAdminAudit(){
- const box=$("admin-content");box.innerHTML='<p class="sm"><span class="sync-spinner" aria-hidden="true"></span>Loading audit log…</p>';
- try{const r=await post({action:"admin_audit"});if(!r||!r.ok)throw Object.assign(new Error(r&&r.error||"failed"),{payload:r});
-  box.innerHTML=`<p class="sm">Latest ${r.entries.length} admin and account-security events. Chat titles and messages are never recorded here.</p>${r.entries.length?r.entries.map(item=>`<article class="admin-audit-item"><strong>${esc(item.action)}</strong><span>${adminDate(item.timestamp)}</span><p>${esc(item.actor)} → ${esc(item.target||"—")}</p><small>${esc(item.detail||"")}</small></article>`).join(""):'<p class="sm">No audit entries yet.</p>'}<button type="button" class="pbtn" id="admin-audit-reload">Refresh</button>`;
-  $("admin-audit-reload").onclick=loadAdminAudit;
- }catch(err){box.innerHTML=`<p class="access-error" role="status">${esc(err&&err.payload&&err.payload.message||"Couldn't load the audit log.")}</p><button type="button" class="pbtn" id="admin-audit-retry">Retry</button>`;$("admin-audit-retry").onclick=loadAdminAudit}
+async function loadAdminAudit(generation){
+ generation=generation==null?adminPanelGeneration:generation;const request=++adminContentRequest;let box=$("admin-content");if(!box)return;box.innerHTML='<p class="sm"><span class="sync-spinner" aria-hidden="true"></span>Loading audit log…</p>';
+ try{const r=await post({action:"admin_audit"});if(!adminRequestIsCurrent(generation,request))return;if(!r||!r.ok)throw Object.assign(new Error(r&&r.error||"failed"),{payload:r});
+  box=$("admin-content");box.innerHTML=`<p class="sm">Latest ${r.entries.length} admin and account-security events. Chat titles and messages are never recorded here.</p>${r.entries.length?r.entries.map(item=>`<article class="admin-audit-item"><strong>${esc(item.action)}</strong><span>${adminDate(item.timestamp)}</span><p>${esc(item.actor)} → ${esc(item.target||"—")}</p><small>${esc(item.detail||"")}</small></article>`).join(""):'<p class="sm">No audit entries yet.</p>'}<button type="button" class="pbtn" id="admin-audit-reload">Refresh</button>`;
+  $("admin-audit-reload").onclick=()=>loadAdminAudit(generation);
+ }catch(err){if(!adminRequestIsCurrent(generation,request))return;box=$("admin-content");box.innerHTML=`<p class="access-error" role="status">${esc(err&&err.payload&&err.payload.message||"Couldn't load the audit log.")}</p><button type="button" class="pbtn" id="admin-audit-retry">Retry</button>`;$("admin-audit-retry").onclick=()=>loadAdminAudit(generation)}
 }
+
+function wrapViewTransition(fn){return function(){const result=fn.apply(this,arguments);if(!modal.hidden)animateMenuContent();return result}}
+renderSettings=wrapViewTransition(renderSettings);
+renderAccountAuth=wrapViewTransition(renderAccountAuth);
+renderAccount=wrapViewTransition(renderAccount);
+renderPasswordChange=wrapViewTransition(renderPasswordChange);
+renderDeleteAccountConfirm=wrapViewTransition(renderDeleteAccountConfirm);
+renderAdminPanel=wrapViewTransition(renderAdminPanel);
+renderCreateAdmin=wrapViewTransition(renderCreateAdmin);
+renderOneTimePassword=wrapViewTransition(renderOneTimePassword);
+renderDataManagement=wrapViewTransition(renderDataManagement);
+renderExportInfo=wrapViewTransition(renderExportInfo);
+renderPrivacyPolicy=wrapViewTransition(renderPrivacyPolicy);
+renderLocalDeleteConfirm=wrapViewTransition(renderLocalDeleteConfirm);
 function finishModalClose(){if(!closingModal)return;if(closeModalTimer!==null){clearTimeout(closeModalTimer);closeModalTimer=null}modal.hidden=true;modal.classList.remove("closing");closingModal=false}
-function closeSettings(){if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}if(modal.hidden||closingModal)return;closingModal=true;modal.classList.add("closing");closeModalTimer=setTimeout(finishModalClose,190)}
-function openSettings(){if(closeModalTimer!==null){clearTimeout(closeModalTimer);closeModalTimer=null}closingModal=false;modal.classList.remove("closing");modal.hidden=false;smsg="";renderSettings()}
+function closeSettings(){if(adminActionPending){toast("Please wait for the admin action to finish.");return}resolvePendingConfirmation(false);if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}if(modal.hidden||closingModal)return;closingModal=true;modal.classList.add("closing");closeModalTimer=setTimeout(finishModalClose,190)}
+function openSettings(initialRenderer){if(closeModalTimer!==null){clearTimeout(closeModalTimer);closeModalTimer=null}closingModal=false;modal.classList.remove("closing");modal.hidden=false;smsg="";if(typeof initialRenderer==="function")initialRenderer();else renderSettings()}
 function gateAdminMode(open){
  const form=$("access-admin-form"),link=$("access-admin-open");form.hidden=!open;link.hidden=!!open;accessForm.hidden=!!open||aiDisabled;accessError.hidden=true;$("access-admin-error").hidden=true;
  if(open){$("access-admin-user").focus()}else if(!aiDisabled)accessInput.focus();
@@ -1464,7 +1547,7 @@ $("access-admin-open").onclick=()=>gateAdminMode(true);$("access-admin-back").on
 $("access-admin-form").onsubmit=async e=>{
  e.preventDefault();const username=$("access-admin-user").value.trim().toLowerCase(),password=$("access-admin-password").value,b=$("access-admin-submit"),error=$("access-admin-error");if(!username||!password)return;
  b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Signing in…';error.hidden=true;
- try{const result=await post({action:"auth_admin_login",username,password});if(!result||!result.ok||!result.token)throw Object.assign(new Error(result&&result.error||"invalid_admin_credentials"),{payload:result});setAccountFromResult(result);$("access-admin-password").value="";accessGate.hidden=true;openApp(true);if(result.user&&result.user.mustChange){openSettings();renderRequiredPasswordChange()}else{openSettings();renderAdminPanel("site")}}
+ try{const result=await post({action:"auth_admin_login",username,password});if(!result||!result.ok||!result.token)throw Object.assign(new Error(result&&result.error||"invalid_admin_credentials"),{payload:result});setAccountFromResult(result);$("access-admin-password").value="";accessGate.hidden=true;openApp(true);if(result.user&&result.user.mustChange){openSettings();renderRequiredPasswordChange()}else{openSettings(()=>renderAdminPanel("site"))}}
  catch(err){error.textContent=err&&err.payload&&err.payload.message||"Invalid admin username or password.";error.hidden=false}
  finally{b.disabled=false;b.textContent="Sign in"}
 };
