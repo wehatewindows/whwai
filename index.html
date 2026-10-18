@@ -817,7 +817,8 @@ async function genTitle(c){
   const raw=(j.text||"").split("\n")[0].trim();
   if(!raw||/^NO_TITLE[.!]*$/i.test(raw))return;
   const t=raw.replace(/["*.]+/g,"").trim().slice(0,40);
-  if(t&&c.auto){c.t=t;c.auto=0;touch(c);save();renderList()}
+  const live=S.chats.find(x=>x.id===c.id);
+  if(t&&live&&live.auto){live.t=t;live.auto=0;touch(live);save();renderList()}
  }catch(e){}
  finally{titleRequests.delete(c.id)}
 }
@@ -833,7 +834,8 @@ async function retitle(id){
   const raw=(j.text||"").split("\n")[0].trim();
   if(!raw||/^NO_TITLE[.!]*$/i.test(raw)){toast("Not enough conversation to make a title yet.");return}
   const t=raw.replace(/["*.]+/g,"").trim().slice(0,40);
-  if(t){c.t=t;c.auto=0;touch(c);save();renderList();toast("Title updated.")}
+  const live=S.chats.find(x=>x.id===id);
+  if(t&&live){live.t=t;live.auto=0;touch(live);save();renderList();toast("Title updated.")}
  }catch(e){toast("Couldn't generate a title right now.")}
  finally{titleRequests.delete(c.id)}
 }
@@ -869,8 +871,10 @@ async function answer(c,q){
    if(i%step===0){tmp.classList.remove("dim");tmp.innerHTML=md(out);if(near())toBottom();await sleepUntilAbort(22,controller.signal)}
   }
   if(responseWasStopped||run!==answerRunId)return;
-  c.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1}:{r:"a",x:full,at:Date.now(),sources:sources,model:c.model||S.model||"aries-1",_l:1});c.u=Date.now();touch(c);save();renderList();renderChat();
-  if(API_URL&&!err&&c.auto)genTitle(c);
+  const target=S.chats.find(x=>x.id===c.id);
+  if(!target)return;
+  target.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1}:{r:"a",x:full,at:Date.now(),sources:sources,model:target.model||S.model||"aries-1",_l:1});target.u=Date.now();touch(target);save();renderList();renderChat();
+  if(API_URL&&!err&&target.auto)genTitle(target);
 
  }finally{
   if(run===answerRunId){
@@ -993,9 +997,13 @@ async function syncAccountChatsNow(){
   const result=await post({action:"account_chats_sync",sessionToken:accountSession.token,chats:clean().chats,dead:clean().dead,cur:S.cur});
   if(result&&Array.isArray(result.chats)){
    const wasInitialSync=accountInitialSyncPending;
+   const localCur=S.cur;
    const before=JSON.stringify({cur:S.cur,chats:S.chats.map(c=>[c.id,c.mu||c.u,c.t,c.p,c.model||"aries-1"]),dead:S.dead});
    const merged=mergeLocalAndRemote({chats:S.chats,dead:S.dead,cur:S.cur},{chats:result.chats,dead:result.dead,cur:result.cur});
-   S.chats=merged.chats;S.dead=merged.dead;S.cur=merged.cur&&S.chats.some(c=>c.id===merged.cur)?merged.cur:(S.chats[0]&&S.chats[0].id)||null;
+   S.chats=merged.chats;S.dead=merged.dead;
+   const fallbackCur=(S.chats[0]&&S.chats[0].id)||null;
+   if(wasInitialSync)S.cur=merged.cur&&S.chats.some(c=>c.id===merged.cur)?merged.cur:fallbackCur;
+   else S.cur=(localCur===null||S.chats.some(c=>c.id===localCur))?localCur:fallbackCur;
    store.set(JSON.stringify(persistedState()));
    const after=JSON.stringify({cur:S.cur,chats:S.chats.map(c=>[c.id,c.mu||c.u,c.t,c.p,c.model||"aries-1"]),dead:S.dead});
    accountInitialSyncPending=false;
