@@ -353,7 +353,7 @@ body.access-locked .frame{filter:blur(6px);transform:scale(1.004);transform-orig
 </style>
 </head>
 <body class="access-locked">
-<div class="access-gate" id="access-gate" role="dialog" aria-modal="true" aria-labelledby="access-title">
+<div class="access-gate" id="access-gate" hidden role="dialog" aria-modal="true" aria-labelledby="access-title">
  <div class="access-card" id="access-card">
   <h2 id="access-title">Enter access code</h2>
   <form class="access-form" id="access-form" autocomplete="off"><input id="access-code" type="text" inputmode="numeric" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="32" aria-label="Enter access code" required><button id="access-unlock" type="submit" aria-label="Submit access code" title="Submit access code">→</button></form>
@@ -800,13 +800,13 @@ function openApp(force){if(aiDisabled&&!force)return;document.body.classList.rem
 function unlockEarlyAccess(token,expiresAt){if(aiDisabled)return;try{const until=Number(expiresAt)||Date.now()+ACCESS_TTL;localStorage.setItem(ACCESS_STORAGE_KEY,String(until));localStorage.setItem(ACCESS_TOKEN_KEY,String(token||""))}catch(e){}openApp()}
 function lockEarlyAccess(showGate){try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.remove("disabled-mode");accessTitle.textContent="Enter access code";accessForm.hidden=false;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false;$("access-admin-form").hidden=true;if(showGate){accessInput.value="";setTimeout(()=>accessInput.focus(),50)}}
 function showAIDisabled(){aiDisabled=true;try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");accessTitle.textContent="WHWai is currently disabled";accessForm.hidden=true;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false}
-lockEarlyAccess(false);setTimeout(()=>accessInput.focus(),100)
+try{if(localStorage.getItem(ACCESS_OFF_KEY)==="1"){accessRequired=false;openApp()}else{document.body.classList.add("access-locked")}}catch(e){document.body.classList.add("access-locked")}
 accessForm.addEventListener("submit",async e=>{e.preventDefault();const code=accessInput.value.trim();if(!code)return;accessButton.disabled=true;accessError.hidden=true;accessError.textContent="";try{if(!API_URL)throw new Error("backend");const result=await post({action:"access_check",code});if(result&&result.aiEnabled===false){showAIDisabled();return}if(result&&result.ok&&result.token){unlockEarlyAccess(result.token,result.expiresAt)}else{accessError.textContent="Incorrect code";accessError.hidden=false;accessInput.select()}}catch(err){accessError.textContent="Unable to verify code";accessError.hidden=false}finally{accessButton.disabled=false}});
-(async function checkBackendStatus(){if(!API_URL)return;try{const status=await post({action:"status_check"});if(status&&Array.isArray(status.models))updateAvailableModels(status.models);siteStatusLoaded=true;siteSignupMode=status.signupMode||"code";siteNoticeText=String(status.siteNotice||"").slice(0,240);renderSiteNotice();if(status&&status.aiEnabled===false){showAIDisabled();return}
+(async function checkBackendStatus(){if(!API_URL){lockEarlyAccess(false);return}try{const status=await post({action:"status_check"});if(status&&Array.isArray(status.models))updateAvailableModels(status.models);siteStatusLoaded=true;siteSignupMode=status.signupMode||"code";siteNoticeText=String(status.siteNotice||"").slice(0,240);renderSiteNotice();if(status&&status.aiEnabled===false){showAIDisabled();return}
  if(status&&status.accessRequired===false){accessRequired=false;try{localStorage.setItem(ACCESS_OFF_KEY,"1")}catch(e){}openApp();return}
  accessRequired=true;try{localStorage.removeItem(ACCESS_OFF_KEY)}catch(e){}
  const typed=accessInput.value;lockEarlyAccess(false);accessInput.value=typed
-}catch(e){}})();
+}catch(e){lockEarlyAccess(false)}})();
 
 const titleRequests=new Set();
 async function genTitle(c){
