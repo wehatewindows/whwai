@@ -1593,7 +1593,7 @@ function paintAdminAccounts(box){
  $("admin-create-account").onclick=renderCreateAccount;
  paintAccountList();
 }
-function isOtherAdminRow(a){return a.role==="admin"&&(!accountSession||!accountSession.user||a.username!==accountSession.user.username)}
+function isOtherAdminRow(a){if(accountSession&&accountSession.user&&accountSession.user.isBootstrap)return false;return a.role==="admin"&&(!accountSession||!accountSession.user||a.username!==accountSession.user.username)}
 function paintAccountList(){
  const target=$("admin-account-results");if(!target||!adminData)return;
  const q=String(adminQuery||"").trim().toLowerCase(),all=adminData.accounts||[];
