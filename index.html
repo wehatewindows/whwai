@@ -351,6 +351,30 @@ body.access-locked .frame{filter:blur(6px);pointer-events:none;user-select:none}
 .one-time-password{font-size:20px;line-height:1.5;letter-spacing:.08em;overflow-wrap:anywhere;background:#f1f1f1;border-radius:12px;padding:12px;margin:12px 0}
 @media(max-width:360px){.admin-grid{grid-template-columns:minmax(0,1fr) minmax(75px,100px)}.admin-stat-grid{gap:6px}.admin-stat{padding:9px}}
 
+.bar .thk{display:inline-flex;align-items:center;gap:5px;width:auto;height:26px;padding:0 9px;border-radius:13px;color:#333}.bar .thk em{font-style:normal;font-size:12.5px;color:#333}.bar .thk[aria-expanded="true"]{background:#ddd}
+.thought-panel{max-height:340px;overflow:auto;width:min(100%,520px);box-sizing:border-box}
+.answer-sources:not([hidden]){animation:panelIn .22s ease-out}
+@keyframes panelIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.steps{list-style:none;margin:0;padding:2px 0 2px 20px;position:relative}
+.steps::before{content:"";position:absolute;left:5px;top:12px;bottom:12px;width:2px;border-radius:2px;background:#d3d3da}
+.steps li{position:relative;padding:4px 0 6px;font-size:13px;line-height:1.45;color:#555;opacity:0;overflow-wrap:anywhere}
+.steps li::before{content:"";position:absolute;left:-19px;top:9px;width:9px;height:9px;border-radius:50%;background:#9aa0a6;box-shadow:0 0 0 3px #f7f7f7}
+.steps.play li{animation:stepIn .32s ease both;animation-delay:var(--d,0ms)}
+.steps li.step-live{color:#222;font-weight:500}
+.steps li.step-live::before{background:#4f7cf0;animation:stepPulse 1.2s ease-in-out infinite}
+.steps li.step-end{color:#2f6ee0;font-weight:500}
+.steps li.step-end::before{background:#2fa35a}
+@keyframes stepIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes stepPulse{0%,100%{box-shadow:0 0 0 3px rgba(79,124,240,.18)}50%{box-shadow:0 0 0 7px rgba(79,124,240,.05)}}
+.live-steps{margin:2px 0}
+.profile-menu{position:absolute;left:14px;bottom:52px;width:min(240px,calc(100% - 28px));background:#fff;border:1px solid #ddd;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.16);padding:8px;z-index:9;animation:rise .15s ease-out}
+.profile-menu[hidden]{display:none}
+.pm-head{padding:6px 10px 8px;font-size:12.5px;color:#555;line-height:1.35}.pm-head strong{display:block;color:#111;font-size:14px;margin-bottom:2px}
+.pm-item{display:block;width:100%;border:0;background:none;border-radius:10px;padding:9px 10px;text-align:left;cursor:pointer;font-size:14px;color:#111}
+.pm-item:hover{background:#f0f0f0}.pm-item:disabled{opacity:.6;cursor:wait}
+.pc-row{margin:4px 0 14px}.pc-label{display:block;font-size:13px;color:#555;margin-bottom:8px}.pc-swatches{display:flex;flex-wrap:wrap;gap:10px}.pc-sw{width:30px;height:30px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #d0d0d8;cursor:pointer;padding:0}.pc-sw.on{box-shadow:0 0 0 2px #111}
+html,body{touch-action:manipulation}
+@media (max-width:640px){.side .profile-menu{left:var(--edge);right:var(--edge);width:auto;bottom:124px}}
 </style>
 </head>
 <body class="access-locked">
@@ -375,7 +399,8 @@ body.access-locked .frame{filter:blur(6px);pointer-events:none;user-select:none}
   <div class="list" id="list"></div>
   <button class="new" id="new" title="New chat" aria-label="New chat">+</button>
   <button class="gear" id="gear" title="Settings" aria-label="Settings"></button>
-  <button class="profile-btn" id="profile-btn" title="Account settings" aria-label="Account settings" hidden></button>
+  <button class="profile-btn" id="profile-btn" title="Account" aria-label="Account menu" aria-haspopup="true" hidden></button>
+  <div class="profile-menu" id="profile-menu" role="menu" hidden></div>
   <div class="cmenu" id="cmenu" role="menu" hidden><button id="cren" role="menuitem"></button><button id="cgen" role="menuitem"></button><button id="cpin" role="menuitem"></button><button id="cdel" class="danger" role="menuitem"></button></div>
  </aside>
  <div class="scrim" id="scrim"></div>
@@ -704,18 +729,20 @@ function renderChat(fresh){
  c.m.forEach((m,i)=>{
   const d=document.createElement("div");d.className="msg"+(m.r==="u"?" u":"");
    if(m.r==="u")d.textContent=m.x;else d.innerHTML=md(m.x);
-   if(m.r==="a"&&m.thinking){const th=document.createElement("details");th.className="thinking";th.innerHTML="<summary>Thought process</summary>";const tb=document.createElement("div");tb.className="thinking-body";tb.textContent=m.thinking;th.appendChild(tb);chatEl.appendChild(th)}
    chatEl.appendChild(d);
    if(m.r==="a"){
     const canRegen=i===c.m.length-1,b=document.createElement("div");b.className="bar";
-   const srcs=Array.isArray(m.sources)?m.sources.filter(source=>source&&typeof source.title==="string"&&typeof source.url==="string"&&/^https:\/\//i.test(source.url)&&!/[\s<>"']/.test(source.url)).slice(0,5):[];
-   const srcIcon='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>';
-   b.innerHTML='<button class="cp" title="Copy" aria-label="Copy">'+I.copy+'</button>'+(canRegen?'<button class="rg" title="Regenerate" aria-label="Regenerate">'+I.regen+'</button>':'')+(srcs.length?'<button class="src" type="button" aria-expanded="false" aria-label="Show sources" title="Show sources">'+srcIcon+'<em>'+srcs.length+(srcs.length===1?' source':' sources')+'</em></button>':'')+'<span data-t="'+m.at+'">'+ago(m.at)+'</span>';
-   const cp=b.querySelector(".cp"),rg=b.querySelector(".rg"),sb=b.querySelector(".src");
-   cp.onclick=()=>copy(m.x,cp);if(rg)rg.onclick=regen;
-   chatEl.appendChild(b);
-   if(sb){const panel=document.createElement("div");panel.className="answer-sources";panel.hidden=true;const ol=document.createElement("ul");srcs.forEach(source=>{const li=document.createElement("li"),a=document.createElement("a");a.textContent=source.title;a.href=source.url;a.target="_blank";a.rel="noopener noreferrer";li.appendChild(a);ol.appendChild(li)});panel.appendChild(ol);chatEl.appendChild(panel);sb.onclick=()=>{const open=panel.hidden;panel.hidden=!open;sb.setAttribute("aria-expanded",String(open))}}
-  }
+    const srcs=Array.isArray(m.sources)?m.sources.filter(source=>source&&typeof source.title==="string"&&typeof source.url==="string"&&/^https:\/\//i.test(source.url)&&!/[\s<>"']/.test(source.url)).slice(0,5):[];
+    const steps=m.thinking?thinkingSteps(m.thinking):[];
+    const srcIcon='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>';
+    const thkIcon='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l2.5-6 4 12 2.5-6H21"/></svg>';
+    b.innerHTML='<button class="cp" title="Copy" aria-label="Copy">'+I.copy+'</button>'+(canRegen?'<button class="rg" title="Regenerate" aria-label="Regenerate">'+I.regen+'</button>':'')+(steps.length?'<button class="thk" type="button" aria-expanded="false" title="Show thought process">'+thkIcon+'<em>Thought process</em></button>':'')+(srcs.length?'<button class="src" type="button" aria-expanded="false" aria-label="Show sources" title="Show sources">'+srcIcon+'<em>'+srcs.length+(srcs.length===1?' source':' sources')+'</em></button>':'')+'<span data-t="'+m.at+'">'+ago(m.at)+'</span>';
+    const cp=b.querySelector(".cp"),rg=b.querySelector(".rg"),tk=b.querySelector(".thk"),sb=b.querySelector(".src");
+    cp.onclick=()=>copy(m.x,cp);if(rg)rg.onclick=regen;
+    chatEl.appendChild(b);
+    if(tk){const tp=document.createElement("div");tp.className="answer-sources thought-panel";tp.hidden=true;tp.innerHTML='<ol class="steps">'+steps.map((x,k)=>'<li style="--d:'+(k*140)+'ms">'+esc(x)+'</li>').join("")+'<li class="step-end" style="--d:'+(steps.length*140)+'ms">Answer</li></ol>';chatEl.appendChild(tp);tk.onclick=()=>togglePanel(tp,tk,true)}
+    if(sb){const panel=document.createElement("div");panel.className="answer-sources";panel.hidden=true;const ol=document.createElement("ul");srcs.forEach(source=>{const li=document.createElement("li"),a=document.createElement("a");a.textContent=source.title;a.href=source.url;a.target="_blank";a.rel="noopener noreferrer";li.appendChild(a);ol.appendChild(li)});panel.appendChild(ol);chatEl.appendChild(panel);sb.onclick=()=>togglePanel(panel,sb,false)}
+   }
  });
  if(fresh){const ms=chatEl.querySelectorAll(".msg");ms[ms.length-1].classList.add("fresh")}
  toBottom();
@@ -844,7 +871,12 @@ async function answer(c,q){
  const activeModelName=(availableModels.find(m=>m.id===selectedModelId())||availableModels[0]||{name:"WHWai"}).name;const thinkingLines=[activeModelName+" is thinking…",activeModelName+" is working on it…",activeModelName+" is putting it together…",activeModelName+" is checking that…",activeModelName+" is almost there…",activeModelName+" is working…"];
  const rareThinkingLines=["idk ask chatgpt","The tiny calculators are meeting…","Consulting the office plant…","My last two neurons are syncing…","The pixels are negotiating…"];
  const thinkingLine=Math.random()<0.08?rareThinkingLines[Math.floor(Math.random()*rareThinkingLines.length)]:thinkingLines[Math.floor(Math.random()*thinkingLines.length)];tmp.setAttribute("aria-label",thinkingLine);tmp.innerHTML='<span class="typing-indicator" aria-hidden="true"><span></span><span></span><span></span></span><span class="thinking-label"></span>';tmp.querySelector(".thinking-label").textContent=thinkingLine;chatEl.appendChild(tmp);toBottom();
- if(selectedModelId()!=="aries-1"){const steps=[activeModelName+" is searching the web…",activeModelName+" is reading sources…",activeModelName+" is thinking…"];let si=0;tmp.querySelector(".thinking-label").textContent=steps[0];const timer=setInterval(()=>{const lab=tmp.querySelector(".thinking-label");if(!lab||!tmp.isConnected){clearInterval(timer);return}si=(si+1)%steps.length;lab.textContent=steps[si]},2600)}
+ if(selectedModelId()!=="aries-1"){
+  tmp.classList.remove("dim");tmp.innerHTML='<ol class="steps play live-steps" aria-hidden="true"></ol>';
+  const ol=tmp.querySelector(".steps"),seq=["Searching the web","Reading the results",activeModelName+" is thinking…"];let si=-1,timer=null;
+  const tick=()=>{if(!ol.isConnected){clearInterval(timer);return}ol.querySelectorAll("li.step-live").forEach(x=>x.classList.remove("step-live"));si++;if(si>=seq.length){clearInterval(timer);return}const li=document.createElement("li");li.textContent=seq[si];if(si===seq.length-1)li.className="step-live";ol.appendChild(li)};
+  tick();timer=setInterval(tick,1800);
+ }
  try{
   let full,err=0,sources=[],thinking="";
   if(API_URL){
@@ -977,7 +1009,7 @@ function getDeviceId(){
 }
 const SLIDERS='<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>';
 $("gear").innerHTML=ic(SLIDERS,16,2.2);
-$("mnew").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',18,2.4);$("mnew").onclick=newChat;$("profile-btn").onclick=()=>openSettings(()=>renderAccount());
+$("mnew").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',18,2.4);$("mnew").onclick=newChat;$("profile-btn").onclick=e=>{e.stopPropagation();const m=$("profile-menu");if(!m)return;if(m.hidden){renderProfileMenu();m.hidden=false}else m.hidden=true};document.addEventListener("click",e=>{const m=$("profile-menu");if(m&&!m.hidden&&!m.contains(e.target))m.hidden=true});
 const modal=$("modal"),mbody=$("mbody");
 let smsg="",currentSettingsView="settings",closeModalTimer=null,closingModal=false,siteSignupMode="code",siteNoticeText="",siteStatusLoaded=false;
 const touch=c=>{c.mu=Date.now()};
@@ -1023,6 +1055,14 @@ async function syncAccountChatsNow(){
   if(localRevision!==revision||accountSyncAgain)scheduleAccountSync();
  }
 }
+const PROFILE_COLORS=["#4f7cf0","#2fa35a","#e2574c","#d9822b","#8e5cd9","#0e9aa7","#d6336c","#4b5563"];
+function profileColorHtml(){const cur=(accountSession&&accountSession.user&&accountSession.user.profileColor)||"#4f7cf0";return '<div class="pc-row"><span class="pc-label">Profile colour</span><div class="pc-swatches">'+PROFILE_COLORS.map(c=>'<button type="button" class="pc-sw'+(c===cur?' on':'')+'" data-color="'+c+'" style="background:'+c+'" aria-label="Colour '+c+'" aria-pressed="'+(c===cur)+'"></button>').join("")+'</div></div>'}
+function wireProfileColors(){document.querySelectorAll(".pc-sw").forEach(btn=>{btn.onclick=async()=>{const color=btn.dataset.color;document.querySelectorAll(".pc-sw").forEach(x=>{x.classList.toggle("on",x===btn);x.setAttribute("aria-pressed",String(x===btn))});try{const r=await post({action:"account_profile_color",sessionToken:accountSession.token,color});if(!r||!r.ok)throw new Error("failed");accountSession.user.profileColor=r.profileColor;renderSyncStatus();toast("Profile colour updated")}catch(e){toast("Couldn't save the colour. Try again.")}}})}
+function profileStateText(){if(accountSyncing)return "Syncing chats…";if(navigator.onLine===false||accountSyncFailed)return "Offline · saved on this device";if(accountLastSync)return "Chats synced · "+new Date(accountLastSync).toLocaleTimeString();return "Not synced yet"}
+function renderProfileMenu(){const menu=$("profile-menu");if(!menu||!accountSession||!accountSession.user)return;menu.innerHTML='<div class="pm-head"><strong>'+esc(accountSession.user.username)+'</strong><span>'+esc(profileStateText())+'</span></div><button class="pm-item" id="pm-sync" type="button"'+(accountSyncing?' disabled':'')+'>'+(accountSyncing?'Syncing…':'Sync now')+'</button><button class="pm-item" id="pm-settings" type="button">Account settings</button>';$("pm-sync").onclick=async()=>{await syncAccountChatsNow();renderProfileMenu();toast(accountSyncFailed?"Couldn't sync right now. Your chats are saved on this device.":"Chats synced")};$("pm-settings").onclick=()=>{hideProfileMenu();openSettings(()=>renderAccount())}}
+function hideProfileMenu(){const m=$("profile-menu");if(m)m.hidden=true}
+function togglePanel(panel,btn,replay){const open=panel.hidden;panel.hidden=!open;btn.setAttribute("aria-expanded",String(open));if(open&&replay){const ol=panel.querySelector(".steps");if(ol){ol.classList.remove("play");void ol.offsetWidth;ol.classList.add("play")}}}
+function thinkingSteps(text){return String(text||"").replace(/([.!?])\s+(?=[A-Z])/g,"$1\n").split(/\n+/).map(s=>s.replace(/^[\s\-*•\d.)]+/,"").replace(/\s+/g," ").trim()).filter(s=>s.length>2).slice(0,14).map(s=>s.length>220?s.slice(0,217)+"…":s)}
 function renderSyncStatus(){
  const b=$("profile-btn");if(!b)return;
  const sideEl=$("side");if(sideEl)sideEl.classList.toggle("has-profile",!!(accountSession&&accountSession.token&&accountSession.user&&accountSession.user.username));
@@ -1033,9 +1073,9 @@ function renderSyncStatus(){
  else if(navigator.onLine===false||accountSyncFailed){state="off";text="Offline · saved on this device"}
  else if(accountLastSync){state="ok";text="Chats synced · last synced "+new Date(accountLastSync).toLocaleTimeString()}
  else{state="idle";text="Not synced yet"}
- b.hidden=false;b.dataset.sync=state;b.textContent=name.charAt(0).toUpperCase();
+ b.hidden=false;b.dataset.sync=state;b.textContent=name.charAt(0).toUpperCase();b.style.background=accountSession.user.profileColor||"";
  b.insertAdjacentHTML("beforeend",'<span class="sync-dot" aria-hidden="true"></span>');
- b.title=name+" · "+text;b.setAttribute("aria-label","Account settings, signed in as "+name+". "+text);
+ b.title=name+" · "+text;b.setAttribute("aria-label","Account menu, signed in as "+name+". "+text);const pm=$("profile-menu");if(pm&&!pm.hidden)renderProfileMenu();
 }
 function mergeLocalAndRemote(first,second){
  const map={},dead={};const t=c=>Number(c.mu||c.u||0);
@@ -1308,11 +1348,11 @@ function renderExportInfo(){
 }
 function renderPrivacyPolicy(){
  currentSettingsView="privacy";$("modal-title").textContent="Privacy Policy";
- mbody.innerHTML=`<div class="policy-takeaways"><strong>Key takeaways</strong><ul><li>Guest chats remain in this browser; signed-in chats are stored on the WHWai server to sync across devices.</li><li>Passwords are stored as salted, iterated hashes, not plain text.</li><li>Admins cannot view chat titles, messages, or other chat content through the WHWai admin panel.</li><li>The owner of the WHWai server could technically access stored data outside the WHWai interface.</li></ul></div>
+ mbody.innerHTML=`<div class="policy-takeaways"><strong>Key takeaways</strong><ul><li>Guest chats remain in this browser; signed-in chats are stored on the WHWai server to sync across devices.</li><li>Passwords are stored as salted, iterated hashes, not plain text.</li><li>Authorised admins and support staff can view select account data, such as usernames and chat counts, to run and support WHWai.</li><li>The owner of the WHWai server could technically access stored data outside the WHWai interface.</li></ul></div>
  <p class="sm">Effective date: October 17, 2026</p>
  <h3>Guest use and accounts</h3><p>WHWai can be used without an account. Guest chats are stored locally in this browser and do not sync. If you create an account or sign in, the chats currently on the device are merged into your account, and the browser keeps a local cache for display and syncing. Accounts use a username and password; no email address is required. Usernames, salted password hashes, account role/status, creation and sign-in timestamps, session-token hashes, and account chat data are stored on the WHWai server. The browser stores the session token so it can reconnect to your account. Sessions expire after 30 days and can be revoked.</p>
  <h3>How data is used</h3><p>Conversation data is used to display, save, restore, and sync chats and to generate replies and titles you request. WHW does not intend to sell conversations, use them for advertising or profiling, or train its own models on them. Admin tools show account metadata and chat counts only. They are designed not to return chat titles, messages, or chat content.</p>
- <h3>Hosting, storage, and access</h3><p>WHWai runs on a server that operates its backend and stores account and chat data. The person who operates that server could technically access that data directly, independently of the WHWai admin panel. Administrators using the WHWai interface cannot read chat content through admin features. Infrastructure providers may process technical data under their own terms and policies.</p>
+ <h3>Hosting, storage, and access</h3><p>Signed-in chats and account details are stored on WHWai's server so they can sync across your devices. Authorised admins and support staff can view select account data to keep the service running and help with issues. Chat content is not shown in admin tools. The people who operate the server can reach stored data directly, outside the WHWai interface.</p>
  <h3>AI processing</h3><p>WHWai sends the prompt and recent conversation context (up to the latest 14 messages) to Groq to generate replies and chat titles. The models are OpenAI open-weight gpt-oss models running on Groq; requests go to Groq, not directly to OpenAI. Groq's documentation says ordinary inference prompts and outputs are not retained by default, but they may be temporarily logged for system reliability or suspected-abuse investigations for up to 30 days unless legally required longer. Zero Data Retention can prevent this limited retention, but WHWai cannot verify whether it is enabled for this account. See <a href="https://console.groq.com/docs/your-data" target="_blank" rel="noopener noreferrer">Groq's data documentation</a> and its <a href="https://console.groq.com/docs/legal/services-agreement" target="_blank" rel="noopener noreferrer">Services Agreement</a>.</p>
  <h3>Usage limits and security</h3><p>The second model, when enabled, uses a server-enforced daily limit. Guest use is limited per browser and by a shared daily guest pool; signed-in use is limited per account. A separate global daily cap adds protection. Browser identifiers are pseudonymous and can be cleared, so the guest pool and global cap are also used to reduce easy limit circumvention.</p>
  <p>Passwords are never intentionally stored or logged in plain text. Account sessions can be revoked, and temporary passwords issued by an admin expire after 72 hours and must be changed at sign-in. WHW intends to take reasonable steps to protect data, but no online service can guarantee complete security. If a serious security issue is identified, WHW may restrict access, disable accounts or the service, revoke sessions, or delete active server-stored data.</p>
@@ -1395,9 +1435,10 @@ function renderAccount(){
  if(!accountSession||!accountSession.token||!accountSession.user){renderSettings();return}
  const u=accountSession.user;
  mbody.innerHTML=`<p><strong>${esc(u.username)}</strong>${u.role==="admin"?" · Administrator":""}</p><p class="sm">Your account chats sync to the server when you make changes and when you return to WHWai. You can use the same account on multiple browsers.</p><p class="sm" id="account-sync-status" role="status">${accountSyncing?"Syncing account chats…":accountLastSync?"Last synced "+ago(accountLastSync):"Account chat sync runs automatically."}</p>
+  ${profileColorHtml()}
   <div class="data-tools-list"><button class="data-tool" id="change-password-open" type="button"><span class="tool-icon">${ic('<rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 1 1 8 0v3"/>',19,1.8)}</span><span class="tool-copy"><strong>Change password</strong><small>Use a new password for future sign-ins.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button><button class="data-tool" id="signout-everywhere" type="button"><span class="tool-icon">${ic('<path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/>',19,1.8)}</span><span class="tool-copy"><strong>Sign out everywhere</strong><small>Revoke every session for this account and clear this browser's account cache.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button><button class="data-tool danger" id="delete-account-open" type="button"><span class="tool-icon">${ic('<path d="M4 7h16M10 11v6M14 11v6"/><path d="M5 7l1 13h12l1-13M9 7V4h6v3"/>',19,1.8)}</span><span class="tool-copy"><strong>Delete account</strong><small>Permanently remove this account and its server-stored chats.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button></div>
   <p class="sm" id="s-msg" role="status">${esc(smsg)}</p><div class="data-toolbar"><button class="pbtn" id="account-back">Back to Settings</button><button class="pbtn" id="signout-current">Sign out</button></div>`;
- $("change-password-open").onclick=()=>renderPasswordChange(false);$("signout-everywhere").onclick=performSignoutEverywhere;$("delete-account-open").onclick=renderDeleteAccountConfirm;$("account-back").onclick=renderSettings;$("signout-current").onclick=performSignoutCurrent;
+ $("change-password-open").onclick=()=>renderPasswordChange(false);wireProfileColors();$("signout-everywhere").onclick=performSignoutEverywhere;$("delete-account-open").onclick=renderDeleteAccountConfirm;$("account-back").onclick=renderSettings;$("signout-current").onclick=performSignoutCurrent;
 }
 function updateAccountSyncStatus(custom){const el=$("account-sync-status");if(el)el.textContent=custom||(accountSyncing?"Syncing account chats…":accountLastSync?"Last synced "+ago(accountLastSync):"Account chat sync runs automatically.")}
 function renderRequiredPasswordChange(){renderPasswordChange(true)}
