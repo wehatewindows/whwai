@@ -374,6 +374,8 @@ body.access-locked .frame{filter:blur(6px);pointer-events:none;user-select:none}
 .pm-item:hover{background:#f0f0f0}.pm-item:disabled{opacity:.6;cursor:wait}
 .pc-label{display:block;font-size:13px;color:#555}.pc-swatches{display:flex;flex-wrap:wrap;gap:10px}.pc-sw{width:30px;height:30px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #d0d0d8;cursor:pointer;padding:0}.pc-sw.on{box-shadow:0 0 0 2px #111}
 html,body{touch-action:manipulation}
+.gate-body{font-size:14px;line-height:1.5;color:#333;margin:0 0 12px}.gate-body[hidden]{display:none}
+.gate-notice{margin:14px 0 0;padding:10px 12px;border-radius:12px;background:#eef4ff;border:1px solid #d9e6ff;color:#24477e;font-size:13px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}.gate-notice[hidden]{display:none}
 .answer-sources,.bar{flex:none}
 .msg h4{margin:8px 0 6px;font-size:15px;font-weight:600}.msg hr{border:0;border-top:1px solid #d8d8de;margin:10px 0}
 .pc-block{display:flex;flex-direction:column;align-items:center;margin:4px 0 14px}
@@ -390,8 +392,10 @@ html,body{touch-action:manipulation}
 <div class="access-gate" id="access-gate" hidden role="dialog" aria-modal="true" aria-labelledby="access-title">
  <div class="access-card" id="access-card">
   <h2 id="access-title">Enter access code</h2>
+  <p class="gate-body" id="gate-body" hidden></p>
   <form class="access-form" id="access-form" autocomplete="off"><input id="access-code" type="text" inputmode="numeric" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="32" aria-label="Enter access code" required><button id="access-unlock" type="submit" aria-label="Submit access code" title="Submit access code">→</button></form>
   <p class="access-error" id="access-error" role="status" aria-live="polite" hidden></p>
+  <div class="gate-notice" id="gate-notice" role="status" hidden></div>
   <button type="button" class="access-admin-link" id="access-admin-open">Admin</button>
   <form class="access-admin-form" id="access-admin-form" hidden autocomplete="off">
    <label for="access-admin-user">Username</label><input id="access-admin-user" type="text" maxlength="20" autocomplete="username" autocapitalize="off" spellcheck="false" required>
@@ -821,7 +825,7 @@ async function post(body,externalSignal){
  if(externalSignal){if(externalSignal.aborted)ctl.abort();else externalSignal.addEventListener("abort",forwardAbort,{once:true})}
  try{
   const r=await fetch(API_URL,{method:"POST",body:JSON.stringify(body),signal:ctl.signal});
-  const j=await r.json();if(j.error){const error=new Error(j.error);error.payload=j;throw error}return j;
+  const j=await r.json();if(j.error==='account_disabled'&&typeof showAccountDisabled==='function')showAccountDisabled(j.message);if(j.error){const error=new Error(j.error);error.payload=j;throw error}return j;
  }finally{
   clearTimeout(tm);
   if(externalSignal)externalSignal.removeEventListener("abort",forwardAbort);
@@ -834,8 +838,10 @@ let aiDisabled=false,accessRequired=true;
 function hasEarlyAccess(){return false}
 function openApp(force){if(aiDisabled&&!force)return;document.body.classList.remove("access-locked");accessGate.hidden=true;$("app-frame").removeAttribute("aria-hidden");setTimeout(showAriesIntroOnce,650)}
 function unlockEarlyAccess(token,expiresAt){if(aiDisabled)return;try{const until=Number(expiresAt)||Date.now()+ACCESS_TTL;localStorage.setItem(ACCESS_STORAGE_KEY,String(until));localStorage.setItem(ACCESS_TOKEN_KEY,String(token||""))}catch(e){}openApp()}
-function lockEarlyAccess(showGate){try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.remove("disabled-mode");accessTitle.textContent="Enter access code";accessForm.hidden=false;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false;$("access-admin-form").hidden=true;if(showGate){accessInput.value="";setTimeout(()=>accessInput.focus(),50)}}
-function showAIDisabled(){aiDisabled=true;try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");accessTitle.textContent="WHWai is currently disabled";accessForm.hidden=true;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false}
+function lockEarlyAccess(showGate){try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.remove("disabled-mode");accessTitle.textContent="Enter access code";$("gate-body").hidden=true;accessForm.hidden=false;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false;$("access-admin-form").hidden=true;if(showGate){accessInput.value="";setTimeout(()=>accessInput.focus(),50)}}
+function showAIDisabled(){aiDisabled=true;try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");accessTitle.textContent="WHWai is currently disabled";accessForm.hidden=true;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false;setGateBody("WHWai is currently disabled. Please check back later.")}
+function setGateBody(text){const b=$("gate-body");if(!b)return;b.textContent=text;b.hidden=!text}
+function showAccountDisabled(message){try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}try{clearAccountSession()}catch(e){}document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");accessTitle.textContent="Your account has been disabled";accessForm.hidden=true;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=true;$("access-admin-form").hidden=true;setGateBody(message||"This account has been disabled. Contact support at wehatewindows.help@gmail.com for help.")}
 try{if(localStorage.getItem(ACCESS_OFF_KEY)==="1"){accessRequired=false;openApp()}else{document.body.classList.add("access-locked")}}catch(e){document.body.classList.add("access-locked")}
 accessForm.addEventListener("submit",async e=>{e.preventDefault();const code=accessInput.value.trim();if(!code)return;accessButton.disabled=true;accessError.hidden=true;accessError.textContent="";try{if(!API_URL)throw new Error("backend");const result=await post({action:"access_check",code});if(result&&result.aiEnabled===false){showAIDisabled();return}if(result&&result.ok&&result.token){unlockEarlyAccess(result.token,result.expiresAt)}else{accessError.textContent="Incorrect code";accessError.hidden=false;accessInput.select()}}catch(err){accessError.textContent="Unable to verify code";accessError.hidden=false}finally{accessButton.disabled=false}});
 (async function checkBackendStatus(){if(!API_URL){lockEarlyAccess(false);return}try{const status=await post({action:"status_check"});if(status&&Array.isArray(status.models))updateAvailableModels(status.models);siteStatusLoaded=true;siteSignupMode=status.signupMode||"code";siteNoticeText=String(status.siteNotice||"").slice(0,240);renderSiteNotice();if(status&&status.aiEnabled===false){showAIDisabled();return}
@@ -1400,7 +1406,7 @@ function renderPrivacyPolicy(){
 }
 let deletingLocalData=false;
 function setMsg(t){smsg=String(t||"");const status=mbody.querySelector("#s-msg");if(status)status.textContent=smsg}
-function renderSiteNotice(){const el=$("site-notice");if(!el)return;el.textContent=siteNoticeText;el.hidden=!siteNoticeText;const main=el.closest(".main");if(main)main.classList.toggle("has-site-notice",!!siteNoticeText)}
+function renderSiteNotice(){const g=$("gate-notice");if(g){g.textContent=siteNoticeText;g.hidden=!siteNoticeText}const el=$("site-notice");if(!el)return;el.textContent=siteNoticeText;el.hidden=!siteNoticeText;const main=el.closest(".main");if(main)main.classList.toggle("has-site-notice",!!siteNoticeText)}
 function animateMenuContent(){mbody.classList.remove("menu-content-enter");void mbody.offsetWidth;mbody.classList.add("menu-content-enter")}
 mbody.addEventListener("animationend",e=>{if(e.target===mbody&&e.animationName==="menuScreenIn")mbody.classList.remove("menu-content-enter")});
 function setAccountFromResult(result){
