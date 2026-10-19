@@ -393,6 +393,8 @@ html,body{touch-action:manipulation}
 @media (max-width:640px){.main .site-notice{top:calc(var(--bar) + 6px);padding:9px 14px}}
 .main.has-site-notice .scroll{padding-top:calc(var(--notice-h,56px) + 22px)}
 @media (max-width:640px){.main.has-site-notice .scroll{padding-top:calc(var(--bar) + var(--notice-h,56px) + 22px)}}
+/* iOS Safari zooms the page when a focused field is under 16px; keep every field at 16px or larger */
+input,textarea,select,[contenteditable="true"]{font-size:max(16px,1rem)!important}
 </style>
 </head>
 <body class="access-locked">
