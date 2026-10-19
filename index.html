@@ -372,8 +372,17 @@ body.access-locked .frame{filter:blur(6px);pointer-events:none;user-select:none}
 .pm-head{padding:6px 10px 8px;font-size:12.5px;color:#555;line-height:1.35}.pm-head strong{display:block;color:#111;font-size:14px;margin-bottom:2px}
 .pm-item{display:block;width:100%;border:0;background:none;border-radius:10px;padding:9px 10px;text-align:left;cursor:pointer;font-size:14px;color:#111}
 .pm-item:hover{background:#f0f0f0}.pm-item:disabled{opacity:.6;cursor:wait}
-.pc-row{margin:4px 0 14px}.pc-label{display:block;font-size:13px;color:#555;margin-bottom:8px}.pc-swatches{display:flex;flex-wrap:wrap;gap:10px}.pc-sw{width:30px;height:30px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #d0d0d8;cursor:pointer;padding:0}.pc-sw.on{box-shadow:0 0 0 2px #111}
+.pc-label{display:block;font-size:13px;color:#555}.pc-swatches{display:flex;flex-wrap:wrap;gap:10px}.pc-sw{width:30px;height:30px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #d0d0d8;cursor:pointer;padding:0}.pc-sw.on{box-shadow:0 0 0 2px #111}
 html,body{touch-action:manipulation}
+.answer-sources,.bar{flex:none}
+.msg h4{margin:8px 0 6px;font-size:15px;font-weight:600}.msg hr{border:0;border-top:1px solid #d8d8de;margin:10px 0}
+.pc-block{display:flex;flex-direction:column;align-items:center;margin:4px 0 14px}
+.pc-avatar{position:relative;width:88px;height:88px;border-radius:50%;border:0;color:#fff;font:600 32px/1 Inter,sans-serif;cursor:pointer;padding:0;display:grid;place-items:center}
+.pc-avatar .pc-pencil{position:absolute;right:0;bottom:0;width:30px;height:30px;border-radius:50%;background:#fff;color:#222;display:grid;place-items:center;box-shadow:0 1px 4px rgba(0,0,0,.2);opacity:0;transition:opacity .15s}
+.pc-avatar:hover .pc-pencil,.pc-avatar:focus-visible .pc-pencil{opacity:1}
+@media (hover:none){.pc-avatar .pc-pencil{opacity:1}}
+.pc-options{margin-top:12px;display:flex;flex-direction:column;align-items:center;gap:8px;animation:panelIn .2s ease-out}
+.pc-options[hidden]{display:none}
 @media (max-width:640px){.side .profile-menu{left:var(--edge);right:var(--edge);width:auto;bottom:124px}}
 </style>
 </head>
@@ -589,7 +598,9 @@ function md(s){
   const flushPara=()=>{if(para.length){html.push("<p>"+para.map(inl).join("<br>")+"</p>");para=[]}};
   const flushList=()=>{if(items.length){html.push("<ul>"+items.map(l=>"<li>"+inl(l.replace(/^[-*]\s+/,""))+"</li>").join("")+"</ul>");items=[]}};
   b.split("\n").forEach(line=>{
-   if(/^\s*[-*]\s+/.test(line)){flushPara();items.push(line.trim())}
+   if(/^\s*-{3,}\s*$/.test(line)){flushPara();flushList();html.push("<hr>")}
+   else if(/^\s*#{1,6}\s+/.test(line)){flushPara();flushList();html.push("<h4>"+inl(line.replace(/^\s*#{1,6}\s+/,"").trim())+"</h4>")}
+   else if(/^\s*[-*]\s+/.test(line)){flushPara();items.push(line.trim())}
    else{flushList();para.push(line)}
   });
   flushList();flushPara();return html.join("");
@@ -871,14 +882,14 @@ async function answer(c,q){
  const activeModelName=(availableModels.find(m=>m.id===selectedModelId())||availableModels[0]||{name:"WHWai"}).name;const thinkingLines=[activeModelName+" is thinking…",activeModelName+" is working on it…",activeModelName+" is putting it together…",activeModelName+" is checking that…",activeModelName+" is almost there…",activeModelName+" is working…"];
  const rareThinkingLines=["idk ask chatgpt","The tiny calculators are meeting…","Consulting the office plant…","My last two neurons are syncing…","The pixels are negotiating…"];
  const thinkingLine=Math.random()<0.08?rareThinkingLines[Math.floor(Math.random()*rareThinkingLines.length)]:thinkingLines[Math.floor(Math.random()*thinkingLines.length)];tmp.setAttribute("aria-label",thinkingLine);tmp.innerHTML='<span class="typing-indicator" aria-hidden="true"><span></span><span></span><span></span></span><span class="thinking-label"></span>';tmp.querySelector(".thinking-label").textContent=thinkingLine;chatEl.appendChild(tmp);toBottom();
- if(selectedModelId()!=="aries-1"){
+ if(selectedModelId()!=="aries-1"&&wantsThinkingView(q)){
   tmp.classList.remove("dim");tmp.innerHTML='<ol class="steps play live-steps" aria-hidden="true"></ol>';
   const ol=tmp.querySelector(".steps"),seq=["Searching the web","Reading the results",activeModelName+" is thinking…"];let si=-1,timer=null;
   const tick=()=>{if(!ol.isConnected){clearInterval(timer);return}ol.querySelectorAll("li.step-live").forEach(x=>x.classList.remove("step-live"));si++;if(si>=seq.length){clearInterval(timer);return}const li=document.createElement("li");li.textContent=seq[si];if(si===seq.length-1)li.className="step-live";ol.appendChild(li)};
   tick();timer=setInterval(tick,1800);
  }
  try{
-  let full,err=0,sources=[],thinking="";
+  let full,err=0,sources=[],thinking="",usedModel=null;
   if(API_URL){
    try{
     const modelId=availableModels.some(m=>m.id===c.model)?c.model:(S.model||"aries-1");
@@ -888,7 +899,11 @@ async function answer(c,q){
     full=j.text||ERR_TEXT;sources=Array.isArray(j.sources)?j.sources:[];thinking=typeof j.thinking==="string"?j.thinking:"";if(!j.text||j.disabled)err=1;
    }catch(e){
     if(responseWasStopped||run!==answerRunId||e&&e.name==="AbortError"&&controller.signal.aborted)return;
-    full=e&&e.message==="daily_limit"?(e.payload&&e.payload.message||"You've reached this model's daily limit. Please try again tomorrow."):e&&e.message==="model_unavailable"?"That model is not available right now.":e&&e.payload&&e.payload.message?e.payload.message:ERR_TEXT;err=1;
+    if(e&&e.payload&&e.payload.error==="vela_unavailable"){
+     try{const j2=await post({action:"chat",model:"aries-1",deviceId:getDeviceId(),messages:hist(c)},controller.signal);if(responseWasStopped||run!==answerRunId)return;full=j2.text||ERR_TEXT;usedModel="aries-1";if(!j2.text)err=1;toast("Vela couldn't finish that answer, so Aries answered instead.")}
+     catch(e2){if(responseWasStopped||run!==answerRunId||e2&&e2.name==="AbortError")return;full=ERR_TEXT;err=1}
+    }
+    else{    full=e&&e.message==="daily_limit"?(e.payload&&e.payload.message||"You've reached this model's daily limit. Please try again tomorrow."):e&&e.message==="model_unavailable"?"That model is not available right now.":e&&e.payload&&e.payload.message?e.payload.message:ERR_TEXT;err=1;}
    }
   }else{
    await sleepUntilAbort(800+Math.random()*700,controller.signal);
@@ -904,7 +919,7 @@ async function answer(c,q){
   if(responseWasStopped||run!==answerRunId)return;
   const target=S.chats.find(x=>x.id===c.id);
   if(!target)return;
-  target.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1}:{r:"a",x:full,at:Date.now(),sources:sources,thinking:thinking,model:target.model||S.model||"aries-1",_l:1});target.u=Date.now();touch(target);save();renderList();renderChat();
+  target.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1}:{r:"a",x:full,at:Date.now(),sources:sources,thinking:thinking,model:usedModel||target.model||S.model||"aries-1",_l:1});target.u=Date.now();touch(target);save();renderList();renderChat();
   if(API_URL&&!err&&target.auto)genTitle(target);
 
  }finally{
@@ -1056,11 +1071,12 @@ async function syncAccountChatsNow(){
  }
 }
 const PROFILE_COLORS=["#4f7cf0","#2fa35a","#e2574c","#d9822b","#8e5cd9","#0e9aa7","#d6336c","#4b5563"];
-function profileColorHtml(){const cur=(accountSession&&accountSession.user&&accountSession.user.profileColor)||"#4f7cf0";return '<div class="pc-row"><span class="pc-label">Profile colour</span><div class="pc-swatches">'+PROFILE_COLORS.map(c=>'<button type="button" class="pc-sw'+(c===cur?' on':'')+'" data-color="'+c+'" style="background:'+c+'" aria-label="Colour '+c+'" aria-pressed="'+(c===cur)+'"></button>').join("")+'</div></div>'}
-function wireProfileColors(){document.querySelectorAll(".pc-sw").forEach(btn=>{btn.onclick=async()=>{const color=btn.dataset.color;document.querySelectorAll(".pc-sw").forEach(x=>{x.classList.toggle("on",x===btn);x.setAttribute("aria-pressed",String(x===btn))});try{const r=await post({action:"account_profile_color",sessionToken:accountSession.token,color});if(!r||!r.ok)throw new Error("failed");accountSession.user.profileColor=r.profileColor;renderSyncStatus();toast("Profile colour updated")}catch(e){toast("Couldn't save the colour. Try again.")}}})}
+function profileColorHtml(){const u=accountSession&&accountSession.user||{};const cur=u.profileColor||"#4f7cf0";const initial=String(u.username||"?").charAt(0).toUpperCase();return '<div class="pc-block"><button type="button" class="pc-avatar" id="pc-avatar" aria-expanded="false" aria-controls="pc-options" aria-label="Change profile color" style="background:'+cur+'"><span>'+esc(initial)+'</span><span class="pc-pencil" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span></button><div class="pc-options" id="pc-options" hidden><span class="pc-label">Profile color</span><div class="pc-swatches">'+PROFILE_COLORS.map(c=>'<button type="button" class="pc-sw'+(c===cur?' on':'')+'" data-color="'+c+'" style="background:'+c+'" aria-label="Color '+c+'" aria-pressed="'+(c===cur)+'"></button>').join("")+'</div></div></div>'}
+function wireProfileColors(){const av=$("pc-avatar"),opts=$("pc-options");if(av&&opts)av.onclick=()=>{const open=opts.hidden;opts.hidden=!open;av.setAttribute("aria-expanded",String(open))};document.querySelectorAll(".pc-sw").forEach(btn=>{btn.onclick=async()=>{const color=btn.dataset.color,previous=(accountSession&&accountSession.user&&accountSession.user.profileColor)||"#4f7cf0";document.querySelectorAll(".pc-sw").forEach(x=>{x.classList.toggle("on",x===btn);x.setAttribute("aria-pressed",String(x===btn))});if(av)av.style.background=color;try{const r=await post({action:"account_profile_color",sessionToken:accountSession.token,color});if(!r||!r.ok)throw new Error("failed");accountSession.user.profileColor=r.profileColor;renderSyncStatus();toast("Profile color updated")}catch(e){if(av)av.style.background=previous;toast("Couldn't save the color. Try again.")}}})}
 function profileStateText(){if(accountSyncing)return "Syncing chats…";if(navigator.onLine===false||accountSyncFailed)return "Offline · saved on this device";if(accountLastSync)return "Chats synced · "+new Date(accountLastSync).toLocaleTimeString();return "Not synced yet"}
 function renderProfileMenu(){const menu=$("profile-menu");if(!menu||!accountSession||!accountSession.user)return;menu.innerHTML='<div class="pm-head"><strong>'+esc(accountSession.user.username)+'</strong><span>'+esc(profileStateText())+'</span></div><button class="pm-item" id="pm-sync" type="button"'+(accountSyncing?' disabled':'')+'>'+(accountSyncing?'Syncing…':'Sync now')+'</button><button class="pm-item" id="pm-settings" type="button">Account settings</button>';$("pm-sync").onclick=async()=>{await syncAccountChatsNow();renderProfileMenu();toast(accountSyncFailed?"Couldn't sync right now. Your chats are saved on this device.":"Chats synced")};$("pm-settings").onclick=()=>{hideProfileMenu();openSettings(()=>renderAccount())}}
 function hideProfileMenu(){const m=$("profile-menu");if(m)m.hidden=true}
+function wantsThinkingView(text){return /(show|see|display|reveal)\b.{0,20}\b(thinking|thought|reasoning)\b|\bthink (it |this )?through\b|\bstep[- ]by[- ]step\b/i.test(String(text||""))}
 function togglePanel(panel,btn,replay){const open=panel.hidden;panel.hidden=!open;btn.setAttribute("aria-expanded",String(open));if(open&&replay){const ol=panel.querySelector(".steps");if(ol){ol.classList.remove("play");void ol.offsetWidth;ol.classList.add("play")}}}
 function thinkingSteps(text){return String(text||"").replace(/([.!?])\s+(?=[A-Z])/g,"$1\n").split(/\n+/).map(s=>s.replace(/^[\s\-*•\d.)]+/,"").replace(/\s+/g," ").trim()).filter(s=>s.length>2).slice(0,14).map(s=>s.length>220?s.slice(0,217)+"…":s)}
 function renderSyncStatus(){
@@ -1346,18 +1362,40 @@ function renderExportInfo(){
   <div class="data-toolbar"><button type="button" class="pbtn" id="export-back">Back to data tools</button><button type="button" class="pbtn" id="export-data">Download chats (.zip)</button></div>`;
  const q=id=>mbody.querySelector("#"+id);q("export-back").onclick=renderDataManagement;q("export-data").onclick=exportLocalData;startExportCooldownTicker();
 }
+function renderTerms(){
+ currentSettingsView="terms";$("modal-title").textContent="Terms of Use";
+ mbody.innerHTML=`<p class="sm">Effective date: [EFFECTIVE DATE]</p>
+ <h3>Who runs WHWai</h3><p>WHWai is operated by [OPERATOR LEGAL NAME], based in [OPERATOR LOCATION]. Contact: <a href="mailto:wehatewindows.help@gmail.com">wehatewindows.help@gmail.com</a>.</p>
+ <h3>Who can use WHWai</h3><p>You must be at least [MINIMUM AGE] to use WHWai. WHWai is in early access, so new accounts currently need an early-access code.</p>
+ <h3>Accounts</h3><p>Keep your password private and tell us if you think someone else has used your account. You are responsible for activity on your account. Temporary passwords must be changed at sign-in and expire after 72 hours.</p>
+ <h3>AI-generated replies</h3><p>Replies from Aries and Vela are generated by AI. They can be wrong, incomplete, or out of date. Check important information before relying on it. Replies are not medical, legal, or financial advice.</p>
+ <h3>Web search and sources</h3><p>Vela can search the web. Search results and linked pages belong to their publishers. WHWai does not endorse them, so check them yourself.</p>
+ <h3>Acceptable use</h3><p>Do not use WHWai to break the law, harass people, create or spread malware, try to access other accounts or the service's systems, scrape or overload the service, or get around usage limits.</p>
+ <h3>Usage limits and changes</h3><p>Daily limits apply to each model and may change. WHWai may limit, suspend, or end access to protect the service or enforce these terms. Features may change over time.</p>
+ <h3>Your content</h3><p>You keep ownership of what you type. You allow WHWai to process it to produce replies and titles and to sync your chats. [CONFIRM LICENSE SCOPE WITH COUNSEL]</p>
+ <h3>No warranty and limits of liability</h3><p>WHWai is provided as is, without warranties of any kind. To the extent the law allows, [OPERATOR LEGAL NAME] is not liable for indirect or consequential losses. [CONFIRM WITH COUNSEL]</p>
+ <h3>Ending your use</h3><p>You can stop using WHWai at any time and delete your chats or account from Settings. We may suspend accounts that break these terms.</p>
+ <h3>Governing law</h3><p>These terms are governed by the laws of [GOVERNING LAW]. [CONFIRM VENUE]</p>
+ <h3>Changes to these terms</h3><p>We may update these terms and will show the new effective date. [NOTICE PERIOD]. Continuing to use WHWai after a change means you accept it.</p>
+ <div class="btns"><button class="pbtn" id="terms-back">Back to Settings</button></div>`;
+ $("terms-back").onclick=renderSettings;
+}
 function renderPrivacyPolicy(){
  currentSettingsView="privacy";$("modal-title").textContent="Privacy Policy";
- mbody.innerHTML=`<div class="policy-takeaways"><strong>Key takeaways</strong><ul><li>Guest chats remain in this browser; signed-in chats are stored on the WHWai server to sync across devices.</li><li>Passwords are stored as salted, iterated hashes, not plain text.</li><li>Authorised admins and support staff can view select account data, such as usernames and chat counts, to run and support WHWai.</li><li>The owner of the WHWai server could technically access stored data outside the WHWai interface.</li></ul></div>
+ mbody.innerHTML=`<div class="policy-takeaways"><strong>Key takeaways</strong><ul><li>Guest chats remain in this browser; signed-in chats are stored on the WHWai server to sync across devices.</li><li>Passwords are stored as salted, iterated hashes, not plain text.</li><li>Authorized admins and support staff can view select account data, such as usernames and chat counts, to run and support WHWai.</li><li>The owner of the WHWai server could technically access stored data outside the WHWai interface.</li></ul></div>
  <p class="sm">Effective date: October 17, 2026</p>
  <h3>Guest use and accounts</h3><p>WHWai can be used without an account. Guest chats are stored locally in this browser and do not sync. If you create an account or sign in, the chats currently on the device are merged into your account, and the browser keeps a local cache for display and syncing. Accounts use a username and password; no email address is required. Usernames, salted password hashes, account role/status, creation and sign-in timestamps, session-token hashes, and account chat data are stored on the WHWai server. The browser stores the session token so it can reconnect to your account. Sessions expire after 30 days and can be revoked.</p>
  <h3>How data is used</h3><p>Conversation data is used to display, save, restore, and sync chats and to generate replies and titles you request. WHW does not intend to sell conversations, use them for advertising or profiling, or train its own models on them. Admin tools show account metadata and chat counts only. They are designed not to return chat titles, messages, or chat content.</p>
- <h3>Hosting, storage, and access</h3><p>Signed-in chats and account details are stored on WHWai's server so they can sync across your devices. Authorised admins and support staff can view select account data to keep the service running and help with issues. Chat content is not shown in admin tools. The people who operate the server can reach stored data directly, outside the WHWai interface.</p>
+ <h3>Hosting, storage, and access</h3><p>Signed-in chats and account details are stored on WHWai's server so they can sync across your devices. Authorized admins and support staff can view select account data to keep the service running and help with issues. Chat content is not shown in admin tools. The people who operate the server can reach stored data directly, outside the WHWai interface.</p>
  <h3>AI processing</h3><p>WHWai sends the prompt and recent conversation context (up to the latest 14 messages) to Groq to generate replies and chat titles. The models are OpenAI open-weight gpt-oss models running on Groq; requests go to Groq, not directly to OpenAI. Groq's documentation says ordinary inference prompts and outputs are not retained by default, but they may be temporarily logged for system reliability or suspected-abuse investigations for up to 30 days unless legally required longer. Zero Data Retention can prevent this limited retention, but WHWai cannot verify whether it is enabled for this account. See <a href="https://console.groq.com/docs/your-data" target="_blank" rel="noopener noreferrer">Groq's data documentation</a> and its <a href="https://console.groq.com/docs/legal/services-agreement" target="_blank" rel="noopener noreferrer">Services Agreement</a>.</p>
  <h3>Usage limits and security</h3><p>The second model, when enabled, uses a server-enforced daily limit. Guest use is limited per browser and by a shared daily guest pool; signed-in use is limited per account. A separate global daily cap adds protection. Browser identifiers are pseudonymous and can be cleared, so the guest pool and global cap are also used to reduce easy limit circumvention.</p>
  <p>Passwords are never intentionally stored or logged in plain text. Account sessions can be revoked, and temporary passwords issued by an admin expire after 72 hours and must be changed at sign-in. WHW intends to take reasonable steps to protect data, but no online service can guarantee complete security. If a serious security issue is identified, WHW may restrict access, disable accounts or the service, revoke sessions, or delete active server-stored data.</p>
  <h3>Export, deletion, and contact</h3><p>You can export chats to a ZIP created in this browser. Anyone who obtains an export can read its conversations, so keep it private. Deleting data on this device removes the local cache and session but does not delete your account or server-stored account chats. You can delete your account from Account settings; this deletes its active server-stored chats and account record. WHW cannot guarantee immediate erasure of backups or historical versions held by infrastructure providers, and downloaded copies or chats retained in a browser that was offline may remain.</p>
- <p>For privacy questions or support, contact <a href="mailto:wehatewindows.help@gmail.com">wehatewindows.help@gmail.com</a>.</p><p class="sm">This policy may change as WHWai's features, providers, or data practices change.</p><div class="btns"><button class="pbtn" id="privacy-back">Back to Settings</button></div>`;
+ <h3>Service providers</h3><p>WHWai uses Groq to generate replies and titles, and Google services to host the WHWai server and store account data. [CONFIRM PROVIDER TERMS AND DATA LOCATIONS]</p>
+<h3>How long data is kept</h3><p>Chats and account details stay until you delete them or delete your account. Sign-in records and usage counts are kept for [RETENTION PERIOD] and then removed. [CONFIRM RETENTION]</p>
+<h3>Children</h3><p>WHWai is not for anyone under [MINIMUM AGE]. If you believe a child has created an account, contact us so we can remove it.</p>
+<h3>Your choices</h3><p>You can export your chats, delete chats, and delete your account. For other requests, such as access or correction, contact us.</p>
+<p>For privacy questions or support, contact <a href="mailto:wehatewindows.help@gmail.com">wehatewindows.help@gmail.com</a>.</p><p class="sm">This policy may change as WHWai's features, providers, or data practices change.</p><div class="btns"><button class="pbtn" id="privacy-back">Back to Settings</button></div>`;
  $("privacy-back").onclick=renderSettings;
 }
 let deletingLocalData=false;
@@ -1396,12 +1434,12 @@ function renderSettings(){
   </div>
   <h3>Data & privacy</h3><p class="sm">Export a backup, import chats, or remove the local copy on this browser.</p><button class="pbtn data-manage-button" id="data-tools-open" type="button"><span class="manage-icon">${ic('<path d="M4 5h16v14H4z"/><path d="M8 9h8M8 12h8M8 15h5"/>',17)}</span><span>Manage your data</span></button>
   ${signed&&user.role==="admin"?`<h3>Administration</h3><button class="pbtn data-manage-button" id="admin-open" type="button"><span class="manage-icon">${ic('<path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z"/>',17)}</span><span>Admin panel</span></button>`:""}
-  <p class="sm" id="s-msg" role="status">${esc(smsg)}</p><div class="privacy-row"><a href="#" class="privacy-link" id="privacy-open">Privacy Policy</a>${accessRequired?'<button type="button" class="lock-link" id="lock-whwai-now">Lock WHWai</button>':''}</div>`;
+  <p class="sm" id="s-msg" role="status">${esc(smsg)}</p><div class="privacy-row"><a href="#" class="privacy-link" id="privacy-open">Privacy Policy</a><a href="#" class="privacy-link" id="terms-open">Terms of Use</a>${accessRequired?'<button type="button" class="lock-link" id="lock-whwai-now">Lock WHWai</button>':''}</div>`;
  const q=id=>mbody.querySelector("#"+id);
  if(q("account-open"))q("account-open").onclick=renderAccount;
  if(q("account-signin"))q("account-signin").onclick=()=>renderAccountAuth("login");
  if(q("account-signup"))q("account-signup").onclick=()=>renderAccountAuth("signup");
- q("data-tools-open").onclick=renderDataManagement;q("privacy-open").onclick=e=>{e.preventDefault();renderPrivacyPolicy()};
+ q("data-tools-open").onclick=renderDataManagement;q("privacy-open").onclick=e=>{e.preventDefault();renderPrivacyPolicy()};q("terms-open").onclick=e=>{e.preventDefault();renderTerms()};
  if(q("admin-open"))q("admin-open").onclick=()=>renderAdminPanel("site");
  if(q("lock-whwai-now"))q("lock-whwai-now").onclick=()=>{closeSettings();side(false);lockEarlyAccess(true)};
 }
@@ -1630,7 +1668,7 @@ renderCreateAccount=wrapViewTransition(renderCreateAccount);
 renderOneTimePassword=wrapViewTransition(renderOneTimePassword);
 renderDataManagement=wrapViewTransition(renderDataManagement);
 renderExportInfo=wrapViewTransition(renderExportInfo);
-renderPrivacyPolicy=wrapViewTransition(renderPrivacyPolicy);
+renderPrivacyPolicy=wrapViewTransition(renderPrivacyPolicy);renderTerms=wrapViewTransition(renderTerms);
 renderLocalDeleteConfirm=wrapViewTransition(renderLocalDeleteConfirm);
 function finishModalClose(){if(!closingModal)return;if(closeModalTimer!==null){clearTimeout(closeModalTimer);closeModalTimer=null}modal.hidden=true;modal.classList.remove("closing");closingModal=false}
 function closeSettings(){if(adminActionPending){toast("Please wait for the admin action to finish.");return}resolvePendingConfirmation(false);if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}if(modal.hidden||closingModal)return;closingModal=true;modal.classList.add("closing");closeModalTimer=setTimeout(finishModalClose,190)}
