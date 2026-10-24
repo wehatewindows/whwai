@@ -416,6 +416,7 @@ input,textarea,select,[contenteditable="true"],.field textarea,.access-form inpu
 .wn-card{box-sizing:border-box;width:min(440px,100%);max-height:calc(100dvh - 36px);overflow:auto;background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:22px;padding:20px 22px;box-shadow:0 12px 40px rgba(0,0,0,.22)}
 .wn-card h2{margin:0 0 4px;font-size:22px;font-weight:600;color:#111}.wn-card h2 .beta-pill{font-size:10px;margin-left:8px;top:-2px}
 .wn-intro{margin:0;font-size:14.5px;color:#555}.wn-list{list-style:none;margin:14px 0 16px;padding:0;display:grid;gap:12px}.wn-list li{display:grid;gap:2px}.wn-list strong{font-size:15px;font-weight:600;color:#111}.wn-list span{font-size:14px;line-height:1.45;color:#555}
+.whatsnew-admin{margin:4px 0 10px}.whatsnew-admin-toggle{display:inline-flex;cursor:pointer;list-style:none;align-items:center}.whatsnew-admin-toggle::-webkit-details-marker{display:none}.whatsnew-admin[open] .whatsnew-admin-toggle{background:#cfcfcf}.whatsnew-admin-body{display:grid;gap:8px;margin-top:10px}
 .wn-ok{width:100%;justify-content:center;min-height:46px}
 </style>
 </head>
@@ -884,18 +885,20 @@ const WHATS_NEW={intro:"WHWai is in beta. Here is what you can do today.",items:
  {t:"Profile color and sync status",d:"Pick your profile color and see at a glance whether your chats are synced."},
  {t:"Your data, your control",d:"Export your chats as a ZIP, import a backup, or delete your data any time from Settings."},
  {t:"Privacy Policy and Terms",d:"Both are in Settings, along with this list under What's new."}]};
-let whatsNewShownThisPage=false;
+let whatsNewShownThisPage=false,whatsNewCfg=null;
+function whatsNewVersion(){return (whatsNewCfg&&whatsNewCfg.version)||WHATS_NEW_VERSION}
 function showWhatsNewIfNeeded(force){
  const box=$("wn");if(!box||accountDisabledGate)return false;
  if(!force){
   if(whatsNewShownThisPage)return false;
-  try{if(localStorage.getItem(WHATS_NEW_KEY)===WHATS_NEW_VERSION){whatsNewShownThisPage=true;return false}}catch(e){}
+  if(whatsNewCfg&&whatsNewCfg.enabled===false)return false;
+  try{if(localStorage.getItem(WHATS_NEW_KEY)===whatsNewVersion()){whatsNewShownThisPage=true;return false}}catch(e){}
  }
  whatsNewShownThisPage=true;
  $("wn-intro").textContent=WHATS_NEW.intro;
  $("wn-list").innerHTML=WHATS_NEW.items.map(it=>"<li><strong>"+esc(it.t)+"</strong><span>"+esc(it.d)+"</span></li>").join("");
  box.hidden=false;
- $("wn-ok").onclick=()=>{box.hidden=true;try{localStorage.setItem(WHATS_NEW_KEY,WHATS_NEW_VERSION)}catch(e){}if(!force)showAriesIntroOnce()};
+ $("wn-ok").onclick=()=>{box.hidden=true;try{localStorage.setItem(WHATS_NEW_KEY,whatsNewVersion())}catch(e){}if(!force)showAriesIntroOnce()};
  setTimeout(()=>{try{$("wn-ok").focus()}catch(e){}},50);
  return true;
 }
@@ -934,7 +937,7 @@ async function downloadDisabledData(){
 }
 try{if(localStorage.getItem(ACCESS_OFF_KEY)==="1"){accessRequired=false;openApp()}else{document.body.classList.add("access-locked")}}catch(e){document.body.classList.add("access-locked")}
 accessForm.addEventListener("submit",async e=>{e.preventDefault();const code=accessInput.value.trim();if(!code)return;accessButton.disabled=true;accessError.hidden=true;accessError.textContent="";try{if(!API_URL)throw new Error("backend");const result=await post({action:"access_check",code});if(result&&result.aiEnabled===false){showAIDisabled();return}if(result&&result.ok&&result.token){unlockEarlyAccess(result.token,result.expiresAt)}else{accessError.textContent="Incorrect code";accessError.hidden=false;accessInput.select()}}catch(err){accessError.textContent="Unable to verify code";accessError.hidden=false}finally{accessButton.disabled=false}});
-(async function checkBackendStatus(){if(!API_URL){lockEarlyAccess(false);return}try{const status=await post({action:"status_check"});if(status&&Array.isArray(status.models))updateAvailableModels(status.models);siteStatusLoaded=true;siteSignupMode=status.signupMode||"code";siteNoticeText=String(status.siteNotice||"").slice(0,240);renderSiteNotice();if(status&&status.aiEnabled===false){showAIDisabled();return}
+(async function checkBackendStatus(){if(!API_URL){lockEarlyAccess(false);return}try{const status=await post({action:"status_check"});if(status&&Array.isArray(status.models))updateAvailableModels(status.models);siteStatusLoaded=true;whatsNewCfg=status.whatsNew||whatsNewCfg;siteSignupMode=status.signupMode||"code";siteNoticeText=String(status.siteNotice||"").slice(0,240);renderSiteNotice();if(status&&status.aiEnabled===false){showAIDisabled();return}
  if(status&&status.accessRequired===false){accessRequired=false;try{localStorage.setItem(ACCESS_OFF_KEY,"1")}catch(e){}openApp();return}
  accessRequired=true;try{localStorage.removeItem(ACCESS_OFF_KEY)}catch(e){}
  const typed=accessInput.value;if(!accessUnlocked)lockEarlyAccess(false);accessInput.value=typed
@@ -1657,16 +1660,16 @@ function paintAdminTab(){
 }
 function paintAdminSite(box){
  const v=adminData.settings||{};
- box.innerHTML=`<p class="sm">These controls are enforced by the backend. Admin responses never include chat titles or messages.</p><form id="admin-settings-form" class="account-form"><label class="check-row"><input id="admin-ai-enabled" type="checkbox"> AI enabled</label><label class="check-row"><input id="admin-access-required" type="checkbox"> Require access code screen on page load</label><label for="admin-signup-mode">Sign-up mode</label><select id="admin-signup-mode"><option value="code">Access code required</option><option value="open">Open sign-up</option><option value="closed">Closed</option></select><label for="admin-site-notice">Site-wide notice (optional)</label><textarea id="admin-site-notice" rows="3" maxlength="240" placeholder="Leave blank to clear the notice"></textarea><label for="admin-new-access-code">Change access code (leave blank to keep current)</label><input id="admin-new-access-code" type="password" maxlength="80" autocomplete="new-password"><p class="access-error" id="admin-settings-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar"><button class="pbtn" id="admin-settings-save" type="submit">Save changes</button></div></form>`;
- $("admin-ai-enabled").checked=!!v.aiEnabled;$("admin-access-required").checked=!!v.accessCodeRequired;$("admin-signup-mode").value=v.signupMode||"code";$("admin-site-notice").value=v.siteNotice||"";
+ box.innerHTML=`<p class="sm">These controls are enforced by the backend. Admin responses never include chat titles or messages.</p><form id="admin-settings-form" class="account-form"><label class="check-row"><input id="admin-ai-enabled" type="checkbox"> AI enabled</label><label class="check-row"><input id="admin-access-required" type="checkbox"> Require access code screen on page load</label><details class="whatsnew-admin"><summary class="pbtn whatsnew-admin-toggle">What's new screen</summary><div class="whatsnew-admin-body"><label class="check-row"><input id="admin-whatsnew-enabled" type="checkbox"> Show the What's new screen to people once per browser</label><label for="admin-whatsnew-version">Version (change it to show the screen again to everyone)</label><input id="admin-whatsnew-version" type="text" maxlength="40"><p class="sm">Turning the screen off hides it from the first visit. People can still open it from Settings.</p></div></details><label for="admin-signup-mode">Sign-up mode</label><select id="admin-signup-mode"><option value="code">Access code required</option><option value="open">Open sign-up</option><option value="closed">Closed</option></select><label for="admin-site-notice">Site-wide notice (optional)</label><textarea id="admin-site-notice" rows="3" maxlength="240" placeholder="Leave blank to clear the notice"></textarea><label for="admin-new-access-code">Change access code (leave blank to keep current)</label><input id="admin-new-access-code" type="password" maxlength="80" autocomplete="new-password"><p class="access-error" id="admin-settings-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar"><button class="pbtn" id="admin-settings-save" type="submit">Save changes</button></div></form>`;
+ $("admin-ai-enabled").checked=!!v.aiEnabled;$("admin-whatsnew-enabled").checked=!!(v.whatsNew&&v.whatsNew.enabled);$("admin-whatsnew-version").value=(v.whatsNew&&v.whatsNew.version)||"";$("admin-access-required").checked=!!v.accessCodeRequired;$("admin-signup-mode").value=v.signupMode||"code";$("admin-site-notice").value=v.siteNotice||"";
  $("admin-settings-form").onsubmit=async e=>{
   e.preventDefault();const b=$("admin-settings-save"),error=$("admin-settings-error");error.hidden=true;b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Saving…';
-  const settings={aiEnabled:$("admin-ai-enabled").checked,accessCodeRequired:$("admin-access-required").checked,signupMode:$("admin-signup-mode").value,siteNotice:$("admin-site-notice").value,newAccessCode:$("admin-new-access-code").value};
+  const settings={aiEnabled:$("admin-ai-enabled").checked,accessCodeRequired:$("admin-access-required").checked,signupMode:$("admin-signup-mode").value,siteNotice:$("admin-site-notice").value,newAccessCode:$("admin-new-access-code").value,whatsNewEnabled:$("admin-whatsnew-enabled").checked,whatsNewVersion:$("admin-whatsnew-version").value.trim()};
   try{
    const saved=await post({action:"admin_update_settings",settings});
    if(!saved||!saved.ok)throw Object.assign(new Error(saved&&saved.error||"failed"),{payload:saved});
    siteSignupMode=saved.settings.signupMode||"code";siteNoticeText=saved.settings.siteNotice||"";aiDisabled=!saved.settings.aiEnabled;accessRequired=!!saved.settings.accessCodeRequired;renderSiteNotice();
-   if(adminData)adminData.settings=saved.settings;toast("Site settings saved.");
+   if(saved.settings&&saved.settings.whatsNew)whatsNewCfg=saved.settings.whatsNew;if(adminData)adminData.settings=saved.settings;toast("Site settings saved.");
    const current=$("admin-content");if(current&&adminTab==="site"&&currentSettingsView==="admin"&&adminData)paintAdminSite(current);
   }catch(err){const el=$("admin-settings-error"),cb=$("admin-settings-save");if(el){el.textContent=err&&err.payload&&err.payload.message||"Couldn't save settings.";el.hidden=false}if(cb){cb.disabled=false;cb.textContent="Save changes"}}
  };
