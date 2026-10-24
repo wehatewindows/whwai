@@ -79,7 +79,7 @@ svg{display:block}
 .round{width:48px;height:48px;border-radius:50%;border:0;background:var(--bub);cursor:pointer;flex:none;display:grid;place-items:center;transition:background .15s,opacity .15s;margin-bottom:1px}
 .round:hover{background:#e2e2e2}.round:disabled{opacity:.45;cursor:default}
 .note{font-size:13px;margin:8px 0 0 4px}
-.toast{position:absolute;left:50%;bottom:64px;transform:translate(-50%,8px);background:#222;color:#fff;border-radius:14px;padding:7px 14px;font-size:13.5px;opacity:0;pointer-events:none;transition:.2s;white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis;z-index:25}
+.toast{position:absolute;left:50%;bottom:64px;transform:translate(-50%,8px);background:#222;color:#fff;border-radius:14px;padding:7px 14px;font-size:13.5px;opacity:0;pointer-events:none;transition:.2s;white-space:normal;max-width:calc(100% - 24px);text-align:center;line-height:1.35;z-index:25}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .scrim{display:none;position:absolute;inset:0;background:rgba(0,0,0,.25);z-index:5}
 .gear{position:absolute;left:12px;bottom:12px;width:30px;height:30px;border-radius:50%;border:0;background:#bbb;color:#fff;padding:0;display:grid;place-items:center;cursor:pointer;transition:background .15s}
@@ -868,10 +868,10 @@ async function post(body,externalSignal){
 const ACCESS_STORAGE_KEY="whwai.earlyAccessUntil.v1",ACCESS_TOKEN_KEY="whwai.earlyAccessToken.v1",ACCESS_OFF_KEY="whwai.accessCodeOff.v1",ACCESS_TTL=24*60*60*1000;
 try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}
 const accessGate=$("access-gate"),accessCard=$("access-card"),accessTitle=$("access-title"),accessForm=$("access-form"),accessInput=$("access-code"),accessError=$("access-error"),accessButton=$("access-unlock");
-let aiDisabled=false,accessRequired=true,accountDisabledGate=false;
+let aiDisabled=false,accessRequired=true,accountDisabledGate=false,accessUnlocked=false;
 function hasEarlyAccess(){return false}
 function openApp(force){if(accountDisabledGate)return;if(aiDisabled&&!force)return;document.body.classList.remove("access-locked");accessGate.hidden=true;$("app-frame").removeAttribute("aria-hidden");setTimeout(()=>{if(!showWhatsNewIfNeeded())showAriesIntroOnce()},650)}
-function unlockEarlyAccess(token,expiresAt){if(aiDisabled)return;try{const until=Number(expiresAt)||Date.now()+ACCESS_TTL;localStorage.setItem(ACCESS_STORAGE_KEY,String(until));localStorage.setItem(ACCESS_TOKEN_KEY,String(token||""))}catch(e){}openApp();if(accountSession&&accountSession.token&&!(accountSession.user&&accountSession.user.username)&&typeof resumeAccountSession==="function")resumeAccountSession()}
+function unlockEarlyAccess(token,expiresAt){if(aiDisabled)return;accessUnlocked=true;try{const until=Number(expiresAt)||Date.now()+ACCESS_TTL;localStorage.setItem(ACCESS_STORAGE_KEY,String(until));localStorage.setItem(ACCESS_TOKEN_KEY,String(token||""))}catch(e){}openApp();if(accountSession&&accountSession.token&&!(accountSession.user&&accountSession.user.username)&&typeof resumeAccountSession==="function")resumeAccountSession()}
 function lockEarlyAccess(showGate){if(accountDisabledGate)return;try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.remove("disabled-mode");accessTitle.textContent="Enter access code";$("gate-body").hidden=true;$("gate-actions").hidden=true;accessForm.hidden=false;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false;$("access-admin-form").hidden=true;if(showGate){accessInput.value="";setTimeout(()=>accessInput.focus(),50)}}
 function showAIDisabled(){aiDisabled=true;try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");accessTitle.textContent="WHWai is currently disabled";$("gate-actions").hidden=true;accessForm.hidden=true;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false;setGateBody("WHWai is currently disabled. Please check back later.")}
 function setGateBody(text){const b=$("gate-body");if(!b)return;b.textContent=text;b.hidden=!text}
@@ -937,8 +937,8 @@ accessForm.addEventListener("submit",async e=>{e.preventDefault();const code=acc
 (async function checkBackendStatus(){if(!API_URL){lockEarlyAccess(false);return}try{const status=await post({action:"status_check"});if(status&&Array.isArray(status.models))updateAvailableModels(status.models);siteStatusLoaded=true;siteSignupMode=status.signupMode||"code";siteNoticeText=String(status.siteNotice||"").slice(0,240);renderSiteNotice();if(status&&status.aiEnabled===false){showAIDisabled();return}
  if(status&&status.accessRequired===false){accessRequired=false;try{localStorage.setItem(ACCESS_OFF_KEY,"1")}catch(e){}openApp();return}
  accessRequired=true;try{localStorage.removeItem(ACCESS_OFF_KEY)}catch(e){}
- const typed=accessInput.value;lockEarlyAccess(false);accessInput.value=typed
-}catch(e){lockEarlyAccess(false)}})();
+ const typed=accessInput.value;if(!accessUnlocked)lockEarlyAccess(false);accessInput.value=typed
+}catch(e){if(!accessUnlocked)lockEarlyAccess(false)}})();
 
 const titleRequests=new Set();
 async function genTitle(c){
@@ -1136,7 +1136,9 @@ async function syncAccountChatsNow(){
  if(navigator.onLine===false){accountSyncAgain=true;if(accountInitialSyncPending){accountInitialSyncPending=false;renderChat()}return}
  accountSyncing=true;accountSyncAgain=false;const revision=localRevision;renderSyncStatus();
  try{
-  const result=await post({action:"account_chats_sync",sessionToken:accountSession.token,chats:clean().chats,dead:clean().dead,cur:S.cur});
+  const syncToken=accountSession.token;
+  const result=await post({action:"account_chats_sync",sessionToken:syncToken,chats:clean().chats,dead:clean().dead,cur:S.cur});
+  if(!accountSession||accountSession.token!==syncToken){accountSyncing=false;renderSyncStatus();return}
   if(result&&Array.isArray(result.chats)){
    const wasInitialSync=accountInitialSyncPending;
    const localCur=S.cur;
@@ -1157,7 +1159,7 @@ async function syncAccountChatsNow(){
  }catch(e){
   accountInitialSyncPending=false;
   if(e&&e.message==="invalid_session"){
-   clearAccountSession();accountMergePendingToast=false;S={chats:[],cur:null,dead:[],model:S.model||"aries-1",col:!!S.col};save(true);renderList();renderChat();toast("Your sign-in expired. Sign in again to load your account chats.");
+   clearAccountSession();accountMergePendingToast=false;renderList();renderChat();toast("Your sign-in expired. Your chats are still saved on this device. Sign in again to sync them.");
   }else if(e&&e.message==="password_change_required"){
    if(accountSession&&accountSession.user)accountSession.user.mustChange=true;renderRequiredPasswordChange();
   }else{accountSyncAgain=true;accountSyncFailed=true;renderChat();if(!modal.hidden&&currentSettingsView==="account")updateAccountSyncStatus("Offline or unable to sync right now. Your local changes remain saved.")}
@@ -1175,7 +1177,7 @@ function hideProfileMenu(){const m=$("profile-menu");if(m)m.hidden=true}
 function wantsThinkingView(text){return /(show|see|display|reveal)\b.{0,20}\b(thinking|thought|reasoning)\b|\bthink (it |this )?through\b|\bstep[- ]by[- ]step\b/i.test(String(text||""))}
 function togglePanel(panel,btn,replay){const open=panel.hidden;panel.hidden=!open;btn.setAttribute("aria-expanded",String(open));if(open&&replay){const ol=panel.querySelector(".steps");if(ol){ol.classList.remove("play");void ol.offsetWidth;ol.classList.add("play")}}}
 function thinkingSteps(text){return String(text||"").replace(/([.!?])\s+(?=[A-Z])/g,"$1\n").split(/\n+/).map(s=>s.replace(/^[\s\-*•\d.)]+/,"").replace(/\s+/g," ").trim()).filter(s=>s.length>2).slice(0,14).map(s=>s.length>220?s.slice(0,217)+"…":s)}
-setInterval(()=>{if(!accountDisabledGate&&accountSession&&accountSession.token&&accountReady&&!(accountSession.user&&accountSession.user.mustChange))post({action:"account_me",sessionToken:accountSession.token}).catch(e=>{if(e&&e.message==="invalid_session"&&accountSession){clearAccountSession();S={chats:[],cur:null,dead:[],model:S.model||"aries-1",col:!!S.col};save(true);renderList();renderChat();toast("Your sign-in expired. Sign in again to load your account chats.")}})},60000);
+setInterval(()=>{if(!accountDisabledGate&&accountSession&&accountSession.token&&accountReady&&!(accountSession.user&&accountSession.user.mustChange))post({action:"account_me",sessionToken:accountSession.token}).catch(e=>{if(e&&e.message==="invalid_session"&&accountSession){clearAccountSession();renderList();renderChat();toast("Your sign-in expired. Your chats are still saved on this device. Sign in again to sync them.")}})},60000);
 function renderSyncStatus(){
  const b=$("profile-btn");if(!b)return;
  const sideEl=$("side");if(sideEl)sideEl.classList.toggle("has-profile",!!(accountSession&&accountSession.token&&accountSession.user&&accountSession.user.username));
@@ -1213,7 +1215,7 @@ async function resumeAccountSession(){
  }catch(e){
   if(e&&e.message==="accesslocked"){accountReady=true;accountInitialSyncPending=false;renderSyncStatus();return}
   if(e&&e.message==="invalid_session"){
-   clearAccountSession();S={chats:[],cur:null,dead:[],model:S.model||"aries-1",col:!!S.col};save(true);renderList();renderChat();toast("Your account session expired. Sign in again to restore your chats.");
+   clearAccountSession();renderList();renderChat();toast("Your account session expired. Your chats are still saved on this device. Sign in again to sync them.");
   }else{accountReady=true;accountSyncAgain=true;}
  }
 }
