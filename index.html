@@ -447,13 +447,12 @@ input,textarea,select,[contenteditable="true"],.field textarea,.access-form inpu
   <button class="gear" id="gear" title="Settings" aria-label="Settings"></button>
   <button class="profile-btn" id="profile-btn" title="Account" aria-label="Account menu" aria-haspopup="true" hidden></button>
   <div class="profile-menu" id="profile-menu" role="menu" hidden></div>
-  <div class="cmenu" id="cmenu" role="menu" hidden><button id="cren" role="menuitem"></button><button id="cgen" role="menuitem"></button><button id="cpin" role="menuitem"></button><button id="cdel" class="danger" role="menuitem"></button></div>
+  <div class="cmenu" id="cmenu" role="menu" hidden><button id="cren" role="menuitem"></button><button id="cgen" role="menuitem"></button><button id="cpin" role="menuitem"></button><button id="cexp" role="menuitem"></button><button id="cdel" class="danger" role="menuitem"></button></div>
  </aside>
  <div class="scrim" id="scrim"></div>
  <div class="modal" id="modal" hidden><div class="mcard" role="dialog" aria-label="Settings"><div class="mh"><b id="modal-title">Settings</b><button id="mx" aria-label="Close">&times;</button></div><div id="mbody"></div></div></div>
  <div class="app-confirm-overlay" id="confirm-overlay" hidden role="alertdialog" aria-modal="true" aria-label="Confirm action"></div>
- <div class="wn-overlay" id="wn" hidden role="dialog" aria-modal="true" aria-labelledby="wn-title"><div class="wn-card"><h2 id="wn-title">What's new<span class="beta-pill">Beta</span></h2><p class="wn-intro" id="wn-intro"></p><ul class="wn-list" id="wn-list"></ul><button type="button" class="pbtn wn-ok" id="wn-ok">Got it</button></div></div>
- <section class="main">
+  <section class="main">
   <button class="expand" id="expand" title="Show sidebar" aria-label="Show sidebar"></button>
   <div class="mbar"><button class="menubtn" id="mopen" title="Open chats and settings" aria-label="Open chats and settings" aria-expanded="false"></button><span class="mt">WHW<b>ai</b><span class="beta-pill">Beta</span></span><button class="mnew" id="mnew" title="New chat" aria-label="New chat"></button></div>
   <div class="site-notice" id="site-notice" hidden role="status"></div>
@@ -498,7 +497,9 @@ $("new").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',16,2.6);$("send").innerHTML
 
 let mem=null;
 const ACCOUNT_SESSION_STORAGE_KEY="whwai.account.session.v1";
-let accountSyncFailed=false;let accountSession=null,accountReady=true,accountSyncTimer=null,accountSyncing=false,accountSyncAgain=false,accountLastSync=0,accountInitialSyncPending=false,accountMergePendingToast=false;
+let accountSyncFailed=false;let syncRetryDelay=0,syncRetryTimer=null;
+function scheduleSyncRetry(){if(accountDisabledGate||!accountSession||!accountSession.token)return;if(syncRetryTimer!==null)clearTimeout(syncRetryTimer);syncRetryDelay=Math.min(syncRetryDelay?syncRetryDelay*2:4000,120000);syncRetryTimer=setTimeout(()=>{syncRetryTimer=null;syncAccountChatsNow()},syncRetryDelay)}
+let accountSession=null,accountReady=true,accountSyncTimer=null,accountSyncing=false,accountSyncAgain=false,accountLastSync=0,accountInitialSyncPending=false,accountMergePendingToast=false;
 try{const savedSession=localStorage.getItem(ACCOUNT_SESSION_STORAGE_KEY);if(savedSession&&savedSession.length<300){accountSession={token:savedSession,user:null};accountReady=false}}catch(e){}
 const store={get(){try{return localStorage.getItem(KEY)}catch(e){return mem}},set(v){mem=v;try{localStorage.setItem(KEY,v)}catch(e){}}};
 let canSave=true;try{localStorage.setItem(KEY+".t","1");localStorage.removeItem(KEY+".t")}catch(e){canSave=false}
@@ -622,7 +623,7 @@ const chatEl=$("chat"),ta=$("in"),orb=$("orb"),list=$("list"),sendBtn=$("send");
 let busy=false,activeAnswerController=null,responseWasStopped=false,answerRunId=0;
 if(LOGO)document.querySelectorAll(".logo,.expand").forEach(l=>l.style.background="url("+LOGO+") center/cover no-repeat");
 
-const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const esc=s=>String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 function md(s){
  const normalize=t=>String(t||"")
   .replace(/\r\n?/g,"\n")
@@ -704,7 +705,7 @@ function openMenu(id,btn){
  closeMenu();mid=id;
  const m=$("cmenu");
  $("cren").innerHTML=ic(PEN,16)+"<span>Rename</span>";
- $("cgen").innerHTML=ic(SPARK,16)+"<span>Generate title</span>";
+ $("cgen").innerHTML=ic(SPARK,16)+"<span>Generate title</span>";$("cexp").innerHTML=ic("<path d=\"M12 4v11M7 10l5 5 5-5\"/><path d=\"M5 20h14\"/>",16)+"<span>Export chat</span>";
  $("cpin").innerHTML=ic(PIN,16)+"<span>"+(c.p?"Unpin":"Pin")+"</span>";
  $("cdel").innerHTML=ic(TRASH,16)+"<span>Delete</span>";
  m.hidden=false;
@@ -871,6 +872,14 @@ try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_T
 const accessGate=$("access-gate"),accessCard=$("access-card"),accessTitle=$("access-title"),accessForm=$("access-form"),accessInput=$("access-code"),accessError=$("access-error"),accessButton=$("access-unlock");
 let aiDisabled=false,accessRequired=true,accountDisabledGate=false,accessUnlocked=false;
 function hasEarlyAccess(){return false}
+function syncAppInert(){
+ const frame=$("app-frame");if(!frame)return;
+ const blocked=!accessGate.hidden||!$("wn").hidden;
+ const modalOpen=!modal.hidden;
+ frame.inert=blocked;
+ Array.from(frame.children).forEach(ch=>{ch.inert=!blocked&&modalOpen&&!ch.contains(modal)});
+}
+setInterval(syncAppInert,250);
 function openApp(force){if(accountDisabledGate)return;if(aiDisabled&&!force)return;document.body.classList.remove("access-locked");accessGate.hidden=true;$("app-frame").removeAttribute("aria-hidden");setTimeout(()=>{if(!showWhatsNewIfNeeded())showAriesIntroOnce()},650)}
 function unlockEarlyAccess(token,expiresAt){if(aiDisabled)return;accessUnlocked=true;try{const until=Number(expiresAt)||Date.now()+ACCESS_TTL;localStorage.setItem(ACCESS_STORAGE_KEY,String(until));localStorage.setItem(ACCESS_TOKEN_KEY,String(token||""))}catch(e){}openApp();if(accountSession&&accountSession.token&&!(accountSession.user&&accountSession.user.username)&&typeof resumeAccountSession==="function")resumeAccountSession()}
 function lockEarlyAccess(showGate){if(accountDisabledGate)return;try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.remove("disabled-mode");accessTitle.textContent="Enter access code";$("gate-body").hidden=true;$("gate-actions").hidden=true;accessForm.hidden=false;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false;$("access-admin-form").hidden=true;if(showGate){accessInput.value="";setTimeout(()=>accessInput.focus(),50)}}
@@ -897,8 +906,8 @@ function showWhatsNewIfNeeded(force){
  whatsNewShownThisPage=true;
  $("wn-intro").textContent=WHATS_NEW.intro;
  $("wn-list").innerHTML=WHATS_NEW.items.map(it=>"<li><strong>"+esc(it.t)+"</strong><span>"+esc(it.d)+"</span></li>").join("");
- box.hidden=false;
- $("wn-ok").onclick=()=>{box.hidden=true;try{localStorage.setItem(WHATS_NEW_KEY,whatsNewVersion())}catch(e){}if(!force)showAriesIntroOnce()};
+ box.hidden=false;syncAppInert();
+ $("wn-ok").onclick=()=>{box.hidden=true;syncAppInert();try{localStorage.setItem(WHATS_NEW_KEY,whatsNewVersion())}catch(e){}if(!force)showAriesIntroOnce()};
  setTimeout(()=>{try{$("wn-ok").focus()}catch(e){}},50);
  return true;
 }
@@ -936,7 +945,8 @@ async function downloadDisabledData(){
  }catch(e){st.textContent="Could not prepare your download. Try again.";btn.disabled=false}
 }
 try{if(localStorage.getItem(ACCESS_OFF_KEY)==="1"){accessRequired=false;openApp()}else{document.body.classList.add("access-locked")}}catch(e){document.body.classList.add("access-locked")}
-accessForm.addEventListener("submit",async e=>{e.preventDefault();const code=accessInput.value.trim();if(!code)return;accessButton.disabled=true;accessError.hidden=true;accessError.textContent="";try{if(!API_URL)throw new Error("backend");const result=await post({action:"access_check",code});if(result&&result.aiEnabled===false){showAIDisabled();return}if(result&&result.ok&&result.token){unlockEarlyAccess(result.token,result.expiresAt)}else{accessError.textContent="Incorrect code";accessError.hidden=false;accessInput.select()}}catch(err){accessError.textContent="Unable to verify code";accessError.hidden=false}finally{accessButton.disabled=false}});
+accessForm.addEventListener("submit",async e=>{e.preventDefault();const code=accessInput.value.trim();if(!code)return;accessButton.disabled=true;accessError.hidden=true;accessError.textContent="";try{if(!API_URL)throw new Error("backend");const result=await post({action:"access_check",code,deviceId:getDeviceId()});if(result&&result.aiEnabled===false){showAIDisabled();return}
+   if(result&&result.error==="access_locked_temporarily"){accessError.textContent="Too many attempts. Wait 15 minutes and try again.";accessError.hidden=false;return}if(result&&result.ok&&result.token){unlockEarlyAccess(result.token,result.expiresAt)}else{accessError.textContent="Incorrect code";accessError.hidden=false;accessInput.select()}}catch(err){accessError.textContent="Unable to verify code";accessError.hidden=false}finally{accessButton.disabled=false}});
 (async function checkBackendStatus(){if(!API_URL){lockEarlyAccess(false);return}try{const status=await post({action:"status_check"});if(status&&Array.isArray(status.models))updateAvailableModels(status.models);siteStatusLoaded=true;whatsNewCfg=status.whatsNew||whatsNewCfg;siteSignupMode=status.signupMode||"code";siteNoticeText=String(status.siteNotice||"").slice(0,240);renderSiteNotice();if(status&&status.aiEnabled===false){showAIDisabled();return}
  if(status&&status.accessRequired===false){accessRequired=false;try{localStorage.setItem(ACCESS_OFF_KEY,"1")}catch(e){}openApp();return}
  accessRequired=true;try{localStorage.removeItem(ACCESS_OFF_KEY)}catch(e){}
@@ -995,6 +1005,7 @@ async function answer(c,q){
     if(c.model!==modelId)c.model=modelId;
     const j=await post({action:"chat",model:modelId,deviceId:getDeviceId(),messages:hist(c)},controller.signal);
     if(responseWasStopped||run!==answerRunId)return;
+    if(j.quota&&typeof j.quota.remaining==="number")toast(j.quota.remaining+" messages left today on this model");
     full=j.text||ERR_TEXT;sources=Array.isArray(j.sources)?j.sources:[];thinking=typeof j.thinking==="string"?j.thinking:"";if(!j.text||j.disabled)err=1;
    }catch(e){
     if(responseWasStopped||run!==answerRunId||e&&e.name==="AbortError"&&controller.signal.aborted)return;
@@ -1102,6 +1113,14 @@ function collapse(c){S.col=c;document.querySelector(".frame").classList.toggle("
 $("logo").onclick=()=>mob()?side(false):collapse(true);
 $("expand").onclick=()=>mob()?side(true):collapse(false);
 $("cren").onclick=()=>{const id=mid;closeMenu();renamingId=id;renderList();const i=list.querySelector(".rn");if(i){i.focus();i.select()}};
+$("cexp").onclick=()=>{const id=mid;closeMenu();exportOneChat(id)};
+function exportOneChat(id){
+ const c=S.chats.find(x=>x.id===id);if(!c){toast("That chat is no longer available.");return}
+ const lines=["WHWai chat: "+String(c.t||"Untitled chat"),"Created: "+(c.u?new Date(c.u).toLocaleString():"Unknown date"),"","=".repeat(60),""];
+ (Array.isArray(c.m)?c.m:[]).filter(m=>m&&!m.err).forEach(m=>{lines.push((m.r==="u"?"YOU":"ARIES")+(m.at?"  — "+new Date(m.at).toLocaleString():""),String(m.x||""),"","-".repeat(40),"")});
+ const blob=new Blob([lines.join("\n")],{type:"text/plain"}),url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download=safeFilePart(c.t)+".txt";a.style.display="none";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);toast("Chat exported");
+}
 $("cpin").onclick=()=>{const c=S.chats.find(x=>x.id===mid);if(c){c.p=!c.p;touch(c);save();renderList()}else closeMenu()};
 $("cdel").onclick=()=>{const id=mid;closeMenu();confirmDeleteChat(id)};
 $("cgen").onclick=()=>{const id=mid;closeMenu();retitle(id)};
@@ -1113,7 +1132,7 @@ $("model").onclick=e=>{e.stopPropagation();if($("pop").hidden)hideAriesIntro(fal
 document.addEventListener("click",e=>{
  if(!$("pop").contains(e.target)&&e.target!==$("model"))pop(false);
 });
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(resolvePendingConfirmation(false))return;pop(false);side(false);closeMenu();closeSettings()}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(resolvePendingConfirmation(false))return;if(!$("wn").hidden){$("wn-ok").click();return}pop(false);side(false);closeMenu();closeSettings()}});
 const DEVICE_STORAGE_KEY="whwai.device.v1";
 let cachedDeviceId="";
 function getDeviceId(){
@@ -1155,7 +1174,7 @@ async function syncAccountChatsNow(){
    const after=JSON.stringify({cur:S.cur,chats:S.chats.map(c=>[c.id,c.mu||c.u,c.t,c.p,c.model||"aries-1"]),dead:S.dead});
    accountInitialSyncPending=false;
    if(before!==after||wasInitialSync){renderList();renderChat()}
-   accountLastSync=Date.now();accountSyncFailed=false;
+   accountLastSync=Date.now();accountSyncFailed=false;syncRetryDelay=0;
    if(accountMergePendingToast){accountMergePendingToast=false;toast("Your existing chats were merged into your account.")}
    if(!modal.hidden&&currentSettingsView==="account")updateAccountSyncStatus();
   }
@@ -1165,7 +1184,7 @@ async function syncAccountChatsNow(){
    clearAccountSession();accountMergePendingToast=false;renderList();renderChat();toast("Your sign-in expired. Your chats are still saved on this device. Sign in again to sync them.");
   }else if(e&&e.message==="password_change_required"){
    if(accountSession&&accountSession.user)accountSession.user.mustChange=true;renderRequiredPasswordChange();
-  }else{accountSyncAgain=true;accountSyncFailed=true;renderChat();if(!modal.hidden&&currentSettingsView==="account")updateAccountSyncStatus("Offline or unable to sync right now. Your local changes remain saved.")}
+  }else{accountSyncAgain=true;accountSyncFailed=true;scheduleSyncRetry();renderChat();if(!modal.hidden&&currentSettingsView==="account")updateAccountSyncStatus("Offline or unable to sync right now. Your local changes remain saved.")}
  }finally{
   accountSyncing=false;renderSyncStatus();
   if(localRevision!==revision||accountSyncAgain)scheduleAccountSync();
@@ -1219,7 +1238,7 @@ async function resumeAccountSession(){
   if(e&&e.message==="accesslocked"){accountReady=true;accountInitialSyncPending=false;renderSyncStatus();return}
   if(e&&e.message==="invalid_session"){
    clearAccountSession();renderList();renderChat();toast("Your account session expired. Your chats are still saved on this device. Sign in again to sync them.");
-  }else{accountReady=true;accountSyncAgain=true;}
+  }else{accountReady=true;accountSyncAgain=true;scheduleSyncRetry();}
  }
 }
 function clearLocalWhwData(removeSession){
@@ -1558,7 +1577,7 @@ function renderAccountAuth(mode){
   if(signup&&password!==mbody.querySelector("#account-password-confirm").value){showAccountAuthError("The passwords do not match.");return}
   const submit=mbody.querySelector("#account-auth-submit");submit.disabled=true;submit.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>'+(signup?"Creating…":"Signing in…");
   try{
-   const body={action:signup?"auth_signup":"auth_login",username,password};
+   const body={action:signup?"auth_signup":"auth_login",username,password,deviceId:getDeviceId()};
    if(signup&&siteSignupMode==="code")body.inviteCode=mbody.querySelector("#account-invite-code").value.trim();
    const result=await post(body);
    if(!result||!result.ok||!result.token)throw Object.assign(new Error(result&&result.error||"account_action_failed"),{payload:result});
@@ -1589,7 +1608,7 @@ function renderPasswordChange(required){
  const form=$("password-change-form");if(!required)$("password-cancel").onclick=renderAccount;
  form.onsubmit=async e=>{e.preventDefault();const next=$("new-password").value,confirmPassword=$("new-password-confirm").value;if(next.length<8){passwordError("Choose a password with at least 8 characters.");return}if(next!==confirmPassword){passwordError("The passwords do not match.");return}
   const b=$("password-change-submit");b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Saving…';
-  try{const result=await post({action:"account_password_change",currentPassword:required?"":($("current-password")?$("current-password").value:""),newPassword:next});if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});accountSession.user=result.user||accountSession.user;accountReady=true;toast("Password updated.");if(required&&accountSession.user&&accountSession.user.role==="admin")renderAdminPanel("site");else renderAccount()}
+  try{const result=await post({action:"account_password_change",currentPassword:required?"":($("current-password")?$("current-password").value:""),newPassword:next});if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});accountSession.user=result.user||accountSession.user;accountReady=true;toast("Password updated.");if(required){accountInitialSyncPending=true;syncAccountChatsNow()}if(required&&accountSession.user&&accountSession.user.role==="admin")renderAdminPanel("site");else renderAccount()}
   catch(err){passwordError(err&&err.payload&&err.payload.message||"Couldn't change the password. Try again.");b.disabled=false;b.textContent="Save password"}
  };
 }
@@ -1660,8 +1679,8 @@ function paintAdminTab(){
 }
 function paintAdminSite(box){
  const v=adminData.settings||{};
- box.innerHTML=`<p class="sm">These controls are enforced by the backend. Admin responses never include chat titles or messages.</p><form id="admin-settings-form" class="account-form"><label class="check-row"><input id="admin-ai-enabled" type="checkbox"> AI enabled</label><label class="check-row"><input id="admin-access-required" type="checkbox"> Require access code screen on page load</label><details class="whatsnew-admin"><summary class="pbtn whatsnew-admin-toggle">What's new screen</summary><div class="whatsnew-admin-body"><label class="check-row"><input id="admin-whatsnew-enabled" type="checkbox"> Show the What's new screen to people once per browser</label><label for="admin-whatsnew-version">Version (change it to show the screen again to everyone)</label><input id="admin-whatsnew-version" type="text" maxlength="40"><p class="sm">Turning the screen off hides it from the first visit. People can still open it from Settings.</p></div></details><label for="admin-signup-mode">Sign-up mode</label><select id="admin-signup-mode"><option value="code">Access code required</option><option value="open">Open sign-up</option><option value="closed">Closed</option></select><label for="admin-site-notice">Site-wide notice (optional)</label><textarea id="admin-site-notice" rows="3" maxlength="240" placeholder="Leave blank to clear the notice"></textarea><label for="admin-new-access-code">Change access code (leave blank to keep current)</label><input id="admin-new-access-code" type="password" maxlength="80" autocomplete="new-password"><p class="access-error" id="admin-settings-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar"><button class="pbtn" id="admin-settings-save" type="submit">Save changes</button></div></form>`;
- $("admin-ai-enabled").checked=!!v.aiEnabled;$("admin-whatsnew-enabled").checked=!!(v.whatsNew&&v.whatsNew.enabled);$("admin-whatsnew-version").value=(v.whatsNew&&v.whatsNew.version)||"";$("admin-access-required").checked=!!v.accessCodeRequired;$("admin-signup-mode").value=v.signupMode||"code";$("admin-site-notice").value=v.siteNotice||"";
+ box.innerHTML=`<p class="sm">These controls are enforced by the backend. Admin responses never include chat titles or messages.</p><form id="admin-settings-form" class="account-form"><label class="check-row"><input id="admin-ai-enabled" type="checkbox"> AI enabled</label><label class="check-row"><input id="admin-access-required" type="checkbox"> Require access code screen on page load</label><details class="whatsnew-admin"><summary class="pbtn whatsnew-admin-toggle">What's new screen</summary><div class="whatsnew-admin-body"><label class="check-row"><input id="admin-whatsnew-enabled" type="checkbox"> Show the What's new screen to people once per browser</label><label for="admin-whatsnew-version">Version (change it to show the screen again to everyone)</label><input id="admin-whatsnew-version" type="text" maxlength="40"><p class="sm">Turning the screen off hides it from the first visit. People can still open it from Settings.</p></div></details><button type="button" class="pbtn" id="admin-clear-lockouts">Clear sign-in lockouts</button><label for="admin-signup-mode">Sign-up mode</label><select id="admin-signup-mode"><option value="code">Access code required</option><option value="open">Open sign-up</option><option value="closed">Closed</option></select><label for="admin-site-notice">Site-wide notice (optional)</label><textarea id="admin-site-notice" rows="3" maxlength="240" placeholder="Leave blank to clear the notice"></textarea><label for="admin-new-access-code">Change access code (leave blank to keep current)</label><input id="admin-new-access-code" type="password" maxlength="80" autocomplete="new-password"><p class="access-error" id="admin-settings-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar"><button class="pbtn" id="admin-settings-save" type="submit">Save changes</button></div></form>`;
+ $("admin-clear-lockouts").onclick=async()=>{try{const res=await post({action:"admin_clear_lockouts"});if(!res||!res.ok)throw new Error("failed");toast("Sign-in lockouts cleared.")}catch(e){toast("Could not clear lockouts. Try again.")}};$("admin-ai-enabled").checked=!!v.aiEnabled;$("admin-whatsnew-enabled").checked=!!(v.whatsNew&&v.whatsNew.enabled);$("admin-whatsnew-version").value=(v.whatsNew&&v.whatsNew.version)||"";$("admin-access-required").checked=!!v.accessCodeRequired;$("admin-signup-mode").value=v.signupMode||"code";$("admin-site-notice").value=v.siteNotice||"";
  $("admin-settings-form").onsubmit=async e=>{
   e.preventDefault();const b=$("admin-settings-save"),error=$("admin-settings-error");error.hidden=true;b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Saving…';
   const settings={aiEnabled:$("admin-ai-enabled").checked,accessCodeRequired:$("admin-access-required").checked,signupMode:$("admin-signup-mode").value,siteNotice:$("admin-site-notice").value,newAccessCode:$("admin-new-access-code").value,whatsNewEnabled:$("admin-whatsnew-enabled").checked,whatsNewVersion:$("admin-whatsnew-version").value.trim()};
@@ -1779,7 +1798,7 @@ renderExportInfo=wrapViewTransition(renderExportInfo);
 renderPrivacyPolicy=wrapViewTransition(renderPrivacyPolicy);renderTerms=wrapViewTransition(renderTerms);
 renderLocalDeleteConfirm=wrapViewTransition(renderLocalDeleteConfirm);
 function finishModalClose(){if(!closingModal)return;if(closeModalTimer!==null){clearTimeout(closeModalTimer);closeModalTimer=null}modal.hidden=true;modal.classList.remove("closing");closingModal=false}
-function closeSettings(){if(adminActionPending){toast("Please wait for the admin action to finish.");return}resolvePendingConfirmation(false);if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}if(modal.hidden||closingModal)return;closingModal=true;modal.classList.add("closing");closeModalTimer=setTimeout(finishModalClose,190)}
+function closeSettings(){if(currentSettingsView==="password-required"&&accountSession&&accountSession.user&&accountSession.user.mustChange){toast("Set a new password to continue.");return}if(adminActionPending){toast("Please wait for the admin action to finish.");return}resolvePendingConfirmation(false);if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}if(modal.hidden||closingModal)return;closingModal=true;modal.classList.add("closing");closeModalTimer=setTimeout(finishModalClose,190)}
 function openSettings(initialRenderer){if(closeModalTimer!==null){clearTimeout(closeModalTimer);closeModalTimer=null}closingModal=false;modal.classList.remove("closing");modal.hidden=false;smsg="";if(typeof initialRenderer==="function")initialRenderer();else renderSettings()}
 function gateAdminMode(open){
  const form=$("access-admin-form"),link=$("access-admin-open");form.hidden=!open;link.hidden=!!open;accessForm.hidden=!!open||aiDisabled;accessError.hidden=true;$("access-admin-error").hidden=true;
@@ -1802,5 +1821,6 @@ if(accountSession&&accountSession.token){accountReady=false;resumeAccountSession
 const fr=document.querySelector(".frame");fr.classList.add("no-anim");fr.classList.toggle("collapsed",!!S.col);requestAnimationFrame(()=>requestAnimationFrame(()=>fr.classList.remove("no-anim")));
 
 </script>
+<div class="wn-overlay" id="wn" hidden role="dialog" aria-modal="true" aria-labelledby="wn-title"><div class="wn-card"><h2 id="wn-title">What's new<span class="beta-pill">Beta</span></h2><p class="wn-intro" id="wn-intro"></p><ul class="wn-list" id="wn-list"></ul><button type="button" class="pbtn wn-ok" id="wn-ok">Got it</button></div></div>
 </body>
 </html>
