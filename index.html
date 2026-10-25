@@ -29,7 +29,7 @@ svg{display:block}
 .ct{display:block;font-weight:500;line-height:1.3;overflow-wrap:anywhere}.ct svg{display:inline-block;vertical-align:-1px;margin-right:5px;opacity:.6}
 .cm{display:block;font-size:12px;color:var(--mute);margin-top:3px}
 .chat.edit{cursor:default;padding:7px 8px}
-.rn{width:100%;border:0;outline:0;background:#fff;border-radius:9px;padding:6px 9px;font:inherit;font-weight:500;box-shadow:0 0 0 1.5px #9bb9f5}
+.rn{width:100%;border:0;outline:0;background:#fff;border-radius:9px;padding:6px 9px;font:inherit;font-weight:500;box-shadow:0 0 0 1.5px #d4d4d4}
 .chat:hover{background:#d2d2d2}.chat.on{background:var(--sel);box-shadow:inset 0 0 0 1px #aaa}
 .more{position:absolute;right:5px;top:50%;transform:translateY(-50%);border:0;background:none;width:26px;height:26px;border-radius:50%;cursor:pointer;color:#555;display:grid;place-items:center;padding:0;opacity:0;transition:opacity .15s,background .15s}
 .row:hover .more,.row.on .more,.more:focus-visible,.more[aria-expanded=true]{opacity:1}.more:hover,.more[aria-expanded=true]{background:rgba(0,0,0,.1)}
@@ -132,7 +132,7 @@ body{overflow:hidden}
 .scroll{min-height:0;min-width:0}
 .input,.note{flex-shrink:0}
 .field{box-shadow:-6px 4px 20px rgba(106,160,255,.24),6px 4px 20px rgba(244,114,182,.16),0 -4px 20px rgba(167,139,250,.15);transition:box-shadow .25s ease,background .2s ease}
-.field:focus-within{box-shadow:-6px 4px 24px rgba(106,160,255,.34),6px 4px 24px rgba(244,114,182,.23),0 -4px 24px rgba(167,139,250,.22)}
+.field:focus-within{box-shadow:-6px 4px 24px rgba(0,0,0,.08),6px 4px 24px rgba(0,0,0,.06),0 -4px 24px rgba(0,0,0,.05)}
 .busy .field{animation:glow 2.4s ease-in-out infinite}
 .msg.u{background:linear-gradient(180deg,#7fa9ff,#5b8df0);color:#fff}
 .empty p{margin:0;color:var(--mute)}
@@ -140,7 +140,7 @@ body{overflow:hidden}
 
 
 button,.chat,.model,.mi,.pbtn,.round,.new,.gear,.menubtn,.mnew,.logo,.expand,.more,.bar button,.mh button{transition:background-color .16s ease,color .16s ease,box-shadow .18s ease,opacity .16s ease}
-.field:focus-within{border-color:rgba(106,160,255,.42)}
+.field:focus-within{border-color:rgba(0,0,0,.14)}
 .field textarea::placeholder{color:#858585;opacity:1}
 button:focus-visible,.chat:focus-visible,.model:focus-visible{outline:2px solid rgba(76,130,239,.85);outline-offset:3px}
 .modal{animation:modalFadeIn .18s ease-out both}
@@ -307,7 +307,7 @@ body.access-locked .frame{filter:blur(6px);pointer-events:none;user-select:none}
 .access-admin-form{display:flex;flex-direction:column;gap:8px;margin-top:12px}
 .access-admin-form label{font-size:13px;color:#555}
 .access-admin-form input{width:100%;min-width:0;height:42px;border:1px solid #d8d8d8;border-radius:10px;padding:0 12px;background:#fff;color:#111;font:inherit;font-size:16px;outline:none}
-.access-admin-form input:focus{border-color:#8dafff;box-shadow:0 0 0 2px rgba(106,160,255,.14)}
+.access-admin-form input:focus{border-color:#9a9a9a;box-shadow:none}
 .access-admin-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
 .access-admin-actions button{min-height:38px;padding:7px 13px;border:0;border-radius:10px;background:#e8e8e8;cursor:pointer}
 .access-admin-actions button[type=submit]{background:#e8efff;color:#2458b8;font-weight:600}
@@ -317,7 +317,7 @@ body.access-locked .frame{filter:blur(6px);pointer-events:none;user-select:none}
 .account-form>input,.account-form>select,.account-form>textarea,.admin-search input{box-sizing:border-box;width:100%;min-width:0;border:1px solid #dedede;border-radius:12px;background:#fafafa;color:#111;padding:10px 12px;font:inherit;outline:none}
 .account-form>input,.account-form>select{height:44px}
 .account-form>textarea{resize:vertical;min-height:74px}
-.account-form>input:focus,.account-form>select:focus,.account-form>textarea:focus,.admin-search input:focus{border-color:#95b4fa;box-shadow:0 0 0 2px rgba(106,160,255,.12)}
+
 .account-form .data-toolbar{margin-top:6px}
 .check-row{display:flex;align-items:center;gap:9px;padding:8px 10px;background:#f5f5f5;border-radius:10px;color:#333;font-size:13.5px}
 .check-row input{width:17px;height:17px;flex:none;accent-color:#6aa0ff}
@@ -416,11 +416,15 @@ input,textarea,select,[contenteditable="true"],.field textarea,.access-form inpu
 .wn-card{box-sizing:border-box;width:min(440px,100%);max-height:calc(100dvh - 36px);overflow:auto;background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:22px;padding:20px 22px;box-shadow:0 12px 40px rgba(0,0,0,.22)}
 .wn-card h2{margin:0 0 4px;font-size:22px;font-weight:600;color:#111}.wn-card h2 .beta-pill{font-size:10px;margin-left:8px;top:-2px}
 .wn-intro{margin:0;font-size:14.5px;color:#555}.wn-list{list-style:none;margin:14px 0 16px;padding:0;display:grid;gap:12px}.wn-list li{display:grid;gap:2px}.wn-list strong{font-size:15px;font-weight:600;color:#111}.wn-list span{font-size:14px;line-height:1.45;color:#555}
-.whatsnew-admin{display:grid;gap:8px;margin:4px 0 10px}.whatsnew-admin>label{font-size:13px;line-height:1.35;color:#555;font-weight:500;margin-top:3px}.whatsnew-admin>input{box-sizing:border-box;width:100%;min-width:0;height:44px;border:1px solid #dedede;border-radius:12px;background:#fafafa;color:#111;padding:10px 12px;font:inherit;outline:none}.whatsnew-admin>input:focus{border-color:#95b4fa;box-shadow:0 0 0 2px rgba(106,160,255,.12)}.whatsnew-admin-head{display:grid;gap:2px}.whatsnew-admin-head strong{font-size:15px}.whatsnew-admin-current summary{cursor:pointer;font-size:14px;font-weight:600;color:#333}.whatsnew-admin-current ul{margin:8px 0 0;padding-left:18px;display:grid;gap:6px;font-size:13.5px;line-height:1.4;color:#444}
+.whatsnew-admin{margin:4px 0 10px}.whatsnew-admin-body>label{font-size:13px;line-height:1.35;color:#555;font-weight:500;margin-top:3px}.whatsnew-admin-body>input{box-sizing:border-box;width:100%;min-width:0;height:44px;border:1px solid #dedede;border-radius:12px;background:#fafafa;color:#111;padding:10px 12px;font:inherit;outline:none}.whatsnew-admin-head{display:grid;gap:2px}.whatsnew-admin-head strong{font-size:15px}.whatsnew-admin-current summary{cursor:pointer;font-size:14px;font-weight:600;color:#333}.whatsnew-admin-current ul{margin:8px 0 0;padding-left:18px;display:grid;gap:6px;font-size:13.5px;line-height:1.4;color:#444}
 .switch-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px;background:#f5f5f5;border-radius:10px;color:#333;font-size:13.5px;cursor:pointer}.switch-row input{position:absolute;opacity:0;width:1px;height:1px}.switch-ui{position:relative;flex:none;width:46px;height:28px;border-radius:999px;background:#cfcfcf;transition:background .15s}.switch-ui::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .15s}.switch-row input:checked+.switch-ui{background:#2f6bff}.switch-row input:checked+.switch-ui::after{transform:translateX(18px)}.switch-row input:focus-visible+.switch-ui{outline:2px solid #2f6bff;outline-offset:2px}
-.whatsnew-admin-old{margin:4px 0 10px}.whatsnew-admin-toggle{display:inline-flex;cursor:pointer;list-style:none;align-items:center}.whatsnew-admin-toggle::-webkit-details-marker{display:none}.whatsnew-admin[open] .whatsnew-admin-toggle{background:#cfcfcf}.whatsnew-admin-body{display:grid;gap:8px;margin-top:10px}
+.whatsnew-admin-old{margin:4px 0 10px}.whatsnew-admin-toggle{display:inline-flex;cursor:pointer;list-style:none;align-items:center}.whatsnew-admin-toggle::after{content:"Edit";margin-left:10px;font-size:13px;opacity:.7}.whatsnew-admin[open] .whatsnew-admin-toggle::after{content:"Close"}.whatsnew-admin-toggle::-webkit-details-marker{display:none}.whatsnew-admin[open] .whatsnew-admin-toggle{background:#cfcfcf}.whatsnew-admin-body{display:grid;gap:8px;margin-top:10px}
 .wn-ok{width:100%;justify-content:center;min-height:46px}
 .export-scope{border:0;margin:12px 0 0;padding:0;min-width:0;display:grid;gap:8px}.export-scope legend{padding:0;margin:0 0 6px}.export-picks{display:grid;gap:6px;max-height:220px;overflow:auto;margin:10px 0 0;padding:4px}.export-picks[hidden]{display:none}.export-pick{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid #e2e2e2;border-radius:12px;background:#fafafa;font-size:14px;cursor:pointer}.export-pick input{width:18px;height:18px;flex:none;accent-color:#2f6bff}.export-pick span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Text fields: no blue focus rings or borders */
+input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,textarea:focus,select:focus{outline:none!important;box-shadow:none!important;border-color:#9a9a9a!important}
+.wn-ver{margin:6px 0 0;font-size:12.5px;color:#777}
+.masked-field{-webkit-text-security:disc}
 </style>
 </head>
 <body class="access-locked">
@@ -464,7 +468,7 @@ input,textarea,select,[contenteditable="true"],.field textarea,.access-form inpu
   <div class="input">
    <div class="orb" id="orb" aria-hidden="true"></div>
    <div class="field">
-    <textarea id="in" rows="1" placeholder="Message WHWai" aria-label="Message"></textarea>
+    <textarea id="in" rows="1" placeholder="Message WHWai" aria-label="Message" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea>
     <div class="mwrap">
      <button class="model" id="model" aria-haspopup="menu" aria-expanded="false"></button>
      <div class="info-pop" id="aries-info-pop" role="status" aria-live="polite" aria-label="About Aries" hidden>
@@ -902,7 +906,7 @@ function showWhatsNewIfNeeded(force){
   try{if(localStorage.getItem(WHATS_NEW_KEY)===whatsNewVersion()){whatsNewShownThisPage=true;return false}}catch(e){}
  }
  whatsNewShownThisPage=true;
- $("wn-intro").textContent=WHATS_NEW.intro;
+ $("wn-intro").textContent=WHATS_NEW.intro;{const vEl=$("wn-ver");const v=whatsNewCfg&&whatsNewCfg.version?String(whatsNewCfg.version):"";vEl.textContent=v?"Version "+v:"";vEl.hidden=!v}
  $("wn-list").innerHTML=WHATS_NEW.items.map(it=>"<li><strong>"+esc(it.t)+"</strong><span>"+esc(it.d)+"</span></li>").join("");
  box.hidden=false;syncAppInert();
  $("wn-ok").onclick=()=>{box.hidden=true;syncAppInert();try{localStorage.setItem(WHATS_NEW_KEY,whatsNewVersion())}catch(e){}if(!force)showAriesIntroOnce()};
@@ -1550,7 +1554,7 @@ function renderSettings(){
   </div>
   <h3>Data & privacy</h3><p class="sm">Export a backup, import chats, or remove the local copy on this browser.</p><button class="pbtn data-manage-button" id="data-tools-open" type="button"><span class="manage-icon">${ic('<path d="M4 5h16v14H4z"/><path d="M8 9h8M8 12h8M8 15h5"/>',17)}</span><span>Manage your data</span></button>
   ${signed&&user.role==="admin"?`<h3>Administration</h3><button class="pbtn data-manage-button" id="admin-open" type="button"><span class="manage-icon">${ic('<path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z"/>',17)}</span><span>Admin panel</span></button>`:""}
-  <p class="sm" id="s-msg" role="status">${esc(smsg)}</p><div class="privacy-row"><a href="#" class="privacy-link" id="privacy-open">Privacy Policy</a><a href="#" class="privacy-link" id="terms-open">Terms of Use</a><a href="#" class="privacy-link" id="whatsnew-open">What's new</a>${accessRequired?'<button type="button" class="lock-link" id="lock-whwai-now">Lock WHWai</button>':''}</div>`;
+  <p class="sm" id="s-msg" role="status">${esc(smsg)}</p><div class="privacy-row"><a href="#" class="privacy-link" id="privacy-open">Privacy Policy</a><a href="#" class="privacy-link" id="terms-open">Terms of Use</a><a href="#" class="privacy-link" id="whatsnew-open">What's new</a>${accessRequired?'<button type="button" class="lock-link" id="lock-whwai-now">Lock WHWai</button>':''}</div>${whatsNewCfg&&whatsNewCfg.version?'<p class="wn-ver">What\'s new version '+esc(String(whatsNewCfg.version))+'</p>':''}`;
  const q=id=>mbody.querySelector("#"+id);
  if(q("account-open"))q("account-open").onclick=renderAccount;
  if(q("account-signin"))q("account-signin").onclick=()=>renderAccountAuth("login");
@@ -1561,7 +1565,7 @@ function renderSettings(){
 }
 function renderAccountAuth(mode){
  currentSettingsView="account-auth";const signup=mode==="signup";$("modal-title").textContent=signup?"Create account":"Sign in";
- const codeField=signup&&siteSignupMode==="code"?'<label for="account-invite-code">Access code</label><input id="account-invite-code" type="password" maxlength="80" autocomplete="off" required>':'';
+ const codeField=signup&&siteSignupMode==="code"?'<label for="account-invite-code">Access code</label><input id="account-invite-code" type="text" class="masked-field" maxlength="80" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true" required>':'';
  mbody.innerHTML=`<p class="sm">${signup?(siteSignupMode==="code"?"Create a username and password. The current access code is required for sign-up.":"Create a username and password. No email is required."):"Enter your username and password. Account passwords are case-sensitive."}</p>
   <form id="account-auth-form" class="account-form" autocomplete="off"><label for="account-username">Username</label><input id="account-username" name="username" type="text" minlength="3" maxlength="20" pattern="[a-zA-Z0-9_]{3,20}" autocapitalize="off" autocomplete="username" required><label for="account-password">Password</label><input id="account-password" name="password" type="password" maxlength="200" autocomplete="${signup?"new-password":"current-password"}" required>${signup?'<label for="account-password-confirm">Confirm password</label><input id="account-password-confirm" type="password" maxlength="200" autocomplete="new-password" required>':''}${codeField}<p class="access-error" id="account-auth-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar"><button type="button" class="pbtn" id="account-auth-back">Back</button><button type="submit" class="pbtn" id="account-auth-submit">${signup?"Create account":"Sign in"}</button></div></form>`;
  const form=mbody.querySelector("#account-auth-form");
@@ -1674,7 +1678,7 @@ function paintAdminTab(){
 }
 function paintAdminSite(box){
  const v=adminData.settings||{};
- box.innerHTML=`<p class="sm">These controls are enforced by the backend. Admin responses never include chat titles or messages.</p><form id="admin-settings-form" class="account-form"><label class="check-row"><input id="admin-ai-enabled" type="checkbox"> AI enabled</label><label class="check-row"><input id="admin-access-required" type="checkbox"> Require access code screen on page load</label><div class="whatsnew-admin"><label class="check-row"><input id="admin-whatsnew-enabled" type="checkbox"> What's new screen enabled</label><label for="admin-whatsnew-version">Version (change it to show the screen again to everyone)</label><input id="admin-whatsnew-version" type="text" maxlength="40"><label for="admin-whatsnew-intro">Intro line (optional)</label><input id="admin-whatsnew-intro" type="text" maxlength="200"><label for="admin-whatsnew-items">Items, one per line, as Title | Description (up to 10)</label><textarea id="admin-whatsnew-items" rows="6" maxlength="3000" placeholder="Aries | Aries is the model you chat with."></textarea></div><label for="admin-signup-mode">Sign-up mode</label><select id="admin-signup-mode"><option value="code">Access code required</option><option value="open">Open sign-up</option><option value="closed">Closed</option></select><label for="admin-site-notice">Site-wide notice (optional)</label><textarea id="admin-site-notice" rows="3" maxlength="240" placeholder="Leave blank to clear the notice"></textarea><label for="admin-new-access-code">Change access code (leave blank to keep current)</label><input id="admin-new-access-code" type="password" maxlength="80" autocomplete="new-password"><p class="access-error" id="admin-settings-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar"><button class="pbtn" id="admin-settings-save" type="submit">Save changes</button></div></form>`;
+ box.innerHTML=`<p class="sm">These controls are enforced by the backend. Admin responses never include chat titles or messages.</p><form id="admin-settings-form" class="account-form"><label class="check-row"><input id="admin-ai-enabled" type="checkbox"> AI enabled</label><label class="check-row"><input id="admin-access-required" type="checkbox"> Require access code screen on page load</label><details class="whatsnew-admin"><summary class="pbtn whatsnew-admin-toggle">What's new screen</summary><div class="whatsnew-admin-body"><label class="check-row"><input id="admin-whatsnew-enabled" type="checkbox"> What's new screen enabled</label><label for="admin-whatsnew-version">Version (change it to show the screen again to everyone)</label><input id="admin-whatsnew-version" type="text" maxlength="40" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"><label for="admin-whatsnew-intro">Intro line (optional)</label><input id="admin-whatsnew-intro" type="text" maxlength="200" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"><label for="admin-whatsnew-items">Items, one per line, as Title | Description (up to 10)</label><textarea id="admin-whatsnew-items" rows="6" maxlength="3000" placeholder="Aries | Aries is the model you chat with." autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea></div></details><label for="admin-signup-mode">Sign-up mode</label><select id="admin-signup-mode"><option value="code">Access code required</option><option value="open">Open sign-up</option><option value="closed">Closed</option></select><label for="admin-site-notice">Site-wide notice (optional)</label><textarea id="admin-site-notice" rows="3" maxlength="240" placeholder="Leave blank to clear the notice" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea><label for="admin-new-access-code">Change access code (leave blank to keep current)</label><input id="admin-new-access-code" type="text" class="masked-field" maxlength="80" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"><p class="access-error" id="admin-settings-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar"><button class="pbtn" id="admin-settings-save" type="submit">Save changes</button></div></form>`;
  $("admin-ai-enabled").checked=!!v.aiEnabled;$("admin-whatsnew-enabled").checked=!!(v.whatsNew&&v.whatsNew.enabled);$("admin-whatsnew-version").value=(v.whatsNew&&v.whatsNew.version)||"";$("admin-whatsnew-intro").value=(v.whatsNew&&v.whatsNew.intro)||"";$("admin-whatsnew-items").value=((v.whatsNew&&v.whatsNew.items)||[]).map(it=>it.t+" | "+it.d).join("\n");$("admin-access-required").checked=!!v.accessCodeRequired;$("admin-signup-mode").value=v.signupMode||"code";$("admin-site-notice").value=v.siteNotice||"";
  $("admin-settings-form").onsubmit=async e=>{
   e.preventDefault();const b=$("admin-settings-save"),error=$("admin-settings-error");error.hidden=true;b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Saving…';
@@ -1689,7 +1693,7 @@ function paintAdminSite(box){
  };
 }
 function paintAdminAccounts(box){
- box.innerHTML=`<div class="admin-search"><input id="admin-account-query" type="search" maxlength="20" placeholder="Search usernames" value="${escapeAttr(adminQuery)}"><button type="button" class="pbtn" id="admin-create-account">Create account</button></div><div id="admin-account-results"></div>`;
+ box.innerHTML=`<div class="admin-search"><input id="admin-account-query" type="search" maxlength="20" placeholder="Search usernames" value="${escapeAttr(adminQuery)}" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"><button type="button" class="pbtn" id="admin-create-account">Create account</button></div><div id="admin-account-results"></div>`;
  $("admin-account-query").oninput=e=>{adminQuery=e.target.value.trim();paintAccountList()};
  $("admin-create-account").onclick=renderCreateAccount;
  paintAccountList();
@@ -1714,7 +1718,7 @@ function paintAdminAudit(box){
 }
 function renderCreateAccount(){
  currentSettingsView="admin-create";$("modal-title").textContent="Create account";
- mbody.innerHTML=`<p class="sm">Creates a WHWai account with a temporary password that is shown only once. The new account must choose its own password at first sign-in.</p><form id="create-account-form" class="account-form"><label for="create-account-username">Username</label><input id="create-account-username" type="text" minlength="3" maxlength="20" pattern="[a-zA-Z0-9_]{3,20}" required><label for="create-account-role">Role</label><select id="create-account-role"><option value="user">User</option><option value="admin">Admin</option></select><p class="access-error" id="create-account-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar"><button type="button" class="pbtn" id="create-account-cancel">Cancel</button><button type="submit" class="pbtn" id="create-account-submit">Create account</button></div></form>`;
+ mbody.innerHTML=`<p class="sm">Creates a WHWai account with a temporary password that is shown only once. The new account must choose its own password at first sign-in.</p><form id="create-account-form" class="account-form"><label for="create-account-username">Username</label><input id="create-account-username" type="text" minlength="3" maxlength="20" pattern="[a-zA-Z0-9_]{3,20}" required autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"><label for="create-account-role">Role</label><select id="create-account-role"><option value="user">User</option><option value="admin">Admin</option></select><p class="access-error" id="create-account-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar"><button type="button" class="pbtn" id="create-account-cancel">Cancel</button><button type="submit" class="pbtn" id="create-account-submit">Create account</button></div></form>`;
  $("create-account-cancel").onclick=()=>renderAdminPanel("accounts");
  $("create-account-form").onsubmit=async e=>{
   e.preventDefault();const b=$("create-account-submit");b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Creating…';
@@ -1756,7 +1760,7 @@ async function appConfirm(options){
   };
   pendingAppConfirmation=settle;
   const icon=ic(options.danger===false?'<path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z"/>':'<path d="M12 3l9 17H3z"/><path d="M12 9v4M12 17h.01"/>',19,1.8);
-  const inputHtml=options.input?`<label class="sm reason-label" for="app-confirm-input">${esc(options.input.label)}</label><textarea id="app-confirm-input" class="reason-input" rows="3" maxlength="300"></textarea>`:"";
+  const inputHtml=options.input?`<label class="sm reason-label" for="app-confirm-input">${esc(options.input.label)}</label><textarea id="app-confirm-input" class="reason-input" rows="3" maxlength="300" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea>`:"";
   const radiosHtml=options.radios?`<fieldset class="confirm-radios"><legend class="sm reason-label">${esc(options.radios.label)}</legend>${options.radios.items.map(it=>`<label class="radio-row"><input type="radio" name="app-confirm-radio" value="${escapeAttr(it.value)}"${it.checked?" checked":""}><span><strong>${esc(it.label)}</strong><small>${esc(it.hint||"")}</small></span></label>`).join("")}</fieldset>`:"";
   const panel=`<div class="confirm-panel"><span class="choice-icon">${icon}</span><div><strong>${esc(title)}</strong><p>${esc(message)}</p></div></div>${inputHtml}${radiosHtml}<div class="data-toolbar"><button type="button" class="pbtn" id="app-confirm-cancel">Cancel</button><button type="button" class="pbtn ${options.danger===false?"":"danger"}" id="app-confirm-accept">${esc(confirmLabel)}</button></div>`;
   if(standalone){
@@ -1816,6 +1820,6 @@ if(accountSession&&accountSession.token){accountReady=false;resumeAccountSession
 const fr=document.querySelector(".frame");fr.classList.add("no-anim");fr.classList.toggle("collapsed",!!S.col);requestAnimationFrame(()=>requestAnimationFrame(()=>fr.classList.remove("no-anim")));
 
 </script>
-<div class="wn-overlay" id="wn" hidden role="dialog" aria-modal="true" aria-labelledby="wn-title"><div class="wn-card"><h2 id="wn-title">What's new<span class="beta-pill">Beta</span></h2><p class="wn-intro" id="wn-intro"></p><ul class="wn-list" id="wn-list"></ul><button type="button" class="pbtn wn-ok" id="wn-ok">Got it</button></div></div>
+<div class="wn-overlay" id="wn" hidden role="dialog" aria-modal="true" aria-labelledby="wn-title"><div class="wn-card"><h2 id="wn-title">What's new</h2><p class="wn-ver" id="wn-ver" hidden></p><p class="wn-intro" id="wn-intro"></p><ul class="wn-list" id="wn-list"></ul><button type="button" class="pbtn wn-ok" id="wn-ok">Got it</button></div></div>
 </body>
 </html>
