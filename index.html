@@ -928,8 +928,10 @@ function showAccountDisabled(message,info){
  if(!text)text="Contact support at wehatewindows.help@gmail.com for help.";
  setGateBody(text);
  const canDownload=!!(info&&info.canDownload),dl=$("gate-download"),st=$("gate-status");
- dl.hidden=!canDownload;dl.disabled=false;dl.textContent="Download my data";dl.onclick=downloadDisabledData;
- st.hidden=!canDownload;st.textContent=canDownload?(info.deleteAfterDownload?"You can download your chats. They will be deleted from your account after you download them.":"You can download a copy of your chats."):"";
+ const notes={keep:"Your chats are still saved on your account. Contact support if you need a copy.",delete:"Your chats were removed from this account. Contact support if you have questions."};
+ dl.hidden=!canDownload;dl.disabled=false;dl.textContent="Download your chats";dl.onclick=downloadDisabledData;
+ const note=canDownload?(info.deleteAfterDownload?"Download your chats before they are removed. Once you download them, they will be deleted from your account.":"You can download a copy of your chats at any time."):(notes[info&&info.dataMode]||"");
+ st.hidden=!note;st.textContent=note;
  $("gate-actions").hidden=false;$("gate-signout").onclick=disabledSignOut;
 }
 function disabledSignOut(){
@@ -946,9 +948,9 @@ async function downloadDisabledData(){
   const blob=zipStored_(prepared.files),filename="whwai-chat-export-"+new Date().toISOString().slice(0,10)+".zip";
   const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=filename;a.style.display="none";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10*60*1000);
   let deleted=false;try{const done=await post({action:"account_disabled_done"});deleted=!!(done&&done.deleted)}catch(e){}
-  st.textContent=deleted?"Your download is ready. Your chats have been deleted from your account.":"Your download is ready.";
+  st.textContent=deleted?"Your download is ready. Your chats have been removed from your account.":"Your download is ready.";
   if(deleted)btn.hidden=true;else{btn.disabled=false;btn.textContent="Download again"}
- }catch(e){st.textContent="Could not prepare your download. Try again.";btn.disabled=false}
+ }catch(e){st.textContent="We couldn't prepare your download. Please try again.";btn.disabled=false}
 }
 try{if(localStorage.getItem(ACCESS_OFF_KEY)==="1"){accessRequired=false;openApp()}else{document.body.classList.add("access-locked")}}catch(e){document.body.classList.add("access-locked")}
 accessForm.addEventListener("submit",async e=>{e.preventDefault();const code=accessInput.value.trim();if(!code)return;accessButton.disabled=true;accessError.hidden=true;accessError.textContent="";try{if(!API_URL)throw new Error("backend");const result=await post({action:"access_check",code,deviceId:getDeviceId()});if(result&&result.aiEnabled===false){showAIDisabled();return}
