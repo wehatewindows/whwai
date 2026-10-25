@@ -416,8 +416,11 @@ input,textarea,select,[contenteditable="true"],.field textarea,.access-form inpu
 .wn-card{box-sizing:border-box;width:min(440px,100%);max-height:calc(100dvh - 36px);overflow:auto;background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:22px;padding:20px 22px;box-shadow:0 12px 40px rgba(0,0,0,.22)}
 .wn-card h2{margin:0 0 4px;font-size:22px;font-weight:600;color:#111}.wn-card h2 .beta-pill{font-size:10px;margin-left:8px;top:-2px}
 .wn-intro{margin:0;font-size:14.5px;color:#555}.wn-list{list-style:none;margin:14px 0 16px;padding:0;display:grid;gap:12px}.wn-list li{display:grid;gap:2px}.wn-list strong{font-size:15px;font-weight:600;color:#111}.wn-list span{font-size:14px;line-height:1.45;color:#555}
-.whatsnew-admin{margin:4px 0 10px}.whatsnew-admin-toggle{display:inline-flex;cursor:pointer;list-style:none;align-items:center}.whatsnew-admin-toggle::-webkit-details-marker{display:none}.whatsnew-admin[open] .whatsnew-admin-toggle{background:#cfcfcf}.whatsnew-admin-body{display:grid;gap:8px;margin-top:10px}
+.whatsnew-admin{display:grid;gap:8px;margin:4px 0 10px;padding:12px;border:1px solid #e3e3e3;border-radius:14px;background:#fafafa}.whatsnew-admin-head{display:grid;gap:2px}.whatsnew-admin-head strong{font-size:15px}.whatsnew-admin-current summary{cursor:pointer;font-size:14px;font-weight:600;color:#333}.whatsnew-admin-current ul{margin:8px 0 0;padding-left:18px;display:grid;gap:6px;font-size:13.5px;line-height:1.4;color:#444}
+.switch-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 2px;cursor:pointer}.switch-row input{position:absolute;opacity:0;width:1px;height:1px}.switch-ui{position:relative;flex:none;width:46px;height:28px;border-radius:999px;background:#cfcfcf;transition:background .15s}.switch-ui::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .15s}.switch-row input:checked+.switch-ui{background:#2f6bff}.switch-row input:checked+.switch-ui::after{transform:translateX(18px)}.switch-row input:focus-visible+.switch-ui{outline:2px solid #2f6bff;outline-offset:2px}
+.whatsnew-admin-old{margin:4px 0 10px}.whatsnew-admin-toggle{display:inline-flex;cursor:pointer;list-style:none;align-items:center}.whatsnew-admin-toggle::-webkit-details-marker{display:none}.whatsnew-admin[open] .whatsnew-admin-toggle{background:#cfcfcf}.whatsnew-admin-body{display:grid;gap:8px;margin-top:10px}
 .wn-ok{width:100%;justify-content:center;min-height:46px}
+.export-scope{border:0;margin:12px 0 0;padding:0;min-width:0;display:grid;gap:8px}.export-scope legend{padding:0;margin:0 0 6px}.export-picks{display:grid;gap:6px;max-height:220px;overflow:auto;margin:10px 0 0;padding:4px}.export-picks[hidden]{display:none}.export-pick{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid #e2e2e2;border-radius:12px;background:#fafafa;font-size:14px;cursor:pointer}.export-pick input{width:18px;height:18px;flex:none;accent-color:#2f6bff}.export-pick span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style>
 </head>
 <body class="access-locked">
@@ -447,7 +450,7 @@ input,textarea,select,[contenteditable="true"],.field textarea,.access-form inpu
   <button class="gear" id="gear" title="Settings" aria-label="Settings"></button>
   <button class="profile-btn" id="profile-btn" title="Account" aria-label="Account menu" aria-haspopup="true" hidden></button>
   <div class="profile-menu" id="profile-menu" role="menu" hidden></div>
-  <div class="cmenu" id="cmenu" role="menu" hidden><button id="cren" role="menuitem"></button><button id="cgen" role="menuitem"></button><button id="cpin" role="menuitem"></button><button id="cexp" role="menuitem"></button><button id="cdel" class="danger" role="menuitem"></button></div>
+  <div class="cmenu" id="cmenu" role="menu" hidden><button id="cren" role="menuitem"></button><button id="cgen" role="menuitem"></button><button id="cpin" role="menuitem"></button><button id="cdel" class="danger" role="menuitem"></button></div>
  </aside>
  <div class="scrim" id="scrim"></div>
  <div class="modal" id="modal" hidden><div class="mcard" role="dialog" aria-label="Settings"><div class="mh"><b id="modal-title">Settings</b><button id="mx" aria-label="Close">&times;</button></div><div id="mbody"></div></div></div>
@@ -705,7 +708,7 @@ function openMenu(id,btn){
  closeMenu();mid=id;
  const m=$("cmenu");
  $("cren").innerHTML=ic(PEN,16)+"<span>Rename</span>";
- $("cgen").innerHTML=ic(SPARK,16)+"<span>Generate title</span>";$("cexp").innerHTML=ic("<path d=\"M12 4v11M7 10l5 5 5-5\"/><path d=\"M5 20h14\"/>",16)+"<span>Export chat</span>";
+ $("cgen").innerHTML=ic(SPARK,16)+"<span>Generate title</span>";
  $("cpin").innerHTML=ic(PIN,16)+"<span>"+(c.p?"Unpin":"Pin")+"</span>";
  $("cdel").innerHTML=ic(TRASH,16)+"<span>Delete</span>";
  m.hidden=false;
@@ -1113,14 +1116,6 @@ function collapse(c){S.col=c;document.querySelector(".frame").classList.toggle("
 $("logo").onclick=()=>mob()?side(false):collapse(true);
 $("expand").onclick=()=>mob()?side(true):collapse(false);
 $("cren").onclick=()=>{const id=mid;closeMenu();renamingId=id;renderList();const i=list.querySelector(".rn");if(i){i.focus();i.select()}};
-$("cexp").onclick=()=>{const id=mid;closeMenu();exportOneChat(id)};
-function exportOneChat(id){
- const c=S.chats.find(x=>x.id===id);if(!c){toast("That chat is no longer available.");return}
- const lines=["WHWai chat: "+String(c.t||"Untitled chat"),"Created: "+(c.u?new Date(c.u).toLocaleString():"Unknown date"),"","=".repeat(60),""];
- (Array.isArray(c.m)?c.m:[]).filter(m=>m&&!m.err).forEach(m=>{lines.push((m.r==="u"?"YOU":"ARIES")+(m.at?"  — "+new Date(m.at).toLocaleString():""),String(m.x||""),"","-".repeat(40),"")});
- const blob=new Blob([lines.join("\n")],{type:"text/plain"}),url=URL.createObjectURL(blob),a=document.createElement("a");
- a.href=url;a.download=safeFilePart(c.t)+".txt";a.style.display="none";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);toast("Chat exported");
-}
 $("cpin").onclick=()=>{const c=S.chats.find(x=>x.id===mid);if(c){c.p=!c.p;touch(c);save();renderList()}else closeMenu()};
 $("cdel").onclick=()=>{const id=mid;closeMenu();confirmDeleteChat(id)};
 $("cgen").onclick=()=>{const id=mid;closeMenu();retitle(id)};
@@ -1374,7 +1369,10 @@ async function exportLocalData(){
  if(exportingData||Date.now()<readExportCooldown())return;
  exportingData=true;updateExportStatus();
  try{
-  const prepared=makeChatExport();
+  const scope=(mbody.querySelector('input[name="export-scope"]:checked')||{}).value||"all";
+  let source=S.chats;
+  if(scope==="selected"){const ids=[...mbody.querySelectorAll('input[name="export-chat"]:checked')].map(x=>x.value);source=S.chats.filter(c=>ids.includes(c.id));if(!source.length){const st=$("export-status");if(st)st.textContent="Choose at least one chat to export.";return}}
+  const prepared=makeChatExport(source);
   const blob=zipStored_(prepared.files);
   const filename="whwai-chat-export-"+new Date().toISOString().slice(0,10)+".zip";
   let shared=false;
@@ -1474,14 +1472,16 @@ function setDeleteStatus(message){const el=$("delete-status");if(el)el.textConte
 function renderExportInfo(){
  currentSettingsView="export-info";if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}
  $("modal-title").textContent="Download your data";
+ const chatOptions=S.chats.length?S.chats.map(c=>`<label class="export-pick"><input type="checkbox" name="export-chat" value="${escapeAttr(c.id)}" checked><span>${esc(String(c.t||"Untitled chat"))}</span></label>`).join(""):"<p class=\"sm\">No chats on this device yet.</p>";
  mbody.innerHTML=`<p>WHWai creates this ZIP in your browser from chats currently cached on this device. When you're signed in, that cache syncs with your account after changes and when you return to the page.</p>
   <div class="export-contents"><strong>What's inside</strong><ul><li><strong>chats.json</strong> — structured chat data.</li><li><strong>chats/</strong> — a readable text file for each chat.</li><li><strong>README.txt</strong> — export scope and general notes.</li></ul></div>
   <p><strong>Private data:</strong> the export contains conversation text. It does not include the account session token or browser identifier.</p>
   <p><strong>Sync first:</strong> if signed in and you need the newest account changes, wait for account syncing to finish before exporting. Deleted-chat markers are not included.</p>
   <p><strong>Keep the ZIP private:</strong> anyone who gets the file can read the conversations. Deleting chats in WHWai does not erase downloaded copies.</p>
+  <fieldset class="export-scope"><legend><strong>What to export</strong></legend><label class="radio-row"><input type="radio" name="export-scope" value="all" checked><span><strong>All chats</strong><small>Every chat on this device.</small></span></label><label class="radio-row"><input type="radio" name="export-scope" value="selected"><span><strong>Selected chats</strong><small>Only the chats you check below.</small></span></label></fieldset><div class="export-picks" id="export-picks" hidden>${chatOptions}</div>
   <p class="sm" id="export-status" role="status">A 10-minute cooldown starts after an export is prepared.</p>
   <div class="data-toolbar"><button type="button" class="pbtn" id="export-back">Back to data tools</button><button type="button" class="pbtn" id="export-data">Download chats (.zip)</button></div>`;
- const q=id=>mbody.querySelector("#"+id);q("export-back").onclick=renderDataManagement;q("export-data").onclick=exportLocalData;startExportCooldownTicker();
+ const q=id=>mbody.querySelector("#"+id);q("export-back").onclick=renderDataManagement;q("export-data").onclick=exportLocalData;mbody.querySelectorAll('input[name="export-scope"]').forEach(rd=>rd.onchange=()=>{q("export-picks").hidden=mbody.querySelector('input[name="export-scope"]:checked').value!=="selected"});startExportCooldownTicker();
 }
 function renderTerms(){
  currentSettingsView="terms";$("modal-title").textContent="Terms of Use";
@@ -1679,8 +1679,8 @@ function paintAdminTab(){
 }
 function paintAdminSite(box){
  const v=adminData.settings||{};
- box.innerHTML=`<p class="sm">These controls are enforced by the backend. Admin responses never include chat titles or messages.</p><form id="admin-settings-form" class="account-form"><label class="check-row"><input id="admin-ai-enabled" type="checkbox"> AI enabled</label><label class="check-row"><input id="admin-access-required" type="checkbox"> Require access code screen on page load</label><details class="whatsnew-admin"><summary class="pbtn whatsnew-admin-toggle">What's new screen</summary><div class="whatsnew-admin-body"><label class="check-row"><input id="admin-whatsnew-enabled" type="checkbox"> Show the What's new screen to people once per browser</label><label for="admin-whatsnew-version">Version (change it to show the screen again to everyone)</label><input id="admin-whatsnew-version" type="text" maxlength="40"><p class="sm">Turning the screen off hides it from the first visit. People can still open it from Settings.</p></div></details><button type="button" class="pbtn" id="admin-clear-lockouts">Clear sign-in lockouts</button><label for="admin-signup-mode">Sign-up mode</label><select id="admin-signup-mode"><option value="code">Access code required</option><option value="open">Open sign-up</option><option value="closed">Closed</option></select><label for="admin-site-notice">Site-wide notice (optional)</label><textarea id="admin-site-notice" rows="3" maxlength="240" placeholder="Leave blank to clear the notice"></textarea><label for="admin-new-access-code">Change access code (leave blank to keep current)</label><input id="admin-new-access-code" type="password" maxlength="80" autocomplete="new-password"><p class="access-error" id="admin-settings-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar"><button class="pbtn" id="admin-settings-save" type="submit">Save changes</button></div></form>`;
- $("admin-clear-lockouts").onclick=async()=>{try{const res=await post({action:"admin_clear_lockouts"});if(!res||!res.ok)throw new Error("failed");toast("Sign-in lockouts cleared.")}catch(e){toast("Could not clear lockouts. Try again.")}};$("admin-ai-enabled").checked=!!v.aiEnabled;$("admin-whatsnew-enabled").checked=!!(v.whatsNew&&v.whatsNew.enabled);$("admin-whatsnew-version").value=(v.whatsNew&&v.whatsNew.version)||"";$("admin-access-required").checked=!!v.accessCodeRequired;$("admin-signup-mode").value=v.signupMode||"code";$("admin-site-notice").value=v.siteNotice||"";
+ box.innerHTML=`<p class="sm">These controls are enforced by the backend. Admin responses never include chat titles or messages.</p><form id="admin-settings-form" class="account-form"><label class="check-row"><input id="admin-ai-enabled" type="checkbox"> AI enabled</label><label class="check-row"><input id="admin-access-required" type="checkbox"> Require access code screen on page load</label><div class="whatsnew-admin"><div class="whatsnew-admin-head"><strong>What's new screen</strong><span class="sm">Shown once per browser to people who have not seen this version.</span></div><label class="switch-row" for="admin-whatsnew-enabled"><span>Show it to people</span><input id="admin-whatsnew-enabled" type="checkbox" role="switch"><span class="switch-ui" aria-hidden="true"></span></label><label for="admin-whatsnew-version">Version (change it to show the screen again to everyone)</label><input id="admin-whatsnew-version" type="text" maxlength="40"><details class="whatsnew-admin-current" open><summary>Currently shown (${WHATS_NEW.items.length} items)</summary><p class="sm">${esc(WHATS_NEW.intro)}</p><ul>${WHATS_NEW.items.map(it=>`<li><strong>${esc(it.t)}</strong> — ${esc(it.d)}</li>`).join("")}</ul></details></div><label for="admin-signup-mode">Sign-up mode</label><select id="admin-signup-mode"><option value="code">Access code required</option><option value="open">Open sign-up</option><option value="closed">Closed</option></select><label for="admin-site-notice">Site-wide notice (optional)</label><textarea id="admin-site-notice" rows="3" maxlength="240" placeholder="Leave blank to clear the notice"></textarea><label for="admin-new-access-code">Change access code (leave blank to keep current)</label><input id="admin-new-access-code" type="password" maxlength="80" autocomplete="new-password"><p class="access-error" id="admin-settings-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar"><button class="pbtn" id="admin-settings-save" type="submit">Save changes</button></div></form>`;
+ $("admin-ai-enabled").checked=!!v.aiEnabled;$("admin-whatsnew-enabled").checked=!!(v.whatsNew&&v.whatsNew.enabled);$("admin-whatsnew-version").value=(v.whatsNew&&v.whatsNew.version)||"";$("admin-access-required").checked=!!v.accessCodeRequired;$("admin-signup-mode").value=v.signupMode||"code";$("admin-site-notice").value=v.siteNotice||"";
  $("admin-settings-form").onsubmit=async e=>{
   e.preventDefault();const b=$("admin-settings-save"),error=$("admin-settings-error");error.hidden=true;b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Saving…';
   const settings={aiEnabled:$("admin-ai-enabled").checked,accessCodeRequired:$("admin-access-required").checked,signupMode:$("admin-signup-mode").value,siteNotice:$("admin-site-notice").value,newAccessCode:$("admin-new-access-code").value,whatsNewEnabled:$("admin-whatsnew-enabled").checked,whatsNewVersion:$("admin-whatsnew-version").value.trim()};
