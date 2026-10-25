@@ -928,7 +928,7 @@ function showAccountDisabled(message,info){
  if(!text)text="Contact support at wehatewindows.help@gmail.com for help.";
  setGateBody(text);
  const canDownload=!!(info&&info.canDownload),dl=$("gate-download"),st=$("gate-status");
- const notes={keep:"Your chats are still saved on your account. Contact support if you need a copy.",delete:"Your chats were removed from this account. Contact support if you have questions."};
+ const notes={keep:"Your chats are still saved on your account.",delete:"Your chats were removed from this account."};
  dl.hidden=!canDownload;dl.disabled=false;dl.textContent="Download your chats";dl.onclick=downloadDisabledData;
  const note=canDownload?(info.deleteAfterDownload?"Download your chats before they are removed. Once you download them, they will be deleted from your account.":"You can download a copy of your chats at any time."):(notes[info&&info.dataMode]||"");
  st.hidden=!note;st.textContent=note;
