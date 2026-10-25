@@ -866,13 +866,13 @@ const hist=c=>c.m.filter(m=>!m.err).slice(-14).map(m=>({r:m.r,x:m.x}));
 async function post(body,externalSignal){
  const action=body.action;
  if(action!=="access_check"&&action!=="status_check"){try{const token=localStorage.getItem(ACCESS_TOKEN_KEY);if(token)body={...body,accessToken:token}}catch(e){}}
- if(accountSession&&accountSession.token&&["auth_login","auth_signup","auth_admin_login","status_check","access_check"].indexOf(action)===-1)body={...body,sessionToken:accountSession.token};
+ if(accountSession&&accountSession.token&&!body.sessionToken&&["auth_login","auth_signup","auth_admin_login","status_check","access_check"].indexOf(action)===-1)body={...body,sessionToken:accountSession.token};
  const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),45000);
  const forwardAbort=()=>ctl.abort();
  if(externalSignal){if(externalSignal.aborted)ctl.abort();else externalSignal.addEventListener("abort",forwardAbort,{once:true})}
  try{
   const r=await fetch(API_URL,{method:"POST",body:JSON.stringify(body),signal:ctl.signal});
-  const j=await r.json();if(j.error==='account_disabled'&&typeof showAccountDisabled==='function')showAccountDisabled(j.message,j);if(j.error){const error=new Error(j.error);error.payload=j;throw error}return j;
+  const j=await r.json();if(j.error==='account_disabled'&&j.sessionToken)disabledSessionToken=j.sessionToken;if(j.error==='account_disabled'&&typeof showAccountDisabled==='function')showAccountDisabled(j.message,j);if(j.error){const error=new Error(j.error);error.payload=j;throw error}return j;
  }finally{
   clearTimeout(tm);
   if(externalSignal)externalSignal.removeEventListener("abort",forwardAbort);
@@ -939,15 +939,16 @@ function disabledSignOut(){
  try{clearLocalWhwData(true)}catch(e){try{localStorage.removeItem(KEY);localStorage.removeItem(ACCOUNT_SESSION_STORAGE_KEY)}catch(e2){}}
  location.reload();
 }
+let disabledSessionToken=null;
 async function downloadDisabledData(){
  const btn=$("gate-download"),st=$("gate-status");btn.disabled=true;st.hidden=false;st.textContent="Preparing your download…";
  try{
-  const result=await post({action:"account_disabled_export"});
+  const result=await post({action:"account_disabled_export",sessionToken:disabledSessionToken});
   if(!result||!result.ok)throw new Error("failed");
   const prepared=makeChatExport(Array.isArray(result.chats)?result.chats:[],true);
   const blob=zipStored_(prepared.files),filename="whwai-chat-export-"+new Date().toISOString().slice(0,10)+".zip";
   const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=filename;a.style.display="none";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10*60*1000);
-  let deleted=false;try{const done=await post({action:"account_disabled_done"});deleted=!!(done&&done.deleted)}catch(e){}
+  let deleted=false;try{const done=await post({action:"account_disabled_done",sessionToken:disabledSessionToken});deleted=!!(done&&done.deleted)}catch(e){}
   st.textContent=deleted?"Your download is ready. Your chats have been removed from your account.":"Your download is ready.";
   if(deleted)btn.hidden=true;else{btn.disabled=false;btn.textContent="Download again"}
  }catch(e){st.textContent="We couldn't prepare your download. Please try again.";btn.disabled=false}
