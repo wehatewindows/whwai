@@ -428,6 +428,18 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,textarea:foc
 /* Desktop: keep the banner clear of the sidebar reopen button when the sidebar is collapsed */
 @media (min-width:641px){.frame.collapsed .main .site-notice{left:52px}}
 .privacy-row+.wn-ver{text-align:right;margin:4px 0 0}
+.bulk-bar{display:grid;gap:6px;margin:0 0 8px}.bulk-bar:empty{display:none}
+.bulk-head{display:flex;align-items:center;justify-content:space-between;min-height:24px}.bulk-count{font-size:13px;color:#555}
+.bulk-done{border:0;background:none;padding:4px 2px;font:inherit;font-size:13px;color:#2f6bff;cursor:pointer}
+.bulk-actions{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:6px}
+.bulk-bar button:not(.bulk-done){border:1px solid #d4d4d4;background:#fff;border-radius:999px;padding:7px 8px;font:inherit;font-size:13px;color:#222;cursor:pointer;white-space:nowrap}
+.bulk-bar button:not(.bulk-done):hover{background:#f4f4f4}.bulk-bar button:disabled{opacity:.45;cursor:default}.bulk-bar button.danger{color:#d93b3b}
+.bulk-bar #select-toggle:not(.bulk-done){margin-left:auto}
+.pick{width:18px;height:18px;border-radius:50%;border:1.5px solid #9a9a9a;flex:none;margin:0 2px 0 8px;display:grid;place-items:center;color:#fff}.pick.on{background:#2f6bff;border-color:#2f6bff}
+.subtle-link{border:0;background:none;padding:6px 0 0;font:inherit;font-size:13px;color:#666;text-decoration:underline;cursor:pointer}
+.privacy-row{flex-wrap:wrap;row-gap:8px}
+.privacy-link,.lock-link{display:inline-block;background:#efefef;color:#444;border-radius:999px;padding:5px 11px;font-size:13px;text-decoration:none;white-space:nowrap}
+.privacy-link:hover,.privacy-link:focus,.lock-link:hover,.lock-link:focus{background:#e2e2e2;color:#111;text-decoration:none}
 </style>
 </head>
 <body class="access-locked">
@@ -452,6 +464,7 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,textarea:foc
  <aside class="side" id="side">
   <div class="brand"><h1>WHW<b>ai</b><span class="beta-pill">Beta</span></h1><button class="logo" id="logo" title="Collapse sidebar" aria-label="Collapse sidebar"></button></div>
   <div class="chat-search" role="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4.5 4.5"></path></svg><input id="chat-search" type="search" placeholder="Search chats" aria-label="Search chats" autocomplete="off" spellcheck="false"><button id="chat-search-clear" type="button" aria-label="Clear search" title="Clear search" hidden>×</button></div>
+  <div class="bulk-bar" id="bulk-bar"></div>
   <div class="list" id="list"></div>
   <button class="new" id="new" title="New chat" aria-label="New chat">+</button>
   <button class="gear" id="gear" title="Settings" aria-label="Settings"></button>
@@ -684,8 +697,42 @@ const PEN='<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-
 const SPARK='<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16v4M17 18h4"/>';
 let renamingId=null;
 let mid=null;
+const CONFIRM_DELETE_KEY="whwai.confirmDeleteChats.v1";
+let lastConfirmCheckbox=false,selecting=false;const selectedIds=new Set();
+function confirmDeleteEnabled(){try{return localStorage.getItem(CONFIRM_DELETE_KEY)!=="off"}catch(e){return true}}
+function setConfirmDelete(on){try{if(on)localStorage.removeItem(CONFIRM_DELETE_KEY);else localStorage.setItem(CONFIRM_DELETE_KEY,"off")}catch(e){}}
+function setSelecting(on){selecting=on;selectedIds.clear();renderList()}
+function selectedChats(){return S.chats.filter(c=>selectedIds.has(c.id))}
+function renderBulkBar(){
+ const bar=$("bulk-bar");if(!bar)return;
+ const n=selectedIds.size;
+ if(!selecting){bar.innerHTML=S.chats.length?'<button type="button" id="select-toggle">Select</button>':"";}
+ else{bar.innerHTML=`<div class="bulk-head"><span class="bulk-count">${n} selected</span><button type="button" id="select-toggle" class="bulk-done">Done</button></div><div class="bulk-actions"><button type="button" id="bulk-pin"${n?"":" disabled"}>Pin</button><button type="button" id="bulk-title"${n?"":" disabled"}>New titles</button><button type="button" id="bulk-delete" class="danger"${n?"":" disabled"}>Delete</button></div>`;
+  $("bulk-pin").onclick=bulkPin;$("bulk-title").onclick=bulkTitle;$("bulk-delete").onclick=bulkDelete;}
+ const toggle=$("select-toggle");if(toggle)toggle.onclick=()=>setSelecting(!selecting);
+}
+function bulkPin(){
+ const picked=selectedChats();if(!picked.length)return;
+ const allPinned=picked.every(c=>c.p);
+ picked.forEach(c=>{c.p=allPinned?0:1;touch(c)});save();
+ toast(allPinned?"Unpinned.":"Pinned.");setSelecting(false);
+}
+async function bulkTitle(){
+ const ids=selectedChats().map(c=>c.id);if(!ids.length)return;
+ setSelecting(false);
+ for(const id of ids)await retitle(id);
+}
+async function bulkDelete(){
+ const ids=selectedChats().map(c=>c.id),n=ids.length;if(!n||busy)return;
+ const accepted=await appConfirm({title:n===1?"Delete chat?":"Delete "+n+" chats?",message:"The "+(n===1?"chat and its messages":"selected chats and their messages")+" will be removed from this browser"+(accountSession&&accountSession.token?" and from your account chat history":"")+". This cannot be undone.",confirmLabel:n===1?"Delete chat":"Delete "+n+" chats",standalone:true});
+ if(!accepted||busy)return;
+ ids.forEach(id=>{if(S.chats.some(c=>c.id===id))delChat(id)});
+ setSelecting(false);toast(n===1?"Chat deleted.":n+" chats deleted.");
+}
 function renderList(){
  list.innerHTML="";closeMenu();
+ for(const id of [...selectedIds]){if(!S.chats.some(c=>c.id===id))selectedIds.delete(id)}
+ renderBulkBar();
  const query=searchInput?searchInput.value.trim():"";
  if(searchClear)searchClear.hidden=!query;
  let entries;
@@ -706,11 +753,13 @@ function renderList(){
   const b=document.createElement("button");b.className="chat"+(on?" on":"");b.title=c.t;
   b.innerHTML='<span class="ct">'+(c.p?ic(PIN,12):"")+esc(c.t)+'</span>'+(query?'<span class="search-snippet"></span>':'<span class="cm" data-t="'+c.u+'">'+ago(c.u)+'</span>');
   if(query){const snippet=b.querySelector(".search-snippet");snippet.textContent=searchSnippet(c,query);b.title=c.t+" — "+snippet.textContent;}
-  b.onclick=()=>openChat(c.id);
+  const picked=selectedIds.has(c.id);
+  b.onclick=()=>{if(selecting){if(picked)selectedIds.delete(c.id);else selectedIds.add(c.id);renderList();return}openChat(c.id)};
+  const pick=document.createElement("span");pick.className="pick"+(picked?" on":"");pick.innerHTML=picked?ic('<path d="M5 12.5l4.5 4.5L19 7.5"/>',12,2.5):"";
   const x=document.createElement("button");x.className="more";x.innerHTML=ic(DOTS,18);x.title="Chat options";
   x.setAttribute("aria-label","Chat options");x.setAttribute("aria-haspopup","menu");x.setAttribute("aria-expanded","false");
   x.onclick=e=>{e.stopPropagation();if(mid===c.id)closeMenu();else openMenu(c.id,x)};
-  r.append(b,x);list.appendChild(r);
+  if(selecting){x.hidden=true;r.append(pick,b)}else r.append(b,x);list.appendChild(r);
  });
  if(!canSave)list.insertAdjacentHTML("beforeend",'<div class="hint warn">Chats can\'t be saved in this browser, so they will be lost when you leave this page.</div>');
 }
@@ -1075,7 +1124,9 @@ function openChat(id){if(busy)return;S.cur=id;save();renderList();renderChat();s
 function newChat(){if(busy)return;S.cur=null;save();renderList();renderChat();side(false);ta.focus()}
 async function confirmDeleteChat(id){
  if(busy)return;const chat=S.chats.find(c=>c.id===id);if(!chat)return;
- const accepted=await appConfirm({title:"Delete chat?",message:"“"+chat.t+"” and its messages will be removed from this browser"+(accountSession&&accountSession.token?" and from your account chat history.":".")+" This cannot be undone.",confirmLabel:"Delete chat",standalone:true});
+ if(!confirmDeleteEnabled()){delChat(id);toast("Chat deleted.");return}
+ const accepted=await appConfirm({title:"Delete chat?",message:"“"+chat.t+"” and its messages will be removed from this browser"+(accountSession&&accountSession.token?" and from your account chat history.":".")+" This cannot be undone.",confirmLabel:"Delete chat",standalone:true,checkbox:{label:"Don't ask me before deleting chats"}});
+ if(accepted&&lastConfirmCheckbox)setConfirmDelete(false);
  if(!accepted||busy||!S.chats.some(c=>c.id===id))return;delChat(id);toast("Chat deleted.");
 }
 function delChat(id){
@@ -1562,14 +1613,14 @@ function renderSettings(){
   <div class="data-tools-list">
    ${signed?`<button class="data-tool" id="account-open" type="button"><span class="tool-icon">${ic('<circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>',19,1.8)}</span><span class="tool-copy"><strong>Account settings</strong><small>Change password, sign out, or delete your account.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>`:`<button class="data-tool" id="account-signin" type="button"><span class="tool-icon">${ic('<path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/>',19,1.8)}</span><span class="tool-copy"><strong>Sign in</strong><small>Open the chats saved to your account.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>${siteSignupMode!=="closed"?`<button class="data-tool" id="account-signup" type="button"><span class="tool-icon">${ic('<path d="M12 5v14M5 12h14"/>',19,1.8)}</span><span class="tool-copy"><strong>Create account</strong><small>Keep your chats on every device.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>`:""}`}
   </div>
-  <h3>Data & privacy</h3><p class="sm">Back up, import, or remove chats saved in this browser.</p><button class="pbtn data-manage-button" id="data-tools-open" type="button"><span class="manage-icon">${ic('<path d="M4 5h16v14H4z"/><path d="M8 9h8M8 12h8M8 15h5"/>',17)}</span><span>Manage your data</span></button>
+  <h3>Data & privacy</h3><p class="sm">Back up, import, or remove chats saved in this browser.</p><button class="pbtn data-manage-button" id="data-tools-open" type="button"><span class="manage-icon">${ic('<path d="M4 5h16v14H4z"/><path d="M8 9h8M8 12h8M8 15h5"/>',17)}</span><span>Manage your data</span></button>${confirmDeleteEnabled()?"":'<button type="button" class="subtle-link" id="restore-delete-confirm">Ask before deleting chats again</button>'}
   ${signed&&user.role==="admin"?`<h3>Administration</h3><button class="pbtn data-manage-button" id="admin-open" type="button"><span class="manage-icon">${ic('<path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z"/>',17)}</span><span>Admin panel</span></button>`:""}
   <p class="sm" id="s-msg" role="status">${esc(smsg)}</p><div class="privacy-row"><a href="#" class="privacy-link" id="privacy-open">Privacy Policy</a><a href="#" class="privacy-link" id="terms-open">Terms of Use</a><a href="#" class="privacy-link" id="whatsnew-open">What's new</a>${accessRequired?'<button type="button" class="lock-link" id="lock-whwai-now">Lock WHWai</button>':''}</div>${whatsNewCfg&&whatsNewCfg.version?'<p class="wn-ver">'+esc(String(whatsNewCfg.version))+'</p>':''}`;
  const q=id=>mbody.querySelector("#"+id);
  if(q("account-open"))q("account-open").onclick=renderAccount;
  if(q("account-signin"))q("account-signin").onclick=()=>renderAccountAuth("login");
  if(q("account-signup"))q("account-signup").onclick=()=>renderAccountAuth("signup");
- q("data-tools-open").onclick=renderDataManagement;q("privacy-open").onclick=e=>{e.preventDefault();renderPrivacyPolicy()};q("terms-open").onclick=e=>{e.preventDefault();renderTerms()};q("whatsnew-open").onclick=e=>{e.preventDefault();closeSettings();setTimeout(()=>showWhatsNewIfNeeded(true),320)};
+ q("data-tools-open").onclick=renderDataManagement;{const rd=q("restore-delete-confirm");if(rd)rd.onclick=()=>{setConfirmDelete(true);toast("Delete confirmation is back on.");renderSettings()}}q("privacy-open").onclick=e=>{e.preventDefault();renderPrivacyPolicy()};q("terms-open").onclick=e=>{e.preventDefault();renderTerms()};q("whatsnew-open").onclick=e=>{e.preventDefault();closeSettings();setTimeout(()=>showWhatsNewIfNeeded(true),320)};
  if(q("admin-open"))q("admin-open").onclick=()=>renderAdminPanel("site");
  if(q("lock-whwai-now"))q("lock-whwai-now").onclick=()=>{closeSettings();side(false);lockEarlyAccess(true)};
 }
@@ -1777,7 +1828,7 @@ async function runAdminAccountAction(action,targetId){
  finally{adminActionPending=false}
 }
 async function appConfirm(options){
- options=options||{};
+ options=options||{};lastConfirmCheckbox=false;
  const title=String(options.title||"Confirm action"),message=String(options.message||"Are you sure you want to continue?"),confirmLabel=String(options.confirmLabel||"Continue"),standalone=options.standalone===true&&modal.hidden,dialogGeneration=standalone?++confirmOverlayGeneration:0;
  if(pendingAppConfirmation)resolvePendingConfirmation(false);
  return await new Promise(resolve=>{
@@ -1790,7 +1841,8 @@ async function appConfirm(options){
   const icon=ic(options.danger===false?'<path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z"/>':'<path d="M12 3l9 17H3z"/><path d="M12 9v4M12 17h.01"/>',19,1.8);
   const inputHtml=options.input?`<label class="sm reason-label" for="app-confirm-input">${esc(options.input.label)}</label><textarea id="app-confirm-input" class="reason-input" rows="3" maxlength="300" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea>`:"";
   const radiosHtml=options.radios?`<fieldset class="confirm-radios"><legend class="sm reason-label">${esc(options.radios.label)}</legend>${options.radios.items.map(it=>`<label class="radio-row"><input type="radio" name="app-confirm-radio" value="${escapeAttr(it.value)}"${it.checked?" checked":""}><span><strong>${esc(it.label)}</strong><small>${esc(it.hint||"")}</small></span></label>`).join("")}</fieldset>`:"";
-  const panel=`<div class="confirm-panel"><span class="choice-icon">${icon}</span><div><strong>${esc(title)}</strong><p>${esc(message)}</p></div></div>${inputHtml}${radiosHtml}<div class="data-toolbar"><button type="button" class="pbtn" id="app-confirm-cancel">Cancel</button><button type="button" class="pbtn ${options.danger===false?"":"danger"}" id="app-confirm-accept">${esc(confirmLabel)}</button></div>`;
+  const checkHtml=options.checkbox?`<label class="check-row confirm-skip"><input type="checkbox" id="app-confirm-skip"> ${esc(options.checkbox.label)}</label>`:"";
+  const panel=`<div class="confirm-panel"><span class="choice-icon">${icon}</span><div><strong>${esc(title)}</strong><p>${esc(message)}</p></div></div>${inputHtml}${radiosHtml}${checkHtml}<div class="data-toolbar"><button type="button" class="pbtn" id="app-confirm-cancel">Cancel</button><button type="button" class="pbtn ${options.danger===false?"":"danger"}" id="app-confirm-accept">${esc(confirmLabel)}</button></div>`;
   if(standalone){
    const overlay=$("confirm-overlay");overlay.innerHTML=`<div class="app-confirm-card">${panel}</div>`;overlay.hidden=false;overlay.classList.remove("closing","open");overlay.setAttribute("aria-label",title);
    overlay.onclick=e=>{if(e.target===overlay)settle(false)};
@@ -1799,7 +1851,7 @@ async function appConfirm(options){
   }else{
    currentSettingsView="app-confirm";$("modal-title").textContent=title;mbody.innerHTML=panel;animateMenuContent();
   }
-  $("app-confirm-cancel").onclick=()=>settle(false);$("app-confirm-accept").onclick=()=>settle(true);$("app-confirm-cancel").focus();
+  $("app-confirm-cancel").onclick=()=>settle(false);$("app-confirm-accept").onclick=()=>{lastConfirmCheckbox=!!($("app-confirm-skip")&&$("app-confirm-skip").checked);settle(true)};$("app-confirm-cancel").focus();
  });
 }
 let pendingAppConfirmation=null,confirmOverlayGeneration=0;
