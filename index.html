@@ -745,13 +745,15 @@ function renderBulkBar(){
  if(mode==="select"){
   bar.querySelector(".bulk-count").textContent=n+" selected";
   ["bulk-pin","bulk-title","bulk-delete"].forEach(id=>$(id).disabled=!n);
+  const picked=selectedChats(),allPinned=picked.length>0&&picked.every(c=>c.p);
+  const pinBtn=$("bulk-pin");if(pinBtn.textContent!==(allPinned?"Unpin":"Pin"))pinBtn.textContent=allPinned?"Unpin":"Pin";
  }
 }
 function bulkPin(){
  const picked=selectedChats();if(!picked.length)return;
  const allPinned=picked.every(c=>c.p);
  picked.forEach(c=>{c.p=allPinned?0:1;touch(c)});save();
- toast(allPinned?"Unpinned.":"Pinned.");setSelecting(false);
+ toast(allPinned?"Unpinned.":"Pinned.");setSelecting(false);renderList();
 }
 async function bulkTitle(){
  const ids=selectedChats().map(c=>c.id);if(!ids.length)return;
