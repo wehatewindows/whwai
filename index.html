@@ -131,7 +131,7 @@ body{overflow:hidden}
 .main{min-height:0;min-width:0;height:100%}
 .scroll{min-height:0;min-width:0}
 .input,.note{flex-shrink:0}
-.field{box-shadow:-6px 4px 20px rgba(106,160,255,.24),6px 4px 20px rgba(244,114,182,.16),0 -4px 20px rgba(167,139,250,.15);transition:box-shadow .25s ease,background .2s ease}
+.field{box-shadow:-6px 4px 20px rgba(106,160,255,.24),6px 4px 20px rgba(244,114,182,.16),0 -4px 20px rgba(167,139,250,.15);transition:box-shadow .25s ease,background .2s ease,border-color .2s ease}
 .field:focus-within{box-shadow:-6px 4px 24px rgba(0,0,0,.08),6px 4px 24px rgba(0,0,0,.06),0 -4px 24px rgba(0,0,0,.05)}
 .busy .field{animation:glow 2.4s ease-in-out infinite}
 .msg.u{background:linear-gradient(180deg,#7fa9ff,#5b8df0);color:#fff}
@@ -428,18 +428,29 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,textarea:foc
 /* Desktop: keep the banner clear of the sidebar reopen button when the sidebar is collapsed */
 @media (min-width:641px){.frame.collapsed .main .site-notice{left:52px}}
 .privacy-row+.wn-ver{text-align:right;margin:4px 0 0}
-.bulk-bar{display:grid;gap:6px;margin:0 0 8px}.bulk-bar:empty{display:none}
+.bulk-bar{display:grid;gap:6px;margin:0 0 8px}.bulk-bar:empty{display:none}.bulk-bar>*{animation:barIn .18s ease-out both}@keyframes barIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 .bulk-head{display:flex;align-items:center;justify-content:space-between;min-height:24px}.bulk-count{font-size:13px;color:#555}
 .bulk-done{border:0;background:none;padding:4px 2px;font:inherit;font-size:13px;color:#2f6bff;cursor:pointer}
 .bulk-actions{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:6px}
 .bulk-bar button:not(.bulk-done){border:1px solid #d4d4d4;background:#fff;border-radius:999px;padding:7px 8px;font:inherit;font-size:13px;color:#222;cursor:pointer;white-space:nowrap}
 .bulk-bar button:not(.bulk-done):hover{background:#f4f4f4}.bulk-bar button:disabled{opacity:.45;cursor:default}.bulk-bar button.danger{color:#d93b3b}
 .bulk-bar #select-toggle:not(.bulk-done){margin-left:auto}
-.pick{width:18px;height:18px;border-radius:50%;border:1.5px solid #9a9a9a;flex:none;margin:0 2px 0 8px;display:grid;place-items:center;color:#fff}.pick.on{background:#2f6bff;border-color:#2f6bff}
+.pick{box-sizing:border-box;width:0;height:18px;margin:0;opacity:0;border-radius:50%;border:1.5px solid #9a9a9a;flex:none;display:grid;place-items:center;color:#fff;overflow:hidden;transition:width .18s ease,margin .18s ease,opacity .16s ease,background-color .16s ease,border-color .16s ease}.list.selecting .pick{width:18px;margin:0 2px 0 8px;opacity:1}.pick.on{background:#2f6bff;border-color:#2f6bff}.pick svg{transform:scale(.4);opacity:0;transition:transform .2s cubic-bezier(.2,.7,.2,1),opacity .15s ease}.pick.on svg{transform:scale(1);opacity:1}.list.selecting .row .more{opacity:0;pointer-events:none}
 .subtle-link{border:0;background:none;padding:6px 0 0;font:inherit;font-size:13px;color:#666;text-decoration:underline;cursor:pointer}
 .privacy-row{flex-wrap:wrap;row-gap:8px}
 .privacy-link,.lock-link{display:inline-block;background:#efefef;color:#444;border-radius:999px;padding:5px 11px;font-size:13px;text-decoration:none;white-space:nowrap}
 .privacy-link:hover,.privacy-link:focus,.lock-link:hover,.lock-link:focus{background:#e2e2e2;color:#111;text-decoration:none}
+
+/* Exit animation for menus and panels hidden through hideEl() */
+.leaving{animation:leaveFade .14s ease-in both!important;pointer-events:none}
+@keyframes leaveFade{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(6px) scale(.985)}}
+/* Inline error messages fade in when shown */
+.access-error:not([hidden]){animation:noticeIn .18s cubic-bezier(.2,.7,.2,1) both}
+/* Consistent hover and state transitions for controls that jumped before */
+:where(.subtle-link,.privacy-link,.lock-link,.pm-item,.cmenu button,.pc-sw,.radio-row,.check-row,.data-tool,.tool-copy,.code-copy,.wn-ok,.switch-row,.profile-btn,.pc-avatar,.bulk-bar button,.wn-overlay button){transition:background-color .16s ease,color .16s ease,border-color .16s ease,box-shadow .18s ease,opacity .16s ease,transform .16s ease}
+.bulk-bar button:active,.pbtn:active,.round:active,.new:active,.gear:active,.chat:active{transform:scale(.98)}
+.bulk-bar button,.pbtn,.round,.new,.gear,.chat{transition:background-color .16s ease,color .16s ease,box-shadow .18s ease,opacity .16s ease,transform .12s ease}
+@media (prefers-reduced-motion:reduce){.leaving,.access-error:not([hidden]),.bulk-bar>*{animation:none!important}.pick,.pick svg{transition:none!important}}
 </style>
 </head>
 <body class="access-locked">
@@ -701,15 +712,24 @@ const CONFIRM_DELETE_KEY="whwai.confirmDeleteChats.v1";
 let lastConfirmCheckbox=false,selecting=false;const selectedIds=new Set();
 function confirmDeleteEnabled(){try{return localStorage.getItem(CONFIRM_DELETE_KEY)!=="off"}catch(e){return true}}
 function setConfirmDelete(on){try{if(on)localStorage.removeItem(CONFIRM_DELETE_KEY);else localStorage.setItem(CONFIRM_DELETE_KEY,"off")}catch(e){}}
-function setSelecting(on){selecting=on;selectedIds.clear();renderList()}
+function setSelecting(on){selecting=on;selectedIds.clear();list.classList.toggle("selecting",on);list.querySelectorAll(".pick.on").forEach(p=>p.classList.remove("on"));renderBulkBar()}
 function selectedChats(){return S.chats.filter(c=>selectedIds.has(c.id))}
 function renderBulkBar(){
  const bar=$("bulk-bar");if(!bar)return;
  const n=selectedIds.size;
- if(!selecting){bar.innerHTML=S.chats.length?'<button type="button" id="select-toggle">Select</button>':"";}
- else{bar.innerHTML=`<div class="bulk-head"><span class="bulk-count">${n} selected</span><button type="button" id="select-toggle" class="bulk-done">Done</button></div><div class="bulk-actions"><button type="button" id="bulk-pin"${n?"":" disabled"}>Pin</button><button type="button" id="bulk-title"${n?"":" disabled"}>New titles</button><button type="button" id="bulk-delete" class="danger"${n?"":" disabled"}>Delete</button></div>`;
-  $("bulk-pin").onclick=bulkPin;$("bulk-title").onclick=bulkTitle;$("bulk-delete").onclick=bulkDelete;}
- const toggle=$("select-toggle");if(toggle)toggle.onclick=()=>setSelecting(!selecting);
+ const mode=!S.chats.length?"none":selecting?"select":"idle";
+ if(bar.dataset.mode!==mode){
+  bar.dataset.mode=mode;
+  if(mode==="none")bar.innerHTML="";
+  else if(mode==="idle")bar.innerHTML='<button type="button" id="select-toggle">Select</button>';
+  else{bar.innerHTML='<div class="bulk-head"><span class="bulk-count"></span><button type="button" id="select-toggle" class="bulk-done">Done</button></div><div class="bulk-actions"><button type="button" id="bulk-pin">Pin</button><button type="button" id="bulk-title">New titles</button><button type="button" id="bulk-delete" class="danger">Delete</button></div>';
+   $("bulk-pin").onclick=bulkPin;$("bulk-title").onclick=bulkTitle;$("bulk-delete").onclick=bulkDelete;}
+  const toggle=$("select-toggle");if(toggle)toggle.onclick=()=>setSelecting(!selecting);
+ }
+ if(mode==="select"){
+  bar.querySelector(".bulk-count").textContent=n+" selected";
+  ["bulk-pin","bulk-title","bulk-delete"].forEach(id=>$(id).disabled=!n);
+ }
 }
 function bulkPin(){
  const picked=selectedChats();if(!picked.length)return;
@@ -730,7 +750,7 @@ async function bulkDelete(){
  setSelecting(false);toast(n===1?"Chat deleted.":n+" chats deleted.");
 }
 function renderList(){
- list.innerHTML="";closeMenu();
+ list.innerHTML="";closeMenu();list.classList.toggle("selecting",selecting);
  for(const id of [...selectedIds]){if(!S.chats.some(c=>c.id===id))selectedIds.delete(id)}
  renderBulkBar();
  const query=searchInput?searchInput.value.trim():"";
@@ -754,12 +774,12 @@ function renderList(){
   b.innerHTML='<span class="ct">'+(c.p?ic(PIN,12):"")+esc(c.t)+'</span>'+(query?'<span class="search-snippet"></span>':'<span class="cm" data-t="'+c.u+'">'+ago(c.u)+'</span>');
   if(query){const snippet=b.querySelector(".search-snippet");snippet.textContent=searchSnippet(c,query);b.title=c.t+" — "+snippet.textContent;}
   const picked=selectedIds.has(c.id);
-  b.onclick=()=>{if(selecting){if(picked)selectedIds.delete(c.id);else selectedIds.add(c.id);renderList();return}openChat(c.id)};
-  const pick=document.createElement("span");pick.className="pick"+(picked?" on":"");pick.innerHTML=picked?ic('<path d="M5 12.5l4.5 4.5L19 7.5"/>',12,2.5):"";
+  const pick=document.createElement("span");pick.className="pick"+(picked?" on":"");pick.innerHTML=ic('<path d="M5 12.5l4.5 4.5L19 7.5"/>',12,2.5);pick.setAttribute("aria-hidden","true");
+  b.onclick=()=>{if(selecting){if(selectedIds.has(c.id))selectedIds.delete(c.id);else selectedIds.add(c.id);pick.classList.toggle("on",selectedIds.has(c.id));renderBulkBar();return}openChat(c.id)};
   const x=document.createElement("button");x.className="more";x.innerHTML=ic(DOTS,18);x.title="Chat options";
   x.setAttribute("aria-label","Chat options");x.setAttribute("aria-haspopup","menu");x.setAttribute("aria-expanded","false");
   x.onclick=e=>{e.stopPropagation();if(mid===c.id)closeMenu();else openMenu(c.id,x)};
-  if(selecting){x.hidden=true;r.append(pick,b)}else r.append(b,x);list.appendChild(r);
+  r.append(pick,b,x);list.appendChild(r);
  });
  if(!canSave)list.insertAdjacentHTML("beforeend",'<div class="hint warn">Chats can\'t be saved in this browser, so they will be lost when you leave this page.</div>');
 }
@@ -771,13 +791,15 @@ function openMenu(id,btn){
  $("cgen").innerHTML=ic(SPARK,16)+"<span>Generate title</span>";
  $("cpin").innerHTML=ic(PIN,16)+"<span>"+(c.p?"Unpin":"Pin")+"</span>";
  $("cdel").innerHTML=ic(TRASH,16)+"<span>Delete</span>";
- m.hidden=false;
+ showEl(m);
  const sr=$("side").getBoundingClientRect(),br=btn.getBoundingClientRect();
  m.style.top=Math.max(8,Math.min(br.bottom-sr.top+4,sr.height-m.offsetHeight-8))+"px";
  btn.setAttribute("aria-expanded","true");
 }
+function hideEl(el){if(!el||el.hidden||el._lt)return;el.classList.add("leaving");el._lt=setTimeout(()=>{el._lt=null;el.hidden=true;el.classList.remove("leaving")},140)}
+function showEl(el){if(!el)return;if(el._lt){clearTimeout(el._lt);el._lt=null}el.classList.remove("leaving");el.hidden=false}
 function closeMenu(){
- $("cmenu").hidden=true;mid=null;
+ hideEl($("cmenu"));mid=null;
  document.querySelectorAll(".more").forEach(b=>b.setAttribute("aria-expanded","false"));
 }
 function selectedModelId(){
@@ -1148,7 +1170,7 @@ function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");cle
 const ARIES_INTRO_KEY="whwai.ariesIntroShown.v1";
 let ariesIntroShownThisPage=false,ariesIntroTimer=null;
 function hideAriesIntro(markSeen){
- const tip=$("aries-info-pop");if(tip)tip.hidden=true;
+ hideEl($("aries-info-pop"));
  if(markSeen){ariesIntroShownThisPage=true;try{localStorage.setItem(ARIES_INTRO_KEY,"1")}catch(e){}}
  if(ariesIntroTimer!==null){clearTimeout(ariesIntroTimer);ariesIntroTimer=null}
 }
@@ -1158,9 +1180,9 @@ function showAriesIntroOnce(){
  try{if(localStorage.getItem(ARIES_INTRO_KEY)==="1"){ariesIntroShownThisPage=true;return}}catch(e){}
  const tip=$("aries-info-pop");if(!tip)return;
  ariesIntroShownThisPage=true;
- tip.hidden=false;
+ showEl(tip);
 }
-function pop(open){$("pop").hidden=!open;$("model").setAttribute("aria-expanded",open)}
+function pop(open){open?showEl($("pop")):hideEl($("pop"));$("model").setAttribute("aria-expanded",open)}
 $("aries-info-got-it").onclick=()=>hideAriesIntro(true);
 
 sendBtn.onclick=()=>busy?stopAnswer():send();
@@ -1197,7 +1219,7 @@ function getDeviceId(){
 }
 const SLIDERS='<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>';
 $("gear").innerHTML=ic(SLIDERS,16,2.2);
-$("mnew").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',18,2.4);$("mnew").onclick=newChat;$("profile-btn").onclick=e=>{e.stopPropagation();const m=$("profile-menu");if(!m)return;if(m.hidden){renderProfileMenu();m.hidden=false}else m.hidden=true};document.addEventListener("click",e=>{const m=$("profile-menu");if(m&&!m.hidden&&!m.contains(e.target))m.hidden=true});
+$("mnew").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',18,2.4);$("mnew").onclick=newChat;$("profile-btn").onclick=e=>{e.stopPropagation();const m=$("profile-menu");if(!m)return;if(m.hidden){renderProfileMenu();showEl(m)}else hideEl(m)};document.addEventListener("click",e=>{const m=$("profile-menu");if(m&&!m.hidden&&!m.contains(e.target))m.hidden=true});
 const modal=$("modal"),mbody=$("mbody");
 let smsg="",currentSettingsView="settings",closeModalTimer=null,closingModal=false,siteSignupMode="code",siteNoticeText="",siteStatusLoaded=false;
 const touch=c=>{c.mu=Date.now()};
@@ -1250,9 +1272,9 @@ function profileColorHtml(){const u=accountSession&&accountSession.user||{};cons
 function wireProfileColors(){const av=$("pc-avatar"),opts=$("pc-options");if(av&&opts)av.onclick=()=>{const open=opts.hidden;opts.hidden=!open;av.setAttribute("aria-expanded",String(open))};document.querySelectorAll(".pc-sw").forEach(btn=>{btn.onclick=async()=>{const color=btn.dataset.color,previous=(accountSession&&accountSession.user&&accountSession.user.profileColor)||"#4f7cf0";document.querySelectorAll(".pc-sw").forEach(x=>{x.classList.toggle("on",x===btn);x.setAttribute("aria-pressed",String(x===btn))});if(av)av.style.background=color;try{const r=await post({action:"account_profile_color",sessionToken:accountSession.token,color});if(!r||!r.ok)throw new Error("failed");accountSession.user.profileColor=r.profileColor;renderSyncStatus();toast("Profile color updated")}catch(e){if(av)av.style.background=previous;toast("Couldn't save the color. Try again.")}}})}
 function profileStateText(){if(accountSyncing)return "Syncing chats…";if(navigator.onLine===false||accountSyncFailed)return "Offline · saved on this device";if(accountLastSync)return "Chats synced · "+new Date(accountLastSync).toLocaleTimeString();return "Not synced yet"}
 function renderProfileMenu(){const menu=$("profile-menu");if(!menu||!accountSession||!accountSession.user)return;menu.innerHTML='<div class="pm-head"><strong>'+esc(accountSession.user.username)+'</strong><span>'+esc(profileStateText())+'</span></div><button class="pm-item" id="pm-sync" type="button"'+(accountSyncing?' disabled':'')+'>'+(accountSyncing?'Syncing…':'Sync now')+'</button><button class="pm-item" id="pm-settings" type="button">Account settings</button>';$("pm-sync").onclick=async()=>{await syncAccountChatsNow();renderProfileMenu();toast(accountSyncFailed?"Couldn't sync right now. Your chats are saved on this device.":"Chats synced")};$("pm-settings").onclick=()=>{hideProfileMenu();openSettings(()=>renderAccount())}}
-function hideProfileMenu(){const m=$("profile-menu");if(m)m.hidden=true}
+function hideProfileMenu(){hideEl($("profile-menu"))}
 function wantsThinkingView(text){return /(show|see|display|reveal)\b.{0,20}\b(thinking|thought|reasoning)\b|\bthink (it |this )?through\b|\bstep[- ]by[- ]step\b/i.test(String(text||""))}
-function togglePanel(panel,btn,replay){const open=panel.hidden;panel.hidden=!open;btn.setAttribute("aria-expanded",String(open));if(open&&replay){const ol=panel.querySelector(".steps");if(ol){ol.classList.remove("play");void ol.offsetWidth;ol.classList.add("play")}}}
+function togglePanel(panel,btn,replay){const open=panel.hidden;open?showEl(panel):hideEl(panel);btn.setAttribute("aria-expanded",String(open));if(open&&replay){const ol=panel.querySelector(".steps");if(ol){ol.classList.remove("play");void ol.offsetWidth;ol.classList.add("play")}}}
 function thinkingSteps(text){return String(text||"").replace(/([.!?])\s+(?=[A-Z])/g,"$1\n").split(/\n+/).map(s=>s.replace(/^[\s\-*•\d.)]+/,"").replace(/\s+/g," ").trim()).filter(s=>s.length>2).slice(0,14).map(s=>s.length>220?s.slice(0,217)+"…":s)}
 setInterval(()=>{if(!accountDisabledGate&&accountSession&&accountSession.token&&accountReady&&!(accountSession.user&&accountSession.user.mustChange))post({action:"account_me",sessionToken:accountSession.token}).catch(e=>{if(e&&e.message==="invalid_session"&&accountSession){clearAccountSession();renderList();renderChat();toast("Your sign-in expired. Your chats are still saved on this device. Sign in again to sync them.")}})},60000);
 function renderSyncStatus(){
