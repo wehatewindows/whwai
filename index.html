@@ -427,8 +427,6 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,textarea:foc
 .masked-field{-webkit-text-security:disc}
 /* Desktop: keep the banner clear of the sidebar reopen button when the sidebar is collapsed */
 @media (min-width:641px){.frame.collapsed .main .site-notice{left:52px}}
-/* Hide the idle orb while the Aries info tip is open so they don't overlap */
-body:has(#aries-info-pop:not([hidden])) .orb{opacity:0}
 </style>
 </head>
 <body class="access-locked">
@@ -1623,7 +1621,7 @@ function renderPasswordChange(required){
  };
 }
 function passwordError(message){const el=$("password-change-error");if(el){el.textContent=message;el.hidden=false}}
-function clearSignedInLocalCache(){clearAccountSession();S={chats:[],cur:null,dead:[],model:"aries-1",col:!!S.col};store.set(JSON.stringify(persistedState()));renderList();renderChat()}
+function clearSignedInLocalCache(){clearAccountSession();try{localStorage.removeItem(ARIES_INTRO_KEY)}catch(e){}ariesIntroShownThisPage=false;S={chats:[],cur:null,dead:[],model:"aries-1",col:!!S.col};store.set(JSON.stringify(persistedState()));renderList();renderChat()}
 async function performSignoutCurrent(){
  if(!accountSession||!accountSession.token)return;
  const buttons=mbody.querySelectorAll("button");buttons.forEach(b=>b.disabled=true);setMsg("Signing out…");
