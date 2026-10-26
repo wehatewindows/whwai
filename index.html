@@ -427,6 +427,7 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,textarea:foc
 .masked-field{-webkit-text-security:disc}
 /* Desktop: keep the banner clear of the sidebar reopen button when the sidebar is collapsed */
 @media (min-width:641px){.frame.collapsed .main .site-notice{left:52px}}
+.privacy-row+.wn-ver{text-align:right;margin:4px 0 0}
 </style>
 </head>
 <body class="access-locked">
@@ -1431,12 +1432,12 @@ function renderDataManagement(){
  $("modal-title").textContent="Manage your data";
  const exportIcon=ic('<path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 17v3h14v-3"/>',19,1.8);
  const localIcon=ic('<path d="M4 7h16M10 11v6M14 11v6"/><path d="M5 7l1 13h12l1-13M9 7V4h6v3"/>',19,1.8);
- mbody.innerHTML=`<p class="sm">Manage the chats saved in this browser. Account chats are also stored on the server when you are signed in.</p>
+ mbody.innerHTML=`<p class="sm">Chats saved in this browser. Account chats also stay on the server while you're signed in.</p>
   <div class="data-tools-list">
-   <button class="data-tool" id="open-export-info" type="button"><span class="tool-icon">${exportIcon}</span><span class="tool-copy"><strong>Download / export chats</strong><small>Create a private ZIP backup of chats currently stored here.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>
-   <button class="data-tool" id="open-import-backup" type="button"><span class="tool-icon">${ic('<path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v4h16v-4"/>',19,1.8)}</span><span class="tool-copy"><strong>Import chat backup</strong><small>Restore chats from a WHWai JSON or ZIP backup.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>
+   <button class="data-tool" id="open-export-info" type="button"><span class="tool-icon">${exportIcon}</span><span class="tool-copy"><strong>Download chats</strong><small>Save a private ZIP backup of this browser's chats.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>
+   <button class="data-tool" id="open-import-backup" type="button"><span class="tool-icon">${ic('<path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v4h16v-4"/>',19,1.8)}</span><span class="tool-copy"><strong>Import chats</strong><small>Restore from a WHWai JSON or ZIP backup.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>
    <input id="import-backup-file" type="file" accept=".json,.zip,application/json,application/zip" hidden>
-   <button class="data-tool danger" id="open-delete-local" type="button"><span class="tool-icon">${localIcon}</span><span class="tool-copy"><strong>Delete data on this device</strong><small>Remove this browser's local chats and sign-in session.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>
+   <button class="data-tool danger" id="open-delete-local" type="button"><span class="tool-icon">${localIcon}</span><span class="tool-copy"><strong>Delete data on this device</strong><small>Remove local chats and your sign-in from this browser.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>
   </div>
   <p class="sm" id="s-msg" role="status"></p><div class="data-toolbar"><button class="pbtn" id="data-back">Back to Settings</button></div>`;
  const q=id=>mbody.querySelector("#"+id);
@@ -1556,7 +1557,7 @@ function renderSettings(){
  currentSettingsView="settings";if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}
  $("modal-title").textContent="Settings";
  const signed=!!(accountSession&&accountSession.token&&accountSession.user),user=signed?accountSession.user:null;
- const accountCopy=signed?`Signed in as ${esc(user.username)}${user.role==="admin"?" · Administrator":""}.`:(accountSession&&accountSession.token?(accountReady?"Signed in. Your account will sync once the server is reachable and the access code is entered.":"Checking your account session…"):"Guest mode. Chats stay in this browser until you sign in.");
+ const accountCopy=signed?`Signed in as ${esc(user.username)}${user.role==="admin"?" · Administrator":""}.`:(accountSession&&accountSession.token?(accountReady?"Signed in. Your account will sync once the server is reachable and the access code is entered.":"Checking your account session…"):"Guest mode. Chats stay in this browser.");
  mbody.innerHTML=`<h3>Account</h3><p class="sm">${accountCopy}</p>
   <div class="data-tools-list">
    ${signed?`<button class="data-tool" id="account-open" type="button"><span class="tool-icon">${ic('<circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>',19,1.8)}</span><span class="tool-copy"><strong>Account settings</strong><small>Change password, sign out, or delete your account.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>`:`<button class="data-tool" id="account-signin" type="button"><span class="tool-icon">${ic('<path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/>',19,1.8)}</span><span class="tool-copy"><strong>Sign in</strong><small>Open the chats saved to your account.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>${siteSignupMode!=="closed"?`<button class="data-tool" id="account-signup" type="button"><span class="tool-icon">${ic('<path d="M12 5v14M5 12h14"/>',19,1.8)}</span><span class="tool-copy"><strong>Create account</strong><small>Keep your chats on every device.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>`:""}`}
