@@ -53,7 +53,7 @@ svg{display:block}
 @keyframes rise{from{opacity:0;transform:translateY(8px)}}
 .bar{align-self:flex-start;display:flex;align-items:center;gap:2px;background:var(--bub);border-radius:18px;padding:3px 12px 3px 6px;margin-top:-8px;flex:none}
 .bar button{border:0;background:none;padding:5px;cursor:pointer;border-radius:8px;display:grid;place-items:center}
-.bar button:hover{background:#ddd}.bar span{margin-left:70px;font-size:13px;color:#333}
+.bar button:hover{background:#ddd}.bar span{margin-left:12px;font-size:13px;color:#333}
 .empty{margin:auto;text-align:center;color:var(--mute)}.empty h2{font-size:28px;font-weight:400;color:var(--ink);margin:0 0 6px}
 .orb{position:absolute;right:26px;bottom:calc(100% + 22px);z-index:3;width:68px;height:68px;border-radius:50%;background:#78a4fa;box-shadow:0 0 0 6px rgba(120,164,250,.38);pointer-events:none;will-change:transform}
 .orb.think{animation:breathe 3s ease-in-out infinite,morph 4.6s ease-in-out infinite}
@@ -425,6 +425,10 @@ input,textarea,select,[contenteditable="true"],.field textarea,.access-form inpu
 input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,textarea:focus,select:focus{outline:none!important;box-shadow:none!important;border-color:#9a9a9a!important}
 .wn-ver{margin:6px 0 0;font-size:12.5px;color:#777}
 .masked-field{-webkit-text-security:disc}
+/* Desktop: keep the banner clear of the sidebar reopen button when the sidebar is collapsed */
+@media (min-width:641px){.frame.collapsed .main .site-notice{left:52px}}
+/* Hide the idle orb while the Aries info tip is open so they don't overlap */
+body:has(#aries-info-pop:not([hidden])) .orb{opacity:0}
 </style>
 </head>
 <body class="access-locked">
@@ -1557,9 +1561,9 @@ function renderSettings(){
  const accountCopy=signed?`Signed in as ${esc(user.username)}${user.role==="admin"?" · Administrator":""}.`:(accountSession&&accountSession.token?(accountReady?"Signed in. Your account will sync once the server is reachable and the access code is entered.":"Checking your account session…"):"Guest mode. Chats stay in this browser until you sign in.");
  mbody.innerHTML=`<h3>Account</h3><p class="sm">${accountCopy}</p>
   <div class="data-tools-list">
-   ${signed?`<button class="data-tool" id="account-open" type="button"><span class="tool-icon">${ic('<circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>',19,1.8)}</span><span class="tool-copy"><strong>Account settings</strong><small>Change password, sign out, or delete your account.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>`:`<button class="data-tool" id="account-signin" type="button"><span class="tool-icon">${ic('<path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/>',19,1.8)}</span><span class="tool-copy"><strong>Sign in</strong><small>Access your account chats on this browser.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>${siteSignupMode!=="closed"?`<button class="data-tool" id="account-signup" type="button"><span class="tool-icon">${ic('<path d="M12 5v14M5 12h14"/>',19,1.8)}</span><span class="tool-copy"><strong>Create account</strong><small>Make an account to keep chats across devices.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>`:""}`}
+   ${signed?`<button class="data-tool" id="account-open" type="button"><span class="tool-icon">${ic('<circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>',19,1.8)}</span><span class="tool-copy"><strong>Account settings</strong><small>Change password, sign out, or delete your account.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>`:`<button class="data-tool" id="account-signin" type="button"><span class="tool-icon">${ic('<path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/>',19,1.8)}</span><span class="tool-copy"><strong>Sign in</strong><small>Open the chats saved to your account.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>${siteSignupMode!=="closed"?`<button class="data-tool" id="account-signup" type="button"><span class="tool-icon">${ic('<path d="M12 5v14M5 12h14"/>',19,1.8)}</span><span class="tool-copy"><strong>Create account</strong><small>Keep your chats on every device.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>`:""}`}
   </div>
-  <h3>Data & privacy</h3><p class="sm">Export a backup, import chats, or remove the local copy on this browser.</p><button class="pbtn data-manage-button" id="data-tools-open" type="button"><span class="manage-icon">${ic('<path d="M4 5h16v14H4z"/><path d="M8 9h8M8 12h8M8 15h5"/>',17)}</span><span>Manage your data</span></button>
+  <h3>Data & privacy</h3><p class="sm">Back up, import, or remove chats saved in this browser.</p><button class="pbtn data-manage-button" id="data-tools-open" type="button"><span class="manage-icon">${ic('<path d="M4 5h16v14H4z"/><path d="M8 9h8M8 12h8M8 15h5"/>',17)}</span><span>Manage your data</span></button>
   ${signed&&user.role==="admin"?`<h3>Administration</h3><button class="pbtn data-manage-button" id="admin-open" type="button"><span class="manage-icon">${ic('<path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z"/>',17)}</span><span>Admin panel</span></button>`:""}
   <p class="sm" id="s-msg" role="status">${esc(smsg)}</p><div class="privacy-row"><a href="#" class="privacy-link" id="privacy-open">Privacy Policy</a><a href="#" class="privacy-link" id="terms-open">Terms of Use</a><a href="#" class="privacy-link" id="whatsnew-open">What's new</a>${accessRequired?'<button type="button" class="lock-link" id="lock-whwai-now">Lock WHWai</button>':''}</div>${whatsNewCfg&&whatsNewCfg.version?'<p class="wn-ver">'+esc(String(whatsNewCfg.version))+'</p>':''}`;
  const q=id=>mbody.querySelector("#"+id);
