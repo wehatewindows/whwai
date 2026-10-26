@@ -450,7 +450,7 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,textarea:foc
 :where(.subtle-link,.privacy-link,.lock-link,.pm-item,.cmenu button,.pc-sw,.radio-row,.check-row,.data-tool,.tool-copy,.code-copy,.wn-ok,.switch-row,.profile-btn,.pc-avatar,.bulk-bar button,.wn-overlay button){transition:background-color .16s ease,color .16s ease,border-color .16s ease,box-shadow .18s ease,opacity .16s ease,transform .16s ease}
 .bulk-bar button:active,.pbtn:active,.round:active,.new:active,.gear:active,.chat:active{transform:scale(.98)}
 .bulk-bar button,.pbtn,.round,.new,.gear,.chat{transition:background-color .16s ease,color .16s ease,box-shadow .18s ease,opacity .16s ease,transform .12s ease}
-@media (prefers-reduced-motion:reduce){.leaving,.access-error:not([hidden]),.bulk-bar>*{animation:none!important}.pick,.pick svg{transition:none!important}}
+@media (prefers-reduced-motion:reduce){.row.fx-title .chat,.row.fx-pin .chat,.row.fx-out,.school-notice,.leaving,.access-error:not([hidden]),.bulk-bar>*{animation:none!important}.pick,.pick svg{transition:none!important}}
 
 /* Gate, code screen, disabled screen, and What's new: fade and rise when shown */
 @keyframes gateIn{from{opacity:0}to{opacity:1}}
@@ -467,6 +467,12 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,textarea:foc
 .wn-overlay:not([hidden]) .wn-card{animation:cardIn .26s cubic-bezier(.2,.7,.2,1) both}
 .frame{transition:filter .25s ease}
 @media (prefers-reduced-motion:reduce){.access-gate,.access-gate .access-card,.access-card.disabled-mode,.access-form,.access-admin-form,.gate-body,.gate-actions,.gate-notice,.gate-status,#gate-download,.swap,.wn-overlay,.wn-overlay .wn-card,.frame{animation:none!important;transition:none!important}}
+.school-notice{box-sizing:border-box;flex:0 0 auto;align-self:center;width:calc(100% - 24px);max-width:840px;margin:8px auto 0;padding:10px 13px;border-radius:13px;background:#fff7e6;border:1px solid #f0dcaa;color:#6b4a0c;font-size:13px;line-height:1.45;overflow-wrap:anywhere}
+.school-notice:not([hidden]){animation:noticeIn .22s cubic-bezier(.2,.7,.2,1) both}.school-notice[hidden]{display:none!important}
+.row.fx-title .chat{animation:fxTitle .7s ease-out}.row.fx-pin .chat{animation:fxPin .45s ease-out}.row.fx-out{animation:fxOut .17s ease-in both;pointer-events:none}
+@keyframes fxTitle{from{background-color:#dbe6ff}to{background-color:var(--chip)}}
+@keyframes fxPin{0%{transform:scale(.985)}60%{transform:scale(1.006)}100%{transform:none}}
+@keyframes fxOut{to{opacity:0;transform:translateX(-6px)}}
 </style>
 </head>
 <body class="access-locked">
@@ -506,6 +512,7 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,textarea:foc
   <button class="expand" id="expand" title="Show sidebar" aria-label="Show sidebar"></button>
   <div class="mbar"><button class="menubtn" id="mopen" title="Open chats and settings" aria-label="Open chats and settings" aria-expanded="false"></button><span class="mt">WHW<b>ai</b><span class="beta-pill">Beta</span></span><button class="mnew" id="mnew" title="New chat" aria-label="New chat"></button></div>
   <div class="site-notice" id="site-notice" hidden role="status"></div>
+  <div class="school-notice" id="school-notice" role="note" hidden>WHWai is not intended to be used during school hours unless your teacher permits it. Using WHWai during school may result in disciplinary action by your school.</div>
   <div class="scroll" id="chat"></div>
   <div class="toast" id="toast" role="status"></div>
   <div class="input">
@@ -752,7 +759,7 @@ function renderBulkBar(){
 function bulkPin(){
  const picked=selectedChats();if(!picked.length)return;
  const allPinned=picked.every(c=>c.p);
- picked.forEach(c=>{c.p=allPinned?0:1;touch(c)});save();
+ picked.forEach(c=>{c.p=allPinned?0:1;touch(c);flashRow(c.id,"pin")});save();
  toast(allPinned?"Unpinned.":"Pinned.");setSelecting(false);renderList();
 }
 async function bulkTitle(){
@@ -764,7 +771,7 @@ async function bulkDelete(){
  const ids=selectedChats().map(c=>c.id),n=ids.length;if(!n||busy)return;
  const accepted=await appConfirm({title:n===1?"Delete chat?":"Delete "+n+" chats?",message:"The "+(n===1?"chat and its messages":"selected chats and their messages")+" will be removed from this browser"+(accountSession&&accountSession.token?" and from your account chat history":"")+". This cannot be undone.",confirmLabel:n===1?"Delete chat":"Delete "+n+" chats",standalone:true});
  if(!accepted||busy)return;
- ids.forEach(id=>{if(S.chats.some(c=>c.id===id))delChat(id)});
+ await fadeRowOut(ids);ids.forEach(id=>{if(S.chats.some(c=>c.id===id))delChat(id)});
  setSelecting(false);toast(n===1?"Chat deleted.":n+" chats deleted.");
 }
 function renderList(){
@@ -782,7 +789,7 @@ function renderList(){
    const e=document.createElement("div");e.className="chat on edit";
    const i=document.createElement("input");i.className="rn";i.value=c.t;i.maxLength=60;i.setAttribute("aria-label","Chat name");
    let done=0;
-   const fin=ok=>{if(done)return;done=1;const v=i.value.trim();if(ok&&v){c.t=v.slice(0,60);c.auto=0;touch(c);save()}renamingId=null;renderList()};
+   const fin=ok=>{if(done)return;done=1;const v=i.value.trim();if(ok&&v){c.t=v.slice(0,60);c.auto=0;touch(c);flashRow(c.id,"title");save()}renamingId=null;renderList()};
    i.onkeydown=ev=>{if(ev.key==="Enter")fin(true);else if(ev.key==="Escape")fin(false)};
    i.onblur=()=>fin(true);
    e.appendChild(i);list.appendChild(e);return;
@@ -797,6 +804,7 @@ function renderList(){
   const x=document.createElement("button");x.className="more";x.innerHTML=ic(DOTS,18);x.title="Chat options";
   x.setAttribute("aria-label","Chat options");x.setAttribute("aria-haspopup","menu");x.setAttribute("aria-expanded","false");
   x.onclick=e=>{e.stopPropagation();if(mid===c.id)closeMenu();else openMenu(c.id,x)};
+  r.dataset.id=c.id;const fx=rowFx.get(c.id);if(fx){r.classList.add("fx-"+fx);rowFx.delete(c.id)}
   r.append(pick,b,x);list.appendChild(r);
  });
  if(!canSave)list.insertAdjacentHTML("beforeend",'<div class="hint warn">Chats can\'t be saved in this browser, so they will be lost when you leave this page.</div>');
@@ -814,6 +822,9 @@ function openMenu(id,btn){
  m.style.top=Math.max(8,Math.min(br.bottom-sr.top+4,sr.height-m.offsetHeight-8))+"px";
  btn.setAttribute("aria-expanded","true");
 }
+const rowFx=new Map();
+function flashRow(id,kind){rowFx.set(id,kind)}
+function fadeRowOut(ids){const rows=[...list.children].filter(r=>ids.includes(r.dataset.id));rows.forEach(r=>r.classList.add("fx-out"));return new Promise(res=>setTimeout(res,rows.length?170:0))}
 function hideEl(el){if(!el||el.hidden||el._lt)return;el.classList.add("leaving");el._lt=setTimeout(()=>{el._lt=null;el.hidden=true;el.classList.remove("leaving")},140)}
 function showEl(el){if(!el)return;if(el._lt){clearTimeout(el._lt);el._lt=null}el.classList.remove("leaving");el.hidden=false}
 function swapText(el,text){if(!el||el.textContent===text)return;el.textContent=text;el.classList.remove("swap");void el.offsetWidth;el.classList.add("swap")}
@@ -1082,7 +1093,7 @@ async function retitle(id){
   if(!raw||/^NO_TITLE[.!]*$/i.test(raw)){toast("Not enough conversation to make a title yet.");return}
   const t=raw.replace(/["*.]+/g,"").trim().slice(0,40);
   const live=S.chats.find(x=>x.id===id);
-  if(t&&live){live.t=t;live.auto=0;touch(live);save();renderList();toast("Title updated.")}
+  if(t&&live){live.t=t;live.auto=0;touch(live);flashRow(id,"title");save();renderList();toast("Title updated.")}
  }catch(e){toast("Couldn't generate a title right now.")}
  finally{titleRequests.delete(c.id)}
 }
@@ -1165,10 +1176,10 @@ function openChat(id){if(busy)return;S.cur=id;save();renderList();renderChat();s
 function newChat(){if(busy)return;S.cur=null;save();renderList();renderChat();side(false);ta.focus()}
 async function confirmDeleteChat(id){
  if(busy)return;const chat=S.chats.find(c=>c.id===id);if(!chat)return;
- if(!confirmDeleteEnabled()){delChat(id);toast("Chat deleted.");return}
+ if(!confirmDeleteEnabled()){await fadeRowOut([id]);delChat(id);toast("Chat deleted.");return}
  const accepted=await appConfirm({title:"Delete chat?",message:"“"+chat.t+"” and its messages will be removed from this browser"+(accountSession&&accountSession.token?" and from your account chat history.":".")+" This cannot be undone.",confirmLabel:"Delete chat",standalone:true,checkbox:{label:"Don't ask me before deleting chats"}});
  if(accepted&&lastConfirmCheckbox)setConfirmDelete(false);
- if(!accepted||busy||!S.chats.some(c=>c.id===id))return;delChat(id);toast("Chat deleted.");
+ if(!accepted||busy||!S.chats.some(c=>c.id===id))return;await fadeRowOut([id]);delChat(id);toast("Chat deleted.");
 }
 function delChat(id){
  if(busy)return;S.chats=S.chats.filter(c=>c.id!==id);S.dead.push({id,mu:Date.now()});
@@ -1217,7 +1228,7 @@ function collapse(c){S.col=c;document.querySelector(".frame").classList.toggle("
 $("logo").onclick=()=>mob()?side(false):collapse(true);
 $("expand").onclick=()=>mob()?side(true):collapse(false);
 $("cren").onclick=()=>{const id=mid;closeMenu();renamingId=id;renderList();const i=list.querySelector(".rn");if(i){i.focus();i.select()}};
-$("cpin").onclick=()=>{const c=S.chats.find(x=>x.id===mid);if(c){c.p=!c.p;touch(c);save();renderList()}else closeMenu()};
+$("cpin").onclick=()=>{const c=S.chats.find(x=>x.id===mid);if(c){c.p=!c.p;touch(c);flashRow(c.id,"pin");save();renderList()}else closeMenu()};
 $("cdel").onclick=()=>{const id=mid;closeMenu();confirmDeleteChat(id)};
 $("cgen").onclick=()=>{const id=mid;closeMenu();retitle(id)};
 list.addEventListener("scroll",closeMenu);
@@ -1940,6 +1951,16 @@ renderList();renderChat();renderSiteNotice();
 if(accountSession&&accountSession.token){accountReady=false;resumeAccountSession()}
 const fr=document.querySelector(".frame");fr.classList.add("no-anim");fr.classList.toggle("collapsed",!!S.col);requestAnimationFrame(()=>requestAnimationFrame(()=>fr.classList.remove("no-anim")));
 
+
+/* School-hours notice: Mon-Fri 8:00 a.m.-2:40 p.m. Hawaii time, skipping Hawaii holidays */
+function hstParts(d){const o={};new Intl.DateTimeFormat("en-US",{timeZone:"Pacific/Honolulu",year:"numeric",month:"numeric",day:"numeric",weekday:"short",hour:"numeric",minute:"numeric",hour12:false}).formatToParts(d).forEach(p=>o[p.type]=p.value);return{y:+o.year,m:+o.month,d:+o.day,wd:o.weekday,mins:(+o.hour%24)*60+(+o.minute)}}
+function nthWeekday(y,m,wd,n){const first=new Date(Date.UTC(y,m-1,1)).getUTCDay();return Date.UTC(y,m-1,1+((wd-first+7)%7)+7*(n-1))}
+function lastWeekday(y,m,wd){const last=new Date(Date.UTC(y,m,0));return Date.UTC(y,m-1,last.getUTCDate()-((last.getUTCDay()-wd+7)%7))}
+function observedDate(y,m,d){const w=new Date(Date.UTC(y,m-1,d)).getUTCDay();return Date.UTC(y,m-1,d+(w===6?-1:w===0?1:0))}
+function hawaiiHolidays(y){return new Set([observedDate(y,1,1),nthWeekday(y,1,1,3),nthWeekday(y,2,1,3),observedDate(y,3,26),lastWeekday(y,5,1),observedDate(y,6,11),observedDate(y,6,19),observedDate(y,7,4),nthWeekday(y,8,5,3),nthWeekday(y,9,1,1),nthWeekday(y,10,1,2),observedDate(y,11,11),nthWeekday(y,11,4,4),observedDate(y,12,25)])}
+function inSchoolWindow(now){const p=hstParts(now||new Date());const wd=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(p.wd);if(wd<1||wd>5)return false;if(p.mins<480||p.mins>=880)return false;const key=Date.UTC(p.y,p.m-1,p.d);return !(hawaiiHolidays(p.y).has(key)||hawaiiHolidays(p.y+1).has(key))}
+function updateSchoolNotice(){const el=$("school-notice");if(!el)return;if(inSchoolWindow()){if(el.hidden)showEl(el)}else hideEl(el)}
+updateSchoolNotice();setInterval(updateSchoolNotice,30000);
 </script>
 <div class="wn-overlay" id="wn" hidden role="dialog" aria-modal="true" aria-labelledby="wn-title"><div class="wn-card"><h2 id="wn-title">What's new</h2><p class="wn-ver" id="wn-ver" hidden></p><p class="wn-intro" id="wn-intro"></p><ul class="wn-list" id="wn-list"></ul><button type="button" class="pbtn wn-ok" id="wn-ok">Got it</button></div></div>
 </body>
