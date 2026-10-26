@@ -435,7 +435,7 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,textarea:foc
 .bulk-bar button:not(.bulk-done){border:1px solid #d4d4d4;background:#fff;border-radius:999px;padding:7px 8px;font:inherit;font-size:13px;color:#222;cursor:pointer;white-space:nowrap}
 .bulk-bar button:not(.bulk-done):hover{background:#f4f4f4}.bulk-bar button:disabled{opacity:.45;cursor:default}.bulk-bar button.danger{color:#d93b3b}
 .bulk-bar #select-toggle:not(.bulk-done){margin-left:auto}
-.pick{box-sizing:border-box;width:0;height:18px;margin:0;opacity:0;border-radius:50%;border:1.5px solid #9a9a9a;flex:none;display:grid;place-items:center;color:#fff;overflow:hidden;transition:width .18s ease,margin .18s ease,opacity .16s ease,background-color .16s ease,border-color .16s ease}.list.selecting .pick{width:18px;margin:0 2px 0 8px;opacity:1}.pick.on{background:#2f6bff;border-color:#2f6bff}.pick svg{transform:scale(.4);opacity:0;transition:transform .2s cubic-bezier(.2,.7,.2,1),opacity .15s ease}.pick.on svg{transform:scale(1);opacity:1}.list.selecting .row .more{opacity:0;pointer-events:none}
+.pick{position:absolute;left:12px;top:50%;z-index:1;box-sizing:border-box;width:18px;height:18px;margin-top:-9px;border-radius:50%;border:1.5px solid #9a9a9a;display:grid;place-items:center;color:#fff;opacity:0;transform:scale(.6);pointer-events:none;transition:transform .18s cubic-bezier(.2,.7,.2,1),opacity .16s ease,background-color .16s ease,border-color .16s ease}.list.selecting .pick{opacity:1;transform:none}.pick.on{background:#2f6bff;border-color:#2f6bff}.pick svg{transform:scale(.4);opacity:0;transition:transform .2s cubic-bezier(.2,.7,.2,1),opacity .15s ease}.pick.on svg{transform:scale(1);opacity:1}.chat>*{transition:translate .18s cubic-bezier(.2,.7,.2,1)}.list.selecting .chat>*{translate:26px 0}.list.selecting .row .more{opacity:0;pointer-events:none}.row .chat{transition:background-color .16s ease,box-shadow .15s ease,padding-left .2s cubic-bezier(.2,.7,.2,1),transform .12s ease}.list.selecting .row .chat{padding-left:40px}
 .subtle-link{border:0;background:none;padding:6px 0 0;font:inherit;font-size:13px;color:#666;text-decoration:underline;cursor:pointer}
 .privacy-row{flex-wrap:wrap;row-gap:8px}
 .privacy-link,.lock-link{display:inline-block;background:#efefef;color:#444;border-radius:999px;padding:5px 11px;font-size:13px;text-decoration:none;white-space:nowrap}
@@ -451,6 +451,22 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,textarea:foc
 .bulk-bar button:active,.pbtn:active,.round:active,.new:active,.gear:active,.chat:active{transform:scale(.98)}
 .bulk-bar button,.pbtn,.round,.new,.gear,.chat{transition:background-color .16s ease,color .16s ease,box-shadow .18s ease,opacity .16s ease,transform .12s ease}
 @media (prefers-reduced-motion:reduce){.leaving,.access-error:not([hidden]),.bulk-bar>*{animation:none!important}.pick,.pick svg{transition:none!important}}
+
+/* Gate, code screen, disabled screen, and What's new: fade and rise when shown */
+@keyframes gateIn{from{opacity:0}to{opacity:1}}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes cardSwap{from{opacity:.2;transform:translateY(6px) scale(.99)}to{opacity:1;transform:none}}
+@keyframes formIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.access-gate:not([hidden]){animation:gateIn .22s ease-out both}
+.access-gate:not([hidden]) .access-card{animation:cardIn .26s cubic-bezier(.2,.7,.2,1) both}
+.access-gate .access-card.disabled-mode{animation:cardSwap .28s cubic-bezier(.2,.7,.2,1) both}
+.access-form:not([hidden]),.access-admin-form:not([hidden]){animation:formIn .2s ease-out both}
+.gate-body:not([hidden]),.gate-actions:not([hidden]),.gate-notice:not([hidden]),.gate-status:not([hidden]),#gate-download:not([hidden]){animation:noticeIn .2s cubic-bezier(.2,.7,.2,1) both}
+.swap{animation:noticeIn .2s cubic-bezier(.2,.7,.2,1) both}
+.wn-overlay:not([hidden]){animation:gateIn .22s ease-out both}
+.wn-overlay:not([hidden]) .wn-card{animation:cardIn .26s cubic-bezier(.2,.7,.2,1) both}
+.frame{transition:filter .25s ease}
+@media (prefers-reduced-motion:reduce){.access-gate,.access-gate .access-card,.access-card.disabled-mode,.access-form,.access-admin-form,.gate-body,.gate-actions,.gate-notice,.gate-status,#gate-download,.swap,.wn-overlay,.wn-overlay .wn-card,.frame{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body class="access-locked">
@@ -798,6 +814,7 @@ function openMenu(id,btn){
 }
 function hideEl(el){if(!el||el.hidden||el._lt)return;el.classList.add("leaving");el._lt=setTimeout(()=>{el._lt=null;el.hidden=true;el.classList.remove("leaving")},140)}
 function showEl(el){if(!el)return;if(el._lt){clearTimeout(el._lt);el._lt=null}el.classList.remove("leaving");el.hidden=false}
+function swapText(el,text){if(!el||el.textContent===text)return;el.textContent=text;el.classList.remove("swap");void el.offsetWidth;el.classList.add("swap")}
 function closeMenu(){
  hideEl($("cmenu"));mid=null;
  document.querySelectorAll(".more").forEach(b=>b.setAttribute("aria-expanded","false"));
@@ -965,10 +982,10 @@ function syncAppInert(){
  Array.from(frame.children).forEach(ch=>{ch.inert=!blocked&&modalOpen&&!ch.contains(modal)});
 }
 setInterval(syncAppInert,250);
-function openApp(force){if(accountDisabledGate)return;if(aiDisabled&&!force)return;document.body.classList.remove("access-locked");accessGate.hidden=true;$("app-frame").removeAttribute("aria-hidden");setTimeout(()=>{if(!showWhatsNewIfNeeded())showAriesIntroOnce()},650)}
+function openApp(force){if(accountDisabledGate)return;if(aiDisabled&&!force)return;document.body.classList.remove("access-locked");hideEl(accessGate);$("app-frame").removeAttribute("aria-hidden");setTimeout(()=>{if(!showWhatsNewIfNeeded())showAriesIntroOnce()},650)}
 function unlockEarlyAccess(token,expiresAt){if(aiDisabled)return;accessUnlocked=true;try{const until=Number(expiresAt)||Date.now()+ACCESS_TTL;localStorage.setItem(ACCESS_STORAGE_KEY,String(until));localStorage.setItem(ACCESS_TOKEN_KEY,String(token||""))}catch(e){}openApp();if(accountSession&&accountSession.token&&!(accountSession.user&&accountSession.user.username)&&typeof resumeAccountSession==="function")resumeAccountSession()}
-function lockEarlyAccess(showGate){if(accountDisabledGate)return;try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.remove("disabled-mode");accessTitle.textContent="Enter access code";$("gate-body").hidden=true;$("gate-actions").hidden=true;accessForm.hidden=false;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false;$("access-admin-form").hidden=true;if(showGate){accessInput.value="";setTimeout(()=>accessInput.focus(),50)}}
-function showAIDisabled(){aiDisabled=true;try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");accessTitle.textContent="WHWai is currently disabled";$("gate-actions").hidden=true;accessForm.hidden=true;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false;setGateBody("Please check back later.")}
+function lockEarlyAccess(showGate){if(accountDisabledGate)return;try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");showEl(accessGate);$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.remove("disabled-mode");swapText(accessTitle,"Enter access code");$("gate-body").hidden=true;$("gate-actions").hidden=true;accessForm.hidden=false;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false;$("access-admin-form").hidden=true;if(showGate){accessInput.value="";setTimeout(()=>accessInput.focus(),50)}}
+function showAIDisabled(){aiDisabled=true;try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");showEl(accessGate);$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");swapText(accessTitle,"WHWai is currently disabled");$("gate-actions").hidden=true;accessForm.hidden=true;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false;setGateBody("Please check back later.")}
 function setGateBody(text){const b=$("gate-body");if(!b)return;b.textContent=text;b.hidden=!text}
 const WHATS_NEW_KEY="whwai.whatsNew.seen.v1",WHATS_NEW_VERSION="2026-10-20";
 const WHATS_NEW={intro:"",items:[]};
@@ -987,7 +1004,7 @@ function showWhatsNewIfNeeded(force){
  $("wn-intro").textContent=WHATS_NEW.intro;{const vEl=$("wn-ver");const v=whatsNewCfg&&whatsNewCfg.version?String(whatsNewCfg.version):"";vEl.textContent=v?"Version "+v:"";vEl.hidden=!v}
  $("wn-list").innerHTML=WHATS_NEW.items.map(it=>"<li><strong>"+esc(it.t)+"</strong><span>"+esc(it.d)+"</span></li>").join("");
  box.hidden=false;syncAppInert();
- $("wn-ok").onclick=()=>{box.hidden=true;syncAppInert();try{localStorage.setItem(WHATS_NEW_KEY,whatsNewVersion())}catch(e){}if(!force)showAriesIntroOnce()};
+ $("wn-ok").onclick=()=>{hideEl(box);syncAppInert();try{localStorage.setItem(WHATS_NEW_KEY,whatsNewVersion())}catch(e){}if(!force)showAriesIntroOnce()};
  setTimeout(()=>{try{$("wn-ok").focus()}catch(e){}},50);
  return true;
 }
@@ -996,7 +1013,7 @@ function showAccountDisabled(message,info){
  accountDisabledGate=true;
  if(accountSyncTimer!==null){clearTimeout(accountSyncTimer);accountSyncTimer=null}
  accountReady=false;hideAriesIntro&&hideAriesIntro(false);
- document.body.classList.add("access-locked");accessGate.hidden=false;$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");accessTitle.textContent="Your account has been disabled";accessForm.hidden=true;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=true;$("access-admin-form").hidden=true;
+ document.body.classList.add("access-locked");showEl(accessGate);$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");swapText(accessTitle,"Your account has been disabled");accessForm.hidden=true;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=true;$("access-admin-form").hidden=true;
  const wn=$("wn");if(wn)wn.hidden=true;
  let text=String(message||"").replace(/^\s*This account has been disabled\.?\s*/i,"").trim();
  if(!text)text="Contact support at wehatewindows.help@gmail.com for help.";
@@ -1909,7 +1926,7 @@ $("access-admin-open").onclick=()=>gateAdminMode(true);$("access-admin-back").on
 $("access-admin-form").onsubmit=async e=>{
  e.preventDefault();const username=$("access-admin-user").value.trim().toLowerCase(),password=$("access-admin-password").value,b=$("access-admin-submit"),error=$("access-admin-error");if(!username||!password)return;
  b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Signing in…';error.hidden=true;
- try{const result=await post({action:"auth_admin_login",username,password});if(!result||!result.ok||!result.token)throw Object.assign(new Error(result&&result.error||"invalid_admin_credentials"),{payload:result});setAccountFromResult(result);$("access-admin-password").value="";accessGate.hidden=true;openApp(true);if(result.user&&result.user.mustChange){openSettings();renderRequiredPasswordChange()}else{openSettings(()=>renderAdminPanel("site"))}}
+ try{const result=await post({action:"auth_admin_login",username,password});if(!result||!result.ok||!result.token)throw Object.assign(new Error(result&&result.error||"invalid_admin_credentials"),{payload:result});setAccountFromResult(result);$("access-admin-password").value="";hideEl(accessGate);openApp(true);if(result.user&&result.user.mustChange){openSettings();renderRequiredPasswordChange()}else{openSettings(()=>renderAdminPanel("site"))}}
  catch(err){error.textContent=err&&err.payload&&err.payload.message||"Invalid admin username or password.";error.hidden=false}
  finally{b.disabled=false;b.textContent="Sign in"}
 };
