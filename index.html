@@ -1400,7 +1400,7 @@ document.addEventListener("dblclick",e=>{if(stimOn)stimConfetti(e.clientX,e.clie
 let stimFeatTimer=null,stimBloopTimer=null,stimFeatT=0,stimPong=null,stimPongRAF=null,stimPongS=null;
 const STIM_UNLOCKS=[
  {at:10,id:"rainbow",name:"Rainbow cursor trail"},
- {at:25,id:"pong",name:"Pong (always playing)"},
+ {at:25,id:"pong",name:"Pong"},
  {at:40,id:"stars",name:"Shooting stars"},
  {at:60,id:"hearts",name:"Heart rain"},
  {at:75,id:"sendconf",name:"Confetti on every send"},
@@ -1409,10 +1409,10 @@ const STIM_UNLOCKS=[
  {at:200,id:"melody",name:"Denser melody"},
  {at:300,id:"shake",name:"Screen shake every 10th click"},
  {at:500,id:"crown",name:"Octopus crown"},
- {at:600,id:"breakout",name:"Breakout (always playing)"},
- {at:640,id:"snake",name:"Snake (always playing)"},
- {at:680,id:"flappy",name:"Flappy bird (always flying)"},
- {at:720,id:"invaders",name:"Space invaders (always shooting)"},
+ {at:600,id:"breakout",name:"Breakout"},
+ {at:640,id:"snake",name:"Snake"},
+ {at:680,id:"flappy",name:"Flappy bird"},
+ {at:720,id:"invaders",name:"Space invaders"},
  {at:760,id:"radar",name:"Radar sweep"},
  {at:800,id:"orbit",name:"Octopus moons"},
  {at:840,id:"emojiburst",name:"Emoji burst on click"},
@@ -1442,15 +1442,15 @@ const STIM_UNLOCKS=[
  {at:1800,id:"hueside",name:"Sidebar hue cycle"},
  {at:1840,id:"starfield",name:"Starfield"},
  {at:1880,id:"heartbeat",name:"Heartbeat"},
- {at:1920,id:"autoclick",name:"Autoclicker (it clicks for you)"},
+ {at:1920,id:"autoclick",name:"Autoclicker"},
  {at:1960,id:"clickpop",name:"Pitched pops on every click"},
- {at:2000,id:"pacman",name:"Pac-dot chaser (always eating)"},
- {at:2040,id:"tanks",name:"Tank duel (always firing)"},
- {at:2080,id:"frogger",name:"Frogger (always hopping)"},
+ {at:2000,id:"pacman",name:"Pac-dot chaser"},
+ {at:2040,id:"tanks",name:"Tank duel"},
+ {at:2080,id:"frogger",name:"Frogger"},
  {at:2120,id:"life",name:"Game of Life"},
  {at:2160,id:"boids",name:"Bird flock"},
- {at:2200,id:"tictactoe",name:"Tic-tac-toe (auto-play)"},
- {at:2240,id:"pinball",name:"Pinball (always in play)"},
+ {at:2200,id:"tictactoe",name:"Tic-tac-toe"},
+ {at:2240,id:"pinball",name:"Pinball"},
  {at:2280,id:"emojirain",name:"Emoji rain"},
  {at:2320,id:"keydrum",name:"Keyboard drum kit"},
  {at:2360,id:"ocean",name:"Ocean waves"},
@@ -1536,12 +1536,16 @@ document.addEventListener("click",()=>{if(stimOn&&stimHas("partyhorn")&&stimCoun
 let stimDockEls=[];
 function stimDockAdd(el){stimDockEls.push(el);stimDockLayout();return el}
 function stimDockLayout(){
- const narrow=innerWidth<700;const top0=80,gap=10,cw=narrow?100:200,ch=narrow?60:120;
- const rows=Math.max(1,Math.floor((innerHeight-top0-230+gap)/(ch+gap)));
- const maxCols=Math.max(1,Math.floor((innerWidth*.4-14)/(cw+gap)));
+ const top0=80,gap=10,n=stimDockEls.length;if(!n)return;
+ const availH=innerHeight-top0-230;
+ const availW=innerWidth<700?innerWidth-24:innerWidth*.55;
+ const rows=Math.max(1,Math.min(n,Math.floor((availH+gap)/(120+gap))));
+ const cols=Math.ceil(n/rows);
+ const scale=Math.max(.2,Math.min(1,(availW+gap)/(cols*(200+gap)),(availH+gap)/(rows*(120+gap))-.0001));
+ const cw=Math.round(200*scale),ch=Math.round(120*scale),cg=Math.max(4,Math.round(gap*scale));
  stimDockEls.forEach((el,i)=>{const col=Math.floor(i/rows),row=i%rows;
-  el.style.width=cw+"px";el.style.height=ch+"px";el.style.top=(top0+row*(ch+gap))+"px";el.style.right=(14+col*(cw+gap))+"px";
-  el.style.display=col<maxCols?"":"none"});
+  el.style.width=cw+"px";el.style.height=ch+"px";el.style.display="";
+  el.style.top=(top0+row*(ch+cg))+"px";el.style.right=((innerWidth<700?6:14)+col*(cw+cg))+"px"});
 }
 window.addEventListener("resize",()=>{if(stimOn)stimDockLayout()});
 function stimPacman(){const c=stimMakeWidget(200,120),x=c.getContext("2d");const G=10,W=20,H=12;let P,dots,mouth=0;
