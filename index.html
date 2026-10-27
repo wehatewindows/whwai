@@ -519,6 +519,15 @@ html.stim .field:focus-within{animation:stimJelly .6s ease!important}
 @keyframes stimSpinPage{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 html.stim .stim-blob{pointer-events:auto;z-index:150;width:200px;height:200px;margin:-100px 0 0 -100px}
 @media (prefers-reduced-motion:reduce){html.stim .pbtn:hover,html.stim .chat:hover,html.stim .scroll>*:hover,html.stim .round:hover,.stim-bubble,.stim-ripple,#app-frame.stim-spin{animation:none!important}}
+html.stim .pbtn,html.stim .round,html.stim .new,html.stim .gear{transition:translate .18s ease-out,transform .2s ease,background-color .2s ease}
+.stim-disco{position:fixed;left:14px;bottom:14px;width:46px;height:46px;border-radius:50%;border:2px solid #fff;z-index:212;cursor:pointer;padding:0;background:conic-gradient(#fff 0 10%,#bbb 10% 20%,#fff 20% 30%,#999 30% 40%,#fff 40% 50%,#bbb 50% 60%,#fff 60% 70%,#999 70% 80%,#fff 80% 90%,#bbb 90%);box-shadow:0 0 18px rgba(255,255,255,.8);animation:stimSpinPage 3s linear infinite}
+.stim-flood{position:fixed;inset:-20%;z-index:199;pointer-events:none;background:conic-gradient(#ff6ec7,#ffd166,#06d6a0,#4cc9f0,#b388ff,#ff6ec7);opacity:0;animation:stimFlood 2.4s ease-out forwards}
+@keyframes stimFlood{0%{opacity:0;transform:rotate(0)}20%{opacity:.3}100%{opacity:0;transform:rotate(200deg)}}
+.admin-advanced{margin:4px 0 10px;font-size:12.5px;color:#777}
+.admin-advanced summary{cursor:pointer;list-style:none;display:inline-block;padding:4px 0;opacity:.6}
+.admin-advanced summary::-webkit-details-marker{display:none}
+.admin-advanced[open] .check-row{margin-top:6px}
+@media (prefers-reduced-motion:reduce){.stim-flood{display:none}.stim-disco{animation:none}}
 </style>
 </head>
 <body class="access-locked">
@@ -1106,7 +1115,7 @@ async function downloadDisabledData(){
 try{if(localStorage.getItem(ACCESS_OFF_KEY)==="1"){accessRequired=false;openApp()}else{document.body.classList.add("access-locked")}}catch(e){document.body.classList.add("access-locked")}
 accessForm.addEventListener("submit",async e=>{e.preventDefault();const code=accessInput.value.trim();if(!code)return;accessButton.disabled=true;accessError.hidden=true;accessError.textContent="";try{if(!API_URL)throw new Error("backend");const result=await post({action:"access_check",code,deviceId:getDeviceId()});if(result&&result.aiEnabled===false){showAIDisabled();return}
    if(result&&result.error==="access_locked_temporarily"){accessError.textContent="Too many attempts. Wait 15 minutes and try again.";accessError.hidden=false;return}if(result&&result.ok&&result.token){unlockEarlyAccess(result.token,result.expiresAt)}else{accessError.textContent="Incorrect code";accessError.hidden=false;accessInput.select()}}catch(err){accessError.textContent="Unable to verify code";accessError.hidden=false}finally{accessButton.disabled=false}});
-(async function checkBackendStatus(){if(!API_URL){lockEarlyAccess(false);return}try{const status=await post({action:"status_check"});if(status&&Array.isArray(status.models))updateAvailableModels(status.models);siteStatusLoaded=true;applyWhatsNewCfg(status.whatsNew);siteSignupMode=status.signupMode||"code";siteNoticeText=String(status.siteNotice||"").slice(0,240);siteNoticeDismissible=!!status.siteNoticeDismissible;siteNoticeOnGates=status.siteNoticeOnGates!==false;renderSiteNotice();if(status&&status.aiEnabled===false){showAIDisabled();return}
+(async function checkBackendStatus(){if(!API_URL){lockEarlyAccess(false);return}try{const status=await post({action:"status_check"});if(status&&Array.isArray(status.models))updateAvailableModels(status.models);siteStatusLoaded=true;applyWhatsNewCfg(status.whatsNew);siteSignupMode=status.signupMode||"code";siteNoticeText=String(status.siteNotice||"").slice(0,240);siteNoticeDismissible=!!status.siteNoticeDismissible;siteNoticeOnGates=status.siteNoticeOnGates!==false;siteStimDisabled=!!status.stimulationDisabled;if(siteStimDisabled&&stimOn)setStimulation(false);renderSiteNotice();if(status&&status.aiEnabled===false){showAIDisabled();return}
  if(status&&status.accessRequired===false){accessRequired=false;try{localStorage.setItem(ACCESS_OFF_KEY,"1")}catch(e){}openApp();return}
  accessRequired=true;try{localStorage.removeItem(ACCESS_OFF_KEY)}catch(e){}
  const typed=accessInput.value;if(!accessUnlocked)lockEarlyAccess(false);accessInput.value=typed
@@ -1297,7 +1306,7 @@ const SLIDERS='<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r=
 $("gear").innerHTML=ic(SLIDERS,16,2.2);
 $("mnew").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',18,2.4);$("mnew").onclick=newChat;$("profile-btn").onclick=e=>{e.stopPropagation();const m=$("profile-menu");if(!m)return;if(m.hidden){renderProfileMenu();showEl(m)}else hideEl(m)};document.addEventListener("click",e=>{const m=$("profile-menu");if(m&&!m.hidden&&!m.contains(e.target))m.hidden=true});
 const modal=$("modal"),mbody=$("mbody");
-let siteNoticeDismissible=false,siteNoticeOnGates=true,siteNoticeDismissedText=null;
+let siteStimDisabled=false,siteNoticeDismissible=false,siteNoticeOnGates=true,siteNoticeDismissedText=null;
 let stimOn=false,stimTaps=[];const BASE_TITLE=document.title;
 let stimSound=true,stimParts=[],stimRAF=null,stimDodgeEl=null,stimBlobs=[],stimDodgeCount=0;
 function stimSettingsHtml(){return '<label class="switch-row" style="margin:6px 0 4px"><span>Stimulation Mode</span><input type="checkbox" id="stim-toggle" checked><span class="switch-ui"></span></label><label class="switch-row" style="margin:0 0 10px"><span>Sound effects</span><input type="checkbox" id="stim-sound"'+(stimSound?' checked':'')+'><span class="switch-ui"></span></label>'}
@@ -1314,14 +1323,14 @@ function stimSpawnBubble(){if(!stimOn||document.querySelectorAll(".stim-bubble")
 function stimDragBlob(b){b.style.pointerEvents="auto";b.style.cursor="grab";b.addEventListener("pointerdown",e=>{e.preventDefault();b.setPointerCapture(e.pointerId);b.style.animationPlayState="paused";b.style.cursor="grabbing";const ox=e.clientX-b.offsetLeft,oy=e.clientY-b.offsetTop;const mv=ev=>{b.style.left=(ev.clientX-ox+150)+"px";b.style.top=(ev.clientY-oy+150)+"px"};const up=()=>{b.removeEventListener("pointermove",mv);b.style.animationPlayState="running";b.style.cursor="grab";stimTone(260,.1,"triangle",.05)};b.addEventListener("pointermove",mv);b.addEventListener("pointerup",up,{once:true})})}
 function stimRipple(x,y){const r=document.createElement("div");r.className="stim-ripple";r.style.left=x+"px";r.style.top=y+"px";document.body.appendChild(r);r.addEventListener("animationend",()=>r.remove(),{once:true})}
 function stimFxStart(){
- stimBubbleTimer=setInterval(stimSpawnBubble,900);
+ stimBubbleTimer=setInterval(stimSpawnBubble,900);stimExtraStart();
  for(let i=0;i<6;i++){const b=document.createElement("div");b.className="stim-blob";b.style.background="hsl("+Math.floor(Math.random()*360)+" 90% 65%)";b.style.left=(Math.random()*innerWidth)+"px";b.style.top=(Math.random()*innerHeight)+"px";b.style.animationDelay=(-Math.random()*12)+"s";document.body.appendChild(b);stimBlobs.push(b);stimDragBlob(b)}
  stimDodgeEl=document.createElement("button");stimDodgeEl.type="button";stimDodgeEl.className="stim-dodge";stimDodgeEl.textContent=STIM_DODGE_LINES[0];
  stimDodgeEl.onclick=e=>{e.stopPropagation();stimConfetti(e.clientX,e.clientY,140);stimTone(880,.25,"sine",.06,1.5);stimDodgeCount++;stimDodgeEl.textContent=STIM_DODGE_LINES[stimDodgeCount%STIM_DODGE_LINES.length];stimPlaceDodge()};
  document.body.appendChild(stimDodgeEl);stimPlaceDodge();
  stimChime();stimConfetti(innerWidth/2,innerHeight/2,160);
 }
-function stimFxStop(){if(stimBubbleTimer){clearInterval(stimBubbleTimer);stimBubbleTimer=null}document.querySelectorAll(".stim-bubble,.stim-ripple").forEach(n=>n.remove());stimBlobs.forEach(b=>b.remove());stimBlobs=[];if(stimDodgeEl){stimDodgeEl.remove();stimDodgeEl=null}stimParts=[];const c=document.getElementById("stim-canvas");if(c)c.getContext("2d").clearRect(0,0,c.width,c.height);document.querySelectorAll(".stim-spark").forEach(n=>n.remove())}
+function stimFxStop(){stimExtraStop();if(stimBubbleTimer){clearInterval(stimBubbleTimer);stimBubbleTimer=null}document.querySelectorAll(".stim-bubble,.stim-ripple").forEach(n=>n.remove());stimBlobs.forEach(b=>b.remove());stimBlobs=[];if(stimDodgeEl){stimDodgeEl.remove();stimDodgeEl=null}stimParts=[];const c=document.getElementById("stim-canvas");if(c)c.getContext("2d").clearRect(0,0,c.width,c.height);document.querySelectorAll(".stim-spark").forEach(n=>n.remove())}
 function setStimulation(on){stimOn=on;document.documentElement.classList.toggle("stim",on);if(on)stimFxStart();else stimFxStop()}
 document.addEventListener("mousemove",e=>{if(!stimOn)return;if(stimDodgeEl){const r=stimDodgeEl.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;if(Math.hypot(e.clientX-cx,e.clientY-cy)<130)stimPlaceDodge()}if(Math.random()<.35){const d=document.createElement("div");d.className="stim-spark";d.style.left=e.clientX+"px";d.style.top=e.clientY+"px";d.style.background="hsl("+Math.floor(Math.random()*360)+" 95% 65%)";document.body.appendChild(d);d.addEventListener("animationend",()=>d.remove(),{once:true})}});
 document.addEventListener("click",e=>{if(!stimOn)return;const t=e.target;if(!t||!t.closest)return;
@@ -1335,8 +1344,39 @@ document.addEventListener("click",e=>{if(!stimOn)return;const t=e.target;if(!t||
 document.addEventListener("dblclick",e=>{if(stimOn)stimConfetti(e.clientX,e.clientY,120)});
 new MutationObserver(m=>{if(stimOn&&m.some(x=>x.addedNodes.length)){stimChime();stimConfetti(innerWidth-110,innerHeight-120,40)}}).observe(chatEl,{childList:true});
 window.addEventListener("resize",()=>{if(stimOn)stimPlaceDodge()});
+/* Stimulation Mode, round three: more sounds and interactables */
+let stimAmbient=null,stimFwTimer=null,stimDiscoEl=null,stimCharge=null,stimMagnet=null,stimLastHover=null,stimLastTick=0,stimLastKey=0;
+const STIM_NOTES=[523,587,659,784,880,1047];
+function stimNote(){return STIM_NOTES[Math.floor(Math.random()*STIM_NOTES.length)]}
+function stimBurst(x,y){stimConfetti(x,y,70);stimTone(stimNote()*1.5,.25,"triangle",.05,1.3)}
+function stimExtraStart(){
+ stimAmbient=setInterval(()=>{if(Math.random()<.7)stimTone(stimNote()/2,.6,"triangle",.012,1)},1400);
+ stimFwTimer=setInterval(()=>{if(stimOn)stimBurst(innerWidth*(.15+Math.random()*.7),innerHeight*(.1+Math.random()*.4))},5200);
+ stimDiscoEl=document.createElement("button");stimDiscoEl.type="button";stimDiscoEl.className="stim-disco";stimDiscoEl.setAttribute("aria-label","Disco ball");
+ stimDiscoEl.onclick=e=>{e.stopPropagation();const f=document.createElement("div");f.className="stim-flood";f.addEventListener("animationend",()=>f.remove(),{once:true});document.body.appendChild(f);stimConfetti(innerWidth-60,innerHeight-60,90);[523,659,784,1047,1319].forEach((n,i)=>setTimeout(()=>stimTone(n,.2,"square",.035),i*70))};
+ document.body.appendChild(stimDiscoEl);
+}
+function stimExtraStop(){
+ if(stimAmbient){clearInterval(stimAmbient);stimAmbient=null}
+ if(stimFwTimer){clearInterval(stimFwTimer);stimFwTimer=null}
+ if(stimDiscoEl){stimDiscoEl.remove();stimDiscoEl=null}
+ document.querySelectorAll(".stim-flood").forEach(n=>n.remove());
+ if(stimCharge){cancelAnimationFrame(stimCharge.raf);stimCharge.el.style.scale="";stimCharge=null}
+ if(stimMagnet){stimMagnet.style.translate="";stimMagnet=null}
+}
+function stimBoing(){if(stimOn)stimTone(180,.35,"sine",.06,3.2)}
+document.addEventListener("change",e=>{if(stimOn&&e.target&&e.target.matches&&e.target.matches('input[type="checkbox"]'))stimBoing()});
+document.addEventListener("mouseover",e=>{if(!stimOn||!stimSound||!e.target.closest)return;const el=e.target.closest(".pbtn,.chat,.round,.new,.gear,.model,.mi,.switch-row,.logo");if(!el||el===stimLastHover)return;stimLastHover=el;const now=Date.now();if(now-stimLastTick<110)return;stimLastTick=now;stimTone(stimNote()*2,.06,"sine",.025)});
+document.addEventListener("mousemove",e=>{if(!stimOn||!e.target.closest)return;const el=e.target.closest(".pbtn,.round,.new,.gear");if(stimMagnet&&stimMagnet!==el){stimMagnet.style.translate="";stimMagnet=null}if(!el)return;stimMagnet=el;const r=el.getBoundingClientRect(),dx=(e.clientX-(r.left+r.width/2))*.18,dy=(e.clientY-(r.top+r.height/2))*.18;el.style.translate=dx.toFixed(1)+"px "+dy.toFixed(1)+"px"});
+function stimChargeStart(e){if(!stimOn||!e.target.closest)return;const logo=e.target.closest(".logo");if(!logo)return;const t0=performance.now();stimCharge={el:logo,t0,raf:null};stimTone(200,1.2,"sawtooth",.035,6);const step=()=>{if(!stimCharge)return;const k=Math.min(1,(performance.now()-t0)/1500);logo.style.scale=(1+k*.6).toFixed(3);stimCharge.raf=requestAnimationFrame(step)};step()}
+function stimChargeEnd(){if(!stimCharge)return;const {el,t0,raf}=stimCharge;cancelAnimationFrame(raf);stimCharge=null;const k=Math.min(1,(performance.now()-t0)/1500);el.style.scale="";if(k<.3)return;const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;[0,170,340].forEach((d,i)=>setTimeout(()=>stimBurst(cx+(Math.random()-.5)*320,cy-60-Math.random()*220),d))}
+document.addEventListener("pointerdown",stimChargeStart);
+document.addEventListener("pointerup",stimChargeEnd);
+document.addEventListener("pointercancel",stimChargeEnd);
+ta.addEventListener("input",()=>{if(!stimOn)return;const now=Date.now();if(now-stimLastKey<60)return;stimLastKey=now;stimTone(stimNote()*2,.05,"triangle",.03);const r=ta.getBoundingClientRect();const d=document.createElement("div");d.className="stim-spark";d.style.left=(r.left+20+Math.random()*(Math.max(20,r.width-40)))+"px";d.style.top=(r.top+r.height/2)+"px";d.style.background="hsl("+Math.floor(Math.random()*360)+" 95% 65%)";document.body.appendChild(d);d.addEventListener("animationend",()=>d.remove(),{once:true})});
+
 async function askStimulation(){const ok=await appConfirm({title:"You have been chosen.",message:"Enable Stimulation Mode?",confirmLabel:"Enable",danger:false,standalone:true});if(ok)setStimulation(true)}
-orb.addEventListener("click",()=>{if(stimOn)return;const now=Date.now();stimTaps=stimTaps.filter(t=>now-t<3000);stimTaps.push(now);if(stimTaps.length>=5){stimTaps=[];askStimulation()}});
+orb.addEventListener("click",()=>{if(stimOn||siteStimDisabled)return;const now=Date.now();stimTaps=stimTaps.filter(t=>now-t<3000);stimTaps.push(now);if(stimTaps.length>=5){stimTaps=[];askStimulation()}});
 let smsg="",currentSettingsView="settings",closeModalTimer=null,closingModal=false,siteSignupMode="code",siteNoticeText="",siteStatusLoaded=false;
 const touch=c=>{c.mu=Date.now()};
 function clearAccountSession(){if(accountSyncTimer!==null){clearTimeout(accountSyncTimer);accountSyncTimer=null}accountSession=null;accountSyncFailed=false;renderSyncStatus();accountReady=true;accountInitialSyncPending=false;accountMergePendingToast=false;try{localStorage.removeItem(ACCOUNT_SESSION_STORAGE_KEY)}catch(e){}}
@@ -1886,15 +1926,15 @@ function paintAdminTab(){
 }
 function paintAdminSite(box){
  const v=adminData.settings||{};
- box.innerHTML=`<p class="sm">These controls are enforced by the backend. Admin responses never include chat titles or messages.</p><form id="admin-settings-form" class="account-form"><label class="check-row"><input id="admin-ai-enabled" type="checkbox"> AI enabled</label><label class="check-row"><input id="admin-access-required" type="checkbox"> Require access code screen on page load</label><button type="button" class="pbtn data-manage-button" id="whatsnew-admin-open"><span>What's new screen</span></button><label for="admin-signup-mode">Sign-up mode</label><select id="admin-signup-mode"><option value="code">Access code required</option><option value="open">Open sign-up</option><option value="closed">Closed</option></select><label for="admin-site-notice">Site-wide notice (optional)</label><textarea id="admin-site-notice" rows="3" maxlength="240" placeholder="Leave blank to clear the notice" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea><label class="check-row"><input id="admin-notice-dismissible" type="checkbox"> Let users dismiss the announcement</label><label class="check-row"><input id="admin-notice-gates" type="checkbox"> Show the announcement on sign-in, access code, and disabled screens</label><label for="admin-new-access-code">Change access code (leave blank to keep current)</label><input id="admin-new-access-code" type="text" class="masked-field" maxlength="80" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"><p class="access-error" id="admin-settings-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar"><button class="pbtn" id="admin-settings-save" type="submit">Save changes</button></div></form>`;
- $("whatsnew-admin-open").onclick=renderWhatsNewAdmin;$("admin-ai-enabled").checked=!!v.aiEnabled;$("admin-access-required").checked=!!v.accessCodeRequired;$("admin-signup-mode").value=v.signupMode||"code";$("admin-site-notice").value=v.siteNotice||"";$("admin-notice-dismissible").checked=!!v.siteNoticeDismissible;$("admin-notice-gates").checked=v.siteNoticeOnGates!==false;
+ box.innerHTML=`<p class="sm">These controls are enforced by the backend. Admin responses never include chat titles or messages.</p><form id="admin-settings-form" class="account-form"><label class="check-row"><input id="admin-ai-enabled" type="checkbox"> AI enabled</label><label class="check-row"><input id="admin-access-required" type="checkbox"> Require access code screen on page load</label><button type="button" class="pbtn data-manage-button" id="whatsnew-admin-open"><span>What's new screen</span></button><label for="admin-signup-mode">Sign-up mode</label><select id="admin-signup-mode"><option value="code">Access code required</option><option value="open">Open sign-up</option><option value="closed">Closed</option></select><label for="admin-site-notice">Site-wide notice (optional)</label><textarea id="admin-site-notice" rows="3" maxlength="240" placeholder="Leave blank to clear the notice" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea><label class="check-row"><input id="admin-notice-dismissible" type="checkbox"> Let users dismiss the announcement</label><label class="check-row"><input id="admin-notice-gates" type="checkbox"> Show the announcement on sign-in, access code, and disabled screens</label><label for="admin-new-access-code">Change access code (leave blank to keep current)</label><input id="admin-new-access-code" type="text" class="masked-field" maxlength="80" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"><p class="access-error" id="admin-settings-error" role="status" aria-live="polite" hidden></p><details class="admin-advanced"><summary>Advanced</summary><label class="check-row"><input id="admin-stim-disabled" type="checkbox"> Disable Stimulation Mode for everyone</label></details><div class="data-toolbar"><button class="pbtn" id="admin-settings-save" type="submit">Save changes</button></div></form>`;
+ $("whatsnew-admin-open").onclick=renderWhatsNewAdmin;$("admin-ai-enabled").checked=!!v.aiEnabled;$("admin-access-required").checked=!!v.accessCodeRequired;$("admin-signup-mode").value=v.signupMode||"code";$("admin-site-notice").value=v.siteNotice||"";$("admin-notice-dismissible").checked=!!v.siteNoticeDismissible;$("admin-notice-gates").checked=v.siteNoticeOnGates!==false;$("admin-stim-disabled").checked=!!v.stimulationDisabled;
  $("admin-settings-form").onsubmit=async e=>{
   e.preventDefault();const b=$("admin-settings-save"),error=$("admin-settings-error");error.hidden=true;b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Saving…';
-  const wn=(adminData.settings&&adminData.settings.whatsNew)||{};const settings={aiEnabled:$("admin-ai-enabled").checked,accessCodeRequired:$("admin-access-required").checked,signupMode:$("admin-signup-mode").value,siteNotice:$("admin-site-notice").value,siteNoticeDismissible:$("admin-notice-dismissible").checked,siteNoticeOnGates:$("admin-notice-gates").checked,newAccessCode:$("admin-new-access-code").value,whatsNewEnabled:!!wn.enabled,whatsNewVersion:wn.version||"",whatsNewContent:{intro:wn.intro||"",items:wn.items||[]}};
+  const wn=(adminData.settings&&adminData.settings.whatsNew)||{};const settings={aiEnabled:$("admin-ai-enabled").checked,accessCodeRequired:$("admin-access-required").checked,signupMode:$("admin-signup-mode").value,siteNotice:$("admin-site-notice").value,siteNoticeDismissible:$("admin-notice-dismissible").checked,siteNoticeOnGates:$("admin-notice-gates").checked,stimulationDisabled:$("admin-stim-disabled").checked,newAccessCode:$("admin-new-access-code").value,whatsNewEnabled:!!wn.enabled,whatsNewVersion:wn.version||"",whatsNewContent:{intro:wn.intro||"",items:wn.items||[]}};
   try{
    const saved=await post({action:"admin_update_settings",settings});
    if(!saved||!saved.ok)throw Object.assign(new Error(saved&&saved.error||"failed"),{payload:saved});
-   siteSignupMode=saved.settings.signupMode||"code";siteNoticeText=saved.settings.siteNotice||"";siteNoticeDismissible=!!saved.settings.siteNoticeDismissible;siteNoticeOnGates=saved.settings.siteNoticeOnGates!==false;aiDisabled=!saved.settings.aiEnabled;accessRequired=!!saved.settings.accessCodeRequired;renderSiteNotice();
+   siteSignupMode=saved.settings.signupMode||"code";siteNoticeText=saved.settings.siteNotice||"";siteNoticeDismissible=!!saved.settings.siteNoticeDismissible;siteNoticeOnGates=saved.settings.siteNoticeOnGates!==false;aiDisabled=!saved.settings.aiEnabled;accessRequired=!!saved.settings.accessCodeRequired;siteStimDisabled=!!saved.settings.stimulationDisabled;if(siteStimDisabled&&stimOn)setStimulation(false);renderSiteNotice();
    if(saved.settings&&saved.settings.whatsNew)applyWhatsNewCfg(saved.settings.whatsNew);if(adminData)adminData.settings=saved.settings;toast("Site settings saved.");
    const current=$("admin-content");if(current&&adminTab==="site"&&currentSettingsView==="admin"&&adminData)paintAdminSite(current);
   }catch(err){const el=$("admin-settings-error"),cb=$("admin-settings-save");if(el){el.textContent=err&&err.payload&&err.payload.message||"Couldn't save settings.";el.hidden=false}if(cb){cb.disabled=false;cb.textContent="Save changes"}}
