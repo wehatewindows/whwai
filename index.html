@@ -1440,7 +1440,14 @@ const STIM_UNLOCKS=[
  {at:1840,id:"starfield",name:"Starfield"},
  {at:1880,id:"heartbeat",name:"Heartbeat"},
  {at:1920,id:"autoclick",name:"Autoclicker (it clicks for you)"},
- {at:1960,id:"clickpop",name:"Pitched pops on every click"}
+ {at:1960,id:"clickpop",name:"Pitched pops on every click"},
+ {at:2000,id:"pacman",name:"Pac-dot chaser (always eating)"},
+ {at:2040,id:"tanks",name:"Tank duel (always firing)"},
+ {at:2080,id:"frogger",name:"Frogger (always hopping)"},
+ {at:2120,id:"life",name:"Game of Life"},
+ {at:2160,id:"boids",name:"Bird flock"},
+ {at:2200,id:"tictactoe",name:"Tic-tac-toe (auto-play)"},
+ {at:2240,id:"pinball",name:"Pinball (always in play)"}
 ];
 const stimGot=new Set();
 function stimHas(id){return stimGot.has(id)}
@@ -1464,7 +1471,7 @@ function stimHeartRain(){for(let i=0;i<8;i++)setTimeout(()=>{if(!stimOn)return;c
 function stimFeatureTick(){stimFeatT++;stimIdleTick();stimFeatExtra();if(stimHas("ufo")&&stimFeatT%25===0)stimUfo();if(stimHas("stars")&&stimFeatT%4===0)stimStar();if(stimHas("hearts")&&stimFeatT%6===0)stimHeartRain();if(stimHas("autodisco")&&stimFeatT%30===0)stimFlood()}
 function stimPongStart(){
  if(stimPong)return;
- const c=document.createElement("canvas");c.className="stim-pong";c.width=200;c.height=120;document.body.appendChild(c);stimPong=c;
+ const c=document.createElement("canvas");c.className="stim-pong";c.width=200;c.height=120;document.body.appendChild(c);stimDockAdd(c);stimPong=c;
  const x=c.getContext("2d");stimPongS={bx:100,by:60,vx:2.6,vy:1.7,p1:60,p2:60};
  const loop=()=>{if(!stimPong)return;const s=stimPongS;
   s.bx+=s.vx;s.by+=s.vy;
@@ -1499,6 +1506,81 @@ document.addEventListener("click",e=>{
 
 new MutationObserver(m=>{if(stimOn&&m.some(x=>x.addedNodes.length)){stimChime();stimConfetti(innerWidth-110,innerHeight-120,40)}}).observe(chatEl,{childList:true});
 window.addEventListener("resize",()=>{if(stimOn)stimPlaceDodge()});
+/* Stimulation Mode, round eight: more games, and a dock grid that stays on screen */
+let stimDockEls=[];
+function stimDockAdd(el){stimDockEls.push(el);stimDockLayout();return el}
+function stimDockLayout(){
+ const top0=80,gap=10,cw=200,ch=120;
+ const rows=Math.max(1,Math.floor((innerHeight-top0-30+gap)/(ch+gap)));
+ const maxCols=Math.max(1,Math.floor((innerWidth*.4-14)/(cw+gap)));
+ stimDockEls.forEach((el,i)=>{const col=Math.floor(i/rows),row=i%rows;
+  el.style.top=(top0+row*(ch+gap))+"px";el.style.right=(14+col*(cw+gap))+"px";
+  el.style.display=col<maxCols?"":"none"});
+}
+window.addEventListener("resize",()=>{if(stimOn)stimDockLayout()});
+function stimPacman(){const c=stimMakeWidget(200,120),x=c.getContext("2d");const G=10,W=20,H=12;let P,dots,mouth=0;
+ const reset=()=>{dots=new Set();for(let i=0;i<W;i++)for(let j=0;j<H;j++)dots.add(i+","+j);P={x:0,y:0};dots.delete("0,0")};reset();
+ const step=()=>{mouth++;if(!dots.size){reset();return}
+  let best=null,bd=1e9;for(const k of dots){const [i,j]=k.split(",").map(Number);const d=Math.abs(i-P.x)+Math.abs(j-P.y);if(d<bd){bd=d;best=[i,j]}}
+  const dx=Math.sign(best[0]-P.x),dy=Math.sign(best[1]-P.y);const opts=[];if(dx)opts.push({x:dx,y:0});if(dy)opts.push({x:0,y:dy});opts.push({x:1,y:0},{x:0,y:1},{x:-1,y:0},{x:0,y:-1});
+  const d=opts[0];P.x=(P.x+d.x+W)%W;P.y=(P.y+d.y+H)%H;
+  if(dots.delete(P.x+","+P.y))stimTone(500+Math.random()*300,.03,"triangle",.02)};
+ const draw=()=>{x.fillStyle="rgba(10,10,20,.8)";x.fillRect(0,0,200,120);x.fillStyle="#ffd166";for(const k of dots){const [i,j]=k.split(",").map(Number);x.fillRect(i*G+4,j*G+4,2,2)}
+  const a=(mouth%10<5?.25:.02)*Math.PI;x.fillStyle="#ffd166";x.beginPath();x.moveTo(P.x*G+5,P.y*G+5);x.arc(P.x*G+5,P.y*G+5,5,a,Math.PI*2-a);x.closePath();x.fill()};
+ return {c,step,draw,rate:90}}
+function stimTanks(){const c=stimMakeWidget(200,120),x=c.getContext("2d");let T;
+ const reset=()=>{T={t:[{x:30,y:60,hp:4,cool:0,c:"#4cc9f0"},{x:170,y:60,hp:4,cool:0,c:"#ff6ec7"}],sh:[],resetAt:0}};reset();
+ const step=()=>{for(let k=0;k<2;k++){const t=T.t[k],o=T.t[1-k];if(t.hp<=0)continue;
+   t.x+=Math.sign(o.x-t.x)*.4+(Math.random()-.5)*.6;t.y+=(Math.random()-.5)*1.2;t.x=Math.max(10,Math.min(190,t.x));t.y=Math.max(10,Math.min(110,t.y));
+   t.cool--;if(t.cool<=0){const a=Math.atan2(o.y-t.y,o.x-t.x)+(Math.random()-.5)*.3;T.sh.push({x:t.x,y:t.y,vx:Math.cos(a)*2.4,vy:Math.sin(a)*2.4,o:1-k});t.cool=60+Math.random()*40;stimTone(220,.05,"square",.02,.5)}}
+  for(const s2 of T.sh){s2.x+=s2.vx;s2.y+=s2.vy;const tg=T.t[s2.o];if(tg.hp>0&&Math.hypot(s2.x-tg.x,s2.y-tg.y)<8){tg.hp--;s2.dead=1;stimTone(140,.25,"sawtooth",.04,.3)}}
+  T.sh=T.sh.filter(s2=>!s2.dead&&s2.x>-5&&s2.x<205&&s2.y>-5&&s2.y<125);
+  if(T.t.some(q=>q.hp<=0)){if(!T.resetAt)T.resetAt=Date.now()+1500;else if(Date.now()>T.resetAt)reset()}};
+ const draw=()=>{x.fillStyle="rgba(10,10,20,.8)";x.fillRect(0,0,200,120);T.t.forEach(q=>{x.fillStyle=q.hp>0?q.c:"#555";x.fillRect(q.x-7,q.y-5,14,10);x.fillRect(q.x,q.y-2,9,4)});x.fillStyle="#fff";for(const s2 of T.sh){x.fillRect(s2.x-1,s2.y-1,3,3)}};
+ return {c,step,draw,rate:16}}
+function stimFrogger(){const c=stimMakeWidget(200,120),x=c.getContext("2d");let F;
+ const reset=()=>{F={fx:100,fy:110,t:0,lanes:[]};for(let i=0;i<5;i++)F.lanes.push({y:20+i*18,v:(i%2?1:-1)*(.6+Math.random()*.8),cars:[0,1,2].map(k=>({x:k*70+Math.random()*20}))})};reset();
+ const step=()=>{for(const L of F.lanes)for(const q of L.cars){q.x+=L.v;if(q.x>210)q.x=-30;if(q.x<-30)q.x=210}
+  F.t++;
+  if(F.t%30===0){const ny=F.fy-18;const L=F.lanes.find(L=>Math.abs(L.y-ny)<3);const blocked=L&&L.cars.some(q=>Math.abs(q.x+6-F.fx)<22);if(!blocked&&ny>=0){F.fy=ny;stimTone(600,.04,"triangle",.02)}}
+  if(F.fy<5){stimTone(1047,.3,"triangle",.04,1.2);F.fy=110}
+  for(const L of F.lanes)if(Math.abs(L.y-F.fy)<4&&L.cars.some(q=>Math.abs(q.x+6-F.fx)<8)){stimTone(120,.2,"sawtooth",.04,.3);F.fy=110;break}};
+ const draw=()=>{x.fillStyle="#1b1b24";x.fillRect(0,0,200,120);for(const L of F.lanes){x.fillStyle="#2c2c38";x.fillRect(0,L.y-6,200,12);x.fillStyle="#ff9f43";for(const q of L.cars)x.fillRect(q.x,L.y-4,12,8)}x.fillStyle="#7ee787";x.beginPath();x.arc(F.fx,F.fy,4,0,7);x.fill()};
+ return {c,step,draw,rate:16}}
+function stimLife(){const c=stimMakeWidget(200,120),x=c.getContext("2d");const G=4,W=50,H=30;let g,age=0;
+ const seed=()=>{g=[];for(let i=0;i<W;i++){g.push([]);for(let j=0;j<H;j++)g[i].push(Math.random()<.25?1:0)}age=0};seed();
+ const step=()=>{const n=[];for(let i=0;i<W;i++){n.push([]);for(let j=0;j<H;j++){let k=0;for(let di=-1;di<=1;di++)for(let dj=-1;dj<=1;dj++){if(di||dj)k+=g[(i+di+W)%W][(j+dj+H)%H]}n[i].push(k===3||(k===2&&g[i][j])?1:0)}}g=n;age++;if(age>300)seed()};
+ const draw=()=>{x.fillStyle="#06140e";x.fillRect(0,0,200,120);x.fillStyle="#7CFF9B";for(let i=0;i<W;i++)for(let j=0;j<H;j++)if(g[i][j])x.fillRect(i*G,j*G,G-1,G-1)};
+ return {c,step,draw,rate:120}}
+function stimBoids(){const c=stimMakeWidget(200,120),x=c.getContext("2d");const B=Array.from({length:18},()=>({x:Math.random()*200,y:Math.random()*120,vx:(Math.random()-.5)*2,vy:(Math.random()-.5)*2}));
+ const step=()=>{for(const b of B){let ax=0,ay=0,cx=0,cy=0,sx=0,sy=0,n=0;for(const o of B){if(o===b)continue;const dx=o.x-b.x,dy=o.y-b.y,d=Math.hypot(dx,dy);if(d<40){n++;cx+=o.x;cy+=o.y;sx+=o.vx;sy+=o.vy;if(d<10){ax-=dx;ay-=dy}}}
+  if(n){b.vx+=(cx/n-b.x)*.002+(sx/n-b.vx)*.05+ax*.05;b.vy+=(cy/n-b.y)*.002+(sy/n-b.vy)*.05+ay*.05}
+  const sp=Math.hypot(b.vx,b.vy),max=2.4;if(sp>max){b.vx*=max/sp;b.vy*=max/sp}
+  b.x+=b.vx;b.y+=b.vy;if(b.x<0)b.x+=200;if(b.x>200)b.x-=200;if(b.y<0)b.y+=120;if(b.y>120)b.y-=120}};
+ const draw=()=>{x.fillStyle="rgba(10,10,30,.5)";x.fillRect(0,0,200,120);B.forEach((b,i)=>{x.fillStyle="hsl("+(i*20)+" 90% 65%)";x.save();x.translate(b.x,b.y);x.rotate(Math.atan2(b.vy,b.vx));x.beginPath();x.moveTo(5,0);x.lineTo(-4,3);x.lineTo(-4,-3);x.fill();x.restore()})};
+ return {c,step,draw,rate:16}}
+function stimTTT(){const c=stimMakeWidget(200,120),x=c.getContext("2d");let b,turn,end,pause;
+ const lines=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+ const reset=()=>{b=Array(9).fill("");turn="X";end=null;pause=0};reset();
+ const winner=()=>{for(const [i,j,k] of lines)if(b[i]&&b[i]===b[j]&&b[i]===b[k])return b[i];return b.every(Boolean)?"-":null};
+ const step=()=>{if(end){pause++;if(pause>80)reset();return}
+  const empt=b.map((v,i)=>v?-1:i).filter(i=>i>=0);const pick=empt[Math.floor(Math.random()*empt.length)];b[pick]=turn;stimTone(turn==="X"?660:440,.05,"triangle",.03);
+  const w=winner();if(w){end=w;stimTone(w==="-"?300:880,.4,"sine",.04,1.3)}else turn=turn==="X"?"O":"X"};
+ const draw=()=>{x.fillStyle="rgba(10,10,20,.85)";x.fillRect(0,0,200,120);x.strokeStyle="rgba(255,255,255,.35)";x.beginPath();for(let i=1;i<3;i++){x.moveTo(i*60+10,10);x.lineTo(i*60+10,110);x.moveTo(10,i*33+10);x.lineTo(190,i*33+10)}x.stroke();
+  x.font="bold 22px system-ui,sans-serif";x.textAlign="center";x.textBaseline="middle";b.forEach((v,i)=>{if(!v)return;x.fillStyle=v==="X"?"#4cc9f0":"#ff6ec7";x.fillText(v,10+(i%3)*60+30,10+Math.floor(i/3)*33+16)});x.textAlign="start";x.textBaseline="alphabetic"};
+ return {c,step,draw,rate:260}}
+function stimPinball(){const c=stimMakeWidget(200,120),x=c.getContext("2d");let P;
+ const bumpers=[{x:60,y:40},{x:140,y:40},{x:100,y:70}];
+ const reset=()=>{P={bx:100,by:20,vx:(Math.random()-.5)*3,vy:0}};reset();
+ const step=()=>{P.vy+=.12;P.bx+=P.vx;P.by+=P.vy;
+  if(P.bx<4){P.bx=4;P.vx=Math.abs(P.vx)}if(P.bx>196){P.bx=196;P.vx=-Math.abs(P.vx)}if(P.by<4){P.by=4;P.vy=Math.abs(P.vy)}
+  for(const bm of bumpers){const dx=P.bx-bm.x,dy=P.by-bm.y,d=Math.hypot(dx,dy);if(d<11&&d>0){const nx=dx/d,ny=dy/d;const dot=P.vx*nx+P.vy*ny;P.vx-=2*dot*nx;P.vy-=2*dot*ny;P.vx+=nx*1.5;P.vy+=ny*1.5;P.bx=bm.x+nx*12;P.by=bm.y+ny*12;stimTone(880+Math.random()*300,.06,"square",.03)}}
+  if(P.by>100&&P.by<112&&P.vy>0&&(Math.abs(P.bx-60)<14||Math.abs(P.bx-140)<14)){P.vy=-4.2-Math.random()*1.2;P.vx+=(P.bx<100?1:-1)*.8;stimTone(330,.05,"square",.03)}
+  if(P.by>124){stimTone(120,.3,"sawtooth",.04,.3);reset()}
+  P.vx=Math.max(-4,Math.min(4,P.vx));P.vy=Math.max(-6,Math.min(6,P.vy))};
+ const draw=()=>{x.fillStyle="rgba(10,10,20,.8)";x.fillRect(0,0,200,120);x.fillStyle="#ff6ec7";for(const bm of bumpers){x.beginPath();x.arc(bm.x,bm.y,7,0,7);x.fill()}x.fillStyle="#4cc9f0";x.fillRect(46,108,28,4);x.fillRect(126,108,28,4);x.fillStyle="#ffd166";x.beginPath();x.arc(P.bx,P.by,3.5,0,7);x.fill()};
+ return {c,step,draw,rate:16}}
+
 /* Stimulation Mode, round seven: twenty more things, and idle escalation */
 let stimLastAct=Date.now(),stimIdleLvl=0,stimIdleT=0,stimDrone=null;
 ["pointermove","pointerdown","keydown","wheel"].forEach(ev=>document.addEventListener(ev,()=>{stimLastAct=Date.now()},{passive:true}));
@@ -1551,9 +1633,9 @@ document.addEventListener("click",e=>{
 
 /* Stimulation Mode, round six: fifteen more things, crown, reset on exit */
 let stimMetroTimer=null,stimW=[],stimEnts=[],stimLoopRAF=null,stimLastT=0;
-const STIM_WIDGETS={breakout:()=>stimBreakout(),snake:()=>stimSnake(),flappy:()=>stimFlappy(),invaders:()=>stimInvaders(),radar:()=>stimRadar(),matrix:()=>stimMatrix(),lava:()=>stimLava(),spiro:()=>stimSpiro()};
+const STIM_WIDGETS={breakout:()=>stimBreakout(),snake:()=>stimSnake(),flappy:()=>stimFlappy(),invaders:()=>stimInvaders(),radar:()=>stimRadar(),matrix:()=>stimMatrix(),lava:()=>stimLava(),spiro:()=>stimSpiro(),pacman:()=>stimPacman(),tanks:()=>stimTanks(),frogger:()=>stimFrogger(),life:()=>stimLife(),boids:()=>stimBoids(),tictactoe:()=>stimTTT(),pinball:()=>stimPinball()};
 function stimDockSlot(){return stimW.length+(stimPong?1:0)}
-function stimMakeWidget(w,h){const c=document.createElement("canvas");c.className="stim-w";c.width=w;c.height=h;c.style.top=(80+stimDockSlot()*130)+"px";document.body.appendChild(c);return c}
+function stimMakeWidget(w,h){const c=document.createElement("canvas");c.className="stim-w";c.width=w;c.height=h;document.body.appendChild(c);return stimDockAdd(c)}
 function stimStartWidget(id){const w=STIM_WIDGETS[id]();stimW.push(w);stimEnsureLoop()}
 function stimBreakout(){const c=stimMakeWidget(200,120),x=c.getContext("2d");const B={bx:100,by:90,vx:1.8,vy:-2.2,pad:100,bricks:[]};
  const reset=()=>{B.bricks=[];for(let r=0;r<4;r++)for(let k=0;k<8;k++)B.bricks.push({x:6+k*24,y:14+r*10,w:20,h:7,c:"hsl("+(r*60+k*8)+" 90% 65%)",a:true})};reset();
@@ -1669,7 +1751,7 @@ function stimToysStop(){
  if(stimBloopTimer){clearInterval(stimBloopTimer);stimBloopTimer=null}
  stimPongStop();
  document.querySelectorAll('.stim-star,.stim-heart,.stim-splat,.stim-w,.stim-ent,.stim-ufo,.stim-burst,.stim-bolt,.stim-pong,.stim-ghost,.stim-thunder,.stim-glow,.stim-twinkle').forEach(n=>n.remove());
- document.documentElement.classList.remove('stim-hueside');stimDroneStop();stimLastAct=Date.now();stimIdleLvl=0;stimIdleT=0;
+ document.documentElement.classList.remove('stim-hueside');stimDroneStop();stimDockEls=[];stimLastAct=Date.now();stimIdleLvl=0;stimIdleT=0;
  if(stimMetroTimer){clearInterval(stimMetroTimer);stimMetroTimer=null}
  if(stimLoopRAF){cancelAnimationFrame(stimLoopRAF);stimLoopRAF=null}
  stimW=[];stimEnts=[];stimCount=0;stimGot.clear();stimFeatT=0;
