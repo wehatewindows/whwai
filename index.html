@@ -55,7 +55,8 @@ svg{display:block}
 .bar button{border:0;background:none;padding:5px;cursor:pointer;border-radius:8px;display:grid;place-items:center}
 .bar button:hover{background:#ddd}.bar span{margin-left:12px;font-size:13px;color:#333}
 .empty{margin:auto;text-align:center;color:var(--mute)}.empty h2{font-size:28px;font-weight:400;color:var(--ink);margin:0 0 6px}
-.orb{position:absolute;right:26px;bottom:calc(100% + 22px);z-index:3;width:68px;height:68px;border-radius:50%;background:#78a4fa;box-shadow:0 0 0 6px rgba(120,164,250,.38);pointer-events:none;will-change:transform}
+.orb{position:absolute;right:26px;bottom:calc(100% + 22px);z-index:3;width:68px;height:68px;border-radius:50%;background:#78a4fa;box-shadow:0 0 0 6px rgba(120,164,250,.38);pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .14s cubic-bezier(.2,.7,.2,1),box-shadow .2s ease;will-change:transform}
+.orb:active{transform:scale(.9)}
 .orb.think{animation:breathe 3s ease-in-out infinite,morph 4.6s ease-in-out infinite}
 @keyframes breathe{0%,100%{transform:translate(0,0) scale(.94) rotate(0);box-shadow:0 0 0 5px rgba(120,164,250,.42)}25%{transform:translate(-3px,-6px) scale(1.04) rotate(10deg)}50%{transform:translate(0,-11px) scale(1.1) rotate(22deg);box-shadow:0 0 0 14px rgba(120,164,250,.12)}75%{transform:translate(3px,-4px) scale(1.02) rotate(8deg)}}
 @keyframes morph{0%,100%{border-radius:50%}25%{border-radius:62% 38% 54% 46%/46% 58% 42% 54%}50%{border-radius:44% 56% 40% 60%/58% 42% 58% 42%}75%{border-radius:54% 46% 62% 38%/40% 60% 46% 54%}}
@@ -532,7 +533,7 @@ html.stim .pbtn:hover,html.stim .chat:hover,html.stim .round:hover,html.stim .ne
   <div class="scroll" id="chat"></div>
   <div class="toast" id="toast" role="status"></div>
   <div class="input">
-   <div class="orb" id="orb" aria-hidden="true"></div>
+   <div class="orb" id="orb"></div>
    <div class="field">
     <textarea id="in" rows="1" placeholder="Message WHWai" aria-label="Message" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea>
     <div class="mwrap">
