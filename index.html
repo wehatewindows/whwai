@@ -478,6 +478,17 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,textarea:foc
 @keyframes fxOut{to{opacity:0;transform:translateX(-6px)}}
 .main .site-notice{display:flex;align-items:center;justify-content:center;gap:8px}.site-notice>span{min-width:0;text-align:center}
 .notice-x{flex:none;width:24px;height:24px;border:0;border-radius:50%;background:transparent;color:inherit;opacity:.65;display:grid;place-items:center;padding:0;cursor:pointer;transition:background-color .16s ease,opacity .16s ease}.notice-x:hover,.notice-x:focus-visible{opacity:1;background:rgba(0,0,0,.06)}
+/* Stimulation Mode: slow, bright motion only. Nothing flashes faster than about once a second. */
+html.stim body{background:linear-gradient(120deg,#ff6ec7,#ffd166,#06d6a0,#4cc9f0,#b388ff,#ff6ec7)!important;background-size:300% 300%!important;animation:stimBg 6s ease infinite!important}
+@keyframes stimBg{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+html.stim .frame{animation:stimHue 8s linear infinite}
+@keyframes stimHue{to{filter:hue-rotate(360deg)}}
+html.stim .scroll>*{animation:stimWiggle 2.4s ease-in-out infinite}
+@keyframes stimWiggle{0%,100%{transform:rotate(-.6deg)}50%{transform:rotate(.6deg)}}
+html.stim .orb{animation:stimSpin 1.8s linear infinite!important}
+@keyframes stimSpin{to{transform:rotate(360deg)}}
+html.stim .pbtn:hover,html.stim .chat:hover,html.stim .round:hover,html.stim .new:hover,html.stim .gear:hover{transform:rotate(-4deg) scale(1.06)}
+@media (prefers-reduced-motion:reduce){html.stim body,html.stim .frame,html.stim .scroll>*,html.stim .orb{animation:none!important}html.stim .pbtn:hover,html.stim .chat:hover{transform:none}}
 </style>
 </head>
 <body class="access-locked">
@@ -1257,6 +1268,10 @@ $("gear").innerHTML=ic(SLIDERS,16,2.2);
 $("mnew").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',18,2.4);$("mnew").onclick=newChat;$("profile-btn").onclick=e=>{e.stopPropagation();const m=$("profile-menu");if(!m)return;if(m.hidden){renderProfileMenu();showEl(m)}else hideEl(m)};document.addEventListener("click",e=>{const m=$("profile-menu");if(m&&!m.hidden&&!m.contains(e.target))m.hidden=true});
 const modal=$("modal"),mbody=$("mbody");
 let siteNoticeDismissible=false,siteNoticeOnGates=true,siteNoticeDismissedText=null;
+let stimOn=false,stimTaps=[];const BASE_TITLE=document.title;
+function setStimulation(on){stimOn=on;document.documentElement.classList.toggle("stim",on);document.title=on?"!!! STIMULATION MODE !!!":BASE_TITLE}
+async function askStimulation(){const ok=await appConfirm({title:"You have been chosen.",message:"Enable Stimulation Mode?",confirmLabel:"Enable",danger:false,standalone:true});if(ok)setStimulation(true)}
+orb.addEventListener("click",()=>{if(stimOn)return;const now=Date.now();stimTaps=stimTaps.filter(t=>now-t<3000);stimTaps.push(now);if(stimTaps.length>=5){stimTaps=[];askStimulation()}});
 let smsg="",currentSettingsView="settings",closeModalTimer=null,closingModal=false,siteSignupMode="code",siteNoticeText="",siteStatusLoaded=false;
 const touch=c=>{c.mu=Date.now()};
 function clearAccountSession(){if(accountSyncTimer!==null){clearTimeout(accountSyncTimer);accountSyncTimer=null}accountSession=null;accountSyncFailed=false;renderSyncStatus();accountReady=true;accountInitialSyncPending=false;accountMergePendingToast=false;try{localStorage.removeItem(ACCOUNT_SESSION_STORAGE_KEY)}catch(e){}}
@@ -1681,12 +1696,13 @@ function renderSettings(){
   </div>
   <h3>Data & privacy</h3><p class="sm">Back up, import, or remove chats saved in this browser.</p><button class="pbtn data-manage-button" id="data-tools-open" type="button"><span class="manage-icon">${ic('<path d="M4 5h16v14H4z"/><path d="M8 9h8M8 12h8M8 15h5"/>',17)}</span><span>Manage your data</span></button>${confirmDeleteEnabled()?"":'<button type="button" class="subtle-link" id="restore-delete-confirm">Ask before deleting chats again</button>'}
   ${signed&&user.role==="admin"?`<h3>Administration</h3><button class="pbtn data-manage-button" id="admin-open" type="button"><span class="manage-icon">${ic('<path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z"/>',17)}</span><span>Admin panel</span></button>`:""}
+  ${stimOn?'<label class="switch-row" style="margin:6px 0 10px"><span>Stimulation Mode</span><input type="checkbox" id="stim-toggle" checked><span class="switch-ui"></span></label>':""}
   <p class="sm" id="s-msg" role="status">${esc(smsg)}</p><div class="privacy-row"><a href="#" class="privacy-link" id="privacy-open">Privacy Policy</a><a href="#" class="privacy-link" id="terms-open">Terms of Use</a><a href="#" class="privacy-link" id="whatsnew-open">What's new</a>${accessRequired?'<button type="button" class="lock-link" id="lock-whwai-now">Lock WHWai</button>':''}</div>${whatsNewCfg&&whatsNewCfg.version?'<p class="wn-ver">'+esc(String(whatsNewCfg.version))+'</p>':''}`;
  const q=id=>mbody.querySelector("#"+id);
  if(q("account-open"))q("account-open").onclick=renderAccount;
  if(q("account-signin"))q("account-signin").onclick=()=>renderAccountAuth("login");
  if(q("account-signup"))q("account-signup").onclick=()=>renderAccountAuth("signup");
- q("data-tools-open").onclick=renderDataManagement;{const rd=q("restore-delete-confirm");if(rd)rd.onclick=()=>{setConfirmDelete(true);toast("Delete confirmation is back on.");renderSettings()}}q("privacy-open").onclick=e=>{e.preventDefault();renderPrivacyPolicy()};q("terms-open").onclick=e=>{e.preventDefault();renderTerms()};q("whatsnew-open").onclick=e=>{e.preventDefault();closeSettings();setTimeout(()=>showWhatsNewIfNeeded(true),320)};
+ q("data-tools-open").onclick=renderDataManagement;{const st=q("stim-toggle");if(st)st.onchange=()=>{if(!st.checked){setStimulation(false);renderSettings()}}}{const rd=q("restore-delete-confirm");if(rd)rd.onclick=()=>{setConfirmDelete(true);toast("Delete confirmation is back on.");renderSettings()}}q("privacy-open").onclick=e=>{e.preventDefault();renderPrivacyPolicy()};q("terms-open").onclick=e=>{e.preventDefault();renderTerms()};q("whatsnew-open").onclick=e=>{e.preventDefault();closeSettings();setTimeout(()=>showWhatsNewIfNeeded(true),320)};
  if(q("admin-open"))q("admin-open").onclick=()=>renderAdminPanel("site");
  if(q("lock-whwai-now"))q("lock-whwai-now").onclick=()=>{closeSettings();side(false);lockEarlyAccess(true)};
 }
