@@ -1929,6 +1929,9 @@ function renderOneTimePassword(title,username,password,expiresAt,returnTab){
  $("one-time-password-done").onclick=()=>renderAdminPanel(returnTab||"accounts");
 }
 
+/* Plays the entrance animation for the current Settings or admin screen */
+function animateMenuContent(){mbody.classList.remove("menu-content-enter");void mbody.offsetWidth;mbody.classList.add("menu-content-enter")}
+new MutationObserver(()=>animateMenuContent()).observe(mbody,{childList:true});
 function wrapViewTransition(fn){return function(){const result=fn.apply(this,arguments);if(!modal.hidden)animateMenuContent();return result}}
 renderSettings=wrapViewTransition(renderSettings);
 renderAccountAuth=wrapViewTransition(renderAccountAuth);
