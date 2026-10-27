@@ -1623,6 +1623,10 @@ function stimIdleTick(){
  if(lvl>=5&&stimIdleT%6===0)stimFlood();
  if(lvl>=6)stimEmojiBurst(Math.random()*innerWidth,Math.random()*innerHeight);
 }
+function stimAutoClick(){
+ const x=innerWidth*(.35+Math.random()*.55),y=120+Math.random()*Math.max(60,innerHeight*.5-120);
+ stimCountUp(x,y);stimEmojiBurst(x,y);
+}
 function stimFeatExtra(){const t=stimFeatT;
  if(stimHas("emojirain")&&t%12===0)for(let i=0;i<10;i++){const e=stimSpawnEnt("drop",Math.random()*innerWidth,-30,0,1+Math.random()*2);e.el.textContent=["\u{1F355}","\u{1F35F}","\u{1F36D}","\u{1F34E}","\u{1F4A9}","\u{1F3C6}"][Math.floor(Math.random()*6)]}
  if(stimHas("windchimes")&&t%3===0)stimTone(stimNote()*2,.5,"sine",.025,1);
@@ -1636,7 +1640,7 @@ function stimFeatExtra(){const t=stimFeatT;
  if(stimHas("cat")&&t%20===0)stimSpawnEnt("cat",-40,innerHeight-44,1,0);
  if(stimHas("confettirain")&&t%15===0)stimConfetti(Math.random()*innerWidth,0,60);
  if(stimHas("heartbeat")){stimTone(60,.18,"sine",.12,.5);setTimeout(()=>stimTone(70,.12,"sine",.08,.5),180)}
- if(stimHas("autoclick")&&t%4===0)stimEmojiBurst(Math.random()*innerWidth,Math.random()*innerHeight*.7);
+ if(stimHas("autoclick"))for(let i=0;i<2;i++)stimAutoClick();
 }
 function stimThunder(){const d=document.createElement("div");d.className="stim-thunder";document.body.appendChild(d);stimTone(70,1.2,"sawtooth",.05,.6);d.addEventListener("animationend",()=>d.remove(),{once:true})}
 function stimGhost(){const g=document.createElement("div");g.className="stim-ghost";g.textContent="\u{1F47B}";g.style.left=(Math.random()*(innerWidth-80))+"px";g.style.top=(Math.random()*innerHeight*.6)+"px";document.body.appendChild(g);stimTone(330,.8,"sine",.04,.5);g.addEventListener("animationend",()=>g.remove(),{once:true})}
