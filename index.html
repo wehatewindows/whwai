@@ -490,6 +490,24 @@ html.stim .orb{animation:stimSpin 1.8s linear infinite!important}
 @keyframes stimSpin{to{transform:rotate(360deg)}}
 html.stim .pbtn:hover,html.stim .chat:hover,html.stim .round:hover,html.stim .new:hover,html.stim .gear:hover{transform:rotate(-4deg) scale(1.06)}
 @media (prefers-reduced-motion:reduce){html.stim body,html.stim .frame,html.stim .scroll>*,html.stim .orb{animation:none!important}html.stim .pbtn:hover,html.stim .chat:hover{transform:none}}
+#stim-canvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:200}
+.stim-spark{position:fixed;width:9px;height:9px;margin:-4px 0 0 -4px;border-radius:50%;pointer-events:none;z-index:199;animation:sparkOut .7s ease-out forwards}
+@keyframes sparkOut{from{transform:scale(1);opacity:1}to{transform:translateY(-60px) scale(.2);opacity:0}}
+.stim-blob{position:fixed;width:300px;height:300px;margin:-150px 0 0 -150px;border-radius:50%;filter:blur(55px);opacity:.3;pointer-events:none;z-index:1;animation:blobDrift 12s ease-in-out infinite alternate}
+@keyframes blobDrift{to{transform:translate(140px,-90px) scale(1.15)}}
+.stim-dodge{position:fixed;z-index:210;border:0;border-radius:999px;padding:11px 20px;background:#ffd166;color:#222;font:600 14px "Helvetica Neue",Helvetica,Arial,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.22);transition:left .2s cubic-bezier(.2,.7,.2,1),top .2s cubic-bezier(.2,.7,.2,1);cursor:pointer;white-space:nowrap}
+.stim-pop{animation:stimPop .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes stimPop{0%{transform:scale(1)}35%{transform:scale(1.2) rotate(-5deg)}70%{transform:scale(.92) rotate(3deg)}100%{transform:scale(1)}}
+.main.stim-shake{animation:stimShake .42s linear}
+@keyframes stimShake{0%,100%{transform:translate(0)}20%{transform:translate(-6px,2px) rotate(-.5deg)}40%{transform:translate(6px,-2px) rotate(.5deg)}60%{transform:translate(-4px,1px)}80%{transform:translate(3px,-1px)}}
+html.stim .logo{animation:stimPulse 2.4s ease-in-out infinite}
+@keyframes stimPulse{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.14) rotate(8deg)}}
+html.stim .field{animation:stimWobble 3.2s ease-in-out infinite}
+@keyframes stimWobble{0%,100%{transform:translateY(0) rotate(-.3deg)}50%{transform:translateY(-3px) rotate(.3deg)}}
+html.stim .chat{background:linear-gradient(90deg,#ffe3f4,#e3f4ff,#fff3d6)!important;background-size:200% 100%!important;animation:stimBg 5s ease infinite!important}
+html.stim .beta-pill{animation:stimBg 3s linear infinite!important;background:linear-gradient(90deg,#ff6ec7,#ffd166,#06d6a0,#4cc9f0,#b388ff)!important;background-size:300% 100%!important}
+html.stim .scroll>*{animation-duration:2.4s!important}
+@media (prefers-reduced-motion:reduce){html.stim .logo,html.stim .field,html.stim .chat,html.stim .beta-pill,.stim-blob,.stim-spark,.stim-pop,.main.stim-shake{animation:none!important}}
 </style>
 </head>
 <body class="access-locked">
@@ -1270,7 +1288,34 @@ $("mnew").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',18,2.4);$("mnew").onclick=
 const modal=$("modal"),mbody=$("mbody");
 let siteNoticeDismissible=false,siteNoticeOnGates=true,siteNoticeDismissedText=null;
 let stimOn=false,stimTaps=[];const BASE_TITLE=document.title;
-function setStimulation(on){stimOn=on;document.documentElement.classList.toggle("stim",on);document.title=on?"!!! STIMULATION MODE !!!":BASE_TITLE}
+let stimSound=true,stimParts=[],stimRAF=null,stimDodgeEl=null,stimBlobs=[],stimDodgeCount=0;
+function stimSettingsHtml(){return '<label class="switch-row" style="margin:6px 0 4px"><span>Stimulation Mode</span><input type="checkbox" id="stim-toggle" checked><span class="switch-ui"></span></label><label class="switch-row" style="margin:0 0 10px"><span>Sound effects</span><input type="checkbox" id="stim-sound"'+(stimSound?' checked':'')+'><span class="switch-ui"></span></label>'}
+function stimTone(f,dur,type,vol,slide){if(!stimOn||!stimSound)return;try{stimAudio=stimAudio||new (window.AudioContext||window.webkitAudioContext)();const t=stimAudio.currentTime,o=stimAudio.createOscillator(),g=stimAudio.createGain();o.type=type||"square";o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(40,f*slide),t+dur);g.gain.setValueAtTime(vol||.05,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g).connect(stimAudio.destination);o.start(t);o.stop(t+dur)}catch(e){}}
+let stimAudio=null;
+function stimChime(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>stimTone(f,.18,"triangle",.05),i*90))}
+function stimCanvas(){let c=document.getElementById("stim-canvas");if(!c){c=document.createElement("canvas");c.id="stim-canvas";document.body.appendChild(c)}c.width=innerWidth;c.height=innerHeight;return c}
+function stimConfetti(x,y,n){if(!stimOn)return;const cols=["#ff6ec7","#ffd166","#06d6a0","#4cc9f0","#b388ff","#ff7b54"];for(let i=0;i<(n||90);i++)stimParts.push({x,y,vx:(Math.random()-.5)*16,vy:-Math.random()*13-4,g:.36,r:Math.random()*7+4,c:cols[i%cols.length],life:1,spin:Math.random()*.4-.2,a:Math.random()*6});if(!stimRAF){stimCanvas();stimRAF=requestAnimationFrame(stimDraw)}}
+function stimDraw(){const c=document.getElementById("stim-canvas");if(!c)return;const x=c.getContext("2d");x.clearRect(0,0,c.width,c.height);stimParts=stimParts.filter(p=>p.life>0);for(const p of stimParts){p.vy+=p.g;p.x+=p.vx;p.y+=p.vy;p.vx*=.99;p.a+=p.spin;p.life-=.011;x.globalAlpha=Math.max(0,p.life);x.fillStyle=p.c;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);x.restore()}x.globalAlpha=1;stimRAF=stimParts.length?requestAnimationFrame(stimDraw):null}
+function stimPlaceDodge(){if(!stimDodgeEl)return;stimDodgeEl.style.left=(20+Math.random()*(innerWidth-220))+"px";stimDodgeEl.style.top=(90+Math.random()*(innerHeight-220))+"px"}
+const STIM_DODGE_LINES=["Catch me","Nope","Still no","Almost","Fine, you win"];
+function stimFxStart(){
+ for(let i=0;i<6;i++){const b=document.createElement("div");b.className="stim-blob";b.style.background="hsl("+Math.floor(Math.random()*360)+" 90% 65%)";b.style.left=(Math.random()*innerWidth)+"px";b.style.top=(Math.random()*innerHeight)+"px";b.style.animationDelay=(-Math.random()*12)+"s";document.body.appendChild(b);stimBlobs.push(b)}
+ stimDodgeEl=document.createElement("button");stimDodgeEl.type="button";stimDodgeEl.className="stim-dodge";stimDodgeEl.textContent=STIM_DODGE_LINES[0];
+ stimDodgeEl.onclick=e=>{e.stopPropagation();stimConfetti(e.clientX,e.clientY,140);stimTone(880,.25,"sine",.06,1.5);stimDodgeCount++;stimDodgeEl.textContent=STIM_DODGE_LINES[stimDodgeCount%STIM_DODGE_LINES.length];stimPlaceDodge()};
+ document.body.appendChild(stimDodgeEl);stimPlaceDodge();
+ stimChime();stimConfetti(innerWidth/2,innerHeight/2,160);
+}
+function stimFxStop(){stimBlobs.forEach(b=>b.remove());stimBlobs=[];if(stimDodgeEl){stimDodgeEl.remove();stimDodgeEl=null}stimParts=[];const c=document.getElementById("stim-canvas");if(c)c.getContext("2d").clearRect(0,0,c.width,c.height);document.querySelectorAll(".stim-spark").forEach(n=>n.remove())}
+function setStimulation(on){stimOn=on;document.documentElement.classList.toggle("stim",on);document.title=on?"!!! STIMULATION MODE !!!":BASE_TITLE;if(on)stimFxStart();else stimFxStop()}
+document.addEventListener("mousemove",e=>{if(!stimOn)return;if(stimDodgeEl){const r=stimDodgeEl.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;if(Math.hypot(e.clientX-cx,e.clientY-cy)<130)stimPlaceDodge()}if(Math.random()<.35){const d=document.createElement("div");d.className="stim-spark";d.style.left=e.clientX+"px";d.style.top=e.clientY+"px";d.style.background="hsl("+Math.floor(Math.random()*360)+" 95% 65%)";document.body.appendChild(d);d.addEventListener("animationend",()=>d.remove(),{once:true})}});
+document.addEventListener("click",e=>{if(!stimOn)return;const t=e.target;if(!t||!t.closest)return;
+ const btn=t.closest("button,.chat,.orb,.logo");
+ if(btn&&!btn.classList.contains("stim-pop")&&btn!==stimDodgeEl){btn.classList.add("stim-pop");btn.addEventListener("animationend",()=>btn.classList.remove("stim-pop"),{once:true});stimTone(200+Math.random()*700,.14,"square",.04,1.7)}
+ if(t.closest(".logo"))stimConfetti(e.clientX,e.clientY,70);
+ if(t.closest("#send")){const main=document.querySelector(".main");if(main){main.classList.remove("stim-shake");void main.offsetWidth;main.classList.add("stim-shake")}const r=sendBtn.getBoundingClientRect();stimConfetti(r.left+r.width/2,r.top+r.height/2,60);stimTone(523,.2,"sawtooth",.05,1.5)}
+});
+new MutationObserver(m=>{if(stimOn&&m.some(x=>x.addedNodes.length)){stimChime();stimConfetti(innerWidth-110,innerHeight-120,40)}}).observe(chatEl,{childList:true});
+window.addEventListener("resize",()=>{if(stimOn)stimPlaceDodge()});
 async function askStimulation(){const ok=await appConfirm({title:"You have been chosen.",message:"Enable Stimulation Mode?",confirmLabel:"Enable",danger:false,standalone:true});if(ok)setStimulation(true)}
 orb.addEventListener("click",()=>{if(stimOn)return;const now=Date.now();stimTaps=stimTaps.filter(t=>now-t<3000);stimTaps.push(now);if(stimTaps.length>=5){stimTaps=[];askStimulation()}});
 let smsg="",currentSettingsView="settings",closeModalTimer=null,closingModal=false,siteSignupMode="code",siteNoticeText="",siteStatusLoaded=false;
@@ -1697,13 +1742,13 @@ function renderSettings(){
   </div>
   <h3>Data & privacy</h3><p class="sm">Back up, import, or remove chats saved in this browser.</p><button class="pbtn data-manage-button" id="data-tools-open" type="button"><span class="manage-icon">${ic('<path d="M4 5h16v14H4z"/><path d="M8 9h8M8 12h8M8 15h5"/>',17)}</span><span>Manage your data</span></button>${confirmDeleteEnabled()?"":'<button type="button" class="subtle-link" id="restore-delete-confirm">Ask before deleting chats again</button>'}
   ${signed&&user.role==="admin"?`<h3>Administration</h3><button class="pbtn data-manage-button" id="admin-open" type="button"><span class="manage-icon">${ic('<path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z"/>',17)}</span><span>Admin panel</span></button>`:""}
-  ${stimOn?'<label class="switch-row" style="margin:6px 0 10px"><span>Stimulation Mode</span><input type="checkbox" id="stim-toggle" checked><span class="switch-ui"></span></label>':""}
+  ${stimOn?stimSettingsHtml():""}
   <p class="sm" id="s-msg" role="status">${esc(smsg)}</p><div class="privacy-row"><a href="#" class="privacy-link" id="privacy-open">Privacy Policy</a><a href="#" class="privacy-link" id="terms-open">Terms of Use</a><a href="#" class="privacy-link" id="whatsnew-open">What's new</a>${accessRequired?'<button type="button" class="lock-link" id="lock-whwai-now">Lock WHWai</button>':''}</div>${whatsNewCfg&&whatsNewCfg.version?'<p class="wn-ver">'+esc(String(whatsNewCfg.version))+'</p>':''}`;
  const q=id=>mbody.querySelector("#"+id);
  if(q("account-open"))q("account-open").onclick=renderAccount;
  if(q("account-signin"))q("account-signin").onclick=()=>renderAccountAuth("login");
  if(q("account-signup"))q("account-signup").onclick=()=>renderAccountAuth("signup");
- q("data-tools-open").onclick=renderDataManagement;{const st=q("stim-toggle");if(st)st.onchange=()=>{if(!st.checked){setStimulation(false);renderSettings()}}}{const rd=q("restore-delete-confirm");if(rd)rd.onclick=()=>{setConfirmDelete(true);toast("Delete confirmation is back on.");renderSettings()}}q("privacy-open").onclick=e=>{e.preventDefault();renderPrivacyPolicy()};q("terms-open").onclick=e=>{e.preventDefault();renderTerms()};q("whatsnew-open").onclick=e=>{e.preventDefault();closeSettings();setTimeout(()=>showWhatsNewIfNeeded(true),320)};
+ q("data-tools-open").onclick=renderDataManagement;{const st=q("stim-toggle");if(st)st.onchange=()=>{if(!st.checked){setStimulation(false);renderSettings()}};const ss=q("stim-sound");if(ss)ss.onchange=()=>{stimSound=ss.checked}}{const rd=q("restore-delete-confirm");if(rd)rd.onclick=()=>{setConfirmDelete(true);toast("Delete confirmation is back on.");renderSettings()}}q("privacy-open").onclick=e=>{e.preventDefault();renderPrivacyPolicy()};q("terms-open").onclick=e=>{e.preventDefault();renderTerms()};q("whatsnew-open").onclick=e=>{e.preventDefault();closeSettings();setTimeout(()=>showWhatsNewIfNeeded(true),320)};
  if(q("admin-open"))q("admin-open").onclick=()=>renderAdminPanel("site");
  if(q("lock-whwai-now"))q("lock-whwai-now").onclick=()=>{closeSettings();side(false);lockEarlyAccess(true)};
 }
