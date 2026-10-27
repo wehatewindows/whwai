@@ -545,7 +545,7 @@ html.stim .stim-blob,html.stim .stim-bubble{cursor:grab}
 html.stim .stim-blob:active,html.stim .stim-bubble:active{cursor:grabbing}
 @media (pointer:coarse){html.stim .stim-blob,html.stim .stim-bubble{pointer-events:none!important}}
 .stim-dodge{padding:14px 24px!important}
-@media (max-width:700px){.stim-disco{right:12px;top:auto;bottom:150px;width:40px;height:40px}}
+@media (max-width:700px){.stim-disco{left:12px;right:auto;top:auto;bottom:150px;width:40px;height:40px}}
 .stim-w{position:fixed;right:14px;width:200px;height:120px;border-radius:12px;pointer-events:none;z-index:204;box-shadow:0 8px 22px rgba(0,0,0,.3)}
 .stim-ent{position:fixed;left:0;top:0;pointer-events:none;z-index:203;will-change:transform}
 .stim-ball{width:18px;height:18px;border-radius:50%}
@@ -1537,7 +1537,7 @@ let stimDockEls=[];
 function stimDockAdd(el){stimDockEls.push(el);stimDockLayout();return el}
 function stimDockLayout(){
  const narrow=innerWidth<700;const top0=80,gap=10,cw=narrow?100:200,ch=narrow?60:120;
- const rows=Math.max(1,Math.floor((innerHeight-top0-30+gap)/(ch+gap)));
+ const rows=Math.max(1,Math.floor((innerHeight-top0-230+gap)/(ch+gap)));
  const maxCols=Math.max(1,Math.floor((innerWidth*.4-14)/(cw+gap)));
  stimDockEls.forEach((el,i)=>{const col=Math.floor(i/rows),row=i%rows;
   el.style.width=cw+"px";el.style.height=ch+"px";el.style.top=(top0+row*(ch+gap))+"px";el.style.right=(14+col*(cw+gap))+"px";
