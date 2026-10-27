@@ -476,6 +476,8 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,textarea:foc
 @keyframes fxTitle{from{background-color:#dbe6ff}to{background-color:var(--chip)}}
 @keyframes fxPin{0%{transform:scale(.985)}60%{transform:scale(1.006)}100%{transform:none}}
 @keyframes fxOut{to{opacity:0;transform:translateX(-6px)}}
+.main .site-notice{display:flex;align-items:center;justify-content:center;gap:8px}.site-notice>span{min-width:0;text-align:center}
+.notice-x{flex:none;width:24px;height:24px;border:0;border-radius:50%;background:transparent;color:inherit;opacity:.65;display:grid;place-items:center;padding:0;cursor:pointer;transition:background-color .16s ease,opacity .16s ease}.notice-x:hover,.notice-x:focus-visible{opacity:1;background:rgba(0,0,0,.06)}
 </style>
 </head>
 <body class="access-locked">
@@ -1063,7 +1065,7 @@ async function downloadDisabledData(){
 try{if(localStorage.getItem(ACCESS_OFF_KEY)==="1"){accessRequired=false;openApp()}else{document.body.classList.add("access-locked")}}catch(e){document.body.classList.add("access-locked")}
 accessForm.addEventListener("submit",async e=>{e.preventDefault();const code=accessInput.value.trim();if(!code)return;accessButton.disabled=true;accessError.hidden=true;accessError.textContent="";try{if(!API_URL)throw new Error("backend");const result=await post({action:"access_check",code,deviceId:getDeviceId()});if(result&&result.aiEnabled===false){showAIDisabled();return}
    if(result&&result.error==="access_locked_temporarily"){accessError.textContent="Too many attempts. Wait 15 minutes and try again.";accessError.hidden=false;return}if(result&&result.ok&&result.token){unlockEarlyAccess(result.token,result.expiresAt)}else{accessError.textContent="Incorrect code";accessError.hidden=false;accessInput.select()}}catch(err){accessError.textContent="Unable to verify code";accessError.hidden=false}finally{accessButton.disabled=false}});
-(async function checkBackendStatus(){if(!API_URL){lockEarlyAccess(false);return}try{const status=await post({action:"status_check"});if(status&&Array.isArray(status.models))updateAvailableModels(status.models);siteStatusLoaded=true;applyWhatsNewCfg(status.whatsNew);siteSignupMode=status.signupMode||"code";siteNoticeText=String(status.siteNotice||"").slice(0,240);renderSiteNotice();if(status&&status.aiEnabled===false){showAIDisabled();return}
+(async function checkBackendStatus(){if(!API_URL){lockEarlyAccess(false);return}try{const status=await post({action:"status_check"});if(status&&Array.isArray(status.models))updateAvailableModels(status.models);siteStatusLoaded=true;applyWhatsNewCfg(status.whatsNew);siteSignupMode=status.signupMode||"code";siteNoticeText=String(status.siteNotice||"").slice(0,240);siteNoticeDismissible=!!status.siteNoticeDismissible;siteNoticeOnGates=status.siteNoticeOnGates!==false;renderSiteNotice();if(status&&status.aiEnabled===false){showAIDisabled();return}
  if(status&&status.accessRequired===false){accessRequired=false;try{localStorage.setItem(ACCESS_OFF_KEY,"1")}catch(e){}openApp();return}
  accessRequired=true;try{localStorage.removeItem(ACCESS_OFF_KEY)}catch(e){}
  const typed=accessInput.value;if(!accessUnlocked)lockEarlyAccess(false);accessInput.value=typed
@@ -1254,6 +1256,7 @@ const SLIDERS='<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r=
 $("gear").innerHTML=ic(SLIDERS,16,2.2);
 $("mnew").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',18,2.4);$("mnew").onclick=newChat;$("profile-btn").onclick=e=>{e.stopPropagation();const m=$("profile-menu");if(!m)return;if(m.hidden){renderProfileMenu();showEl(m)}else hideEl(m)};document.addEventListener("click",e=>{const m=$("profile-menu");if(m&&!m.hidden&&!m.contains(e.target))m.hidden=true});
 const modal=$("modal"),mbody=$("mbody");
+let siteNoticeDismissible=false,siteNoticeOnGates=true,siteNoticeDismissedText=null;
 let smsg="",currentSettingsView="settings",closeModalTimer=null,closingModal=false,siteSignupMode="code",siteNoticeText="",siteStatusLoaded=false;
 const touch=c=>{c.mu=Date.now()};
 function clearAccountSession(){if(accountSyncTimer!==null){clearTimeout(accountSyncTimer);accountSyncTimer=null}accountSession=null;accountSyncFailed=false;renderSyncStatus();accountReady=true;accountInitialSyncPending=false;accountMergePendingToast=false;try{localStorage.removeItem(ACCOUNT_SESSION_STORAGE_KEY)}catch(e){}}
@@ -1635,12 +1638,21 @@ function renderPrivacyPolicy(){
 }
 let deletingLocalData=false;
 function setMsg(t){smsg=String(t||"");const status=mbody.querySelector("#s-msg");if(status)status.textContent=smsg}
-function renderSiteNotice(){const g=$("gate-notice");if(g){g.textContent=siteNoticeText;g.hidden=!siteNoticeText}const el=$("site-notice");if(!el)return;el.textContent=siteNoticeText;el.hidden=!siteNoticeText;const main=el.closest(".main");if(main)main.classList.toggle("has-site-notice",!!siteNoticeText);requestAnimationFrame(()=>{if(!el.hidden)document.documentElement.style.setProperty("--notice-h",el.offsetHeight+"px")})}
-function animateMenuContent(){mbody.classList.remove("menu-content-enter");void mbody.offsetWidth;mbody.classList.add("menu-content-enter")}
-mbody.addEventListener("animationend",e=>{if(e.target===mbody&&e.animationName==="menuScreenIn")mbody.classList.remove("menu-content-enter")});
-function setAccountFromResult(result){
- accountSession={token:String(result.token||""),user:result.user||null};accountReady=true;
- try{if(accountSession.token)localStorage.setItem(ACCOUNT_SESSION_STORAGE_KEY,accountSession.token)}catch(e){}
+function renderSiteNotice(){
+ const has=!!siteNoticeText;
+ const g=$("gate-notice");if(g){g.textContent=siteNoticeText;g.hidden=!(has&&siteNoticeOnGates)}
+ const el=$("site-notice");if(!el)return;
+ const visible=has&&siteNoticeDismissedText!==siteNoticeText;
+ el.innerHTML="";
+ const t=document.createElement("span");t.textContent=siteNoticeText;el.appendChild(t);
+ if(siteNoticeDismissible){
+  const x=document.createElement("button");x.type="button";x.className="notice-x";x.setAttribute("aria-label","Dismiss announcement");
+  x.innerHTML=ic('<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',14,2.2);
+  x.onclick=()=>{siteNoticeDismissedText=siteNoticeText;renderSiteNotice()};el.appendChild(x);
+ }
+ el.hidden=!visible;
+ const main=el.closest(".main");if(main)main.classList.toggle("has-site-notice",visible);
+ requestAnimationFrame(()=>{if(!el.hidden)document.documentElement.style.setProperty("--notice-h",el.offsetHeight+"px")});
 }
 function setGuestState(clearChats){
  clearAccountSession();
@@ -1793,15 +1805,15 @@ function paintAdminTab(){
 }
 function paintAdminSite(box){
  const v=adminData.settings||{};
- box.innerHTML=`<p class="sm">These controls are enforced by the backend. Admin responses never include chat titles or messages.</p><form id="admin-settings-form" class="account-form"><label class="check-row"><input id="admin-ai-enabled" type="checkbox"> AI enabled</label><label class="check-row"><input id="admin-access-required" type="checkbox"> Require access code screen on page load</label><button type="button" class="pbtn data-manage-button" id="whatsnew-admin-open"><span>What's new screen</span></button><label for="admin-signup-mode">Sign-up mode</label><select id="admin-signup-mode"><option value="code">Access code required</option><option value="open">Open sign-up</option><option value="closed">Closed</option></select><label for="admin-site-notice">Site-wide notice (optional)</label><textarea id="admin-site-notice" rows="3" maxlength="240" placeholder="Leave blank to clear the notice" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea><label for="admin-new-access-code">Change access code (leave blank to keep current)</label><input id="admin-new-access-code" type="text" class="masked-field" maxlength="80" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"><p class="access-error" id="admin-settings-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar"><button class="pbtn" id="admin-settings-save" type="submit">Save changes</button></div></form>`;
- $("whatsnew-admin-open").onclick=renderWhatsNewAdmin;$("admin-ai-enabled").checked=!!v.aiEnabled;$("admin-access-required").checked=!!v.accessCodeRequired;$("admin-signup-mode").value=v.signupMode||"code";$("admin-site-notice").value=v.siteNotice||"";
+ box.innerHTML=`<p class="sm">These controls are enforced by the backend. Admin responses never include chat titles or messages.</p><form id="admin-settings-form" class="account-form"><label class="check-row"><input id="admin-ai-enabled" type="checkbox"> AI enabled</label><label class="check-row"><input id="admin-access-required" type="checkbox"> Require access code screen on page load</label><button type="button" class="pbtn data-manage-button" id="whatsnew-admin-open"><span>What's new screen</span></button><label for="admin-signup-mode">Sign-up mode</label><select id="admin-signup-mode"><option value="code">Access code required</option><option value="open">Open sign-up</option><option value="closed">Closed</option></select><label for="admin-site-notice">Site-wide notice (optional)</label><textarea id="admin-site-notice" rows="3" maxlength="240" placeholder="Leave blank to clear the notice" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea><label class="check-row"><input id="admin-notice-dismissible" type="checkbox"> Let users dismiss the announcement</label><label class="check-row"><input id="admin-notice-gates" type="checkbox"> Show the announcement on sign-in, access code, and disabled screens</label><label for="admin-new-access-code">Change access code (leave blank to keep current)</label><input id="admin-new-access-code" type="text" class="masked-field" maxlength="80" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"><p class="access-error" id="admin-settings-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar"><button class="pbtn" id="admin-settings-save" type="submit">Save changes</button></div></form>`;
+ $("whatsnew-admin-open").onclick=renderWhatsNewAdmin;$("admin-ai-enabled").checked=!!v.aiEnabled;$("admin-access-required").checked=!!v.accessCodeRequired;$("admin-signup-mode").value=v.signupMode||"code";$("admin-site-notice").value=v.siteNotice||"";$("admin-notice-dismissible").checked=!!v.siteNoticeDismissible;$("admin-notice-gates").checked=v.siteNoticeOnGates!==false;
  $("admin-settings-form").onsubmit=async e=>{
   e.preventDefault();const b=$("admin-settings-save"),error=$("admin-settings-error");error.hidden=true;b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Saving…';
-  const wn=(adminData.settings&&adminData.settings.whatsNew)||{};const settings={aiEnabled:$("admin-ai-enabled").checked,accessCodeRequired:$("admin-access-required").checked,signupMode:$("admin-signup-mode").value,siteNotice:$("admin-site-notice").value,newAccessCode:$("admin-new-access-code").value,whatsNewEnabled:!!wn.enabled,whatsNewVersion:wn.version||"",whatsNewContent:{intro:wn.intro||"",items:wn.items||[]}};
+  const wn=(adminData.settings&&adminData.settings.whatsNew)||{};const settings={aiEnabled:$("admin-ai-enabled").checked,accessCodeRequired:$("admin-access-required").checked,signupMode:$("admin-signup-mode").value,siteNotice:$("admin-site-notice").value,siteNoticeDismissible:$("admin-notice-dismissible").checked,siteNoticeOnGates:$("admin-notice-gates").checked,newAccessCode:$("admin-new-access-code").value,whatsNewEnabled:!!wn.enabled,whatsNewVersion:wn.version||"",whatsNewContent:{intro:wn.intro||"",items:wn.items||[]}};
   try{
    const saved=await post({action:"admin_update_settings",settings});
    if(!saved||!saved.ok)throw Object.assign(new Error(saved&&saved.error||"failed"),{payload:saved});
-   siteSignupMode=saved.settings.signupMode||"code";siteNoticeText=saved.settings.siteNotice||"";aiDisabled=!saved.settings.aiEnabled;accessRequired=!!saved.settings.accessCodeRequired;renderSiteNotice();
+   siteSignupMode=saved.settings.signupMode||"code";siteNoticeText=saved.settings.siteNotice||"";siteNoticeDismissible=!!saved.settings.siteNoticeDismissible;siteNoticeOnGates=saved.settings.siteNoticeOnGates!==false;aiDisabled=!saved.settings.aiEnabled;accessRequired=!!saved.settings.accessCodeRequired;renderSiteNotice();
    if(saved.settings&&saved.settings.whatsNew)applyWhatsNewCfg(saved.settings.whatsNew);if(adminData)adminData.settings=saved.settings;toast("Site settings saved.");
    const current=$("admin-content");if(current&&adminTab==="site"&&currentSettingsView==="admin"&&adminData)paintAdminSite(current);
   }catch(err){const el=$("admin-settings-error"),cb=$("admin-settings-save");if(el){el.textContent=err&&err.payload&&err.payload.message||"Couldn't save settings.";el.hidden=false}if(cb){cb.disabled=false;cb.textContent="Save changes"}}
@@ -1816,7 +1828,7 @@ function renderWhatsNewAdmin(){
  $("whatsnew-admin-form").onsubmit=async e=>{
   e.preventDefault();const b=$("wna-save"),error=$("wna-error");error.hidden=true;b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Saving…';
   const site=(adminData&&adminData.settings)||{};
-  const settings={aiEnabled:!!site.aiEnabled,accessCodeRequired:!!site.accessCodeRequired,signupMode:site.signupMode||"code",siteNotice:site.siteNotice||"",newAccessCode:"",whatsNewEnabled:$("wna-enabled").checked,whatsNewVersion:$("wna-version").value.trim(),whatsNewContent:{intro:$("wna-intro").value.trim(),items:$("wna-items").value.split("\n").map(line=>{const i=line.indexOf("|");return i<0?{t:line.trim(),d:""}:{t:line.slice(0,i).trim(),d:line.slice(i+1).trim()}}).filter(it=>it.t||it.d)}};
+  const settings={aiEnabled:!!site.aiEnabled,accessCodeRequired:!!site.accessCodeRequired,signupMode:site.signupMode||"code",siteNotice:site.siteNotice||"",siteNoticeDismissible:!!site.siteNoticeDismissible,siteNoticeOnGates:site.siteNoticeOnGates!==false,newAccessCode:"",whatsNewEnabled:$("wna-enabled").checked,whatsNewVersion:$("wna-version").value.trim(),whatsNewContent:{intro:$("wna-intro").value.trim(),items:$("wna-items").value.split("\n").map(line=>{const i=line.indexOf("|");return i<0?{t:line.trim(),d:""}:{t:line.slice(0,i).trim(),d:line.slice(i+1).trim()}}).filter(it=>it.t||it.d)}};
   try{
    const saved=await post({action:"admin_update_settings",settings});
    if(!saved||!saved.ok)throw Object.assign(new Error(saved&&saved.error||"failed"),{payload:saved});
