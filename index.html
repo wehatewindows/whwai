@@ -468,6 +468,9 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,textarea:foc
 .frame{transition:filter .25s ease}
 @media (prefers-reduced-motion:reduce){.access-gate,.access-gate .access-card,.access-card.disabled-mode,.access-form,.access-admin-form,.gate-body,.gate-actions,.gate-notice,.gate-status,#gate-download,.swap,.wn-overlay,.wn-overlay .wn-card,.frame{animation:none!important;transition:none!important}}
 .school-notice{box-sizing:border-box;flex:0 0 auto;align-self:center;width:calc(100% - 24px);max-width:840px;margin:8px auto 0;padding:10px 13px;border-radius:13px;background:#fff7e6;border:1px solid #f0dcaa;color:#6b4a0c;font-size:13px;line-height:1.45;overflow-wrap:anywhere}
+/* Keep the disclaimer below the floating announcement and clear the collapsed-sidebar reopen button */
+.main.has-site-notice .school-notice{margin-top:calc(var(--notice-h,56px) + 18px)}
+@media (min-width:641px){.frame.collapsed .main .school-notice{width:auto;max-width:none;align-self:stretch;margin:calc(var(--notice-h,56px) + 18px) 12px 0 52px}.frame.collapsed .main.has-site-notice .school-notice{margin-top:calc(var(--notice-h,56px) + 18px)}}
 .school-notice:not([hidden]){animation:noticeIn .22s cubic-bezier(.2,.7,.2,1) both}.school-notice[hidden]{display:none!important}
 .row.fx-title .chat{animation:fxTitle .7s ease-out}.row.fx-pin .chat{animation:fxPin .45s ease-out}.row.fx-out{animation:fxOut .17s ease-in both;pointer-events:none}
 @keyframes fxTitle{from{background-color:#dbe6ff}to{background-color:var(--chip)}}
