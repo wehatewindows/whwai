@@ -1865,7 +1865,7 @@ document.addEventListener("pointerup",stimChargeEnd);
 document.addEventListener("pointercancel",stimChargeEnd);
 ta.addEventListener("input",()=>{if(!stimOn)return;const now=Date.now();if(now-stimLastKey<35)return;stimLastKey=now;stimTone(stimNote()*2,.05,"triangle",.03);const r=ta.getBoundingClientRect();const d=document.createElement("div");d.className="stim-spark";d.style.left=(r.left+20+Math.random()*(Math.max(20,r.width-40)))+"px";d.style.top=(r.top+r.height/2)+"px";d.style.background="hsl("+Math.floor(Math.random()*360)+" 95% 65%)";document.body.appendChild(d);d.addEventListener("animationend",()=>d.remove(),{once:true})});
 
-async function askStimulation(){const ok=await appConfirm({title:"You have been chosen.",message:"Enable Stimulation Mode?",confirmLabel:"Enable",danger:false,standalone:true});if(ok)setStimulation(true)}
+async function askStimulation(){const ok=await appConfirm({title:"\u00A0",message:"Enable Stimulation Mode?",confirmLabel:"Enable",danger:false,standalone:true});if(ok)setStimulation(true)}
 orb.addEventListener("click",()=>{if(stimOn||siteStimDisabled)return;const now=Date.now();stimTaps=stimTaps.filter(t=>now-t<3000);stimTaps.push(now);if(stimTaps.length>=5){stimTaps=[];askStimulation()}});
 let smsg="",currentSettingsView="settings",closeModalTimer=null,closingModal=false,siteSignupMode="code",siteNoticeText="",siteStatusLoaded=false;
 const touch=c=>{c.mu=Date.now()};
