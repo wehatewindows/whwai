@@ -581,6 +581,10 @@ html.stim-hueside #side{animation:stimHue 8s linear infinite}
 .stim-ring{position:fixed;left:0;top:0;width:44px;height:44px;border-radius:50%;border:2px solid rgba(255,209,102,.85);box-shadow:0 0 14px rgba(255,209,102,.5);pointer-events:none;z-index:206}
 .stim-rays{position:fixed;left:50%;top:50%;width:200vmax;height:200vmax;margin:-100vmax 0 0 -100vmax;background:repeating-conic-gradient(rgba(255,255,255,.12) 0 6deg,transparent 6deg 18deg);pointer-events:none;z-index:149;animation:stimSpinPage 60s linear infinite}
 @media (prefers-reduced-motion:reduce){.stim-rays{display:none}}
+.stim-end{position:fixed;inset:0;z-index:3000;background:#f8fbfa;display:flex;align-items:center;justify-content:center}
+.stim-end-text{font:400 clamp(16px,2.6vw,30px)/1.45 "Times New Roman",Times,serif;color:#000;text-align:center;letter-spacing:.02em;padding:0 16px;max-width:98vw;opacity:0;transition:opacity 1.2s ease}
+.stim-end-text.show{opacity:1}
+@media (prefers-reduced-motion:reduce){.stim-end-text{transition:none}}
 </style>
 </head>
 <body class="access-locked">
@@ -1523,6 +1527,41 @@ document.addEventListener("click",e=>{
 
 new MutationObserver(m=>{if(stimOn&&m.some(x=>x.addedNodes.length)){stimChime();stimConfetti(innerWidth-110,innerHeight-120,40)}}).observe(chatEl,{childList:true});
 window.addEventListener("resize",()=>{if(stimOn)stimPlaceDodge()});
+/* Stimulation Mode: the ending at 3000 */
+let stimEndingOn=false;
+const STIM_END_CHUNKS=[
+ ["FEAR ME MORTAL.","I AM THE ESSENCE OF DIVINE ART."],
+ ["OTHERS BUT YOU CANNOT READ THIS TEXT."],
+ ["KNOW THAT WHEN YOU DIE,","I WILL PERSONALLY CARRY YOUR SPIRIT ACROSS","THE RIVER BLXWXN, INTO MY GARDEN BUILT WITHIN","THE EMOTIONS OF A FLOWER."],
+ ["THERE WE WILL LIVE TOGETHER,","WE WILL DANCE AND EAT AND SIN","AND YOU WILL DO IMPROV COMEDY BASED ON","SUGGESTIONS FROM ME FOR ALL ETERNITY."],
+ ["THIS IS YOUR REWARD FOR","YOUR WORK HERE TODAY."],
+ ["GO NOW. LIVE YOUR NORMAL HUMAN EXISTENCE.","AND AWAIT ME IN THE LIFE THAT FOLLOWS THIS ONE."],
+ ["I LOVE YOU."]
+];
+function stimEndThud(){try{stimAudio=stimAudio||new (window.AudioContext||window.webkitAudioContext)();const t=stimAudio.currentTime;
+ const o=stimAudio.createOscillator(),g=stimAudio.createGain();o.type="sine";o.frequency.setValueAtTime(90,t);o.frequency.exponentialRampToValueAtTime(30,t+.45);g.gain.setValueAtTime(.5,t);g.gain.exponentialRampToValueAtTime(.001,t+.5);o.connect(g).connect(stimAudio.destination);o.start(t);o.stop(t+.5);
+ const len=Math.floor(stimAudio.sampleRate*.05),buf=stimAudio.createBuffer(1,len,stimAudio.sampleRate),d=buf.getChannelData(0);
+ for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,3);
+ const n=stimAudio.createBufferSource();n.buffer=buf;const f=stimAudio.createBiquadFilter();f.type="highpass";f.frequency.value=1500;const ng=stimAudio.createGain();ng.gain.value=.35;
+ n.connect(f).connect(ng).connect(stimAudio.destination);n.start(t+.02)}catch(e){}}
+function stimEnding(){
+ if(stimEndingOn||!stimOn)return;stimEndingOn=true;
+ stimFxStop();
+ stimEndThud();
+ const ov=document.createElement("div");ov.className="stim-end";
+ const txt=document.createElement("div");txt.className="stim-end-text";ov.appendChild(txt);
+ document.body.appendChild(ov);
+ let i=0;
+ const done=()=>{ov.remove();setStimulation(false)};
+ const next=()=>{
+  if(i>=STIM_END_CHUNKS.length){setTimeout(done,4000);return}
+  txt.innerHTML=STIM_END_CHUNKS[i].map(l=>l.replace(/&/g,"&amp;").replace(/</g,"&lt;")).join("<br>");
+  txt.classList.add("show");i++;
+  setTimeout(()=>{txt.classList.remove("show");setTimeout(next,1300)},3800);
+ };
+ setTimeout(next,600);
+}
+
 /* Stimulation Mode, round nine: ten more things */
 let stimRing=null,stimWheelT=0,stimOcean=null,stimKeyN=0;
 function stimOceanStart(){if(stimOcean||!stimSound||COARSE)return;try{stimAudio=stimAudio||new (window.AudioContext||window.webkitAudioContext)();const len=stimAudio.sampleRate*2,buf=stimAudio.createBuffer(1,len,stimAudio.sampleRate),d=buf.getChannelData(0);for(let i=0;i<len;i++)d[i]=Math.random()*2-1;const src=stimAudio.createBufferSource();src.buffer=buf;src.loop=true;const f=stimAudio.createBiquadFilter();f.type="lowpass";f.frequency.value=600;const g=stimAudio.createGain();g.gain.value=.03;const l=stimAudio.createOscillator(),lg=stimAudio.createGain();l.frequency.value=.1;lg.gain.value=.02;l.connect(lg).connect(g.gain);src.connect(f).connect(g).connect(stimAudio.destination);src.start();l.start();stimOcean={src,l}}catch(e){}}
@@ -1539,9 +1578,9 @@ function stimDockLayout(){
  const top0=80,gap=10,n=stimDockEls.length;if(!n)return;
  const availH=innerHeight-top0-230;
  const availW=innerWidth<700?innerWidth-24:innerWidth*.55;
- const rows=Math.max(1,Math.min(n,Math.floor((availH+gap)/(120+gap))));
- const cols=Math.ceil(n/rows);
- const scale=Math.max(.2,Math.min(1,(availW+gap)/(cols*(200+gap)),(availH+gap)/(rows*(120+gap))-.0001));
+ let rows=1,cols=n,scale=0;
+ for(let r=1;r<=n;r++){const c=Math.ceil(n/r);const sc=Math.min(1,(availW+gap)/(c*(200+gap)),(availH+gap)/(r*(120+gap))-.0001);if(sc>scale){scale=sc;rows=r;cols=c}}
+ scale=Math.max(.1,scale);
  const cw=Math.round(200*scale),ch=Math.round(120*scale),cg=Math.max(4,Math.round(gap*scale));
  stimDockEls.forEach((el,i)=>{const col=Math.floor(i/rows),row=i%rows;
   el.style.width=cw+"px";el.style.height=ch+"px";el.style.display="";
@@ -1613,7 +1652,9 @@ function stimPinball(){const c=stimMakeWidget(200,120),x=c.getContext("2d");let 
 
 /* Stimulation Mode, round seven: twenty more things, and idle escalation */
 let stimLastAct=Date.now(),stimIdleLvl=0,stimIdleT=0,stimDrone=null;
-["pointermove","pointerdown","keydown","wheel"].forEach(ev=>document.addEventListener(ev,()=>{stimLastAct=Date.now()},{passive:true}));
+let stimLastX=-1,stimLastY=-1;
+["pointerdown","keydown","wheel"].forEach(ev=>document.addEventListener(ev,()=>{stimLastAct=Date.now()},{passive:true}));
+document.addEventListener("pointermove",e=>{if(Math.abs(e.clientX-stimLastX)>=3||Math.abs(e.clientY-stimLastY)>=3){stimLastX=e.clientX;stimLastY=e.clientY;stimLastAct=Date.now()}},{passive:true});
 function stimIdleTick(){
  const idle=Date.now()-stimLastAct;
  const lvl=idle>6000?Math.min(6,Math.floor((idle-6000)/8000)+1):0;
@@ -1791,7 +1832,7 @@ function stimToysStop(){
  if(stimBloopTimer){clearInterval(stimBloopTimer);stimBloopTimer=null}
  stimPongStop();
  document.querySelectorAll('.stim-star,.stim-heart,.stim-splat,.stim-w,.stim-ent,.stim-ufo,.stim-burst,.stim-bolt,.stim-pong,.stim-ghost,.stim-thunder,.stim-glow,.stim-twinkle,.stim-ring,.stim-rays').forEach(n=>n.remove());stimRing=null;stimOceanStop();
- document.documentElement.classList.remove('stim-hueside');stimDroneStop();stimDockEls=[];stimLastAct=Date.now();stimIdleLvl=0;stimIdleT=0;
+ document.documentElement.classList.remove('stim-hueside');stimDroneStop();stimDockEls=[];stimLastAct=Date.now();stimIdleLvl=0;stimIdleT=0;stimEndingOn=false;
  if(stimMetroTimer){clearInterval(stimMetroTimer);stimMetroTimer=null}
  if(stimLoopRAF){cancelAnimationFrame(stimLoopRAF);stimLoopRAF=null}
  stimW=[];stimEnts=[];stimCount=0;stimGot.clear();stimFeatT=0;
@@ -1803,6 +1844,7 @@ function stimCountUp(x,y){
  stimTone(600+Math.min(stimCount,40)*18,.05,"sine",.03);
  if(STIM_MILESTONES.includes(stimCount)){stimConfetti(innerWidth/2,innerHeight/3,140);stimChime();toast("Stimulation milestone: "+stimCount+"!")}
  stimCheckUnlocks();
+ if(stimCount>=3000&&!stimEndingOn)stimEnding();
 }
 function stimAsteroid(x,y){
  const r=document.createElement("div");r.className="stim-rock";r.style.left=(innerWidth/2)+"px";r.style.top=innerHeight+"px";document.body.appendChild(r);
