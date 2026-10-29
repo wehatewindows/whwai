@@ -1567,8 +1567,8 @@ function stimEnding(){
  stimEndThud();
  let hum=null;
  try{
-  const a=stimAudio||new (window.AudioContext||window.webkitAudioContext)();stimAudio=a;
-  const t=a.currentTime,out=a.createGain();out.gain.setValueAtTime(0,t);out.gain.linearRampToValueAtTime(.035,t+4);out.connect(a.destination);
+  const a=stimAudio||new (window.AudioContext||window.webkitAudioContext)();stimAudio=a;if(a.state==='suspended')a.resume();
+  const t=a.currentTime,out=a.createGain();out.gain.setValueAtTime(0,t);out.gain.linearRampToValueAtTime(.16,t+4);out.connect(a.destination);
   const lp=a.createBiquadFilter();lp.type="lowpass";lp.frequency.value=420;lp.connect(out);
   const lfo=a.createOscillator(),lg=a.createGain();lfo.frequency.value=.08;lg.gain.value=.4;lfo.connect(lg);
   const oscs=[];[87.3,88.1,131.2].forEach(hz=>{const o=a.createOscillator();o.type="sine";o.frequency.value=hz;const g=a.createGain();g.gain.value=.5;lg.connect(g.gain);o.connect(g).connect(lp);o.start(t);oscs.push(o)});
@@ -1589,7 +1589,7 @@ function stimEnding(){
   txt.classList.add("show");i++;
   setTimeout(()=>{txt.classList.remove("show");setTimeout(next,FADE+GAP)},FADE+HOLD);
  };
- setTimeout(next,600);
+ setTimeout(next,4000);
 }
 
 /* Stimulation Mode, round nine: ten more things */
