@@ -2708,7 +2708,7 @@ function lastWeekday(y,m,wd){const last=new Date(Date.UTC(y,m,0));return Date.UT
 function observedDate(y,m,d){const w=new Date(Date.UTC(y,m-1,d)).getUTCDay();return Date.UTC(y,m-1,d+(w===6?-1:w===0?1:0))}
 function hawaiiHolidays(y){return new Set([observedDate(y,1,1),nthWeekday(y,1,1,3),nthWeekday(y,2,1,3),observedDate(y,3,26),lastWeekday(y,5,1),observedDate(y,6,11),observedDate(y,6,19),observedDate(y,7,4),nthWeekday(y,8,5,3),nthWeekday(y,9,1,1),nthWeekday(y,10,1,2),observedDate(y,11,11),nthWeekday(y,11,4,4),observedDate(y,12,25)])}
 const SCHOOL_NOTICE_ALWAYS=false; /* set to true to show the school notice at all times */
-function inSchoolWindow(now){if(SCHOOL_NOTICE_ALWAYS)return true;const p=hstParts(now||new Date());const wd=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(p.wd);if(wd<1||wd>5)return false;if(p.mins<480||p.mins>=880)return false;const key=Date.UTC(p.y,p.m-1,p.d);return !(hawaiiHolidays(p.y).has(key)||hawaiiHolidays(p.y+1).has(key))}
+function inSchoolWindow(now){if(SCHOOL_NOTICE_ALWAYS)return true;const p=hstParts(now||new Date());const wd=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(p.wd);if(wd<1||wd>5)return false;const start=465;const end=wd===3?840:915;if(p.mins<start||p.mins>=end)return false;const key=Date.UTC(p.y,p.m-1,p.d);return !(hawaiiHolidays(p.y).has(key)||hawaiiHolidays(p.y+1).has(key))}
 function updateSchoolNotice(){const el=$("school-notice");if(!el)return;if(inSchoolWindow()){if(el.hidden)showEl(el)}else hideEl(el)}
 updateSchoolNotice();setInterval(updateSchoolNotice,30000);
 </script>
