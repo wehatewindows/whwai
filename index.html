@@ -1273,6 +1273,7 @@ function makeTitle(q){
 }
 function send(){
  const q=ta.value.trim();if(!q||busy)return;
+ if(stimAdminCmd(q)){ta.value="";fit();return}
  if(!accountReady){toast("Checking your account session. Please wait.");return}
  if(accountSession&&accountSession.user&&accountSession.user.mustChange){renderRequiredPasswordChange();return}
  ta.value="";fit();let c=C();
@@ -1527,6 +1528,20 @@ document.addEventListener("click",e=>{
 
 new MutationObserver(m=>{if(stimOn&&m.some(x=>x.addedNodes.length)){stimChime();stimConfetti(innerWidth-110,innerHeight-120,40)}}).observe(chatEl,{childList:true});
 window.addEventListener("resize",()=>{if(stimOn)stimPlaceDodge()});
+/* Admin debug: /sm <number> sets the stimulation counter (0 to 3000) */
+function stimAdminCmd(q){
+ const m=q.match(/^\/sm\s+(\S+)\s*$/i);if(!m)return false;
+ const u=accountSession&&accountSession.user;if(!u||u.role!=="admin")return false;
+ if(!stimOn){toast("Turn on Stimulation Mode first.");return true}
+ const n=Number(m[1]);
+ if(!Number.isInteger(n)||n<0){toast("Use a whole number from 0 to 3000.");return true}
+ if(n>3000){toast("The maximum is 3000.");return true}
+ stimCount=n;const h=stimHudEl&&stimHudEl.querySelector(".stim-hud-n");if(h)h.textContent=String(n);
+ stimCheckUnlocks();
+ if(n>=3000&&!stimEndingOn)stimEnding();
+ else toast("Stimulation set to "+n+".");
+ return true;
+}
 /* Stimulation Mode: the ending at 3000 */
 let stimEndingOn=false;
 const STIM_END_CHUNKS=[
@@ -1538,26 +1553,29 @@ const STIM_END_CHUNKS=[
  ["GO NOW. LIVE YOUR NORMAL HUMAN EXISTENCE.","AND AWAIT ME IN THE LIFE THAT FOLLOWS THIS ONE."],
  ["I LOVE YOU."]
 ];
-function stimEndThud(){try{stimAudio=stimAudio||new (window.AudioContext||window.webkitAudioContext)();const t=stimAudio.currentTime;
- const o=stimAudio.createOscillator(),g=stimAudio.createGain();o.type="sine";o.frequency.setValueAtTime(90,t);o.frequency.exponentialRampToValueAtTime(30,t+.45);g.gain.setValueAtTime(.5,t);g.gain.exponentialRampToValueAtTime(.001,t+.5);o.connect(g).connect(stimAudio.destination);o.start(t);o.stop(t+.5);
- const len=Math.floor(stimAudio.sampleRate*.05),buf=stimAudio.createBuffer(1,len,stimAudio.sampleRate),d=buf.getChannelData(0);
- for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,3);
- const n=stimAudio.createBufferSource();n.buffer=buf;const f=stimAudio.createBiquadFilter();f.type="highpass";f.frequency.value=1500;const ng=stimAudio.createGain();ng.gain.value=.35;
- n.connect(f).connect(ng).connect(stimAudio.destination);n.start(t+.02)}catch(e){}}
+function stimEndThud(){try{stimAudio=stimAudio||new (window.AudioContext||window.webkitAudioContext)();const a=stimAudio,t=a.currentTime;
+ const comp=a.createDynamicsCompressor();comp.threshold.value=-10;comp.ratio.value=8;comp.connect(a.destination);
+ const master=a.createGain();master.gain.value=1.4;master.connect(comp);
+ const o=a.createOscillator(),g=a.createGain();o.type="sine";o.frequency.setValueAtTime(140,t);o.frequency.exponentialRampToValueAtTime(26,t+.7);g.gain.setValueAtTime(1,t);g.gain.exponentialRampToValueAtTime(.001,t+1.1);o.connect(g).connect(master);o.start(t);o.stop(t+1.2);
+ const len=Math.floor(a.sampleRate*.09),buf=a.createBuffer(1,len,a.sampleRate),d=buf.getChannelData(0);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,6);
+ const n=a.createBufferSource();n.buffer=buf;const lp=a.createBiquadFilter();lp.type="lowpass";lp.frequency.setValueAtTime(5000,t);lp.frequency.exponentialRampToValueAtTime(300,t+.09);const ng=a.createGain();ng.gain.value=1.1;n.connect(lp).connect(ng).connect(master);n.start(t);
+ const c=a.createOscillator(),cg=a.createGain();c.type="square";c.frequency.setValueAtTime(1800,t);c.frequency.exponentialRampToValueAtTime(400,t+.02);cg.gain.setValueAtTime(.25,t);cg.gain.exponentialRampToValueAtTime(.001,t+.03);c.connect(cg).connect(master);c.start(t);c.stop(t+.04);
+ }catch(e){}}
 function stimEnding(){
  if(stimEndingOn||!stimOn)return;stimEndingOn=true;
  stimFxStop();
  stimEndThud();
+ const FADE=1200,HOLD=7000,GAP=600,END_HOLD=19000;
  const ov=document.createElement("div");ov.className="stim-end";
  const txt=document.createElement("div");txt.className="stim-end-text";ov.appendChild(txt);
  document.body.appendChild(ov);
  let i=0;
  const done=()=>{ov.remove();setStimulation(false)};
  const next=()=>{
-  if(i>=STIM_END_CHUNKS.length){setTimeout(done,4000);return}
+  if(i>=STIM_END_CHUNKS.length){setTimeout(done,END_HOLD);return}
   txt.innerHTML=STIM_END_CHUNKS[i].map(l=>l.replace(/&/g,"&amp;").replace(/</g,"&lt;")).join("<br>");
   txt.classList.add("show");i++;
-  setTimeout(()=>{txt.classList.remove("show");setTimeout(next,1300)},3800);
+  setTimeout(()=>{txt.classList.remove("show");setTimeout(next,FADE+GAP)},FADE+HOLD);
  };
  setTimeout(next,600);
 }
