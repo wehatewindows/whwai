@@ -645,7 +645,7 @@ html.stim-hueside #side{animation:stimHue 8s linear infinite}
    </div>
    <button class="round" id="send" title="Send" aria-label="Send"></button>
   </div>
-  <div class="note">WHW<b>ai</b> is not human and can make mistakes.</div>
+  <div class="note">WHW<b>ai</b> is not human and can make mistakes. If you use WHWai for educational purposes, verify facts and disclose that AI was used in your work.</div>
  </section>
 </div>
 <script async src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
@@ -1590,14 +1590,14 @@ function stimEnding(){
   const wg=a.createGain();wg.gain.value=0;const wl=a.createOscillator(),wlg=a.createGain();wl.frequency.value=.03;wlg.gain.value=.05;wl.connect(wlg).connect(wg.gain);
   wg.gain.value=.06;wind.connect(wbp).connect(wg).connect(out);wind.start(t);wl.start(t);
   oscs.push(wind,wl);
-  hum={stop(){try{humLive=false;clearTimeout(chimeT);const n=a.currentTime;out.gain.cancelScheduledValues(n);out.gain.setValueAtTime(out.gain.value,n);out.gain.linearRampToValueAtTime(0,n+1.5);[...oscs,lfo,ns].forEach(x=>x.stop(n+1.6))}catch(e){}}};
+  hum={stop(){try{humLive=false;clearTimeout(chimeT);const n=a.currentTime;out.gain.cancelScheduledValues(n);out.gain.setValueAtTime(out.gain.value,n);out.gain.linearRampToValueAtTime(0,n+5);[...oscs,lfo,ns].forEach(x=>x.stop(n+5.1))}catch(e){}}};
  }catch(e){}
  const FADE=2000,HOLD=9000,GAP=3500,END_HOLD=19000;
  const ov=document.createElement("div");ov.className="stim-end";
  const txt=document.createElement("div");txt.className="stim-end-text";ov.appendChild(txt);
  document.body.appendChild(ov);
  let i=0;
- const done=()=>{if(hum)hum.stop();ov.remove();setStimulation(false)};
+ const done=()=>{if(hum)hum.stop();ov.style.transition="opacity 3.5s ease";ov.style.opacity="0";setTimeout(()=>{ov.remove();setStimulation(false)},3600)};
  const next=()=>{
   if(i>=STIM_END_CHUNKS.length){setTimeout(done,END_HOLD);return}
   txt.innerHTML=STIM_END_CHUNKS[i].map(l=>l.replace(/&/g,"&amp;").replace(/</g,"&lt;")).join("<br>");
