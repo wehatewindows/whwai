@@ -109,7 +109,7 @@ svg{display:block}
 .delete-choice{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;background:#f7f7f7;border:1px solid #e5e5e5;border-radius:13px;padding:10px;margin:8px 0}
 .delete-choice .choice-icon{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;background:#e8e8e8;color:#444}
 .delete-choice.danger .choice-icon{background:#fae7e7;color:#c33333}.delete-choice .choice-copy{min-width:0}.delete-choice strong{display:block;font-size:13.5px;line-height:1.25}.delete-choice p{font-size:12px;line-height:1.35;color:#666;margin:3px 0 0}.delete-choice .pbtn{padding:7px 10px;font-size:12.5px;white-space:nowrap}
-.confirm-panel{display:flex;gap:12px;align-items:flex-start;padding:12px;background:#f7f7f7;border:1px solid #e5e5e5;border-radius:14px;margin:12px 0}.confirm-panel .choice-icon{width:38px;height:38px;flex:none;display:grid;place-items:center;border-radius:12px;background:#fae7e7;color:#c33333}.confirm-panel p{margin:0;font-size:13px;color:#555}.confirm-panel p:empty{display:none}
+.confirm-panel{display:flex;gap:12px;align-items:flex-start;padding:12px;background:#f7f7f7;border:1px solid #e5e5e5;border-radius:14px;margin:12px 0}.confirm-panel .choice-icon{width:38px;height:38px;flex:none;display:grid;place-items:center;border-radius:12px;background:#fae7e7;color:#c33333}.confirm-panel p{margin:0;font-size:13px;color:#555}.confirm-panel p:empty{display:none}.app-confirm-card .confirm-panel{align-items:center}
 .data-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.data-toolbar .pbtn{flex:1}.data-toolbar .pbtn.danger{background:#fbeaea}.data-toolbar .pbtn.danger:hover{background:#f4dada}
 .export-contents{padding:10px 12px;background:#f5f5f5;border-radius:12px;margin:10px 0}.export-contents ul{margin:6px 0;padding-left:20px}.export-contents li{font-size:13px;margin:3px 0}
 
@@ -1938,7 +1938,7 @@ document.addEventListener("pointerup",stimChargeEnd);
 document.addEventListener("pointercancel",stimChargeEnd);
 ta.addEventListener("input",()=>{if(!stimOn)return;const now=Date.now();if(now-stimLastKey<35)return;stimLastKey=now;stimTone(stimNote()*2,.05,"triangle",.03);const r=ta.getBoundingClientRect();const d=document.createElement("div");d.className="stim-spark";d.style.left=(r.left+20+Math.random()*(Math.max(20,r.width-40)))+"px";d.style.top=(r.top+r.height/2)+"px";d.style.background="hsl("+Math.floor(Math.random()*360)+" 95% 65%)";document.body.appendChild(d);d.addEventListener("animationend",()=>d.remove(),{once:true})});
 
-async function askStimulation(){const ok=await appConfirm({title:"Stimulation Mode",message:"",confirmLabel:"Enable",danger:false,standalone:true});if(ok)setStimulation(true)}
+async function askStimulation(){const ok=await appConfirm({title:"Enable stimulation mode?",message:"",confirmLabel:"Enable",danger:false,standalone:true});if(ok)setStimulation(true)}
 orb.addEventListener("click",()=>{if(stimOn||siteStimDisabled)return;const now=Date.now();stimTaps=stimTaps.filter(t=>now-t<3000);stimTaps.push(now);if(stimTaps.length>=5){stimTaps=[];askStimulation()}});
 let smsg="",currentSettingsView="settings",closeModalTimer=null,closingModal=false,siteSignupMode="code",siteNoticeText="",siteStatusLoaded=false;
 const touch=c=>{c.mu=Date.now()};
