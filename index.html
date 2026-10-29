@@ -1607,7 +1607,7 @@ function stimDockAdd(el){stimDockEls.push(el);stimDockLayout();return el}
 function stimDockLayout(){
  const gap=10,n=stimDockEls.length;if(!n)return;
  if(innerWidth<700){
-  const cols=3,cw=Math.max(80,Math.min(120,Math.floor((innerWidth-24)/cols-gap))),ch=Math.round(cw*.6);
+  const cols=3,cw=Math.max(80,Math.min(96,Math.floor((innerWidth-24)/cols-gap))),ch=Math.round(cw*.66);
   stimDockEls.forEach((el,i)=>{const col=i%cols,row=Math.floor(i/cols);
    el.style.width=cw+"px";el.style.height=ch+"px";el.style.display="";
    el.style.top=(104+row*(ch+gap))+"px";el.style.right=(8+col*(cw+gap))+"px"});
