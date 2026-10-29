@@ -596,7 +596,7 @@ html.stim-hueside #side{animation:stimHue 8s linear infinite}
   <div class="gate-actions" id="gate-actions" hidden><button type="button" class="pbtn" id="gate-download" hidden>Download my data</button><button type="button" class="pbtn" id="gate-signout">Sign out</button></div><p class="gate-body gate-status" id="gate-status" role="status" hidden></p>
   <form class="access-form" id="access-form" autocomplete="off"><input id="access-code" type="text" inputmode="numeric" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="32" aria-label="Enter early access code" required><button id="access-unlock" type="submit" aria-label="Submit access code" title="Submit access code">→</button></form>
   <p class="access-error" id="access-error" role="status" aria-live="polite" hidden></p>
-  <div class="gate-school" id="gate-school"><p>WHW<b>ai</b> is a tool for educational purposes and general help, but it still needs your teacher's permission before you use it during school hours. Using WHW<b>ai</b> during school hours without permission may result in disciplinary action by your school. If you use WHW<b>ai</b> for educational purposes, verify facts and disclose that AI was used in your work.</p><button type="button" id="gate-handbook" class="school-btn">Read IPA policies</button></div>
+  <div class="gate-school" id="gate-school" hidden><p>WHW<b>ai</b> is a tool for educational purposes and general help, but it still needs your teacher's permission before you use it during school hours. Using WHW<b>ai</b> during school hours without permission may result in disciplinary action by your school. If you use WHW<b>ai</b> for educational purposes, verify facts and disclose that AI was used in your work.</p><button type="button" id="gate-handbook" class="school-btn">Read IPA policies</button></div>
   <div class="gate-notice" id="gate-notice" role="status" hidden></div>
   <button type="button" class="access-admin-link" id="access-admin-open">Admin</button>
   <form class="access-admin-form" id="access-admin-form" hidden autocomplete="off">
@@ -2331,6 +2331,8 @@ document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest
 function renderTerms(){
  currentSettingsView="terms";$("modal-title").textContent="Terms of Use";
  mbody.innerHTML=`<p class="sm">Effective date: October 26, 2026</p>
+ <h3>Educational use and school hours</h3><p>WHW<b>ai</b> is a tool for educational purposes and general help. It still needs your teacher's permission before you use it during school hours. Using WHW<b>ai</b> during school hours without permission may result in disciplinary action by your school.</p>
+ <h3>AI use and disclosure</h3><p>WHW<b>ai</b> is not human and can make mistakes. Verify facts before relying on them. If you use WHW<b>ai</b> for educational purposes, disclose that AI was used in your work.</p>
  <h3>Who runs WHWai</h3><p>WHWai is operated by We Hate Windows (WHW), a fictional company name used for this project, based in Hawaii, United States. Contact: <a href="mailto:wehatewindows.help@gmail.com">wehatewindows.help@gmail.com</a>.</p>
  <h3>Who can use WHWai</h3><p>You must be at least 13 to use WHWai. WHWai is in early access, so new accounts currently need an early-access code.</p>
  <h3>Accounts</h3><p>Keep your password private and tell us if you think someone else has used your account. You are responsible for activity on your account. Temporary passwords must be changed at sign-in and expire after 72 hours.</p>
@@ -2709,7 +2711,7 @@ function observedDate(y,m,d){const w=new Date(Date.UTC(y,m-1,d)).getUTCDay();ret
 function hawaiiHolidays(y){return new Set([observedDate(y,1,1),nthWeekday(y,1,1,3),nthWeekday(y,2,1,3),observedDate(y,3,26),lastWeekday(y,5,1),observedDate(y,6,11),observedDate(y,6,19),observedDate(y,7,4),nthWeekday(y,8,5,3),nthWeekday(y,9,1,1),nthWeekday(y,10,1,2),observedDate(y,11,11),nthWeekday(y,11,4,4),observedDate(y,12,25)])}
 const SCHOOL_NOTICE_ALWAYS=false; /* set to true to show the school notice at all times */
 function inSchoolWindow(now){if(SCHOOL_NOTICE_ALWAYS)return true;const p=hstParts(now||new Date());const wd=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(p.wd);if(wd<1||wd>5)return false;const start=465;const end=wd===3?840:915;if(p.mins<start||p.mins>=end)return false;const key=Date.UTC(p.y,p.m-1,p.d);return !(hawaiiHolidays(p.y).has(key)||hawaiiHolidays(p.y+1).has(key))}
-function updateSchoolNotice(){const el=$("school-notice");if(!el)return;if(inSchoolWindow()){if(el.hidden)showEl(el)}else hideEl(el)}
+function updateSchoolNotice(){const inWin=inSchoolWindow();const el=$("school-notice");if(el){if(inWin){if(el.hidden)showEl(el)}else hideEl(el)}const g=$("gate-school");if(g)g.hidden=!inWin}
 updateSchoolNotice();setInterval(updateSchoolNotice,30000);
 </script>
 <div class="wn-overlay" id="wn" hidden role="dialog" aria-modal="true" aria-labelledby="wn-title"><div class="wn-card"><h2 id="wn-title">What's new</h2><p class="wn-ver" id="wn-ver" hidden></p><p class="wn-intro" id="wn-intro"></p><ul class="wn-list" id="wn-list"></ul><button type="button" class="pbtn wn-ok" id="wn-ok">Got it</button></div></div>
