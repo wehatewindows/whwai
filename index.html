@@ -596,7 +596,7 @@ html.stim-hueside #side{animation:stimHue 8s linear infinite}
   <div class="gate-actions" id="gate-actions" hidden><button type="button" class="pbtn" id="gate-download" hidden>Download my data</button><button type="button" class="pbtn" id="gate-signout">Sign out</button></div><p class="gate-body gate-status" id="gate-status" role="status" hidden></p>
   <form class="access-form" id="access-form" autocomplete="off"><input id="access-code" type="text" inputmode="numeric" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="32" aria-label="Enter early access code" required><button id="access-unlock" type="submit" aria-label="Submit access code" title="Submit access code">→</button></form>
   <p class="access-error" id="access-error" role="status" aria-live="polite" hidden></p>
-  <div class="gate-school" id="gate-school" hidden><p>WHW<b>ai</b> is a tool for educational purposes and general help, but it still needs your teacher's permission before you use it during school hours. Using WHW<b>ai</b> during school hours without permission may result in disciplinary action by your school. If you use WHW<b>ai</b> for educational purposes, verify facts and disclose that AI was used in your work.</p><button type="button" id="gate-handbook" class="school-btn">Read IPA policies</button></div>
+  <div class="gate-school" id="gate-school" hidden><p>WHWai is a tool for educational purposes and general help, but it still needs your teacher's permission before you use it during school hours. Using WHWai during school hours without permission may result in disciplinary action by your school. If you use WHWai for educational purposes, verify facts and disclose that AI was used in your work.</p><button type="button" id="gate-handbook" class="school-btn">Read IPA policies</button></div>
   <div class="gate-notice" id="gate-notice" role="status" hidden></div>
   <button type="button" class="access-admin-link" id="access-admin-open">Admin</button>
   <form class="access-admin-form" id="access-admin-form" hidden autocomplete="off">
@@ -609,7 +609,7 @@ html.stim-hueside #side{animation:stimHue 8s linear infinite}
 </div>
 <div class="frame" id="app-frame">
  <aside class="side" id="side">
-  <div class="brand"><h1>WHW<b>ai</b><span class="beta-pill">Beta</span></h1><button class="logo" id="logo" title="Collapse sidebar" aria-label="Collapse sidebar"></button></div>
+  <div class="brand"><h1>WHWai<span class="beta-pill">Beta</span></h1><button class="logo" id="logo" title="Collapse sidebar" aria-label="Collapse sidebar"></button></div>
   <div class="chat-search" role="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4.5 4.5"></path></svg><input id="chat-search" type="search" placeholder="Search chats" aria-label="Search chats" autocomplete="off" spellcheck="false"><button id="chat-search-clear" type="button" aria-label="Clear search" title="Clear search" hidden>×</button></div>
   <div class="bulk-bar" id="bulk-bar"></div>
   <div class="list" id="list"></div>
@@ -626,7 +626,7 @@ html.stim-hueside #side{animation:stimHue 8s linear infinite}
   <button class="expand" id="expand" title="Show sidebar" aria-label="Show sidebar"></button>
   <div class="mbar"><button class="menubtn" id="mopen" title="Open chats and settings" aria-label="Open chats and settings" aria-expanded="false"></button><span class="mt">WHW<b>ai</b><span class="beta-pill">Beta</span></span><button class="mnew" id="mnew" title="New chat" aria-label="New chat"></button></div>
   <div class="site-notice" id="site-notice" hidden role="status"></div>
-  <div class="school-notice" id="school-notice" role="note" hidden>WHW<b>ai</b> is a tool for educational purposes and general help, but it still needs your teacher's permission before you use it during school hours. Using WHW<b>ai</b> during school hours without permission may result in disciplinary action by your school. If you use WHW<b>ai</b> for educational purposes, verify facts and disclose that AI was used in your work. <button type="button" id="school-handbook" class="school-btn">Read IPA policies</button></div>
+  <div class="school-notice" id="school-notice" role="note" hidden>WHWai is a tool for educational purposes and general help, but it still needs your teacher's permission before you use it during school hours. Using WHWai during school hours without permission may result in disciplinary action by your school. If you use WHWai for educational purposes, verify facts and disclose that AI was used in your work. <button type="button" id="school-handbook" class="school-btn">Read IPA policies</button></div>
   <div class="scroll" id="chat"></div>
   <div class="toast" id="toast" role="status"></div>
   <div class="input">
@@ -647,7 +647,7 @@ html.stim-hueside #side{animation:stimHue 8s linear infinite}
    </div>
    <button class="round" id="send" title="Send" aria-label="Send"></button>
   </div>
-  <div class="note">WHW<b>ai</b> is not human and can make mistakes.</div>
+  <div class="note">WHWai is not human and can make mistakes.</div>
  </section>
 </div>
 <script async src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
@@ -2333,9 +2333,9 @@ function renderTerms(){
  mbody.innerHTML=`<p class="sm">Effective date: October 28, 2026</p>
  <h3>Who runs WHWai</h3><p>WHWai is operated by We Hate Windows (WHW), a fictional company name used for this project, based in Hawaii, United States. Contact: <a href="mailto:wehatewindows.help@gmail.com">wehatewindows.help@gmail.com</a>.</p>
  <h3>Who can use WHWai</h3><p>You must be at least 13 to use WHWai. WHWai is in early access, so new accounts currently need an early-access code.</p>
- <h3>School use</h3><p>WHW<b>ai</b> is a tool for educational purposes and general help. During school hours, you need your teacher's permission before using it. Using WHW<b>ai</b> during school hours without permission may result in disciplinary action by your school.</p>
+ <h3>School use</h3><p>WHWai is a tool for educational purposes and general help. During school hours, you need your teacher's permission before using it. Using WHWai during school hours without permission may result in disciplinary action by your school.</p>
  <h3>Accounts</h3><p>Keep your password private and tell us if you think someone else has used your account. You are responsible for activity on your account. Temporary passwords must be changed at sign-in and expire after 72 hours.</p>
- <h3>AI-generated replies</h3><p>Replies from Aries are generated by AI. They can be wrong, incomplete, or out of date. Check important information before relying on it. Replies are not medical, legal, or financial advice. If you use WHW<b>ai</b> for schoolwork, check its output and disclose that AI was used in your work.</p>
+ <h3>AI-generated replies</h3><p>Replies from Aries are generated by AI. They can be wrong, incomplete, or out of date. Check important information before relying on it. Replies are not medical, legal, or financial advice. If you use WHWai for schoolwork, check its output and disclose that AI was used in your work.</p>
  <h3>Acceptable use</h3><p>Do not use WHWai to break the law, harass people, create or spread malware, try to access other accounts or the service's systems, scrape or overload the service, or get around usage limits.</p>
  <h3>Usage limits and changes</h3><p>Daily limits apply to each model and may change. WHWai may limit, suspend, or end access to protect the service or enforce these terms. Features may change over time.</p>
  <h3>Your content</h3><p>You keep ownership of what you type. You allow WHWai to process it to produce replies and titles and to sync your chats. We do not sell your content or use it to train our own models.</p>
