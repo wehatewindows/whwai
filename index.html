@@ -472,7 +472,7 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,textarea:foc
 /* Keep the disclaimer below the floating announcement and clear the collapsed-sidebar reopen button */
 .main.has-site-notice .school-notice{margin-top:calc(var(--notice-h,56px) + 18px)}
 @media (min-width:641px){.frame.collapsed .main .school-notice{width:auto;max-width:none;align-self:stretch;margin:calc(var(--notice-h,56px) + 18px) 12px 0 52px}.frame.collapsed .main.has-site-notice .school-notice{margin-top:calc(var(--notice-h,56px) + 18px)}}
-.school-btn{display:inline-block;margin:8px 0 0;padding:5px 13px;border-radius:999px;border:1px solid #e6c978;background:#fffaf0;color:#6b4a0c;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}.school-btn:hover{background:#fff1d0}.gate-school{box-sizing:border-box;width:100%;margin:14px 0 0;padding:10px 13px;border-radius:13px;background:#fff7e6;border:1px solid #f0dcaa;color:#6b4a0c;font-size:12.5px;line-height:1.45}.gate-school p{margin:0}.gate-school .school-btn{margin:8px 0 0}.gate-handbook{margin-top:10px;max-height:40vh;overflow:auto;background:#fffdf7;border-radius:10px;padding:4px 10px;color:#333}.gate-handbook .handbook-sec h3{font-size:14px}.gate-handbook .handbook-ref{font-size:11px}.gate-handbook .handbook-sec li{font-size:12.5px}.access-card{max-height:calc(100dvh - 32px);overflow:auto;box-sizing:border-box}.handbook-sec{margin:14px 0 0}.handbook-sec h3{margin:0 0 4px;font-size:15px}.handbook-sec ul{margin:4px 0 0;padding-left:18px}.handbook-sec li{margin:3px 0;font-size:13px;line-height:1.45}.handbook-ref{font-size:11px;color:#777}
+.school-btn{display:inline-block;margin:8px 0 0;padding:5px 13px;border-radius:999px;border:1px solid #e6c978;background:#fffaf0;color:#6b4a0c;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}.school-btn:hover{background:#fff1d0}.gate-school{box-sizing:border-box;width:100%;margin:14px 0 0;padding:10px 13px;border-radius:13px;background:#fff7e6;border:1px solid #f0dcaa;color:#6b4a0c;font-size:12.5px;line-height:1.45}.gate-school p{margin:0}.gate-school .school-btn{margin:8px 0 0}.policy-overlay{position:fixed;inset:0;z-index:100000;background:rgba(20,20,30,.45);display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box}.policy-card{background:#fff;color:#222;border-radius:16px;width:100%;max-width:560px;max-height:86vh;max-height:86dvh;display:flex;flex-direction:column;box-shadow:0 18px 50px rgba(0,0,0,.3);overflow:hidden}.policy-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #eee}.policy-head strong{font-size:16px}.policy-close{width:32px;height:32px;border:0;border-radius:50%;background:#f0f0f0;font-size:20px;line-height:1;cursor:pointer}.policy-body{overflow:auto;padding:8px 16px 18px}.policy-body .sm{margin:0 0 6px;color:#666;font-size:13px}.access-card{max-height:calc(100dvh - 32px);overflow:auto;box-sizing:border-box}.handbook-sec{margin:14px 0 0}.handbook-sec h3{margin:0 0 4px;font-size:15px}.handbook-sec ul{margin:4px 0 0;padding-left:18px}.handbook-sec li{margin:3px 0;font-size:13px;line-height:1.45}.handbook-ref{font-size:11px;color:#777}
 .school-notice:not([hidden]){animation:noticeIn .22s cubic-bezier(.2,.7,.2,1) both}.school-notice[hidden]{display:none!important}
 .row.fx-title .chat{animation:fxTitle .7s ease-out}.row.fx-pin .chat{animation:fxPin .45s ease-out}.row.fx-out{animation:fxOut .17s ease-in both;pointer-events:none}
 @keyframes fxTitle{from{background-color:#dbe6ff}to{background-color:var(--chip)}}
@@ -596,7 +596,7 @@ html.stim-hueside #side{animation:stimHue 8s linear infinite}
   <div class="gate-actions" id="gate-actions" hidden><button type="button" class="pbtn" id="gate-download" hidden>Download my data</button><button type="button" class="pbtn" id="gate-signout">Sign out</button></div><p class="gate-body gate-status" id="gate-status" role="status" hidden></p>
   <form class="access-form" id="access-form" autocomplete="off"><input id="access-code" type="text" inputmode="numeric" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="32" aria-label="Enter access code" required><button id="access-unlock" type="submit" aria-label="Submit access code" title="Submit access code">→</button></form>
   <p class="access-error" id="access-error" role="status" aria-live="polite" hidden></p>
-  <div class="gate-school" id="gate-school"><p>WHW<b>ai</b> is not intended for use during school hours unless permitted by your teacher. Using WHWai during school hours may result in disciplinary action by your school. If you use WHWai for educational purposes, verify facts and disclose that AI was used in your work.</p><button type="button" id="gate-handbook" class="school-btn">Read IPA policies</button><div class="gate-handbook" id="gate-handbook-body" hidden></div></div>
+  <div class="gate-school" id="gate-school"><p>WHW<b>ai</b> is not intended for use during school hours unless permitted by your teacher. Using WHWai during school hours may result in disciplinary action by your school. If you use WHWai for educational purposes, verify facts and disclose that AI was used in your work.</p><button type="button" id="gate-handbook" class="school-btn">Read IPA policies</button></div>
   <div class="gate-notice" id="gate-notice" role="status" hidden></div>
   <button type="button" class="access-admin-link" id="access-admin-open">Admin</button>
   <form class="access-admin-form" id="access-admin-form" hidden autocomplete="off">
@@ -2316,11 +2316,18 @@ const HANDBOOK_SECTIONS=[
  {t:"What happens if AI is misused",ref:"AI Guidance section 16.23.5, p. 102",b:["No credit for the assignment, and an impact on your overall grade.","Detention or suspension for repeated offenses.","A meeting with the Vice Principal or Principal, and with your family."]}
 ];
 function handbookHTML(){return HANDBOOK_SECTIONS.map(x=>`<div class="handbook-sec"><h3>${esc(x.t)}</h3><div class="handbook-ref">${esc(x.ref)}</div><ul>${x.b.map(l=>`<li>${esc(l)}</li>`).join("")}</ul></div>`).join("")}
-function renderHandbook(){
- currentSettingsView="handbook";$("modal-title").textContent="IPA handbook policies";
- mbody.innerHTML=`<p class="sm">Summary of Island Pacific Academy's Parent/Student Handbook. Refer to the full handbook for the official wording.</p>${handbookHTML()}`;
+function openPolicyPanel(){
+ if($("policy-overlay"))return;
+ const o=document.createElement("div");o.id="policy-overlay";o.className="policy-overlay";
+ o.innerHTML=`<div class="policy-card" role="dialog" aria-modal="true" aria-labelledby="policy-title"><div class="policy-head"><strong id="policy-title">IPA handbook policies</strong><button type="button" class="policy-close" aria-label="Close">×</button></div><div class="policy-body"><p class="sm">Summary of Island Pacific Academy's Parent/Student Handbook. Refer to the full handbook for the official wording.</p>${handbookHTML()}</div></div>`;
+ const close=()=>{o.remove();document.removeEventListener("keydown",onKey)};
+ const onKey=e=>{if(e.key==="Escape")close()};
+ o.addEventListener("click",e=>{if(e.target===o||e.target.closest(".policy-close"))close()});
+ document.addEventListener("keydown",onKey);
+ document.body.appendChild(o);
+ const c=o.querySelector(".policy-close");if(c)c.focus();
 }
-document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("#school-handbook");if(b)openSettings(renderHandbook);const g=e.target.closest&&e.target.closest("#gate-handbook");if(g){const body=$("gate-handbook-body");if(body.hidden){body.innerHTML=handbookHTML();body.hidden=false;g.textContent="Hide IPA policies"}else{body.hidden=true;g.textContent="Read IPA policies"}}});
+document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("#school-handbook,#gate-handbook");if(b)openPolicyPanel()});
 function renderTerms(){
  currentSettingsView="terms";$("modal-title").textContent="Terms of Use";
  mbody.innerHTML=`<p class="sm">Effective date: October 26, 2026</p>
