@@ -1575,7 +1575,20 @@ function stimEnding(){
   const nb=a.createBuffer(1,a.sampleRate*2,a.sampleRate),nd=nb.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;
   const ns=a.createBufferSource();ns.buffer=nb;ns.loop=true;const nf=a.createBiquadFilter();nf.type="lowpass";nf.frequency.value=450;nf.Q.value=.3;const ng=a.createGain();ng.gain.value=.12;ns.connect(nf).connect(ng).connect(lp);ns.start(t);
   lfo.start(t);
-  hum={stop(){try{const n=a.currentTime;out.gain.cancelScheduledValues(n);out.gain.setValueAtTime(out.gain.value,n);out.gain.linearRampToValueAtTime(0,n+1.5);[...oscs,lfo,ns].forEach(x=>x.stop(n+1.6))}catch(e){}}};
+  const chimeBus=a.createGain();chimeBus.gain.value=.5;chimeBus.connect(out);
+  const CH=[65.4,87.3,98,130.8,174.6,196,261.6,349.2];
+  let humLive=true,chimeT=null;
+  const chime=()=>{if(!humLive)return;const m=CH[Math.floor(Math.random()*CH.length)],c=a.currentTime;
+    const o=a.createOscillator(),g=a.createGain();o.type="sine";o.frequency.value=m*2;g.gain.setValueAtTime(0,c);g.gain.linearRampToValueAtTime(.05,c+.05);g.gain.exponentialRampToValueAtTime(.0008,c+3.2);
+    o.connect(g).connect(chimeBus);o.start(c);o.stop(c+3.3);
+    chimeT=setTimeout(chime,4000+Math.random()*6000)};
+  chimeT=setTimeout(chime,2500);
+  const wnb=a.createBuffer(1,a.sampleRate*2,a.sampleRate),wd=wnb.getChannelData(0);for(let i=0;i<wd.length;i++)wd[i]=Math.random()*2-1;
+  const wind=a.createBufferSource();wind.buffer=wnb;wind.loop=true;const wbp=a.createBiquadFilter();wbp.type="bandpass";wbp.frequency.value=320;wbp.Q.value=.5;
+  const wg=a.createGain();wg.gain.value=0;const wl=a.createOscillator(),wlg=a.createGain();wl.frequency.value=.03;wlg.gain.value=.03;wl.connect(wlg).connect(wg.gain);
+  wg.gain.value=.03;wind.connect(wbp).connect(wg).connect(out);wind.start(t);wl.start(t);
+  oscs.push(wind,wl);
+  hum={stop(){try{humLive=false;clearTimeout(chimeT);const n=a.currentTime;out.gain.cancelScheduledValues(n);out.gain.setValueAtTime(out.gain.value,n);out.gain.linearRampToValueAtTime(0,n+1.5);[...oscs,lfo,ns].forEach(x=>x.stop(n+1.6))}catch(e){}}};
  }catch(e){}
  const FADE=2000,HOLD=9000,GAP=3500,END_HOLD=19000;
  const ov=document.createElement("div");ov.className="stim-end";
