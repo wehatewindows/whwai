@@ -1605,8 +1605,7 @@ document.addEventListener("click",()=>{if(stimOn&&stimHas("partyhorn")&&stimCoun
 let stimDockEls=[];
 function stimDockAdd(el){stimDockEls.push(el);stimDockLayout();return el}
 function stimDockLayout(){
- const mtEl=document.querySelector('.mt');const mtB=mtEl?mtEl.getBoundingClientRect().bottom:0;
- const top0=innerWidth<700?Math.max(120,Math.round(mtB)+40):80,gap=10,n=stimDockEls.length;if(!n)return;
+ const top0=innerWidth<700?100:80,gap=10,n=stimDockEls.length;if(!n)return;
  const availH=innerHeight-top0-230;
  const availW=innerWidth<700?innerWidth-24:innerWidth*.55;
  let rows=1,cols=n,scale=0;
