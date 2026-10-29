@@ -1563,12 +1563,12 @@ function stimEndThud(){try{stimAudio=stimAudio||new (window.AudioContext||window
  }catch(e){}}
 function stimEnding(){
  if(stimEndingOn||!stimOn)return;stimEndingOn=true;
- stimFxStop();
+ stimFxStop();stimToysStop();stimOn=false;document.documentElement.classList.remove("stim");stimEndingOn=true;
  stimEndThud();
  let hum=null;
  try{
   const a=stimAudio||new (window.AudioContext||window.webkitAudioContext)();stimAudio=a;if(a.state==='suspended')a.resume();
-  const t=a.currentTime,out=a.createGain();out.gain.setValueAtTime(0,t);out.gain.linearRampToValueAtTime(.18,t+4);out.connect(a.destination);
+  const t=a.currentTime,out=a.createGain();out.gain.setValueAtTime(0,t);out.gain.linearRampToValueAtTime(.12,t+4);out.connect(a.destination);
   const lp=a.createBiquadFilter();lp.type="lowpass";lp.frequency.value=700;lp.connect(out);
   const lfo=a.createOscillator(),lg=a.createGain();lfo.frequency.value=.05;lg.gain.value=.15;lfo.connect(lg);
   const oscs=[];[174.6,176.2,262.4].forEach(hz=>{const o=a.createOscillator();o.type="sine";o.frequency.value=hz;const g=a.createGain();g.gain.value=.5;lg.connect(g.gain);o.connect(g).connect(lp);o.start(t);oscs.push(o)});
