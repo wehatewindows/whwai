@@ -523,8 +523,7 @@ html.stim .stim-blob{pointer-events:auto;z-index:150;width:200px;height:200px;ma
 .admin-advanced summary::-webkit-details-marker{display:none}
 .admin-advanced[open] .check-row{margin-top:6px}
 @media (prefers-reduced-motion:reduce){.stim-flood{display:none}.stim-disco{animation:none}}
-.stim-hud{position:fixed;top:calc(env(safe-area-inset-top,0px) + 62px);left:50%;margin-left:-74px;width:148px;text-align:center;z-index:211;pointer-events:none;background:rgba(20,20,30,.8);color:#fff;padding:6px 12px;border-radius:999px;font:600 13px system-ui,sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.25)}
-@media (max-width:699px){.stim-hud{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}}
+.stim-hud{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 150px);left:50%;margin-left:-74px;width:148px;text-align:center;z-index:211;pointer-events:none;background:rgba(20,20,30,.8);color:#fff;padding:6px 12px;border-radius:999px;font:600 13px system-ui,sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.25)}
 .stim-hud-n{color:#ffd166;font-variant-numeric:tabular-nums}
 .stim-hud-bump{animation:hudBump .3s ease}
 @keyframes hudBump{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
@@ -1939,7 +1938,7 @@ document.addEventListener("pointerup",stimChargeEnd);
 document.addEventListener("pointercancel",stimChargeEnd);
 ta.addEventListener("input",()=>{if(!stimOn)return;const now=Date.now();if(now-stimLastKey<35)return;stimLastKey=now;stimTone(stimNote()*2,.05,"triangle",.03);const r=ta.getBoundingClientRect();const d=document.createElement("div");d.className="stim-spark";d.style.left=(r.left+20+Math.random()*(Math.max(20,r.width-40)))+"px";d.style.top=(r.top+r.height/2)+"px";d.style.background="hsl("+Math.floor(Math.random()*360)+" 95% 65%)";document.body.appendChild(d);d.addEventListener("animationend",()=>d.remove(),{once:true})});
 
-async function askStimulation(){const ok=await appConfirm({title:"Stimulation Mode",message:"Turn on the extra effects, games and sounds? You can turn them off any time by leaving the mode.",confirmLabel:"Enable",danger:false,standalone:true});if(ok)setStimulation(true)}
+async function askStimulation(){const ok=await appConfirm({title:"Stimulation Mode",message:"",confirmLabel:"Enable",danger:false,standalone:true});if(ok)setStimulation(true)}
 orb.addEventListener("click",()=>{if(stimOn||siteStimDisabled)return;const now=Date.now();stimTaps=stimTaps.filter(t=>now-t<3000);stimTaps.push(now);if(stimTaps.length>=5){stimTaps=[];askStimulation()}});
 let smsg="",currentSettingsView="settings",closeModalTimer=null,closingModal=false,siteSignupMode="code",siteNoticeText="",siteStatusLoaded=false;
 const touch=c=>{c.mu=Date.now()};
@@ -2584,7 +2583,7 @@ async function runAdminAccountAction(action,targetId){
 }
 async function appConfirm(options){
  options=options||{};lastConfirmCheckbox=false;
- const title=String(options.title||"Confirm action"),message=String(options.message||"Are you sure you want to continue?"),confirmLabel=String(options.confirmLabel||"Continue"),standalone=options.standalone===true&&modal.hidden,dialogGeneration=standalone?++confirmOverlayGeneration:0;
+ const title=String(options.title||"Confirm action"),message=String(options.message??"Are you sure you want to continue?"),confirmLabel=String(options.confirmLabel||"Continue"),standalone=options.standalone===true&&modal.hidden,dialogGeneration=standalone?++confirmOverlayGeneration:0;
  if(pendingAppConfirmation)resolvePendingConfirmation(false);
  return await new Promise(resolve=>{
   let settled=false;
