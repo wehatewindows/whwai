@@ -2374,7 +2374,7 @@ function openLegalPanel(kind){
  const c=o.querySelector(".policy-close");if(c)c.focus();
 }
 document.addEventListener("click",e=>{if(e.target.closest&&e.target.closest("#pre-close")){preDismissed=true;updateSchoolNotice();return}const fp=e.target.closest&&e.target.closest(".forgot-link");if(fp){openForgotPanel();return}const b=e.target.closest&&e.target.closest("#school-handbook,#gate-handbook");if(b)openPolicyPanel();const lg=e.target.closest&&e.target.closest("[data-legal]");if(lg){e.preventDefault();openLegalPanel(lg.dataset.legal)}const si=e.target.closest&&e.target.closest("#school-lock-signin");if(si)openSettings(()=>renderAccountAuth("login"))});
-function termsBodyHTML(){return `<p class="sm">Effective date: October 28, 2026</p>
+function termsBodyHTML(){return `<p class="sm">Effective date: October 31, 2026</p>
  <h3>Who runs WHWai</h3><p>WHWai is operated by We Hate Windows (WHW), a fictional company name used for this project, based in Hawaii, United States. Contact: <a href="mailto:wehatewindows.help@gmail.com">wehatewindows.help@gmail.com</a>.</p>
  <h3>Who can use WHWai</h3><p>You must be at least 13 to use WHWai. WHWai is in early access, so new accounts currently need an early-access code.</p>
  <h3>School use</h3><p>WHWai is a tool for educational purposes and general help. During school hours, you need your teacher's permission before using it. Using WHWai during school hours without permission may result in disciplinary action by your school.</p>
