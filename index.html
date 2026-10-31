@@ -469,7 +469,7 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,textarea:foc
 .frame{transition:filter .25s ease}
 @media (prefers-reduced-motion:reduce){.access-gate,.access-gate .access-card,.access-card.disabled-mode,.access-form,.access-admin-form,.gate-body,.gate-actions,.gate-notice,.gate-status,#gate-download,.swap,.wn-overlay,.wn-overlay .wn-card,.frame{animation:none!important;transition:none!important}}
 .school-notice{box-sizing:border-box;flex:0 0 auto;align-self:center;width:calc(100% - 24px);max-width:840px;margin:8px auto 0;padding:10px 13px;border-radius:13px;background:#fff7e6;border:1px solid #f0dcaa;color:#6b4a0c;font-size:13px;line-height:1.45;overflow-wrap:anywhere}
-@media (max-height:640px){.access-gate,.school-lock{padding-bottom:112px}.access-gate .access-card{max-height:calc(100dvh - 150px);overflow:auto}}.legal-links{position:absolute;left:16px;bottom:72px;display:flex;gap:6px;flex-wrap:wrap;z-index:1}@media (max-width:640px){.legal-links{left:16px;bottom:72px}}
+.legal-links{position:absolute;left:16px;bottom:72px;display:flex;gap:6px;flex-wrap:wrap;z-index:1}@media (max-width:640px){.legal-links{left:16px;bottom:72px}}
 /* Keep the disclaimer below the floating announcement and clear the collapsed-sidebar reopen button */
 .main.has-site-notice .school-notice{margin-top:calc(var(--notice-h,56px) + 18px)}
 @media (min-width:641px){.frame.collapsed .main .school-notice{width:auto;max-width:none;align-self:stretch;margin:calc(var(--notice-h,56px) + 18px) 12px 0 52px}.frame.collapsed .main.has-site-notice .school-notice{margin-top:calc(var(--notice-h,56px) + 18px)}}
@@ -587,6 +587,9 @@ html.stim-hueside #side{animation:stimHue 8s linear infinite}
 .stim-end-text{font:400 clamp(16px,2.6vw,30px)/1.45 "Times New Roman",Times,serif;color:#000;text-align:center;letter-spacing:.02em;padding:0 16px;max-width:98vw;opacity:0;transition:opacity 2s ease}
 .stim-end-text.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.stim-end-text{transition:none}}
+/* Short screens (phone landscape): keep legal buttons, lock card and chat input clear of each other */
+@media (max-height:640px){.access-gate,.school-lock{padding-bottom:112px}.access-gate .access-card,.school-lock-card{max-height:calc(100dvh - 150px);overflow:auto}}@media (max-height:640px){.main .scroll{min-height:0;flex:1 1 0;padding-bottom:12px}.main .school-notice{max-height:80px;overflow:auto;flex-shrink:1}.main #pre-school-reminder{max-height:none;overflow:visible;flex-shrink:0}.main.has-site-notice .school-notice{margin-top:calc(var(--notice-h,56px) + 10px)}#pre-school-reminder+.school-notice{margin-top:4px}}
+@media (max-height:400px){.main .school-notice{max-height:56px}.main #pre-school-reminder{max-height:56px;overflow:auto;flex-shrink:1}.main.has-site-notice .school-notice{margin-top:calc(var(--notice-h,56px) + 6px)}.main .note{margin-top:0}}
 </style>
 </head>
 <body class="access-locked">
