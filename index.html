@@ -627,6 +627,7 @@ html.stim-hueside #side{animation:stimHue 8s linear infinite}
   <button class="expand" id="expand" title="Show sidebar" aria-label="Show sidebar"></button>
   <div class="mbar"><button class="menubtn" id="mopen" title="Open chats and settings" aria-label="Open chats and settings" aria-expanded="false"></button><span class="mt">WHW<b>ai</b><span class="beta-pill">Beta</span></span><button class="mnew" id="mnew" title="New chat" aria-label="New chat"></button></div>
   <div class="site-notice" id="site-notice" hidden role="status"></div>
+  <div class="school-notice" id="pre-school-reminder" role="status" hidden>WHWai will soon be unavailable to users without accounts until the end of the school day.</div>
   <div class="school-notice" id="school-notice" role="note" hidden>WHWai is a tool for educational purposes and general help, but it still needs your teacher's permission before you use it during school hours. Using WHWai during school hours without permission may result in disciplinary action by your school. If you use WHWai for educational purposes, verify facts and disclose that AI was used in your work. <button type="button" id="school-handbook" class="school-btn">Read IPA policies</button></div>
   <div class="scroll" id="chat"></div>
   <div class="toast" id="toast" role="status"></div>
@@ -2725,7 +2726,8 @@ function inSchoolWindow(now){if(SCHOOL_NOTICE_ALWAYS)return true;const p=hstPart
 function schoolLockWindow(now){const p=hstParts(now||new Date());const wd=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(p.wd);if(wd<1||wd>5)return false;const end=wd===3?840:880;if(p.mins<480||p.mins>=end)return false;const key=Date.UTC(p.y,p.m-1,p.d);return !(hawaiiHolidays(p.y).has(key)||hawaiiHolidays(p.y+1).has(key))}
 function schoolLockActive(){if(siteSchoolOverride)return false;if(accountSession&&accountSession.token)return false;return schoolLockWindow(new Date())}
 function updateSchoolLock(){const el=$("school-lock");if(!el)return;if(schoolLockActive()){if(el.hidden)showEl(el)}else hideEl(el)}
-function updateSchoolNotice(){const inWin=inSchoolWindow();const el=$("school-notice");if(el){if(inWin){if(el.hidden)showEl(el)}else hideEl(el)}const g=$("gate-school");if(g)g.hidden=!inWin;updateSchoolLock()}
+function preSchoolWindow(now){const p=hstParts(now||new Date());const wd=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(p.wd);if(wd<1||wd>5)return false;if(p.mins<420||p.mins>=480)return false;const key=Date.UTC(p.y,p.m-1,p.d);return !(hawaiiHolidays(p.y).has(key)||hawaiiHolidays(p.y+1).has(key))}
+function updateSchoolNotice(){const pre=$("pre-school-reminder");if(pre){const on=preSchoolWindow(new Date());if(on){if(pre.hidden)showEl(pre)}else hideEl(pre)}const inWin=inSchoolWindow();const el=$("school-notice");if(el){if(inWin){if(el.hidden)showEl(el)}else hideEl(el)}const g=$("gate-school");if(g)g.hidden=!inWin;updateSchoolLock()}
 updateSchoolNotice();setInterval(updateSchoolNotice,30000);
 </script>
 <div class="wn-overlay" id="wn" hidden role="dialog" aria-modal="true" aria-labelledby="wn-title"><div class="wn-card"><h2 id="wn-title">What's new</h2><p class="wn-ver" id="wn-ver" hidden></p><p class="wn-intro" id="wn-intro"></p><ul class="wn-list" id="wn-list"></ul><button type="button" class="pbtn wn-ok" id="wn-ok">Got it</button></div></div>
