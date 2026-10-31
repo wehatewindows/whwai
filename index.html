@@ -443,7 +443,7 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,textarea:foc
 .privacy-link:hover,.privacy-link:focus,.lock-link:hover,.lock-link:focus{background:#e2e2e2;color:#111;text-decoration:none}
 
 /* Exit animation for menus and panels hidden through hideEl() */
-.leaving:not(.access-gate):not(.school-lock){animation:leaveFade .14s ease-in both!important;pointer-events:none}
+.leaving:not(.access-gate):not(.school-lock):not(.school-notice){animation:leaveFade .14s ease-in both!important;pointer-events:none}
 @keyframes leaveFade{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(6px) scale(.985)}}
 /* Inline error messages fade in when shown */
 .access-error:not([hidden]){animation:noticeIn .18s cubic-bezier(.2,.7,.2,1) both}
@@ -473,12 +473,12 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,textarea:foc
 .main.has-site-notice .school-notice{margin-top:calc(var(--notice-h,56px) + 18px)}
 @media (min-width:641px){.frame.collapsed .main .school-notice{width:auto;max-width:none;align-self:stretch;margin:calc(var(--notice-h,56px) + 18px) 12px 0 52px}.frame.collapsed .main.has-site-notice .school-notice{margin-top:calc(var(--notice-h,56px) + 18px)}}
 #pre-school-reminder{position:relative;padding-right:38px}#pre-school-reminder+.school-notice{margin-top:8px}.pre-close{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:0;font-size:20px;line-height:1;cursor:pointer;color:inherit;padding:2px 6px;user-select:none;-webkit-user-select:none}.school-btn{display:block;width:max-content;margin:10px 0 0;padding:6px 14px;border-radius:999px;border:1px solid #e6c978;background:#fffaf0;color:#6b4a0c;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}.school-btn:hover{background:#fff1d0}.gate-school{box-sizing:border-box;width:100%;margin:14px 0 0;padding:10px 13px;border-radius:13px;background:#fff7e6;border:1px solid #f0dcaa;color:#6b4a0c;font-size:12.5px;line-height:1.45}.gate-school p{margin:0}.gate-school .school-btn{margin:8px 0 0}.school-lock{position:fixed;inset:0;z-index:15;transform:translateZ(0);will-change:opacity;background:rgba(255,255,255,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box}.school-lock[hidden]{display:none!important}.school-lock:not([hidden]){animation:modalFadeIn .25s ease-out both}.school-lock.leaving,.access-gate.leaving{animation:modalFadeOut .25s ease-in both!important;pointer-events:none}.school-lock-card{width:min(420px,92%);max-height:88%;overflow:auto;background:#fff;border-radius:22px;padding:18px 20px;box-shadow:0 12px 40px rgba(0,0,0,.25);text-align:left;color:#222;box-sizing:border-box;animation:menuIn .2s cubic-bezier(.2,.7,.2,1) both;transform-origin:center}.school-lock-head strong{display:block;font-size:18px;margin-bottom:12px}.school-lock-body p{margin:0 0 10px;font-size:14px;line-height:1.5;color:#333}.school-lock-note{font-size:12.5px;color:#777}.forgot-link{display:block;margin:6px 0 0;padding:0;background:none;border:0;color:#2f6bff;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;text-align:left;text-decoration:none}.policy-body a{color:#2f6bff}.policy-overlay{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;animation:modalFadeIn .18s ease-out both}.policy-overlay.closing{animation:modalFadeOut .16s ease-in both;pointer-events:none}.policy-overlay.closing .policy-card{animation:menuOut .16s ease-in both}.policy-card{background:#fff;color:#222;border-radius:22px;width:min(420px,92%);max-height:88%;display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,.25);overflow:hidden;animation:menuIn .2s cubic-bezier(.2,.7,.2,1) both;transform-origin:center}.policy-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #eee}.policy-head strong{font-size:16px}.policy-close{width:32px;height:32px;border:0;border-radius:50%;background:#f0f0f0;font-size:20px;line-height:1;cursor:pointer}.policy-body{overflow:auto;padding:8px 16px 18px}.policy-body .sm{margin:0 0 6px;color:#666;font-size:13px}.access-card{max-height:calc(100dvh - 32px);overflow:auto;box-sizing:border-box}.handbook-sec{margin:14px 0 0}.handbook-sec h3{margin:0 0 4px;font-size:15px}.handbook-sec ul{margin:4px 0 0;padding-left:18px}.handbook-sec li{margin:3px 0;font-size:13px;line-height:1.45}.handbook-ref{font-size:11px;color:#777}
-.school-notice:not([hidden]){animation:noticeIn .22s cubic-bezier(.2,.7,.2,1) both}.school-notice[hidden]{display:none!important}
+.school-notice:not([hidden]){animation:noticeIn .22s cubic-bezier(.2,.7,.2,1) both}.school-notice[hidden]{display:none!important}@keyframes noticeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}@keyframes noticeOut{from{opacity:1;transform:none}to{opacity:0;transform:translateY(-6px)}}.school-notice.leaving{animation:noticeOut .2s ease-in both!important;pointer-events:none}.school-notice,.main .scroll{transition:margin-top .22s ease,padding-top .22s ease}
 .row.fx-title .chat{animation:fxTitle .7s ease-out}.row.fx-pin .chat{animation:fxPin .45s ease-out}.row.fx-out{animation:fxOut .17s ease-in both;pointer-events:none}
 @keyframes fxTitle{from{background-color:#dbe6ff}to{background-color:var(--chip)}}
 @keyframes fxPin{0%{transform:scale(.985)}60%{transform:scale(1.006)}100%{transform:none}}
 @keyframes fxOut{to{opacity:0;transform:translateX(-6px)}}
-.main .site-notice{display:flex;align-items:center;justify-content:center;gap:8px}.site-notice>span{min-width:0;text-align:center}
+.main .site-notice{display:flex;align-items:center;justify-content:center;gap:8px;transition:none}.main .site-notice.entering{animation:noticeIn .22s cubic-bezier(.2,.7,.2,1) both}.main .site-notice.leaving{animation:noticeOut .2s ease-in both!important;pointer-events:none}.site-notice>span{min-width:0;text-align:center}
 .notice-x{flex:none;width:24px;height:24px;border:0;border-radius:50%;background:transparent;color:inherit;opacity:.65;display:grid;place-items:center;padding:0;cursor:pointer;transition:background-color .16s ease,opacity .16s ease}.notice-x:hover,.notice-x:focus-visible{opacity:1;background:rgba(0,0,0,.06)}
 /* Stimulation Mode: slow, bright motion only. Nothing flashes faster than about once a second. */
 html.stim body{background:linear-gradient(120deg,#ff6ec7,#ffd166,#06d6a0,#4cc9f0,#b388ff,#ff6ec7)!important;background-size:300% 300%!important;animation:stimBg 6s ease infinite!important}
@@ -2379,21 +2379,34 @@ function renderPrivacyPolicy(){
 }
 let deletingLocalData=false;
 function setMsg(t){smsg=String(t||"");const status=mbody.querySelector("#s-msg");if(status)status.textContent=smsg}
+let siteNoticeRO=null;
+function syncNoticeHeight(){const el=$("site-notice");if(el&&!el.hidden)document.documentElement.style.setProperty("--notice-h",el.offsetHeight+"px")}
 function renderSiteNotice(){
  const has=!!siteNoticeText;
  const g=$("gate-notice");if(g){g.textContent=siteNoticeText;g.hidden=!(has&&siteNoticeOnGates)}
  const el=$("site-notice");if(!el)return;
+ const main=el.closest(".main");
  const visible=has&&siteNoticeDismissedText!==siteNoticeText;
- el.innerHTML="";
- const t=document.createElement("span");t.textContent=siteNoticeText;el.appendChild(t);
- if(siteNoticeDismissible){
-  const x=document.createElement("button");x.type="button";x.className="notice-x";x.setAttribute("aria-label","Dismiss announcement");
-  x.innerHTML=ic('<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',14,2.2);
-  x.onclick=()=>{siteNoticeDismissedText=siteNoticeText;renderSiteNotice()};el.appendChild(x);
+ if(!siteNoticeRO&&window.ResizeObserver){siteNoticeRO=new ResizeObserver(syncNoticeHeight);siteNoticeRO.observe(el)}
+ if(visible){
+  if(el._lt){clearTimeout(el._lt);el._lt=null}
+  el.classList.remove("leaving");
+  if(el.hidden){el.hidden=false;el.classList.add("entering");setTimeout(()=>el.classList.remove("entering"),240)}
+  el.innerHTML="";
+  const t=document.createElement("span");t.textContent=siteNoticeText;el.appendChild(t);
+  if(siteNoticeDismissible){
+   const x=document.createElement("button");x.type="button";x.className="notice-x";x.setAttribute("aria-label","Dismiss announcement");
+   x.innerHTML=ic('<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',14,2.2);
+   x.onclick=()=>{siteNoticeDismissedText=siteNoticeText;renderSiteNotice()};el.appendChild(x);
+  }
+  if(main)main.classList.add("has-site-notice");
+  requestAnimationFrame(syncNoticeHeight);
+ }else if(!el.hidden){
+  if(!el._lt){
+   el.classList.add("leaving");
+   el._lt=setTimeout(()=>{el._lt=null;el.hidden=true;el.classList.remove("leaving");if(main)main.classList.remove("has-site-notice")},200);
+  }
  }
- el.hidden=!visible;
- const main=el.closest(".main");if(main)main.classList.toggle("has-site-notice",visible);
- requestAnimationFrame(()=>{if(!el.hidden)document.documentElement.style.setProperty("--notice-h",el.offsetHeight+"px")});
 }
 function setAccountFromResult(result){
  accountSession={token:String(result.token||""),user:result.user||null};accountReady=true;updateSchoolLock();
@@ -2728,7 +2741,7 @@ function schoolLockActive(){if(siteSchoolOverride)return false;if(accountSession
 function updateSchoolLock(){const el=$("school-lock");if(!el)return;const gate=$("access-gate");const gateUp=!!gate&&!gate.hidden&&!gate.classList.contains("leaving");if(schoolStatusReady&&!gateUp&&schoolLockActive()){if(el.hidden)showEl(el)}else hideEl(el)}
 function preSchoolWindow(now){const p=hstParts(now||new Date());const wd=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(p.wd);if(wd<1||wd>5)return false;if(p.mins<420||p.mins>=480)return false;const key=Date.UTC(p.y,p.m-1,p.d);return !(hawaiiHolidays(p.y).has(key)||hawaiiHolidays(p.y+1).has(key))}
 let preDismissed=false;
-function updateSchoolNotice(){const pre=$("pre-school-reminder");if(pre){const on=preSchoolWindow(new Date())&&!preDismissed;if(on){if(pre.hidden)showEl(pre)}else hideEl(pre)}const inWin=inSchoolWindow();const el=$("school-notice");if(el){if(inWin){if(el.hidden)showEl(el)}else hideEl(el)}const g=$("gate-school");if(g)g.hidden=!inWin;updateSchoolLock()}
+function updateSchoolNotice(){const pre=$("pre-school-reminder");if(pre){const on=preSchoolWindow(new Date())&&!preDismissed;if(on){if(pre.hidden)showEl(pre)}else hideEl(pre,200)}const inWin=inSchoolWindow();const el=$("school-notice");if(el){if(inWin){if(el.hidden)showEl(el)}else hideEl(el)}const g=$("gate-school");if(g)g.hidden=!inWin;updateSchoolLock()}
 updateSchoolNotice();setInterval(updateSchoolNotice,10000);
 </script>
 <div class="wn-overlay" id="wn" hidden role="dialog" aria-modal="true" aria-labelledby="wn-title"><div class="wn-card"><h2 id="wn-title">What's new</h2><p class="wn-ver" id="wn-ver" hidden></p><p class="wn-intro" id="wn-intro"></p><ul class="wn-list" id="wn-list"></ul><button type="button" class="pbtn wn-ok" id="wn-ok">Got it</button></div></div>
