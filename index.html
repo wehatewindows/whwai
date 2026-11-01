@@ -1178,7 +1178,9 @@ function showAccountDisabled(message,info){
  st.hidden=!note;st.textContent=note;
  $("gate-actions").hidden=false;$("gate-signout").onclick=disabledSignOut;
 }
-function disabledSignOut(){
+async function disabledSignOut(){
+ let token="";try{token=(accountSession&&accountSession.token)||localStorage.getItem(ACCOUNT_SESSION_STORAGE_KEY)||disabledSessionToken||""}catch(e){token=disabledSessionToken||""}
+ if(token){try{await post({action:"account_disabled_signout",sessionToken:token})}catch(e){}}
  try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}
  try{clearLocalWhwData(true)}catch(e){try{localStorage.removeItem(KEY);localStorage.removeItem(ACCOUNT_SESSION_STORAGE_KEY)}catch(e2){}}
  location.reload();
