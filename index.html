@@ -837,6 +837,8 @@ function chartBlockHtml(raw,closed){
  if(!closed)return '<p class="sm chart-pending">Drawing chart…</p>';
  const fallback='<div class="chart-bad" role="status"><p class="sm">This chart could not be drawn.</p><button type="button" class="pbtn chart-retry">Regenerate response</button></div>';
  let c;try{c=JSON.parse(raw)}catch(e){return fallback}
+ if(c&&c.type==="pie"){c.type="donut";if(!c.series&&Array.isArray(c.values))c.series=[{name:"Share",values:c.values}]}
+ if(c&&["scatter","radar"].indexOf(c.type)!==-1)return '<div class="chart-bad" role="note"><p class="sm">This chart type is not supported here. Ask for a bar, line or donut chart instead.</p></div>';
  if(!c||["bar","hbar","line","donut"].indexOf(c.type)===-1||!Array.isArray(c.labels)||!c.labels.length||c.labels.length>24||!Array.isArray(c.series)||!c.series.length||c.series.length>3)return fallback;
  const labels=c.labels.map(x=>String(x).slice(0,40));
  const series=c.series.map(s=>({name:String(s&&s.name||"").slice(0,40),values:Array.isArray(s&&s.values)?s.values.map(Number):[]}));
@@ -863,7 +865,7 @@ function fenceBareCharts(text){
  return out+text.slice(i);
 }
 function md(s){
- const text=fenceBareCharts(String(s||"").replace(/```[ \t]*\n[ \t]*chart[ \t]*\n/gi,"```chart\n"));let out="",last=0,m;const re=/```chart[ \t]*\n([\s\S]*?)(```|$)/g;
+ const text=fenceBareCharts(String(s||"").replace(/```[ \t]*\n[ \t]*chart[ \t]*\n/gi,"```chart\n").replace(/```[ \t]*\n(\{\s*"type"[\s\S]*?\})[ \t]*\n```/g,"```chart\n$1\n```"));let out="",last=0,m;const re=/```chart[ \t]*\n([\s\S]*?)(```|$)/g;
  while((m=re.exec(text))){out+=mdCore(text.slice(last,m.index));out+=chartBlockHtml(m[1],m[2]==="```");last=re.lastIndex}
  return out+mdCore(text.slice(last));
 }
