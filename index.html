@@ -833,7 +833,7 @@ function chartSvg(type,labels,series){
    series.forEach((s,j)=>{const w=pw*frac(s.values[i]),y=y0+j*16+(rowH-series.length*16)/2;body+='<rect x="'+left+'" y="'+y+'" width="'+w+'" height="13" rx="3" fill="'+CHART_PALETTE[j]+'"/><text x="'+(left+w+5)+'" y="'+(y+11)+'">'+fmtN(s.values[i])+"</text>"})});
   return '<svg viewBox="0 0 '+W+" "+H+'" class="chart-svg" aria-hidden="true">'+body+"</svg>"+logNote;
  }
- const H=220,top=10,bot=44,left=Math.max(34,14+String(fmtN(nm)).length*6.2),pw=W-left-8,ph=H-top-bot,n=labels.length,gw=pw/n;let g="",body="";
+ const H=220,top=10,bot=44,left=50,pw=W-left-8,ph=H-top-bot,n=labels.length,gw=pw/n;let g="",body="";
  for(let t=0;t<=4;t++){const y=top+ph*(1-t/4);g+='<line class="grid" x1="'+left+'" x2="'+(W-8)+'" y1="'+y+'" y2="'+y+'"/><text x="'+(left-6)+'" y="'+(y+3)+'" text-anchor="end">'+(useLog?"":fmtN(nm*t/4))+"</text>"}
  const step=Math.max(1,Math.ceil(Math.max(...labels.map(l=>String(l).length))*6/gw));
  labels.forEach((lab,i)=>{if(i%step)return;const lw=String(lab).length*6.2/2+2,lx=Math.min(Math.max(left+gw*i+gw/2,lw),W-lw);body+='<text x="'+lx+'" y="'+(H-bot+16)+'" text-anchor="middle">'+esc(lab)+"</text>"});
