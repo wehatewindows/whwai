@@ -389,6 +389,7 @@ html,body{touch-action:manipulation}
 .pc-options[hidden]{display:none}
 @media (max-width:640px){.side .profile-menu{left:var(--edge);right:var(--edge);width:auto;bottom:124px}}
 .reason-label{display:block;margin:12px 0 6px}
+.gate-reason-row,.gate-reason-text{display:block;margin:0 0 8px}.gate-reason-text{color:#555}.gate-reenable{color:#111}.dis-preview{margin:8px 0 0;color:#444}.breach-ack{margin-top:8px}
 .reason-input{box-sizing:border-box;width:100%;min-width:0;border:1px solid #dedede;border-radius:12px;background:#fafafa;color:#111;padding:10px 12px;font:inherit;font-size:16px;outline:none;resize:vertical}
 .gate-actions{margin:0 0 12px}.gate-actions[hidden]{display:none}
 .main .site-notice{position:absolute;left:12px;right:12px;top:10px;width:auto;max-width:none;margin:0;border:1px solid rgba(190,210,245,.7);border-radius:14px;background:rgba(232,241,255,.5);-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);z-index:4;padding:10px 16px;text-align:center}
@@ -1120,6 +1121,26 @@ function openApp(force){if(accountDisabledGate)return;if(aiDisabled&&!force)retu
 function unlockEarlyAccess(token,expiresAt){if(aiDisabled)return;accessUnlocked=true;try{const until=Number(expiresAt)||Date.now()+ACCESS_TTL;localStorage.setItem(ACCESS_STORAGE_KEY,String(until));localStorage.setItem(ACCESS_TOKEN_KEY,String(token||""))}catch(e){}openApp();if(accountSession&&accountSession.token&&!(accountSession.user&&accountSession.user.username)&&typeof resumeAccountSession==="function")resumeAccountSession()}
 function lockEarlyAccess(showGate){if(accountDisabledGate)return;try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");(showEl(accessGate),setTimeout(updateSchoolLock,0));$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.remove("disabled-mode");swapText(accessTitle,"Enter early access code");$("gate-body").hidden=true;$("gate-actions").hidden=true;accessForm.hidden=false;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false;$("access-admin-form").hidden=true;if(showGate){accessInput.value="";setTimeout(()=>accessInput.focus(),50)}}
 function showAIDisabled(){aiDisabled=true;try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");(showEl(accessGate),setTimeout(updateSchoolLock,0));$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");swapText(accessTitle,"WHWai is currently disabled");$("gate-actions").hidden=true;accessForm.hidden=true;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false;setGateBody("Please check back later.")}
+function hstText(ms){try{return new Date(Number(ms)).toLocaleString("en-US",{timeZone:"Pacific/Honolulu",weekday:"short",month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"})+" HST"}catch(e){return ""}}
+function renderGateReason(message,info){
+ const b=$("gate-body");if(!b)return;const i=info||{};
+ const title=String(i.reasonTitle||""),sub=String(i.reasonSub||""),full=String(i.reason||"");
+ let h="";
+ if(title||full){
+  h+='<span class="gate-reason-row"><strong>Reason:</strong> '+esc(title||"Custom reason")+'</span>';
+  if(sub)h+='<span class="gate-reason-row"><strong>Sub-reason:</strong> '+esc(sub)+'</span>';
+  if(full)h+='<span class="gate-reason-text">'+esc(full)+'</span>';
+  if(i.reenableAt){
+   h+='<span class="gate-reason-row gate-reenable">Your account will be re-enabled automatically on '+esc(hstText(i.reenableAt))+'.</span>';
+   const wait=Number(i.reenableAt)-Date.now();if(wait>0&&wait<2147483000)setTimeout(()=>location.reload(),wait+2000);
+  }
+  h+='<span class="gate-reason-row">Contact support at wehatewindows.help@gmail.com for help.</span>';
+ }else{
+  let text=String(message||"").replace(/^\s*This account has been disabled\.?\s*/i,"").trim();
+  h=esc(text||"Contact support at wehatewindows.help@gmail.com for help.");
+ }
+ b.innerHTML=h;b.hidden=false;
+}
 function setGateBody(text){const b=$("gate-body");if(!b)return;b.textContent=text;b.hidden=!text}
 const WHATS_NEW_KEY="whwai.whatsNew.seen.v1",WHATS_NEW_VERSION="2026-10-20";
 const WHATS_NEW={intro:"",items:[]};
@@ -1149,9 +1170,7 @@ function showAccountDisabled(message,info){
  accountReady=false;hideAriesIntro&&hideAriesIntro(false);
  document.body.classList.add("access-locked");(showEl(accessGate),setTimeout(updateSchoolLock,0));$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");swapText(accessTitle,"Your account has been disabled");accessForm.hidden=true;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=true;$("access-admin-form").hidden=true;
  const wn=$("wn");if(wn)wn.hidden=true;
- let text=String(message||"").replace(/^\s*This account has been disabled\.?\s*/i,"").trim();
- if(!text)text="Contact support at wehatewindows.help@gmail.com for help.";
- setGateBody(text);
+ renderGateReason(message,info);
  const canDownload=!!(info&&info.canDownload),dl=$("gate-download"),st=$("gate-status");
  const notes={keep:"Your chats are still saved on your account.",delete:"Your chats were removed from this account."};
  dl.hidden=!canDownload;dl.disabled=false;dl.textContent="Download your chats";dl.onclick=downloadDisabledData;
@@ -2502,6 +2521,7 @@ function renderAccountAuth(mode){
   const submit=mbody.querySelector("#account-auth-submit");submit.disabled=true;submit.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>'+(signup?"Creating…":"Signing in…");
   try{
    const body={action:signup?"auth_signup":"auth_login",username,password,deviceId:getDeviceId()};
+   if(signup)body.acknowledgeBreached=!!($("breach-ack")&&$("breach-ack").checked);
    if(signup&&siteSignupMode==="code")body.inviteCode=mbody.querySelector("#account-invite-code").value.trim();
    const result=await post(body);
    if(!result||!result.ok||!result.token)throw Object.assign(new Error(result&&result.error||"account_action_failed"),{payload:result});
@@ -2510,7 +2530,7 @@ function renderAccountAuth(mode){
    accountMergePendingToast=!accountSession.user.mustChange&&S.chats.length>0;
    applyLoginChats(result);
    if(!accountSession.user.mustChange){syncAccountChatsNow();renderAccount()}
-  }catch(err){showAccountAuthError(err&&err.payload&&err.payload.message||"Couldn't complete sign-in. Check your details and try again.");submit.disabled=false;submit.textContent=signup?"Create account":"Sign in"}
+  }catch(err){if(err&&err.payload&&err.payload.error==="breached_password_confirm")showBreachConfirm(mbody.querySelector("#account-auth-error"),err.payload.message);else showAccountAuthError(err&&err.payload&&err.payload.message||"Couldn't complete sign-in. Check your details and try again.");submit.disabled=false;submit.textContent=signup?"Create account":"Sign in"}
  };
 }
 function renderAccount(){
@@ -2532,9 +2552,14 @@ function renderPasswordChange(required){
  const form=$("password-change-form");if(!required)$("password-cancel").onclick=renderAccount;
  form.onsubmit=async e=>{e.preventDefault();const next=$("new-password").value,confirmPassword=$("new-password-confirm").value;if(next.length<8){passwordError("Choose a password with at least 8 characters.");return}if(next!==confirmPassword){passwordError("The passwords do not match.");return}
   const b=$("password-change-submit");b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Saving…';
-  try{const result=await post({action:"account_password_change",currentPassword:required?"":($("current-password")?$("current-password").value:""),newPassword:next});if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});accountSession.user=result.user||accountSession.user;accountReady=true;toast("Password updated.");if(required){accountInitialSyncPending=true;syncAccountChatsNow()}if(required&&accountSession.user&&accountSession.user.role==="admin")renderAdminPanel("site");else renderAccount()}
-  catch(err){passwordError(err&&err.payload&&err.payload.message||"Couldn't change the password. Try again.");b.disabled=false;b.textContent="Save password"}
+  try{const result=await post({action:"account_password_change",currentPassword:required?"":($("current-password")?$("current-password").value:""),newPassword:next,acknowledgeBreached:!!($("breach-ack")&&$("breach-ack").checked)});if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});accountSession.user=result.user||accountSession.user;accountReady=true;toast("Password updated.");if(required){accountInitialSyncPending=true;syncAccountChatsNow()}if(required&&accountSession.user&&accountSession.user.role==="admin")renderAdminPanel("site");else renderAccount()}
+  catch(err){if(err&&err.payload&&err.payload.error==="breached_password_confirm")showBreachConfirm($("password-change-error"),err.payload.message);else passwordError(err&&err.payload&&err.payload.message||"Couldn't change the password. Try again.");b.disabled=false;b.textContent="Save password"}
  };
+}
+function showBreachConfirm(el,message){
+ if(!el){setMsg(message);return}
+ el.textContent=message;el.hidden=false;
+ if(!$("breach-ack")){const wrap=document.createElement("label");wrap.className="check-row breach-ack";wrap.innerHTML='<input type="checkbox" id="breach-ack"> I understand the risk, and I want to keep this password anyway.';el.insertAdjacentElement("afterend",wrap)}
 }
 function passwordError(message){const el=$("password-change-error");if(el){el.textContent=message;el.hidden=false}}
 function clearSignedInLocalCache(){clearAccountSession();try{localStorage.removeItem(ARIES_INTRO_KEY)}catch(e){}ariesIntroShownThisPage=false;S={chats:[],cur:null,dead:[],model:"aries-1",col:!!S.col};store.set(JSON.stringify(persistedState()));renderList();renderChat()}
@@ -2647,7 +2672,7 @@ function paintAccountList(){
  const q=String(adminQuery||"").trim().toLowerCase(),all=adminData.accounts||[];
  const list=q?all.filter(a=>String(a.username).toLowerCase().indexOf(q)!==-1):all;
  if(!list.length){target.innerHTML='<p class="sm">No accounts matched that search.</p>';return}
- target.innerHTML=list.map(a=>`<article class="admin-account"><div class="admin-account-head"><strong>${esc(a.username)}</strong><span class="account-role">${esc(a.role)} · ${esc(a.status)}</span></div><div class="admin-account-meta">Created ${adminDate(a.createdAt)} · Last sign-in ${adminDate(a.lastLoginAt)} · ${Number(a.chatCount)||0} chats</div>${a.status==="disabled"&&a.disabledReason?`<div class="admin-account-meta">Reason: ${esc(a.disabledReason)}</div>`:""}${a.status==="disabled"&&a.dataMode&&a.dataMode!=="keep"?`<div class="admin-account-meta">Chats: ${esc({download:"user can download them",download_delete:"user can download, then they are deleted",delete:"deleted"}[a.dataMode]||a.dataMode)}</div>`:""}<div class="admin-account-actions">${a.status==="active"?`<button type="button" class="pbtn" data-account-action="disable" data-target-id="${escapeAttr(a.id)}">Disable</button>`:`<button type="button" class="pbtn" data-account-action="enable" data-target-id="${escapeAttr(a.id)}">Enable</button>`}<button type="button" class="pbtn" data-account-action="reset_password" data-target-id="${escapeAttr(a.id)}">Temp password</button><button type="button" class="pbtn" data-account-action="force_signout" data-target-id="${escapeAttr(a.id)}">Sign out all</button>${a.role==="admin"?`<button type="button" class="pbtn" data-account-action="demote" data-target-id="${escapeAttr(a.id)}" ${a.isBootstrap?"disabled":""}>Demote</button>`:`<button type="button" class="pbtn" data-account-action="promote" data-target-id="${escapeAttr(a.id)}">Make admin</button>`}<button type="button" class="pbtn danger" data-account-action="delete" data-target-id="${escapeAttr(a.id)}" ${a.isBootstrap?"disabled":""}>Delete</button></div></article>`).join("")+(adminData.truncated?'<p class="sm">Showing the first 500 accounts. Narrow your search for more specific results.</p>':"");
+ target.innerHTML=list.map(a=>`<article class="admin-account"><div class="admin-account-head"><strong>${esc(a.username)}</strong><span class="account-role">${esc(a.role)} · ${esc(a.status)}</span></div><div class="admin-account-meta">Created ${adminDate(a.createdAt)} · Last sign-in ${adminDate(a.lastLoginAt)} · ${Number(a.chatCount)||0} chats</div>${a.status==="disabled"?adminReasonHtml(a.disabledInfo||{text:a.disabledReason||""}):""}${a.status==="disabled"&&a.dataMode&&a.dataMode!=="keep"?`<div class="admin-account-meta">Chats: ${esc({download:"user can download them",download_delete:"user can download, then they are deleted",delete:"deleted"}[a.dataMode]||a.dataMode)}</div>`:""}<div class="admin-account-actions">${a.status==="active"?`<button type="button" class="pbtn" data-account-action="disable" data-target-id="${escapeAttr(a.id)}">Disable</button>`:`<button type="button" class="pbtn" data-account-action="enable" data-target-id="${escapeAttr(a.id)}">Enable</button>`}${a.status==="disabled"?`<button type="button" class="pbtn" data-account-action="edit_reason" data-target-id="${escapeAttr(a.id)}">Edit reason</button>`:""}<button type="button" class="pbtn" data-account-action="reset_password" data-target-id="${escapeAttr(a.id)}">Temp password</button><button type="button" class="pbtn" data-account-action="force_signout" data-target-id="${escapeAttr(a.id)}">Sign out all</button>${a.role==="admin"?`<button type="button" class="pbtn" data-account-action="demote" data-target-id="${escapeAttr(a.id)}" ${a.isBootstrap?"disabled":""}>Demote</button>`:`<button type="button" class="pbtn" data-account-action="promote" data-target-id="${escapeAttr(a.id)}">Make admin</button>`}<button type="button" class="pbtn danger" data-account-action="delete" data-target-id="${escapeAttr(a.id)}" ${a.isBootstrap?"disabled":""}>Delete</button></div></article>`).join("")+(adminData.truncated?'<p class="sm">Showing the first 500 accounts. Narrow your search for more specific results.</p>':"");
  target.querySelectorAll("[data-account-action]").forEach(button=>button.onclick=()=>runAdminAccountAction(button.dataset.accountAction,button.dataset.targetId));
  [...target.querySelectorAll("article.admin-account")].forEach((el,i)=>{if(list[i]&&isOtherAdminRow(list[i])){el.querySelectorAll("[data-account-action]").forEach(b=>{b.disabled=true;b.title="Only this admin can change this account"});el.insertAdjacentHTML("beforeend",'<p class="sm">Only this admin can change this account.</p>')}});
 }
@@ -2673,8 +2698,76 @@ function renderCreateAccount(){
   }catch(err){const error=$("create-account-error");if(!error)return;error.textContent=err&&err.payload&&err.payload.message||"Couldn't create the account.";error.hidden=false;b.disabled=false;b.textContent="Create account"}
  };
 }
+const DISABLE_PRESETS=[
+{title:"Misuse of WHWai",subs:[
+{sub:"Attempting to break the service",text:"Attempting to break, disrupt, or bypass WHWai's features, limits, or security is not permitted. This account was disabled for misusing WHWai."},
+{sub:"Creating or spreading harmful material",text:"Using WHWai to create or spread malware, spam, or other harmful material is not permitted. This account was disabled for misusing WHWai."}]},
+{title:"Account sharing",subs:[
+{sub:"Using someone else's account",text:"Sharing this account, or using an account that belongs to someone else, is not permitted. This account was disabled because it was used by someone other than its owner."}]},
+{title:"Suspicious sign-in activity",subs:[
+{sub:"Repeated failed sign-ins",text:"Repeated failed sign-in attempts were detected on this account. It has been disabled until the activity is reviewed."},
+{sub:"Sign-ins from unusual locations",text:"Sign-ins from unusual locations were detected on this account. It has been disabled until the activity is reviewed."}]},
+{title:"Off-task use during school hours",subs:[
+{sub:"Using WHWai without permission",text:"Using WHWai during school hours without permission is not permitted. This account was disabled because it was used during school hours without your teacher's permission."}]},
+{title:"Harassment or harmful content",subs:[
+{sub:"Targeting people",text:"Harassing or threatening others through WHWai is not permitted. This account was disabled for targeting another person."},
+{sub:"Sharing harmful content",text:"Sharing harmful, hateful, or explicit content through WHWai is not permitted. This account was disabled for sharing content that breaks these rules."}]},
+{title:"Accessing other accounts",subs:[
+{sub:"Trying to view or sign in to other accounts",text:"Attempting to access, view, or sign in to another person's account is not permitted. This account was disabled for attempting to access other accounts."}]},
+{title:"Automated or excessive use",subs:[
+{sub:"Bots or scripts",text:"Using bots, scripts, or other automated tools with WHWai is not permitted. This account was disabled for automated use."},
+{sub:"Excessive use",text:"Overloading WHWai with excessive requests is not permitted. This account was disabled because its use exceeded what the service allows."}]},
+{title:"Terms violation",subs:[
+{sub:"General violation",text:"Violating WHWai's Terms of Use is not permitted. This account was disabled for breaking those terms."}]},
+{title:"Security check",subs:[
+{sub:"Required before use",text:"This account needs a security check before it can be used again. It has been disabled until the check is complete."}]}
+];
+const DISABLE_DATA_RADIOS={label:"What happens to their chats?",items:[{value:"keep",label:"Keep their chats",hint:"The user is not offered a download. Chats stay on the account.",checked:true},{value:"download",label:"Let them download their chats",hint:"A download button appears on their disabled screen. Chats stay on the account."},{value:"download_delete",label:"Download, then delete",hint:"They can download their chats. Once they do, the chats are deleted from the account."},{value:"delete",label:"Delete their chats now",hint:"Chats are deleted from the account right away. This cannot be undone."}]};
+function disableFormHtml(cur){
+ let sel="custom";const c=cur||{};
+ DISABLE_PRESETS.forEach((p,i)=>p.subs.forEach((s,j)=>{if(c.title===p.title&&c.sub===s.sub&&c.text===s.text)sel=i+"-"+j}));
+ const opts=DISABLE_PRESETS.map((p,i)=>'<optgroup label="'+escapeAttr(p.title)+'">'+p.subs.map((s,j)=>'<option value="'+i+'-'+j+'"'+(sel===i+"-"+j?" selected":"")+'>'+esc(s.sub)+'</option>').join("")+'</optgroup>').join("")+'<option value="custom"'+(sel==="custom"?" selected":"")+'>Custom reason</option>';
+ const custom=sel==="custom"?String(c.text||""):"";
+ const re=c.reenableAt?new Date(Number(c.reenableAt)+36e5*10).toISOString().slice(0,16):"";
+ return '<div class="disable-form"><label class="sm reason-label" for="dis-preset">Reason</label><select id="dis-preset" class="reason-input">'+opts+'</select><p class="sm dis-preview" id="dis-preview"></p><label class="sm reason-label" id="dis-custom-label" for="dis-custom" hidden>Custom reason (shown to the user, up to 200 characters)</label><textarea id="dis-custom" class="reason-input" rows="3" maxlength="200" hidden>'+esc(custom)+'</textarea><label class="sm reason-label" for="dis-reenable">Re-enable at (HST, optional)</label><input type="datetime-local" id="dis-reenable" class="reason-input" value="'+escapeAttr(re)+'"><p class="sm">Leave blank to keep the account disabled until you enable it. If you set a time, WHWai re-enables the account automatically then.</p></div>';
+}
+function wireDisableForm(){
+ const sel=$("dis-preset"),prev=$("dis-preview"),custom=$("dis-custom"),lab=$("dis-custom-label");
+ const update=()=>{const isCustom=sel.value==="custom";custom.hidden=!isCustom;lab.hidden=!isCustom;if(isCustom){prev.textContent="Write the reason the user will see, up to 200 characters."}else{const [i,j]=sel.value.split("-").map(Number);prev.textContent="The user sees: "+DISABLE_PRESETS[i].subs[j].text}};
+ sel.onchange=update;update();
+}
+function readDisableForm(){
+ const v=$("dis-preset").value;let title="",sub="",text="";
+ if(v==="custom"){text=$("dis-custom").value.trim()}else{const [i,j]=v.split("-").map(Number),p=DISABLE_PRESETS[i],s=p.subs[j];title=p.title;sub=s.sub;text=s.text}
+ return {reasonTitle:title,reasonSub:sub,reasonText:text,reenableAt:$("dis-reenable").value||""};
+}
+function adminReasonHtml(i){
+ const info=i||{};let h='<div class="admin-account-meta">Reason: '+esc(info.title||"Custom reason")+(info.sub?' · '+esc(info.sub):"")+'</div>';
+ if(info.text)h+='<div class="admin-account-meta">'+esc(info.text)+'</div>';
+ if(info.reenableAt)h+='<div class="admin-account-meta">Re-enables '+esc(hstText(info.reenableAt))+'</div>';
+ return h;
+}
+async function runDisableAction(action,targetId){
+ const edit=action==="edit_reason";
+ const row=(adminData&&adminData.accounts||[]).find(a=>a.id===targetId),cur=row&&row.disabledInfo?row.disabledInfo:null;
+ const accepted=await appConfirm({title:edit?"Edit the disable reason?":"Disable account?",message:edit?"The account stays disabled. The user sees the updated reason on their disabled screen.":"This account will no longer be able to use WHWai. The user sees the reason, sub-reason and any re-enable time you set.",confirmLabel:edit?"Save reason":"Disable",danger:!edit,extraHtml:disableFormHtml(cur),onRender:wireDisableForm,radios:edit?null:DISABLE_DATA_RADIOS});
+ if(!accepted){if(!modal.hidden&&!closingModal)renderAdminPanel("accounts");return}
+ if(modal.hidden||currentSettingsView!=="app-confirm")return;
+ const picked=document.querySelector('input[name="app-confirm-radio"]:checked');const dataMode=picked?picked.value:"keep";
+ const form=readDisableForm();
+ adminActionPending=true;$("modal-title").textContent="Working…";mbody.innerHTML='<div class="confirm-panel"><span class="choice-icon"><span class="sync-spinner" aria-hidden="true"></span></span><div><strong>Applying admin action…</strong><p>Please keep this window open while WHWai updates the account.</p></div></div>';animateMenuContent();
+ try{
+  const payload=edit?Object.assign({action:"admin_account_action",accountAction:"update_disabled_reason",targetId:targetId},form):Object.assign({action:"admin_account_action",accountAction:"disable",targetId:targetId,dataMode:dataMode},form);
+  const result=await post(payload);
+  if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});
+  await adminFetch(true).catch(()=>{});
+  toast(edit?"Reason updated.":"Account updated.");if(!modal.hidden)renderAdminPanel("accounts");
+ }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't update that account.");if(!modal.hidden)renderAdminPanel("accounts")}
+ finally{adminActionPending=false}
+}
 async function runAdminAccountAction(action,targetId){
- const choices={disable:{title:"Disable account?",message:"This account will no longer be able to use WHWai. The user sees a disabled screen with the reason you enter, which is also shown in the admin panel.",label:"Disable",input:{label:"Reason"},radios:{label:"What happens to their chats?",items:[{value:"keep",label:"Keep their chats",hint:"The user is not offered a download. Chats stay on the account.",checked:true},{value:"download",label:"Let them download their chats",hint:"A download button appears on their disabled screen. Chats stay on the account."},{value:"download_delete",label:"Download, then delete",hint:"They can download their chats. Once they do, the chats are deleted from the account."},{value:"delete",label:"Delete their chats now",hint:"Chats are deleted from the account right away. This cannot be undone."}]}},enable:{title:"Enable account?",message:"This account will be allowed to sign in again.",label:"Enable",danger:false},reset_password:{title:"Issue temporary password?",message:"A new one-time password will replace the current password and sign out this account everywhere. It expires after 72 hours.",label:"Issue password"},force_signout:{title:"Sign out everywhere?",message:"All active sessions for this account will be revoked.",label:"Sign out all"},promote:{title:"Make administrator?",message:"This account will gain access to administrative controls.",label:"Make admin"},demote:{title:"Remove administrator role?",message:"This account will lose access to administrative controls.",label:"Demote"},delete:{title:"Delete account permanently?",message:"The account and its active server-stored chats will be deleted. This cannot be undone from WHWai.",label:"Delete account"}};
+ if(action==="disable"||action==="edit_reason")return runDisableAction(action,targetId);
+ const choices={enable:{title:"Enable account?",message:"This account will be allowed to sign in again.",label:"Enable",danger:false},reset_password:{title:"Issue temporary password?",message:"A new one-time password will replace the current password and sign out this account everywhere. It expires after 72 hours.",label:"Issue password"},force_signout:{title:"Sign out everywhere?",message:"All active sessions for this account will be revoked.",label:"Sign out all"},promote:{title:"Make administrator?",message:"This account will gain access to administrative controls.",label:"Make admin"},demote:{title:"Remove administrator role?",message:"This account will lose access to administrative controls.",label:"Demote"},delete:{title:"Delete account permanently?",message:"The account and its active server-stored chats will be deleted. This cannot be undone from WHWai.",label:"Delete account"}};
  const choice=choices[action];if(!choice)return;
  const accepted=await appConfirm({title:choice.title,message:choice.message,confirmLabel:choice.label,danger:choice.danger!==false,input:choice.input,radios:choice.radios});
  const reason=(choice.input&&$("app-confirm-input"))?$("app-confirm-input").value.trim():"";
@@ -2706,7 +2799,7 @@ async function appConfirm(options){
   const inputHtml=options.input?`<label class="sm reason-label" for="app-confirm-input">${esc(options.input.label)}</label><textarea id="app-confirm-input" class="reason-input" rows="3" maxlength="300" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea>`:"";
   const radiosHtml=options.radios?`<fieldset class="confirm-radios"><legend class="sm reason-label">${esc(options.radios.label)}</legend>${options.radios.items.map(it=>`<label class="radio-row"><input type="radio" name="app-confirm-radio" value="${escapeAttr(it.value)}"${it.checked?" checked":""}><span><strong>${esc(it.label)}</strong><small>${esc(it.hint||"")}</small></span></label>`).join("")}</fieldset>`:"";
   const checkHtml=options.checkbox?`<label class="check-row confirm-skip"><input type="checkbox" id="app-confirm-skip"> ${esc(options.checkbox.label)}</label>`:"";
-  const panel=`<div class="confirm-panel"><span class="choice-icon">${icon}</span><div><strong>${esc(title)}</strong><p>${esc(message)}</p></div></div>${inputHtml}${radiosHtml}${checkHtml}<div class="data-toolbar"><button type="button" class="pbtn" id="app-confirm-cancel">Cancel</button><button type="button" class="pbtn ${options.danger===false?"":"danger"}" id="app-confirm-accept">${esc(confirmLabel)}</button></div>`;
+  const panel=`<div class="confirm-panel"><span class="choice-icon">${icon}</span><div><strong>${esc(title)}</strong><p>${esc(message)}</p></div></div>${options.extraHtml||""}${inputHtml}${radiosHtml}${checkHtml}<div class="data-toolbar"><button type="button" class="pbtn" id="app-confirm-cancel">Cancel</button><button type="button" class="pbtn ${options.danger===false?"":"danger"}" id="app-confirm-accept">${esc(confirmLabel)}</button></div>`;
   if(standalone){
    const overlay=$("confirm-overlay");overlay.innerHTML=`<div class="app-confirm-card">${panel}</div>`;overlay.hidden=false;overlay.classList.remove("closing","open");overlay.setAttribute("aria-label",title);
    overlay.onclick=e=>{if(e.target===overlay)settle(false)};
@@ -2715,6 +2808,7 @@ async function appConfirm(options){
   }else{
    currentSettingsView="app-confirm";$("modal-title").textContent=title;mbody.innerHTML=panel;animateMenuContent();
   }
+  if(typeof options.onRender==="function")options.onRender();
   $("app-confirm-cancel").onclick=()=>settle(false);$("app-confirm-accept").onclick=()=>{lastConfirmCheckbox=!!($("app-confirm-skip")&&$("app-confirm-skip").checked);settle(true)};$("app-confirm-cancel").focus();
  });
 }
