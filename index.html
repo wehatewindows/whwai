@@ -874,7 +874,8 @@ function fenceBareCharts(text){
 }
 function md(s){
  const text=fenceBareCharts(String(s||"").replace(/```[ \t]*\n[ \t]*chart[ \t]*\n/gi,"```chart\n").replace(/```[ \t]*\n(\{\s*"type"[\s\S]*?\})[ \t]*\n```/g,"```chart\n$1\n```"));let out="",last=0,m;const re=/```chart[ \t]*\n([\s\S]*?)(```|$)/g;
- while((m=re.exec(text))){out+=mdCore(text.slice(last,m.index));out+=chartBlockHtml(m[1],m[2]==="```");last=re.lastIndex}
+ const seenCharts=new Set();
+ while((m=re.exec(text))){out+=mdCore(text.slice(last,m.index));const key=m[1].replace(/\s+/g,"");if(m[2]==="```"&&seenCharts.has(key)){last=re.lastIndex;continue}if(m[2]==="```")seenCharts.add(key);out+=chartBlockHtml(m[1],m[2]==="```");last=re.lastIndex}
  return out+mdCore(text.slice(last));
 }
 function mdCore(s){
