@@ -968,7 +968,7 @@ chatEl.parentElement.appendChild(jumpBtn);
 chatEl.addEventListener("scroll",updateJump,{passive:true});
 // Draws a reply a little at a time, one frame at a time, so it stays smooth and never rebuilds the whole message on a timer.
 async function typeOut(el,full,signal,isStale){
- const tokens=full.split(/(\s+)/),dur=Math.min(3000,Math.max(700,tokens.length*15)),step=Math.max(3,Math.ceil(tokens.length/150));
+ const tokens=full.split(/(\s+)/),dur=Math.min(1500,Math.max(400,tokens.length*6)),step=Math.max(4,Math.ceil(tokens.length/100));
  const start=performance.now();let shown=0;
  while(shown<tokens.length){
   if(isStale()||(signal&&signal.aborted))return false;
