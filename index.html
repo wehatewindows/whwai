@@ -815,6 +815,9 @@ function shortLabel(t,n){t=String(t);return t.length>n?t.slice(0,n-1)+"…":t}
 function chartSvg(type,labels,series){
  if(type==="bar"&&(labels.length>5||labels.some(l=>l.length>10)))type="hbar";
  const W=320,max=Math.max(0,...series.flatMap(s=>s.values))||1,nm=niceMax(max);
+ const pos=series.flatMap(s=>s.values).filter(v=>v>0),minP=pos.length?Math.min(...pos):1,maxP=pos.length?Math.max(...pos):1,useLog=pos.length>1&&maxP/minP>50;
+ const frac=v=>{v=Math.max(0,v);return useLog?Math.log10(v/minP+1)/Math.log10(maxP/minP+1):v/nm};
+ const logNote=useLog&&type!=="donut"?'<p class="sm chart-note">Bar lengths use a log scale because the values differ widely. Labels show the exact numbers.</p>':"";
  if(type==="donut"){
   const vals=series[0].values,total=vals.reduce((a,b)=>a+Math.max(0,b),0)||1;let a0=-Math.PI/2,paths="";
   vals.forEach((v,i)=>{if(v<=0)return;const a1=a0+2*Math.PI*v/total,lg=a1-a0>Math.PI?1:0;const P=(r,a)=>[(90+r*Math.cos(a)).toFixed(2),(90+r*Math.sin(a)).toFixed(2)];const[x0,y0]=P(80,a0),[x1,y1]=P(80,a1),[xi1,yi1]=P(50,a1),[xi0,yi0]=P(50,a0);paths+='<path d="M'+x0+" "+y0+"A80 80 0 "+lg+" 1 "+x1+" "+y1+"L"+xi1+" "+yi1+"A50 50 0 "+lg+" 0 "+xi0+" "+yi0+'Z" fill="'+CHART_PALETTE[i%8]+'"/>';a0=a1});
@@ -823,15 +826,15 @@ function chartSvg(type,labels,series){
  if(type==="hbar"){
   const rowH=Math.max(34,series.length*16+14),longest=Math.max(...labels.map(l=>l.length)),left=Math.min(170,Math.max(70,longest*6.2+10)),pw=W-left-44,H=labels.length*rowH+8;let body="";
   labels.forEach((lab,i)=>{const y0=4+i*rowH;body+='<text x="0" y="'+(y0+rowH/2+4)+'" text-anchor="start">'+esc(lab)+"</text>";
-   series.forEach((s,j)=>{const w=pw*Math.max(0,s.values[i])/nm,y=y0+j*16+(rowH-series.length*16)/2;body+='<rect x="'+left+'" y="'+y+'" width="'+w+'" height="13" rx="3" fill="'+CHART_PALETTE[j]+'"/><text x="'+(left+w+5)+'" y="'+(y+11)+'">'+fmtN(s.values[i])+"</text>"})});
-  return '<svg viewBox="0 0 '+W+" "+H+'" class="chart-svg" aria-hidden="true">'+body+"</svg>";
+   series.forEach((s,j)=>{const w=pw*frac(s.values[i]),y=y0+j*16+(rowH-series.length*16)/2;body+='<rect x="'+left+'" y="'+y+'" width="'+w+'" height="13" rx="3" fill="'+CHART_PALETTE[j]+'"/><text x="'+(left+w+5)+'" y="'+(y+11)+'">'+fmtN(s.values[i])+"</text>"})});
+  return '<svg viewBox="0 0 '+W+" "+H+'" class="chart-svg" aria-hidden="true">'+body+"</svg>"+logNote;
  }
  const H=220,top=10,bot=44,left=Math.max(34,14+String(fmtN(nm)).length*6.2),pw=W-left-8,ph=H-top-bot,n=labels.length,gw=pw/n;let g="",body="";
- for(let t=0;t<=4;t++){const y=top+ph*(1-t/4);g+='<line class="grid" x1="'+left+'" x2="'+(W-8)+'" y1="'+y+'" y2="'+y+'"/><text x="'+(left-6)+'" y="'+(y+3)+'" text-anchor="end">'+fmtN(nm*t/4)+"</text>"}
+ for(let t=0;t<=4;t++){const y=top+ph*(1-t/4);g+='<line class="grid" x1="'+left+'" x2="'+(W-8)+'" y1="'+y+'" y2="'+y+'"/><text x="'+(left-6)+'" y="'+(y+3)+'" text-anchor="end">'+(useLog?"":fmtN(nm*t/4))+"</text>"}
  labels.forEach((lab,i)=>{body+='<text x="'+(left+gw*i+gw/2)+'" y="'+(H-bot+16)+'" text-anchor="middle">'+esc(n>8?shortLabel(lab,4):lab)+"</text>"});
- if(type==="bar"){const bw=Math.min(26,gw*0.7/series.length);series.forEach((s,j)=>s.values.forEach((v,i)=>{const h=ph*Math.max(0,v)/nm,x=left+gw*i+gw/2-series.length*bw/2+j*bw;body+='<rect x="'+(x+1)+'" y="'+(top+ph-h)+'" width="'+(bw-2)+'" height="'+h+'" rx="2" fill="'+CHART_PALETTE[j]+'"/>'}))}
+ if(type==="bar"){const bw=Math.min(26,gw*0.7/series.length);series.forEach((s,j)=>s.values.forEach((v,i)=>{const h=ph*frac(v),x=left+gw*i+gw/2-series.length*bw/2+j*bw;body+='<rect x="'+(x+1)+'" y="'+(top+ph-h)+'" width="'+(bw-2)+'" height="'+h+'" rx="2" fill="'+CHART_PALETTE[j]+'"/>'}))}
  else{series.forEach((s,j)=>{const pts=s.values.map((v,i)=>[left+gw*i+gw/2,top+ph-ph*Math.max(0,v)/nm]);body+='<polyline fill="none" stroke="'+CHART_PALETTE[j]+'" stroke-width="2.5" points="'+pts.map(p=>p.join(",")).join(" ")+'"/>'+pts.map(p=>'<circle cx="'+p[0]+'" cy="'+p[1]+'" r="3.5" fill="'+CHART_PALETTE[j]+'"/>').join("")})}
- return '<svg viewBox="0 0 '+W+" "+H+'" class="chart-svg" aria-hidden="true">'+g+body+"</svg>";
+ return '<svg viewBox="0 0 '+W+" "+H+'" class="chart-svg" aria-hidden="true">'+g+body+"</svg>"+logNote;
 }
 function chartBlockHtml(raw,closed){
  if(!closed)return '<p class="sm chart-pending">Drawing chart…</p>';
