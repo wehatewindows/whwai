@@ -848,8 +848,22 @@ function chartBlockHtml(raw,closed){
  const rows=labels.map((l,i)=>"<tr><th>"+esc(l)+"</th>"+series.map(s=>"<td>"+fmtN(s.values[i])+"</td>").join("")+"</tr>").join("");
  return '<figure class="chart" role="group" aria-label="'+esc(title)+'"><figcaption>'+esc(title)+"</figcaption>"+chartSvg(c.type,labels,series)+legend+'<div class="tbl-wrap"><table class="chart-data"><thead>'+head+"</thead><tbody>"+rows+"</tbody></table></div></figure>";
 }
+// Wraps chart JSON that arrives without its fence, so it still draws. Skips anything inside a code fence.
+function fenceBareCharts(text){
+ let out="",i=0,m;const re=/\{\s*"type"\s*:\s*"(?:bar|hbar|line|donut)"/g;
+ while((m=re.exec(text))){
+  if((text.slice(0,m.index).match(/```/g)||[]).length%2===1)continue;
+  let depth=0,inStr=false,j=m.index,done=false;
+  for(;j<text.length;j++){const ch=text[j];
+   if(inStr){if(ch==="\\"){j++;continue}if(ch==='"')inStr=false;continue}
+   if(ch==='"')inStr=true;else if(ch==="{")depth++;else if(ch==="}"){depth--;if(depth===0){done=true;break}}}
+  if(!done)continue;
+  out+=text.slice(i,m.index)+"\n```chart\n"+text.slice(m.index,j+1)+"\n```\n";i=j+1;re.lastIndex=j+1;
+ }
+ return out+text.slice(i);
+}
 function md(s){
- const text=String(s||"");let out="",last=0,m;const re=/```chart[ \t]*\n([\s\S]*?)(```|$)/g;
+ const text=fenceBareCharts(String(s||""));let out="",last=0,m;const re=/```chart[ \t]*\n([\s\S]*?)(```|$)/g;
  while((m=re.exec(text))){out+=mdCore(text.slice(last,m.index));out+=chartBlockHtml(m[1],m[2]==="```");last=re.lastIndex}
  return out+mdCore(text.slice(last));
 }
