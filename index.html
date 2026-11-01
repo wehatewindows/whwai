@@ -2047,6 +2047,7 @@ function togglePanel(panel,btn,replay){const open=panel.hidden;open?showEl(panel
 function thinkingSteps(text){return String(text||"").replace(/([.!?])\s+(?=[A-Z])/g,"$1\n").split(/\n+/).map(s=>s.replace(/^[\s\-*•\d.)]+/,"").replace(/\s+/g," ").trim()).filter(s=>s.length>2).slice(0,14).map(s=>s.length>220?s.slice(0,217)+"…":s)}
 setInterval(()=>{if(!accountDisabledGate&&accountSession&&accountSession.token&&accountReady&&!(accountSession.user&&accountSession.user.mustChange))post({action:"account_me",sessionToken:accountSession.token}).catch(e=>{if(e&&e.message==="invalid_session"&&accountSession){clearAccountSession();renderList();renderChat();toast("Your sign-in expired. Your chats are still saved on this device. Sign in again to sync them.")}})},60000);
 function renderSyncStatus(){
+ try{const md=$("modal");if(md&&!md.hidden&&currentSettingsView==="account")updateAccountSyncStatus()}catch(e){}
  const b=$("profile-btn");if(!b)return;
  const sideEl=$("side");if(sideEl)sideEl.classList.toggle("has-profile",!!(accountSession&&accountSession.token&&accountSession.user&&accountSession.user.username));
  const name=accountSession&&accountSession.token&&accountSession.user&&accountSession.user.username?String(accountSession.user.username):"";
@@ -2446,7 +2447,7 @@ function renderSiteNotice(){
  }
 }
 function setAccountFromResult(result){
- accountSession={token:String(result.token||""),user:result.user||null};accountReady=true;updateSchoolLock();
+ accountSession={token:String(result.token||""),user:result.user||null};accountReady=true;updateSchoolLock();renderSyncStatus();
  try{if(accountSession.token)localStorage.setItem(ACCOUNT_SESSION_STORAGE_KEY,accountSession.token)}catch(e){}
 }
 function setGuestState(clearChats){
