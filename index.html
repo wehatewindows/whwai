@@ -2735,17 +2735,19 @@ function disableFormHtml(cur){
  const opts=DISABLE_PRESETS.map((p,i)=>'<optgroup label="'+escapeAttr(p.title)+'">'+p.subs.map((s,j)=>'<option value="'+i+'-'+j+'"'+(sel===i+"-"+j?" selected":"")+'>'+esc(s.sub)+'</option>').join("")+'</optgroup>').join("")+'<option value="custom"'+(sel==="custom"?" selected":"")+'>Custom reason</option>';
  const custom=sel==="custom"?String(c.text||""):"";
  const re=c.reenableAt?new Date(Number(c.reenableAt)+36e5*10).toISOString().slice(0,16):"";
- return '<div class="disable-form"><label class="sm reason-label" for="dis-preset">Reason</label><select id="dis-preset" class="reason-input">'+opts+'</select><p class="sm dis-preview" id="dis-preview"></p><label class="sm reason-label" id="dis-custom-label" for="dis-custom" hidden>Custom reason (shown to the user, up to 200 characters)</label><textarea id="dis-custom" class="reason-input" rows="3" maxlength="200" hidden>'+esc(custom)+'</textarea><label class="sm reason-label" for="dis-reenable">Re-enable at (HST, optional)</label><input type="datetime-local" id="dis-reenable" class="reason-input" value="'+escapeAttr(re)+'"><p class="sm">Leave blank to keep the account disabled until you enable it. If you set a time, WHWai re-enables the account automatically then.</p></div>';
+ return '<div class="disable-form"><label class="sm reason-label" for="dis-preset">Reason</label><select id="dis-preset" class="reason-input">'+opts+'</select><p class="sm dis-preview" id="dis-preview"></p><label class="sm reason-label" id="dis-custom-label" for="dis-custom" hidden>Custom reason (shown to the user, up to 200 characters)</label><textarea id="dis-custom" class="reason-input" rows="3" maxlength="200" hidden>'+esc(custom)+'</textarea><label class="check-row dis-reenable-toggle"><input type="checkbox" id="dis-reenable-on'+(re?" checked":"")+'"> Re-enable automatically at a set time</label><div id="dis-reenable-wrap"'+(re?"":" hidden")+'><label class="sm reason-label" for="dis-reenable">Re-enable at (HST)</label><input type="datetime-local" id="dis-reenable" class="reason-input" value="'+escapeAttr(re)+'"></div><p class="sm">Leave this off to keep the account disabled until you enable it.</p></div>';
 }
 function wireDisableForm(){
  const sel=$("dis-preset"),prev=$("dis-preview"),custom=$("dis-custom"),lab=$("dis-custom-label");
  const update=()=>{const isCustom=sel.value==="custom";custom.hidden=!isCustom;lab.hidden=!isCustom;if(isCustom){prev.textContent="Write the reason the user will see, up to 200 characters."}else{const [i,j]=sel.value.split("-").map(Number);prev.textContent="The user sees: "+DISABLE_PRESETS[i].subs[j].text}};
  sel.onchange=update;update();
+ const on=$("dis-reenable-on"),wrap=$("dis-reenable-wrap"),when=$("dis-reenable");
+ on.onchange=()=>{wrap.hidden=!on.checked;if(!on.checked)when.value=""};
 }
 function readDisableForm(){
  const v=$("dis-preset").value;let title="",sub="",text="";
  if(v==="custom"){text=$("dis-custom").value.trim()}else{const [i,j]=v.split("-").map(Number),p=DISABLE_PRESETS[i],s=p.subs[j];title=p.title;sub=s.sub;text=s.text}
- return {reasonTitle:title,reasonSub:sub,reasonText:text,reenableAt:$("dis-reenable").value||""};
+ return {reasonTitle:title,reasonSub:sub,reasonText:text,reenableAt:($("dis-reenable-on").checked&&$("dis-reenable").value)||""};
 }
 function adminReasonHtml(i){
  const info=i||{};let h='<div class="admin-account-meta">Reason: '+esc(info.title||"Custom reason")+(info.sub?' · '+esc(info.sub):"")+'</div>';
