@@ -840,6 +840,7 @@ function chartBlockHtml(raw,closed){
  const labels=c.labels.map(x=>String(x).slice(0,40));
  const series=c.series.map(s=>({name:String(s&&s.name||"").slice(0,40),values:Array.isArray(s&&s.values)?s.values.map(Number):[]}));
  if(series.some(s=>s.values.length!==labels.length||s.values.some(v=>!isFinite(v)))||(c.type==="donut"&&series[0].values.some(v=>v<0)))return fallback;
+ if(series.every(s=>s.values.every(v=>v===series[0].values[0])))return "";
  const title=String(c.title||"").slice(0,120);
  const legend=c.type==="donut"?'<ul class="chart-legend">'+labels.map((l,i)=>'<li><span class="swatch" style="background:'+CHART_PALETTE[i%8]+'"></span>'+esc(l)+" — "+fmtN(series[0].values[i])+"</li>").join("")+"</ul>":(series.length>1?'<ul class="chart-legend">'+series.map((s,j)=>'<li><span class="swatch" style="background:'+CHART_PALETTE[j]+'"></span>'+esc(s.name)+"</li>").join("")+"</ul>":"");
  const head="<tr><th></th>"+series.map(s=>"<th>"+esc(s.name)+"</th>").join("")+"</tr>";
@@ -904,7 +905,10 @@ async function typeOut(el,full,signal,isStale){
  while(i<words.length){
   if(isStale()||(signal&&signal.aborted))return false;
   for(let k=0;k<per&&i<words.length;k++)out+=words[i++];
+  const h0=el.offsetHeight;
   el.innerHTML=md(out);
+  const h1=el.scrollHeight;
+  if(Math.abs(h1-h0)>1){el.style.overflow="hidden";el.style.height=h0+"px";void el.offsetHeight;el.style.transition="height .16s ease-out";el.style.height=h1+"px";clearTimeout(el._hT);el._hT=setTimeout(()=>{el.style.transition="";el.style.height="";el.style.overflow=""},170)}
   if(near())toBottom();
   updateJump();
   await nextFrame();
