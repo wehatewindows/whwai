@@ -821,8 +821,8 @@ function chartSvg(type,labels,series){
   return '<svg viewBox="0 0 180 180" class="chart-svg chart-donut" aria-hidden="true">'+paths+"</svg>";
  }
  if(type==="hbar"){
-  const rowH=Math.max(34,series.length*16+14),left=112,pw=W-left-44,H=labels.length*rowH+8;let body="";
-  labels.forEach((lab,i)=>{const y0=4+i*rowH;body+='<text x="0" y="'+(y0+rowH/2+4)+'" text-anchor="start">'+esc(shortLabel(lab,16))+"</text>";
+  const rowH=Math.max(34,series.length*16+14),left=124,pw=W-left-44,H=labels.length*rowH+8;let body="";
+  labels.forEach((lab,i)=>{const y0=4+i*rowH;body+='<text x="0" y="'+(y0+rowH/2+4)+'" text-anchor="start">'+esc(shortLabel(lab,19))+"</text>";
    series.forEach((s,j)=>{const w=pw*Math.max(0,s.values[i])/nm,y=y0+j*16+(rowH-series.length*16)/2;body+='<rect x="'+left+'" y="'+y+'" width="'+w+'" height="13" rx="3" fill="'+CHART_PALETTE[j]+'"/><text x="'+(left+w+5)+'" y="'+(y+11)+'">'+fmtN(s.values[i])+"</text>"})});
   return '<svg viewBox="0 0 '+W+" "+H+'" class="chart-svg" aria-hidden="true">'+body+"</svg>";
  }
@@ -863,7 +863,7 @@ function fenceBareCharts(text){
  return out+text.slice(i);
 }
 function md(s){
- const text=fenceBareCharts(String(s||""));let out="",last=0,m;const re=/```chart[ \t]*\n([\s\S]*?)(```|$)/g;
+ const text=fenceBareCharts(String(s||"").replace(/```[ \t]*\n[ \t]*chart[ \t]*\n/gi,"```chart\n"));let out="",last=0,m;const re=/```chart[ \t]*\n([\s\S]*?)(```|$)/g;
  while((m=re.exec(text))){out+=mdCore(text.slice(last,m.index));out+=chartBlockHtml(m[1],m[2]==="```");last=re.lastIndex}
  return out+mdCore(text.slice(last));
 }
