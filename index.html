@@ -389,7 +389,7 @@ html,body{touch-action:manipulation}
 .pc-options[hidden]{display:none}
 @media (max-width:640px){.side .profile-menu{left:var(--edge);right:var(--edge);width:auto;bottom:124px}}
 .reason-label{display:block;margin:12px 0 6px}
-.gate-reason-row,.gate-reason-text{display:block;margin:0 0 8px}.gate-body p{margin:0 0 8px}.gate-box{margin:10px 0 12px;padding:12px 14px;border-radius:14px}.gate-box strong{display:block;margin:0 0 4px;color:#444;font-size:13px}.gate-box-text{margin:0!important;color:#222;font-size:15px;line-height:1.45}.gate-box-text+.gate-box-text{margin-top:2px!important}.gate-reason-text{color:#555}.gate-reenable{color:#111}.dis-preview{margin:8px 0 0;color:#444}.breach-ack{margin-top:8px}.modal .mcard{max-height:calc(100% - 28px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.reenable-card{background:#f5f5f5;border:1px solid #e6e6e6;border-radius:14px;margin:12px 0 4px;overflow:hidden}.reenable-row{background:transparent;border-radius:0;padding:12px 14px;align-items:center;font-size:14px}.reenable-row small{display:block;color:#6b6b6b;font-size:12px;line-height:1.4;margin-top:2px}.reenable-when{padding:0 14px 14px}.reenable-when[hidden]{display:none}.reenable-when .reason-label{margin-top:2px}
+.gate-reason-row,.gate-reason-text{display:block;margin:0 0 8px}.gate-body p{margin:0 0 8px}.gate-box{margin:10px 0 12px;padding:12px 14px;border-radius:14px}.gate-box strong{display:block;margin:0 0 4px;color:#444;font-size:13px}.gate-box-text{margin:0!important;color:#222;font-size:15px;line-height:1.45}.gate-box-text+.gate-box-text{margin-top:2px!important}.gate-reason-text{color:#555}.gate-reenable{color:#111}.dis-preview{margin:8px 0 0;color:#444}.breach-ack{margin-top:8px}.modal .mcard{max-height:calc(100% - 28px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.jump-bottom{position:absolute;right:16px;bottom:190px;width:40px;height:40px;border-radius:50%;border:1px solid #dedede;background:#fff;color:#222;box-shadow:0 4px 14px rgba(0,0,0,.14);display:grid;place-items:center;cursor:pointer;z-index:5;padding:0}.jump-bottom[hidden]{display:none}.jump-bottom:hover{background:#f3f3f3}.reenable-card{background:#f5f5f5;border:1px solid #e6e6e6;border-radius:14px;margin:12px 0 4px;overflow:hidden}.reenable-row{background:transparent;border-radius:0;padding:12px 14px;align-items:center;font-size:14px}.reenable-row small{display:block;color:#6b6b6b;font-size:12px;line-height:1.4;margin-top:2px}.reenable-when{padding:0 14px 14px}.reenable-when[hidden]{display:none}.reenable-when .reason-label{margin-top:2px}
 .reason-input{box-sizing:border-box;width:100%;min-width:0;border:1px solid #dedede;border-radius:12px;background:#fafafa;color:#111;padding:10px 12px;font:inherit;font-size:16px;outline:none;resize:vertical}
 .gate-actions{margin:0 0 12px}.gate-actions[hidden]{display:none}
 .main .site-notice{position:absolute;left:12px;right:12px;top:10px;width:auto;max-width:none;margin:0;border:1px solid rgba(190,210,245,.7);border-radius:14px;background:rgba(232,241,255,.5);-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);z-index:4;padding:10px 16px;text-align:center}
@@ -846,6 +846,27 @@ function sleepUntilAbort(ms,signal){return new Promise(resolve=>{
 })}
 const near=()=>chatEl.scrollHeight-chatEl.scrollTop-chatEl.clientHeight<140;
 const toBottom=()=>chatEl.scrollTo({top:chatEl.scrollHeight});
+const nextFrame=()=>new Promise(r=>requestAnimationFrame(()=>r()));
+let lastChatRenderId=null;
+const jumpBtn=document.createElement("button");jumpBtn.type="button";jumpBtn.id="jump-bottom";jumpBtn.className="jump-bottom";jumpBtn.hidden=true;jumpBtn.setAttribute("aria-label","Jump to the latest message");jumpBtn.innerHTML=ic('<path d="M12 5v14"/><path d="M6 13l6 6 6-6"/>',18,2);
+jumpBtn.onclick=()=>toBottom();
+function updateJump(){jumpBtn.hidden=near()}
+chatEl.parentElement.appendChild(jumpBtn);
+chatEl.addEventListener("scroll",updateJump,{passive:true});
+// Draws a reply a little at a time, one frame at a time, so it stays smooth and never rebuilds the whole message on a timer.
+async function typeOut(el,full,signal,isStale){
+ const words=full.split(/(\s+)/),frames=Math.max(24,Math.min(240,Math.round(words.length*0.9))),per=Math.max(1,Math.ceil(words.length/frames));
+ let i=0,out="";
+ while(i<words.length){
+  if(isStale()||(signal&&signal.aborted))return false;
+  for(let k=0;k<per&&i<words.length;k++)out+=words[i++];
+  el.innerHTML=md(out);
+  if(near())toBottom();
+  updateJump();
+  await nextFrame();
+ }
+ return !isStale();
+}
 
 const PIN='<path d="M12 17v5"/><path d="M9 3h6l-1 7 3 3v2H7v-2l3-3z"/>',
  TRASH='<path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/>',
@@ -1009,7 +1030,7 @@ function updateAvailableModels(models){
  updateModelUI();
 }
 function renderChat(fresh){
- const c=C();updateModelUI();chatEl.innerHTML="";
+ const c=C();const wasNear=near(),prevTop=chatEl.scrollTop,switching=lastChatRenderId!==(c&&c.id);lastChatRenderId=c&&c.id;updateModelUI();chatEl.innerHTML="";
  if(!c||!c.m.length){
   if(accountInitialSyncPending&&accountSession&&accountSession.token&&!S.chats.length)chatEl.innerHTML='<div class="empty"><h2>WHW<b>ai</b><span class="beta-pill">Beta</span></h2><p><span class="sync-spinner" aria-hidden="true"></span>Loading your account chats…</p></div>';
   else chatEl.innerHTML='<div class="empty"><h2>WHW<b>ai</b><span class="beta-pill">Beta</span></h2><p>Ask anything to get started.</p></div>';
@@ -1034,7 +1055,8 @@ function renderChat(fresh){
    }
  });
  if(fresh){const ms=chatEl.querySelectorAll(".msg");ms[ms.length-1].classList.add("fresh")}
- toBottom();
+ if(fresh||switching||wasNear)toBottom();else chatEl.scrollTop=prevTop;
+ updateJump();
 }
 const plain=t=>t.replace(/\*\*(.+?)\*\*/g,"$1").replace(/^[-*] /gm,"\u2022 ");
 async function copyCode(text,button){
@@ -1299,12 +1321,9 @@ async function answer(c,q){
    if(responseWasStopped||run!==answerRunId)return;
    full=(RULES.find(([r])=>r.test(q.toLowerCase()))||[0,FALLBACK])[1]
   }
-  const w=full.split(/(\s+)/),step=Math.max(2,Math.ceil(w.length/300));let out="";
-  for(let i=0;i<w.length;i++){
-   if(responseWasStopped||run!==answerRunId)return;
-   out+=w[i];
-   if(i%step===0){tmp.classList.remove("dim");tmp.innerHTML=md(out);if(near())toBottom();await sleepUntilAbort(22,controller.signal)}
-  }
+  tmp.classList.remove("dim");
+  const drawn=await typeOut(tmp,full,controller.signal,()=>responseWasStopped||run!==answerRunId);
+  if(!drawn)return;
   if(responseWasStopped||run!==answerRunId)return;
   const target=S.chats.find(x=>x.id===c.id);
   if(!target)return;
