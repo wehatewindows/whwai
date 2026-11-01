@@ -463,7 +463,8 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,textarea:foc
 .access-gate:not([hidden]){animation:gateIn .22s ease-out both}
 .access-gate:not([hidden]) .access-card{animation:cardIn .26s cubic-bezier(.2,.7,.2,1) both}
 .access-gate .access-card.disabled-mode{animation:cardSwap .28s cubic-bezier(.2,.7,.2,1) both}
-.access-gate .access-card.disabled-mode{max-height:calc(100dvh - 150px);overflow:auto;margin:auto}
+.access-gate{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.access-gate .access-card.disabled-mode{max-height:none;overflow:visible;margin:auto;flex-shrink:0}
 .access-form:not([hidden]),.access-admin-form:not([hidden]){animation:formIn .2s ease-out both}
 .gate-body:not([hidden]),.gate-actions:not([hidden]),.gate-notice:not([hidden]),.gate-status:not([hidden]),#gate-download:not([hidden]){animation:noticeIn .2s cubic-bezier(.2,.7,.2,1) both}
 .swap{animation:noticeIn .2s cubic-bezier(.2,.7,.2,1) both}
