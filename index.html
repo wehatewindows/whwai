@@ -824,14 +824,19 @@ function chartSvg(type,labels,series){
   return '<svg viewBox="0 0 180 180" class="chart-svg chart-donut" aria-hidden="true">'+paths+"</svg>";
  }
  if(type==="hbar"){
-  const rowH=Math.max(34,series.length*16+14),longest=Math.max(...labels.map(l=>l.length)),left=Math.min(170,Math.max(70,longest*6.2+10)),pw=W-left-44,H=labels.length*rowH+8;let body="";
-  labels.forEach((lab,i)=>{const y0=4+i*rowH;body+='<text x="0" y="'+(y0+rowH/2+4)+'" text-anchor="start">'+esc(lab)+"</text>";
+  const WRAP=24;
+  const wrapLabel=t=>{const out=[];let cur="";String(t).split(/\s+/).forEach(word=>{if(word.length>WRAP){if(cur){out.push(cur);cur=""}for(let k=0;k<word.length;k+=WRAP)out.push(word.slice(k,k+WRAP));return}if(cur&&cur.length+1+word.length>WRAP){out.push(cur);cur=word}else cur=cur?cur+" "+word:word});if(cur)out.push(cur);return out.length?out:[""]};
+  const wrapped=labels.map(wrapLabel),lineCount=Math.max(...wrapped.map(l=>l.length)),widest=Math.max(...wrapped.map(ls=>Math.max(...ls.map(l=>l.length)))),valChars=Math.max(...series.flatMap(s=>s.values.map(v=>String(fmtN(v)).length)));
+  const rowH=Math.max(34,series.length*16+14,lineCount*13+14),left=Math.min(170,Math.max(70,widest*6.2+10)),valW=valChars*6.2+10,pw=W-left-valW-6,H=labels.length*rowH+8;let body="";
+  labels.forEach((lab,i)=>{const y0=4+i*rowH,ls=wrapped[i],first=y0+rowH/2-(ls.length-1)*6.5+4;
+   body+='<text x="0" text-anchor="start">'+ls.map((l,k)=>'<tspan x="0" y="'+(first+k*13)+'">'+esc(l)+"</tspan>").join("")+"</text>";
    series.forEach((s,j)=>{const w=pw*frac(s.values[i]),y=y0+j*16+(rowH-series.length*16)/2;body+='<rect x="'+left+'" y="'+y+'" width="'+w+'" height="13" rx="3" fill="'+CHART_PALETTE[j]+'"/><text x="'+(left+w+5)+'" y="'+(y+11)+'">'+fmtN(s.values[i])+"</text>"})});
   return '<svg viewBox="0 0 '+W+" "+H+'" class="chart-svg" aria-hidden="true">'+body+"</svg>"+logNote;
  }
  const H=220,top=10,bot=44,left=Math.max(34,14+String(fmtN(nm)).length*6.2),pw=W-left-8,ph=H-top-bot,n=labels.length,gw=pw/n;let g="",body="";
  for(let t=0;t<=4;t++){const y=top+ph*(1-t/4);g+='<line class="grid" x1="'+left+'" x2="'+(W-8)+'" y1="'+y+'" y2="'+y+'"/><text x="'+(left-6)+'" y="'+(y+3)+'" text-anchor="end">'+(useLog?"":fmtN(nm*t/4))+"</text>"}
- labels.forEach((lab,i)=>{body+='<text x="'+(left+gw*i+gw/2)+'" y="'+(H-bot+16)+'" text-anchor="middle">'+esc(n>8?shortLabel(lab,4):lab)+"</text>"});
+ const step=Math.max(1,Math.ceil(Math.max(...labels.map(l=>String(l).length))*6/gw));
+ labels.forEach((lab,i)=>{if(i%step)return;const lw=String(lab).length*6.2/2+2,lx=Math.min(Math.max(left+gw*i+gw/2,lw),W-lw);body+='<text x="'+lx+'" y="'+(H-bot+16)+'" text-anchor="middle">'+esc(lab)+"</text>"});
  if(type==="bar"){const bw=Math.min(26,gw*0.7/series.length);series.forEach((s,j)=>s.values.forEach((v,i)=>{const h=ph*frac(v),x=left+gw*i+gw/2-series.length*bw/2+j*bw;body+='<rect x="'+(x+1)+'" y="'+(top+ph-h)+'" width="'+(bw-2)+'" height="'+h+'" rx="2" fill="'+CHART_PALETTE[j]+'"/>'}))}
  else{series.forEach((s,j)=>{const segs=[];let cur=[];s.values.forEach((v,i)=>{if(isNaN(v)){if(cur.length)segs.push(cur);cur=[];return}cur.push([left+gw*i+gw/2,top+ph-ph*frac(v)])});if(cur.length)segs.push(cur);segs.forEach(pts=>{if(pts.length>1)body+='<polyline fill="none" stroke="'+CHART_PALETTE[j]+'" stroke-width="2.5" points="'+pts.map(p=>p.join(",")).join(" ")+'"/>';body+=pts.map(p=>'<circle cx="'+p[0]+'" cy="'+p[1]+'" r="3.5" fill="'+CHART_PALETTE[j]+'"/>').join("")})})}
  return '<svg viewBox="0 0 '+W+" "+H+'" class="chart-svg" aria-hidden="true">'+g+body+"</svg>"+logNote;
@@ -843,7 +848,7 @@ function chartBlockHtml(raw,closed){
  if(c&&c.type==="pie"){c.type="donut";if(!c.series&&Array.isArray(c.values))c.series=[{name:"Share",values:c.values}]}
  if(c&&["scatter","radar"].indexOf(c.type)!==-1)return '<div class="chart-bad" role="note"><p class="sm">This chart type is not supported here. Ask for a bar, line or donut chart instead.</p></div>';
  if(!c||["bar","hbar","line","donut"].indexOf(c.type)===-1||!Array.isArray(c.labels)||!c.labels.length||c.labels.length>24||!Array.isArray(c.series)||!c.series.length||c.series.length>3)return fallback;
- const labels=c.labels.map(x=>String(x).slice(0,40));
+ const labels=c.labels.map(x=>String(x).slice(0,120));
  const series=c.series.map(s=>({name:String(s&&s.name||"").slice(0,40),values:Array.isArray(s&&s.values)?s.values.map(v=>v===null||v===""||v===undefined?NaN:Number(v)):[]}));
  if(series.some(s=>s.values.length!==labels.length||s.values.some(v=>isNaN(v)?c.type!=="line":!isFinite(v)))||(c.type==="donut"&&series[0].values.some(v=>v<0)))return fallback;
  if(series.every(s=>s.values.every(v=>v===series[0].values[0])))return "";
