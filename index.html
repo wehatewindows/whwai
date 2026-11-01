@@ -821,14 +821,14 @@ function chartSvg(type,labels,series){
   return '<svg viewBox="0 0 180 180" class="chart-svg chart-donut" aria-hidden="true">'+paths+"</svg>";
  }
  if(type==="hbar"){
-  const rowH=Math.max(34,series.length*16+14),left=124,pw=W-left-44,H=labels.length*rowH+8;let body="";
-  labels.forEach((lab,i)=>{const y0=4+i*rowH;body+='<text x="0" y="'+(y0+rowH/2+4)+'" text-anchor="start">'+esc(shortLabel(lab,19))+"</text>";
+  const rowH=Math.max(34,series.length*16+14),longest=Math.max(...labels.map(l=>l.length)),left=Math.min(170,Math.max(70,longest*6.2+10)),pw=W-left-44,H=labels.length*rowH+8;let body="";
+  labels.forEach((lab,i)=>{const y0=4+i*rowH;body+='<text x="0" y="'+(y0+rowH/2+4)+'" text-anchor="start">'+esc(lab)+"</text>";
    series.forEach((s,j)=>{const w=pw*Math.max(0,s.values[i])/nm,y=y0+j*16+(rowH-series.length*16)/2;body+='<rect x="'+left+'" y="'+y+'" width="'+w+'" height="13" rx="3" fill="'+CHART_PALETTE[j]+'"/><text x="'+(left+w+5)+'" y="'+(y+11)+'">'+fmtN(s.values[i])+"</text>"})});
   return '<svg viewBox="0 0 '+W+" "+H+'" class="chart-svg" aria-hidden="true">'+body+"</svg>";
  }
  const H=220,top=10,bot=44,left=Math.max(34,14+String(fmtN(nm)).length*6.2),pw=W-left-8,ph=H-top-bot,n=labels.length,gw=pw/n;let g="",body="";
  for(let t=0;t<=4;t++){const y=top+ph*(1-t/4);g+='<line class="grid" x1="'+left+'" x2="'+(W-8)+'" y1="'+y+'" y2="'+y+'"/><text x="'+(left-6)+'" y="'+(y+3)+'" text-anchor="end">'+fmtN(nm*t/4)+"</text>"}
- labels.forEach((lab,i)=>{body+='<text x="'+(left+gw*i+gw/2)+'" y="'+(H-bot+16)+'" text-anchor="middle">'+esc(shortLabel(lab,Math.max(3,Math.floor(gw/6))))+"</text>"});
+ labels.forEach((lab,i)=>{body+='<text x="'+(left+gw*i+gw/2)+'" y="'+(H-bot+16)+'" text-anchor="middle">'+esc(n>8?shortLabel(lab,4):lab)+"</text>"});
  if(type==="bar"){const bw=Math.min(26,gw*0.7/series.length);series.forEach((s,j)=>s.values.forEach((v,i)=>{const h=ph*Math.max(0,v)/nm,x=left+gw*i+gw/2-series.length*bw/2+j*bw;body+='<rect x="'+(x+1)+'" y="'+(top+ph-h)+'" width="'+(bw-2)+'" height="'+h+'" rx="2" fill="'+CHART_PALETTE[j]+'"/>'}))}
  else{series.forEach((s,j)=>{const pts=s.values.map((v,i)=>[left+gw*i+gw/2,top+ph-ph*Math.max(0,v)/nm]);body+='<polyline fill="none" stroke="'+CHART_PALETTE[j]+'" stroke-width="2.5" points="'+pts.map(p=>p.join(",")).join(" ")+'"/>'+pts.map(p=>'<circle cx="'+p[0]+'" cy="'+p[1]+'" r="3.5" fill="'+CHART_PALETTE[j]+'"/>').join("")})}
  return '<svg viewBox="0 0 '+W+" "+H+'" class="chart-svg" aria-hidden="true">'+g+body+"</svg>";
