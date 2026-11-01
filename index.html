@@ -389,7 +389,7 @@ html,body{touch-action:manipulation}
 .pc-options[hidden]{display:none}
 @media (max-width:640px){.side .profile-menu{left:var(--edge);right:var(--edge);width:auto;bottom:124px}}
 .reason-label{display:block;margin:12px 0 6px}
-.gate-reason-row,.gate-reason-text{display:block;margin:0 0 8px}.gate-reason-text{color:#555}.gate-reason-label{display:block;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:#777;margin:10px 0 2px}.gate-reason-title{display:block;font-size:16px;font-weight:600;color:#111;margin:0 0 2px}.gate-reason-sub{display:block;color:#333;margin:0 0 10px}.gate-reenable{color:#111}.dis-preview{margin:8px 0 0;color:#444}.breach-ack{margin-top:8px}
+.gate-reason-row,.gate-reason-text{display:block;margin:0 0 8px}.gate-body p{margin:0 0 8px}.gate-box{margin:10px 0 12px;padding:12px 14px;border-radius:14px}.gate-box strong{display:block;margin:0 0 4px;color:#444;font-size:13px}.gate-box-text{margin:0!important;color:#222;font-size:15px;line-height:1.45}.gate-box-text+.gate-box-text{margin-top:2px!important}.gate-reason-text{color:#555}.gate-reason-label{display:block;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:#777;margin:10px 0 2px}.gate-reason-title{display:block;font-size:16px;font-weight:600;color:#111;margin:0 0 2px}.gate-reason-sub{display:block;color:#333;margin:0 0 10px}.gate-reenable{color:#111}.dis-preview{margin:8px 0 0;color:#444}.breach-ack{margin-top:8px}
 .reason-input{box-sizing:border-box;width:100%;min-width:0;border:1px solid #dedede;border-radius:12px;background:#fafafa;color:#111;padding:10px 12px;font:inherit;font-size:16px;outline:none;resize:vertical}
 .gate-actions{margin:0 0 12px}.gate-actions[hidden]{display:none}
 .main .site-notice{position:absolute;left:12px;right:12px;top:10px;width:auto;max-width:none;margin:0;border:1px solid rgba(190,210,245,.7);border-radius:14px;background:rgba(232,241,255,.5);-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);z-index:4;padding:10px 16px;text-align:center}
@@ -599,7 +599,7 @@ html.stim-hueside #side{animation:stimHue 8s linear infinite}
 <div class="access-gate" id="access-gate" hidden role="dialog" aria-modal="true" aria-labelledby="access-title"><div class="legal-links"><a href="#" class="privacy-link" data-legal="privacy">Privacy Policy</a><a href="#" class="privacy-link" data-legal="terms">Terms of Use</a></div>
  <div class="access-card" id="access-card">
   <h2 id="access-title">Enter early access code</h2>
-  <p class="gate-body" id="gate-body" hidden></p>
+  <div class="gate-body" id="gate-body" hidden></div>
   <div class="gate-actions" id="gate-actions" hidden><button type="button" class="pbtn" id="gate-download" hidden>Download my data</button><button type="button" class="pbtn" id="gate-signout">Sign out</button></div><p class="gate-body gate-status" id="gate-status" role="status" hidden></p>
   <form class="access-form" id="access-form" autocomplete="off"><input id="access-code" type="text" inputmode="numeric" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="32" aria-label="Enter early access code" required><button id="access-unlock" type="submit" aria-label="Submit access code" title="Submit access code">→</button></form>
   <p class="access-error" id="access-error" role="status" aria-live="polite" hidden></p>
@@ -1128,15 +1128,16 @@ function renderGateReason(message,info){
  let h="";
  if(title||full){
   if(title){
-   h+='<span class="gate-reason-label">Reason</span><span class="gate-reason-title">'+esc(title)+'</span>';
-   if(sub)h+='<span class="gate-reason-sub">'+esc(sub)+'</span>';
+   h+='<div class="policy-takeaways gate-box"><strong>Reason</strong><p class="gate-box-text">'+esc(title.toLowerCase())+'</p>';
+   if(sub)h+='<p class="gate-box-text">'+esc(sub.toLowerCase())+'</p>';
+   h+='</div>';
   }
-  if(full)h+='<span class="gate-reason-text">'+esc(full)+'</span>';
+  if(full)h+='<p class="gate-reason-text">'+esc(full)+'</p>';
   if(i.reenableAt){
-   h+='<span class="gate-reason-row gate-reenable">Your account will be re-enabled automatically on '+esc(hstText(i.reenableAt))+'.</span>';
+   h+='<p class="gate-reason-row">Your account will be re-enabled automatically at the time below.</p><div class="policy-takeaways gate-box"><strong>Re-enable time</strong><p class="gate-box-text">'+esc(hstText(i.reenableAt))+'</p></div>';
    const wait=Number(i.reenableAt)-Date.now();if(wait>0&&wait<2147483000)setTimeout(()=>location.reload(),wait+2000);
   }
-  h+='<span class="gate-reason-row">Contact support at wehatewindows.help@gmail.com for help.</span>';
+  h+='<p class="gate-reason-row">Contact support at wehatewindows.help@gmail.com for help.</p>';
  }else{
   let text=String(message||"").replace(/^\s*This account has been disabled\.?\s*/i,"").trim();
   h=esc(text||"Contact support at wehatewindows.help@gmail.com for help.");
