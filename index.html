@@ -962,8 +962,30 @@ const toBottom=()=>chatEl.scrollTo({top:chatEl.scrollHeight});
 const nextFrame=()=>new Promise(r=>requestAnimationFrame(()=>r()));
 let lastChatRenderId=null;
 const jumpBtn=document.createElement("button");jumpBtn.type="button";jumpBtn.id="jump-bottom";jumpBtn.className="jump-bottom";jumpBtn.hidden=true;jumpBtn.setAttribute("aria-label","Jump to the latest message");jumpBtn.innerHTML=ic('<path d="M12 5v14"/><path d="M6 13l6 6 6-6"/>',18,2);
-jumpBtn.onclick=()=>toBottom();
-function updateJump(){jumpBtn.hidden=near()}
+let jumpAnim=0;
+// Flicks down to the latest message: fast at first, then slows as it arrives. Any touch or wheel input stops it.
+function flickToBottom(){
+ cancelAnimationFrame(jumpAnim);
+ const start=chatEl.scrollTop,t0=performance.now();
+ const first=Math.max(0,chatEl.scrollHeight-chatEl.clientHeight-start),dur=Math.min(1000,Math.max(500,first*0.4));
+ const ease=t=>1-Math.pow(1-t,4);
+ const step=now=>{
+  const end=Math.max(0,chatEl.scrollHeight-chatEl.clientHeight),t=Math.min(1,(now-t0)/dur);
+  chatEl.scrollTop=start+(end-start)*ease(t);
+  if(t<1)jumpAnim=requestAnimationFrame(step);
+ };
+ jumpAnim=requestAnimationFrame(step);
+}
+["wheel","touchstart","pointerdown"].forEach(ev=>chatEl.addEventListener(ev,()=>cancelAnimationFrame(jumpAnim),{passive:true}));
+jumpBtn.onclick=()=>flickToBottom();
+// Centres the jump button above the blue orb, wherever the orb sits on this screen size.
+function alignJump(){
+ const orb=$("orb"),host=jumpBtn.parentElement;if(!orb||!host)return;
+ const o=orb.getBoundingClientRect(),h=host.getBoundingClientRect(),w=jumpBtn.offsetWidth||40;
+ jumpBtn.style.right=Math.max(0,h.right-(o.left+o.width/2)-w/2)+"px";
+}
+function updateJump(){jumpBtn.hidden=near();if(!jumpBtn.hidden)alignJump()}
+window.addEventListener("resize",alignJump);
 chatEl.parentElement.appendChild(jumpBtn);
 chatEl.addEventListener("scroll",updateJump,{passive:true});
 // Draws a reply a little at a time, one frame at a time, so it stays smooth and never rebuilds the whole message on a timer.
