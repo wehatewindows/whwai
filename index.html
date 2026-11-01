@@ -293,7 +293,7 @@ body.access-locked .frame{filter:blur(6px);pointer-events:none;user-select:none}
 .msg .codeblock:last-child{margin-bottom:0}
 .msg .codeblock pre{margin:0;padding-top:35px;max-width:100%}
 .msg .codeblock pre code{background:transparent;padding:0;font-size:inherit}
-.code-copy{position:absolute;top:6px;right:6px;z-index:2;display:flex;align-items:center;justify-content:center;gap:5px;min-height:25px;padding:4px 8px;border:1px solid #d4d4d4;border-radius:8px;background:#f7f7f7;color:#222;font:500 11.5px/1.1 var(--f);cursor:pointer;white-space:nowrap}
+.code-copy{position:absolute;top:6px;right:6px;z-index:2;display:flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:1px solid #d4d4d4;border-radius:8px;background:#f7f7f7;color:#222;cursor:pointer}
 .code-copy:hover{background:#e8e8e8}
 .code-copy:disabled{opacity:.7;cursor:default}
 @media (max-width:640px){
@@ -389,7 +389,7 @@ html,body{touch-action:manipulation}
 .pc-options[hidden]{display:none}
 @media (max-width:640px){.side .profile-menu{left:var(--edge);right:var(--edge);width:auto;bottom:124px}}
 .reason-label{display:block;margin:12px 0 6px}
-.gate-reason-row,.gate-reason-text{display:block;margin:0 0 8px}.gate-body p{margin:0 0 8px}.gate-box{margin:10px 0 12px;padding:12px 14px;border-radius:14px}.gate-box strong{display:block;margin:0 0 4px;color:#444;font-size:13px}.gate-box-text{margin:0!important;color:#222;font-size:15px;line-height:1.45}.gate-box-text+.gate-box-text{margin-top:2px!important}.gate-reason-text{color:#555}.gate-reenable{color:#111}.dis-preview{margin:8px 0 0;color:#444}.breach-ack{margin-top:8px}.modal .mcard{max-height:calc(100% - 28px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.jump-bottom{position:absolute;right:16px;bottom:190px;width:40px;height:40px;border-radius:50%;border:1px solid #dedede;background:#fff;color:#222;box-shadow:0 4px 14px rgba(0,0,0,.14);display:grid;place-items:center;cursor:pointer;z-index:5;padding:0}.jump-bottom[hidden]{display:none}.jump-bottom:hover{background:#f3f3f3}.chart,.tbl-wrap{margin:8px 0}.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid rgba(127,127,127,.35);border-radius:12px}.msg table{border-collapse:collapse;font-size:13.5px;width:max-content;min-width:100%}.msg th,.msg td{border:1px solid rgba(127,127,127,.35);padding:6px 8px;text-align:left;vertical-align:top;word-break:keep-all;overflow-wrap:normal;white-space:normal}.msg th{font-weight:600}.chart{overflow:hidden;border:1px solid rgba(127,127,127,.35);border-radius:12px;padding:10px 12px 12px;margin:10px 0;color:inherit}.chart figcaption{font-weight:600;font-size:13px;margin-bottom:6px}.chart-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0 0 6px}.chart-act{font:inherit;font-size:12px;line-height:1.2;padding:4px 10px;border-radius:999px;border:1px solid rgba(127,127,127,.4);background:transparent;color:inherit;cursor:pointer}.chart-act:hover{background:rgba(127,127,127,.12)}.chart-act-msg{font-size:12px;opacity:.7}.chart-svg{display:block;width:100%;height:auto;max-width:440px;margin:0;color:inherit;text-align:left}.chart-bad{overflow:hidden;border:1px dashed rgba(127,127,127,.5);border-radius:12px;padding:10px 12px;margin:8px 0;text-align:left}.chart-bad p{margin:0 0 8px}.chart,.tbl-wrap,.chart-legend{text-align:left}.chart-svg text{font-size:11px;fill:currentColor}.chart-svg .grid{stroke:currentColor;stroke-opacity:.15}.chart-donut{width:180px}.chart-legend{list-style:none;padding:0;margin:8px 0;display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px}.chart-legend li{display:flex;align-items:center}.swatch{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;flex:none}.chart-data{font-size:12px;margin-top:6px;width:100%}.chart .tbl-wrap{border:1px solid rgba(127,127,127,.35);border-radius:8px;margin:8px 0 0}.chart-pending{opacity:.7}.reenable-card{background:#f5f5f5;border:1px solid #e6e6e6;border-radius:14px;margin:12px 0 4px;overflow:hidden}.reenable-row{background:transparent;border-radius:0;padding:12px 14px;align-items:center;font-size:14px}.reenable-row small{display:block;color:#6b6b6b;font-size:12px;line-height:1.4;margin-top:2px}.reenable-when{padding:0 14px 14px}.reenable-when[hidden]{display:none}.reenable-when .reason-label{margin-top:2px}
+.gate-reason-row,.gate-reason-text{display:block;margin:0 0 8px}.gate-body p{margin:0 0 8px}.gate-box{margin:10px 0 12px;padding:12px 14px;border-radius:14px}.gate-box strong{display:block;margin:0 0 4px;color:#444;font-size:13px}.gate-box-text{margin:0!important;color:#222;font-size:15px;line-height:1.45}.gate-box-text+.gate-box-text{margin-top:2px!important}.gate-reason-text{color:#555}.gate-reenable{color:#111}.dis-preview{margin:8px 0 0;color:#444}.breach-ack{margin-top:8px}.modal .mcard{max-height:calc(100% - 28px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.jump-bottom{position:absolute;right:16px;bottom:190px;width:40px;height:40px;border-radius:50%;border:1px solid #dedede;background:#fff;color:#222;box-shadow:0 4px 14px rgba(0,0,0,.14);display:grid;place-items:center;cursor:pointer;z-index:5;padding:0}.jump-bottom[hidden]{display:none}.jump-bottom:hover{background:#f3f3f3}.chart,.tbl-wrap{margin:8px 0}.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid rgba(127,127,127,.35);border-radius:12px}.msg table{border-collapse:collapse;font-size:13.5px;width:max-content;min-width:100%}.msg th,.msg td{border:1px solid rgba(127,127,127,.35);padding:6px 8px;text-align:left;vertical-align:top;word-break:keep-all;overflow-wrap:normal;white-space:normal}.msg th{font-weight:600}.chart{overflow:hidden;border:1px solid rgba(127,127,127,.35);border-radius:12px;padding:10px 12px 12px;margin:10px 0;color:inherit}.chart{position:relative}.chart figcaption{font-weight:600;font-size:13px;margin-bottom:6px;padding-right:36px}.chart-actions{position:absolute;top:8px;right:8px;z-index:2}.chart-act{display:flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:1px solid #d4d4d4;border-radius:8px;background:#f7f7f7;color:#222;cursor:pointer}.chart-act:hover{background:#e8e8e8}@media (hover:hover){.chart .chart-actions{opacity:0;transition:opacity .15s ease}.chart:hover .chart-actions,.chart:focus-within .chart-actions{opacity:1}}.chart-svg{display:block;width:100%;height:auto;max-width:440px;margin:0;color:inherit;text-align:left}.chart-bad{overflow:hidden;border:1px dashed rgba(127,127,127,.5);border-radius:12px;padding:10px 12px;margin:8px 0;text-align:left}.chart-bad p{margin:0 0 8px}.chart,.tbl-wrap,.chart-legend{text-align:left}.chart-svg text{font-size:11px;fill:currentColor}.chart-svg .grid{stroke:currentColor;stroke-opacity:.15}.chart-donut{width:180px}.chart-legend{list-style:none;padding:0;margin:8px 0;display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px}.chart-legend li{display:flex;align-items:center}.swatch{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;flex:none}.chart-data{font-size:12px;margin-top:6px;width:100%}.chart .tbl-wrap{border:1px solid rgba(127,127,127,.35);border-radius:8px;margin:8px 0 0}.chart-pending{opacity:.7}.reenable-card{background:#f5f5f5;border:1px solid #e6e6e6;border-radius:14px;margin:12px 0 4px;overflow:hidden}.reenable-row{background:transparent;border-radius:0;padding:12px 14px;align-items:center;font-size:14px}.reenable-row small{display:block;color:#6b6b6b;font-size:12px;line-height:1.4;margin-top:2px}.reenable-when{padding:0 14px 14px}.reenable-when[hidden]{display:none}.reenable-when .reason-label{margin-top:2px}
 .reason-input{box-sizing:border-box;width:100%;min-width:0;border:1px solid #dedede;border-radius:12px;background:#fafafa;color:#111;padding:10px 12px;font:inherit;font-size:16px;outline:none;resize:vertical}
 .gate-actions{margin:0 0 12px}.gate-actions[hidden]{display:none}
 .main .site-notice{position:absolute;left:12px;right:12px;top:10px;width:auto;max-width:none;margin:0;border:1px solid rgba(190,210,245,.7);border-radius:14px;background:rgba(232,241,255,.5);-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);z-index:4;padding:10px 16px;text-align:center}
@@ -856,36 +856,43 @@ function chartBlockHtml(raw,closed){
  const legend=c.type==="donut"?'<ul class="chart-legend">'+labels.map((l,i)=>'<li><span class="swatch" style="background:'+CHART_PALETTE[i%8]+'"></span>'+esc(l)+" — "+fmtN(series[0].values[i])+"</li>").join("")+"</ul>":(series.length>1?'<ul class="chart-legend">'+series.map((s,j)=>'<li><span class="swatch" style="background:'+CHART_PALETTE[j]+'"></span>'+esc(s.name)+"</li>").join("")+"</ul>":"");
  const head="<tr><th></th>"+series.map(s=>"<th>"+esc(s.name)+"</th>").join("")+"</tr>";
  const rows=labels.map((l,i)=>"<tr><th>"+esc(l)+"</th>"+series.map(s=>"<td>"+(isNaN(s.values[i])?"—":fmtN(s.values[i]))+"</td>").join("")+"</tr>").join("");
- return '<figure class="chart" role="group" aria-label="'+esc(title)+'"><figcaption>'+esc(title)+'</figcaption><div class="chart-actions"><button type="button" class="chart-act" data-act="copy">Copy image</button><button type="button" class="chart-act" data-act="save">Save PNG</button><span class="chart-act-msg" role="status"></span></div>'+chartSvg(c.type,labels,series)+legend+'<div class="tbl-wrap"><table class="chart-data"><thead>'+head+"</thead><tbody>"+rows+"</tbody></table></div></figure>";
+ return '<figure class="chart" role="group" aria-label="'+esc(title)+'"><figcaption>'+esc(title)+'</figcaption><div class="chart-actions"><button type="button" class="chart-act" data-act="copy" aria-label="Copy image" title="Copy image">'+I.copy+'</button></div>'+chartSvg(c.type,labels,series)+legend+'<div class="tbl-wrap"><table class="chart-data"><thead>'+head+"</thead><tbody>"+rows+"</tbody></table></div></figure>";
 }
-// Draws a chart's SVG onto a white canvas at 2x and returns a PNG blob (title and legend included).
+// Draws a chart's SVG onto a white canvas at 2x and returns a PNG blob (title and legend included, legend wrapped to fit).
 function chartPng(fig){
  return new Promise((resolve,reject)=>{
   const svg=fig.querySelector("svg.chart-svg");if(!svg){reject(new Error("no chart"));return}
   const vb=(svg.getAttribute("viewBox")||"0 0 320 220").split(/\s+/).map(Number),sw=vb[2],sh=vb[3],k=2;
   const cap=fig.querySelector("figcaption"),title=cap?cap.textContent:"",legend=fig.querySelector(".chart-legend");
+  const items=legend?[...legend.querySelectorAll("li")].map(li=>li.textContent):[];
   const ink=getComputedStyle(fig).color||"#222";
   const clone=svg.cloneNode(true);clone.setAttribute("xmlns","http://www.w3.org/2000/svg");clone.setAttribute("width",sw*k);clone.setAttribute("height",sh*k);
   clone.querySelectorAll("text").forEach(t=>{t.setAttribute("fill",ink);t.setAttribute("font-family","Arial,sans-serif");t.setAttribute("font-size","11")});
   clone.querySelectorAll(".grid").forEach(l=>{l.setAttribute("stroke","#888");l.setAttribute("stroke-opacity","0.35")});
-  const pad=16*k,titleH=30*k,svgW=sw*k,svgH=sh*k,legText=legend?[...legend.querySelectorAll("li")].map(li=>li.textContent).join("    "):"",legH=legText?28*k:0;
-  const canvas=document.createElement("canvas");canvas.width=svgW+pad*2;canvas.height=pad+titleH+svgH+legH+pad;
+  const pad=16*k,titleH=30*k,svgW=sw*k,svgH=sh*k;
+  const mctx=document.createElement("canvas").getContext("2d");
+  mctx.font="600 "+(13*k)+"px Arial,sans-serif";const titleW=mctx.measureText(title).width;
+  mctx.font=(12*k)+"px Arial,sans-serif";
+  const lines=[];let cur="";
+  items.forEach(t=>{const cand=cur?cur+"    "+t:t;if(cur&&mctx.measureText(cand).width>svgW){lines.push(cur);cur=t}else cur=cand});
+  if(cur)lines.push(cur);
+  const legH=lines.length?lines.length*18*k+8*k:0;
+  const contentW=Math.max(svgW,titleW,...lines.map(l=>mctx.measureText(l).width));
+  const canvas=document.createElement("canvas");canvas.width=Math.ceil(contentW+pad*2);canvas.height=Math.ceil(pad+titleH+svgH+legH+pad);
   const ctx=canvas.getContext("2d");ctx.fillStyle="#ffffff";ctx.fillRect(0,0,canvas.width,canvas.height);
   ctx.fillStyle="#222222";ctx.font="600 "+(13*k)+"px Arial,sans-serif";ctx.fillText(title,pad,pad+18*k);
   const xml=new XMLSerializer().serializeToString(clone),url=URL.createObjectURL(new Blob([xml],{type:"image/svg+xml"})),img=new Image();
-  img.onload=()=>{ctx.drawImage(img,pad,pad+titleH,svgW,svgH);if(legText){ctx.fillStyle="#444444";ctx.font=(12*k)+"px Arial,sans-serif";ctx.fillText(legText,pad,pad+titleH+svgH+18*k)}URL.revokeObjectURL(url);canvas.toBlob(b=>b?resolve(b):reject(new Error("png")),"image/png")};
+  img.onload=()=>{ctx.drawImage(img,pad,pad+titleH,svgW,svgH);if(lines.length){ctx.fillStyle="#444444";ctx.font=(12*k)+"px Arial,sans-serif";lines.forEach((l,i)=>ctx.fillText(l,pad,pad+titleH+svgH+(18*i+18)*k))}URL.revokeObjectURL(url);canvas.toBlob(b=>b?resolve(b):reject(new Error("png")),"image/png")};
   img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("svg"))};
   img.src=url;
  });
 }
 document.addEventListener("click",e=>{
  const b=e.target.closest&&e.target.closest(".chart-act");if(!b)return;
- const fig=b.closest(".chart"),msg=fig&&fig.querySelector(".chart-act-msg"),setMsg=t=>{if(msg)msg.textContent=t};
- if(!fig)return;
- if(b.dataset.act==="save"){setMsg("Preparing…");chartPng(fig).then(blob=>{const a=document.createElement("a"),url=URL.createObjectURL(blob);a.href=url;a.download=((fig.querySelector("figcaption")||{}).textContent||"chart").replace(/[^\w-]+/g,"-").slice(0,60)+".png";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);setMsg("Saved.")}).catch(()=>setMsg("Could not make the image."));return}
- if(!navigator.clipboard||!window.ClipboardItem){setMsg("Copy is not supported here. Use Save PNG.");return}
- setMsg("Copying…");
- try{navigator.clipboard.write([new ClipboardItem({"image/png":chartPng(fig)})]).then(()=>setMsg("Copied.")).catch(()=>setMsg("Copy was blocked. Use Save PNG."))}catch(err){setMsg("Copy is not supported here. Use Save PNG.")}
+ const fig=b.closest(".chart");if(!fig)return;
+ const flash=t=>{b.innerHTML=t;setTimeout(()=>{if(b.isConnected)b.innerHTML=I.copy},1200)};
+ if(!navigator.clipboard||!window.ClipboardItem){flash(I.copy);return}
+ try{navigator.clipboard.write([new ClipboardItem({"image/png":chartPng(fig)})]).then(()=>flash(I.check)).catch(()=>{})}catch(err){}
 });
 // Wraps chart JSON that arrives without its fence, so it still draws. Skips anything inside a code fence.
 function fenceBareCharts(text){
@@ -929,7 +936,7 @@ function mdCore(s){
   });
   flushList();flushPara();return html.join("");
  }).join("").replace(/<p>\u0001(\d+)<\/p>/g,(_,i)=>tbls[i]).replace(/\u0001(\d+)/g,(_,i)=>tbls[i])};
- return String(s||"").split(/```[\w+-]*\n?([\s\S]*?)(?:```|$)/).map((p,i)=>i%2?'<div class="codeblock"><button class="code-copy" type="button" aria-label="Copy code">Copy code</button><pre><code>'+esc(p.replace(/\n+$/,""))+'</code></pre></div>':blocks(normalize(p))).join("");
+ return String(s||"").split(/```[\w+-]*\n?([\s\S]*?)(?:```|$)/).map((p,i)=>i%2?'<div class="codeblock"><button class="code-copy" type="button" aria-label="Copy code" title="Copy code">'+I.copy+'</button><pre><code>'+esc(p.replace(/\n+$/,""))+'</code></pre></div>':blocks(normalize(p))).join("");
 }
 function ago(t){
  const m=Math.floor((Date.now()-t)/MIN);
@@ -1164,15 +1171,15 @@ function renderChat(fresh){
 }
 const plain=t=>t.replace(/\*\*(.+?)\*\*/g,"$1").replace(/^[-*] /gm,"\u2022 ");
 async function copyCode(text,button){
- const original=button.textContent;button.disabled=true;
+ const original=button.innerHTML;button.disabled=true;
  try{
-  if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(String(text));button.textContent="Copied";}
+  if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(String(text));button.innerHTML=I.check;}
   else throw new Error("clipboard unavailable");
  }catch(e){
   const a=document.createElement("textarea");a.value=String(text);a.style.cssText="position:fixed;top:0;left:0;opacity:0";document.body.appendChild(a);a.focus();a.select();a.setSelectionRange(0,a.value.length);
-  try{if(document.execCommand("copy"))button.textContent="Copied";else toast("Couldn't copy code. Select it and copy manually.")}catch(err){toast("Couldn't copy code. Select it and copy manually.")}a.remove();
+  try{if(document.execCommand("copy"))button.innerHTML=I.check;else toast("Couldn't copy code. Select it and copy manually.")}catch(err){toast("Couldn't copy code. Select it and copy manually.")}a.remove();
  }
- setTimeout(()=>{if(button.isConnected){button.textContent=original;button.disabled=false}},1300);
+ setTimeout(()=>{if(button.isConnected){button.innerHTML=original;button.disabled=false}},1300);
 }
 chatEl.addEventListener("click",e=>{const button=e.target.closest(".code-copy");if(!button)return;const block=button.closest(".codeblock"),code=block&&block.querySelector("code");if(code)copyCode(code.textContent,button)});
 async function copy(t,btn){
