@@ -58,6 +58,10 @@ svg{display:block}
 .empty{margin:auto;text-align:center;color:var(--mute)}.empty h2{font-size:28px;font-weight:400;color:var(--ink);margin:0 0 6px}
 .orb{position:absolute;right:26px;bottom:calc(100% + 22px);z-index:3;width:68px;height:68px;border-radius:50%;background:#78a4fa;box-shadow:0 0 0 6px rgba(120,164,250,.38);pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .14s cubic-bezier(.2,.7,.2,1),box-shadow .2s ease;will-change:transform}
 .orb:active{transform:scale(.9)}
+.orb .wheatley-face{position:absolute;inset:0;width:100%;height:100%;opacity:0;pointer-events:none;border-radius:50%;overflow:hidden}
+.orb .wheatley-face svg{width:100%;height:100%;display:block}
+.orb.wheatley .wheatley-face{opacity:1;transition:opacity 6s ease-in}
+@media (prefers-reduced-motion:reduce){.orb.wheatley .wheatley-face{transition:none}}
 .orb.think{animation:breathe 3s ease-in-out infinite,morph 4.6s ease-in-out infinite}
 @keyframes breathe{0%,100%{transform:translate(0,0) scale(.94) rotate(0);box-shadow:0 0 0 5px rgba(120,164,250,.42)}25%{transform:translate(-3px,-6px) scale(1.04) rotate(10deg)}50%{transform:translate(0,-11px) scale(1.1) rotate(22deg);box-shadow:0 0 0 14px rgba(120,164,250,.12)}75%{transform:translate(3px,-4px) scale(1.02) rotate(8deg)}}
 @keyframes morph{0%,100%{border-radius:50%}25%{border-radius:62% 38% 54% 46%/46% 58% 42% 54%}50%{border-radius:44% 56% 40% 60%/58% 42% 58% 42%}75%{border-radius:54% 46% 62% 38%/40% 60% 46% 54%}}
@@ -670,7 +674,7 @@ textarea{border-radius:16px}
   <div class="toast" id="toast" role="status"></div>
   <div class="limit-bar" id="limit-bar" role="status" hidden><span>You've hit your usage limit. Sign in, create an account, or wait until midnight Hawaii time for more usage.</span><div class="lb-actions"><button type="button" class="pbtn" id="limit-signin">Sign in</button><button type="button" class="pbtn" id="limit-signup">Create account</button></div></div>
   <div class="input">
-   <div class="orb" id="orb"></div>
+   <div class="orb" id="orb"><span class="wheatley-face" aria-hidden="true"><svg viewBox="0 0 68 68"><defs><radialGradient id="wheatley-shell" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#ffffff"/><stop offset=".7" stop-color="#d9dcdf"/><stop offset="1" stop-color="#9aa1a8"/></radialGradient><radialGradient id="wheatley-eye" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#e8fbff"/><stop offset=".35" stop-color="#6fd3ff"/><stop offset="1" stop-color="#1a5bd6"/></radialGradient></defs><circle cx="34" cy="34" r="32" fill="url(#wheatley-shell)" stroke="#6b737b" stroke-width="2"/><circle cx="34" cy="34" r="17" fill="#2b3138"/><circle cx="34" cy="34" r="11.5" fill="url(#wheatley-eye)"/></svg></span></div>
    <div class="field">
     <textarea id="in" rows="1" placeholder="Message WHWai" aria-label="Message" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea>
     <div class="mwrap">
@@ -1611,6 +1615,11 @@ function hideAriesIntro(markSeen){
  if(markSeen){ariesIntroShownThisPage=true;try{localStorage.setItem(ARIES_INTRO_KEY,"1")}catch(e){}}
  if(ariesIntroTimer!==null){clearTimeout(ariesIntroTimer);ariesIntroTimer=null}
 }
+const IDLE_MS=60000;let idleTimer=null,wheatleyOn=false;
+function setWheatley(on){const o=$("orb");if(!o||wheatleyOn===on)return;wheatleyOn=on;o.classList.toggle("wheatley",on)}
+function resetIdle(){if(wheatleyOn)setWheatley(false);clearTimeout(idleTimer);idleTimer=setTimeout(()=>setWheatley(true),IDLE_MS)}
+["pointermove","pointerdown","keydown","scroll","touchstart","wheel"].forEach(ev=>document.addEventListener(ev,resetIdle,{passive:true,capture:true}));
+resetIdle();
 function showAriesIntroOnce(){
  if(ariesIntroShownThisPage||document.body.classList.contains("access-locked")||document.body.classList.contains("body-limit")||$("app-frame").getAttribute("aria-hidden")==="true")return;
  if(selectedModelId()!=="aries-1")return;
@@ -2307,7 +2316,7 @@ async function syncAccountChatsNow(){
 }
 const PROFILE_COLORS=["#4f7cf0","#2fa35a","#e2574c","#d9822b","#8e5cd9","#0e9aa7","#d6336c","#4b5563"];
 function profileColorHtml(){const u=accountSession&&accountSession.user||{};const cur=u.profileColor||"#4f7cf0";const initial=String(u.username||"?").charAt(0).toUpperCase();return '<div class="pc-block"><button type="button" class="pc-avatar" id="pc-avatar" aria-expanded="false" aria-controls="pc-options" aria-label="Change profile color" style="background:'+esc(cur)+'"><span>'+esc(initial)+'</span><span class="pc-pencil" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span></button><div class="pc-options" id="pc-options" hidden><span class="pc-label">Profile color</span><div class="pc-swatches">'+PROFILE_COLORS.map(c=>'<button type="button" class="pc-sw'+(c===cur?' on':'')+'" data-color="'+c+'" style="background:'+c+'" aria-label="Color '+c+'" aria-pressed="'+(c===cur)+'"></button>').join("")+'</div></div></div>'}
-function wireProfileColors(){const av=$("pc-avatar"),opts=$("pc-options");if(av&&opts)av.onclick=()=>{const open=opts.hidden;opts.hidden=!open;av.setAttribute("aria-expanded",String(open))};document.querySelectorAll(".pc-sw").forEach(btn=>{btn.onclick=async()=>{const color=btn.dataset.color,previous=(accountSession&&accountSession.user&&accountSession.user.profileColor)||"#4f7cf0";document.querySelectorAll(".pc-sw").forEach(x=>{x.classList.toggle("on",x===btn);x.setAttribute("aria-pressed",String(x===btn))});if(av)av.style.background=color;try{const r=await post({action:"account_profile_color",sessionToken:accountSession.token,color});if(!r||!r.ok)throw new Error("failed");accountSession.user.profileColor=r.profileColor;renderSyncStatus();toast("Profile color updated")}catch(e){if(av)av.style.background=previous;toast("Couldn't save the color. Try again.")}}})}
+function wireProfileColors(){const av=$("pc-avatar"),opts=$("pc-options");if(av&&opts)av.onclick=()=>{const open=opts.hidden;opts.hidden=!open;av.setAttribute("aria-expanded",String(open))};document.querySelectorAll(".pc-sw").forEach(btn=>{btn.onclick=async()=>{const color=btn.dataset.color,previous=(accountSession&&accountSession.user&&accountSession.user.profileColor)||"#4f7cf0";document.querySelectorAll(".pc-sw").forEach(x=>{x.classList.toggle("on",x===btn);x.setAttribute("aria-pressed",String(x===btn))});if(av)av.style.background=color;try{const r=await post({action:"account_profile_color",sessionToken:accountSession.token,color});if(!r||!r.ok)throw new Error("failed");accountSession.user.profileColor=r.profileColor;if(adminData&&adminData.accounts){const me=adminData.accounts.find(x=>x.username===accountSession.user.username);if(me)me.profileColor=r.profileColor}renderSyncStatus();toast("Profile color updated")}catch(e){if(av)av.style.background=previous;toast("Couldn't save the color. Try again.")}}})}
 function profileStateText(){if(accountSyncing)return "Syncing chats…";if(navigator.onLine===false||accountSyncFailed)return "Offline · saved on this device";if(accountLastSync)return "Chats synced · "+new Date(accountLastSync).toLocaleTimeString();return "Not synced yet"}
 function renderProfileMenu(){const menu=$("profile-menu");if(!menu||!accountSession||!accountSession.user)return;menu.innerHTML='<div class="pm-head"><strong>'+esc(accountSession.user.username)+'</strong><span>'+esc(profileStateText())+'</span></div><button class="pm-item" id="pm-sync" type="button"'+(accountSyncing?' disabled':'')+'>'+(accountSyncing?'Syncing…':'Sync now')+'</button><button class="pm-item" id="pm-settings" type="button">Account settings</button>';$("pm-sync").onclick=async()=>{await syncAccountChatsNow();renderProfileMenu();toast(accountSyncFailed?"Couldn't sync right now. Your chats are saved on this device.":"Chats synced")};$("pm-settings").onclick=()=>{hideProfileMenu();openSettings(()=>renderAccount())}}
 function hideProfileMenu(){hideEl($("profile-menu"))}
