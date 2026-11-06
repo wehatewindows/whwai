@@ -1618,8 +1618,7 @@ function hideAriesIntro(markSeen){
 const IDLE_MS=60000;let idleTimer=null,wheatleyOn=false;
 function setWheatley(on){const o=$("orb");if(!o||wheatleyOn===on)return;wheatleyOn=on;o.classList.toggle("wheatley",on)}
 function resetIdle(){if(wheatleyOn)setWheatley(false);clearTimeout(idleTimer);idleTimer=setTimeout(()=>setWheatley(true),IDLE_MS)}
-["pointermove","pointerdown","keydown","scroll","touchstart","wheel"].forEach(ev=>document.addEventListener(ev,resetIdle,{passive:true,capture:true}));
-resetIdle();
+// Idle easter egg disabled: listeners not attached
 function showAriesIntroOnce(){
  if(ariesIntroShownThisPage||document.body.classList.contains("access-locked")||document.body.classList.contains("body-limit")||$("app-frame").getAttribute("aria-hidden")==="true")return;
  if(selectedModelId()!=="aries-1")return;
