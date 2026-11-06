@@ -350,7 +350,7 @@ body.access-locked .frame{filter:blur(6px);pointer-events:none;user-select:none}
 .admin-account-actions .pbtn:disabled{opacity:.4;cursor:not-allowed}
 .admin-audit-item{padding:10px 11px;border:1px solid #e6e6e6;background:#fafafa;border-radius:11px;margin:7px 0;font-size:12.5px;overflow-wrap:anywhere}
 .admin-audit-item strong{display:block;font-size:13px;margin-bottom:3px}
-.admin-filters{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 12px}.admin-filter{font-size:12.5px;padding:6px 12px;text-transform:capitalize}.admin-filter.active{background:#dce7ff;color:#2458b8;box-shadow:inset 0 0 0 1px #c8d9ff}
+.admin-filter-wrap{position:relative;margin:10px 0 12px}.admin-filter-btn{font-size:12.5px;padding:6px 14px}.admin-filter-btn.active{background:#dce7ff;color:#2458b8;box-shadow:inset 0 0 0 1px #c8d9ff}.admin-filter-menu{margin-top:8px;padding:8px;display:grid;gap:4px;background:#fff;border:1px solid #e4e4e4;border-radius:16px;box-shadow:0 6px 18px rgba(0,0,0,.08)}.admin-filter-menu .check-row{font-size:13px}.admin-filter-menu .pbtn{justify-self:start;font-size:12.5px;padding:6px 12px}
 .one-time-password{font-size:20px;line-height:1.5;letter-spacing:.08em;overflow-wrap:anywhere;background:#f1f1f1;border-radius:12px;padding:12px;margin:12px 0}
 @media(max-width:360px){.admin-grid{grid-template-columns:minmax(0,1fr) minmax(75px,100px)}.admin-stat-grid{gap:6px}.admin-stat{padding:9px}}
 
@@ -596,6 +596,11 @@ html.stim-hueside #side{animation:stimHue 8s linear infinite}
 /* Short screens (phone landscape): keep legal buttons, lock card and chat input clear of each other */
 @media (max-height:640px){.access-gate,.school-lock{padding-bottom:112px}.access-gate .access-card,.school-lock-card{max-height:calc(100dvh - 150px);overflow:auto}}@media (max-height:640px){.main .scroll{min-height:0;flex:1 1 0;padding-bottom:12px}.main .school-notice{max-height:80px;overflow:auto;flex-shrink:1}.main #pre-school-reminder{max-height:none;overflow:visible;flex-shrink:0}.main.has-site-notice .school-notice{margin-top:calc(var(--notice-h,56px) + 10px)}#pre-school-reminder+.school-notice{margin-top:4px}}
 @media (max-height:400px){.main .school-notice{max-height:56px}.main #pre-school-reminder{max-height:56px;overflow:auto;flex-shrink:1}.main.has-site-notice .school-notice{margin-top:calc(var(--notice-h,56px) + 6px)}.main .note{margin-top:0}}
+/* Banner stack: site announcement, school-soon reminder, school disclaimer, in one flow */
+.banner-stack{flex:0 0 auto;display:flex;flex-direction:column;gap:8px;padding:8px 12px 0;position:relative;z-index:4}
+.banner-stack:not(:has(>:not([hidden]))){display:none}
+.banner-stack>*{position:static!important;inset:auto!important;margin:0!important;width:auto!important;max-width:none!important;max-height:none!important;overflow:visible!important;transform:none!important;box-sizing:border-box}
+.frame.collapsed .banner-stack{padding-left:52px}
 /* Pill-shaped controls; large text boxes keep their radius */
 .pbtn,.model,.side .new,.side .gear,.side .profile-btn,.new,.gear,.mnew,.field,.one-time-password,.join input,.access-form input,.access-form button,.access-admin-form input,.access-admin-actions button,.check-row,.switch-row,.export-pick,.pick,.cmenu button,.bar button,.code-copy,.chart-act{border-radius:999px}
 /* Settings rows, tiles and small chips: pill ends and round icon tiles */
@@ -644,9 +649,11 @@ textarea{border-radius:16px}
   <section class="main">
   <button class="expand" id="expand" title="Show sidebar" aria-label="Show sidebar"></button>
   <div class="mbar"><button class="menubtn" id="mopen" title="Open chats and settings" aria-label="Open chats and settings" aria-expanded="false"></button><span class="mt">WHW<b>ai</b><span class="beta-pill">Beta</span></span><button class="mnew" id="mnew" title="New chat" aria-label="New chat"></button></div>
-  <div class="site-notice" id="site-notice" hidden role="status"></div>
-  <div class="school-notice" id="pre-school-reminder" role="status" hidden><span>WHWai will soon be unavailable to users without accounts until the end of the school day.</span><button type="button" class="pre-close" id="pre-close" aria-label="Dismiss reminder"><span class="xi" aria-hidden="true"></span></button></div>
-  <div class="school-notice" id="school-notice" role="note" hidden>WHWai is a tool for educational purposes and general help, but it still needs your teacher's permission before you use it during school hours. Using WHWai during school hours without permission may result in disciplinary action by your school. If you use WHWai for educational purposes, verify facts and disclose that AI was used in your work. <button type="button" id="school-handbook" class="school-btn">Read IPA policies</button></div>
+  <div class="banner-stack" id="banner-stack">
+    <div class="site-notice" id="site-notice" hidden role="status"></div>
+    <div class="school-notice" id="pre-school-reminder" role="status" hidden><span>WHWai will soon be unavailable to users without accounts until the end of the school day.</span><button type="button" class="pre-close" id="pre-close" aria-label="Dismiss reminder"><span class="xi" aria-hidden="true"></span></button></div>
+    <div class="school-notice" id="school-notice" role="note" hidden>WHWai is a tool for educational purposes and general help, but it still needs your teacher's permission before you use it during school hours. Using WHWai during school hours without permission may result in disciplinary action by your school. If you use WHWai for educational purposes, verify facts and disclose that AI was used in your work. <button type="button" id="school-handbook" class="school-btn">Read IPA policies</button></div>
+  </div>
   <div class="scroll" id="chat"></div>
   <div class="toast" id="toast" role="status"></div>
   <div class="limit-bar" id="limit-bar" role="status" hidden><span>You've hit your usage limit. Sign in, create an account, or wait until midnight Hawaii time for more usage.</span><div class="lb-actions"><button type="button" class="pbtn" id="limit-signin">Sign in</button><button type="button" class="pbtn" id="limit-signup">Create account</button></div></div>
@@ -1479,13 +1486,14 @@ async function answer(c,q){
    if(responseWasStopped||run!==answerRunId)return;
    full=(RULES.find(([r])=>r.test(q.toLowerCase()))||[0,FALLBACK])[1]
   }
+  if(limitNow){full="You've hit your usage limit.";await sleepUntilAbort(1100+Math.random()*500,controller.signal);if(responseWasStopped||run!==answerRunId)return}
   tmp.classList.remove("dim");
   const drawn=await typeOut(tmp,full,controller.signal,()=>responseWasStopped||run!==answerRunId);
   if(!drawn)return;
   if(responseWasStopped||run!==answerRunId)return;
   const target=S.chats.find(x=>x.id===c.id);
   if(!target)return;
-  if(limitNow)full="You've hit today's usage limit.";target.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1,limit:limitNow?1:0}:{r:"a",x:full,at:Date.now(),sources:sources,thinking:thinking,model:usedModel||target.model||S.model||"aries-1",_l:1});target.u=Date.now();touch(target);save();renderList();renderChat();
+  if(limitNow)full="You've hit your usage limit.";target.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1,limit:limitNow?1:0}:{r:"a",x:full,at:Date.now(),sources:sources,thinking:thinking,model:usedModel||target.model||S.model||"aries-1",_l:1});target.u=Date.now();touch(target);save();renderList();renderChat();
   if(API_URL&&!err&&target.auto)genTitle(target);
 
  }finally{
@@ -2658,15 +2666,11 @@ function renderPrivacyPolicy(){
 }
 let deletingLocalData=false;
 function setMsg(t){smsg=String(t||"");const status=mbody.querySelector("#s-msg");if(status)status.textContent=smsg}
-let siteNoticeRO=null;
-function syncNoticeHeight(){const el=$("site-notice");if(el&&!el.hidden)document.documentElement.style.setProperty("--notice-h",el.offsetHeight+"px")}
 function renderSiteNotice(){
  const has=!!siteNoticeText;
  const g=$("gate-notice");if(g){g.textContent=siteNoticeText;g.hidden=!(has&&siteNoticeOnGates)}
  const el=$("site-notice");if(!el)return;
- const main=el.closest(".main");
  const visible=has&&siteNoticeDismissedText!==siteNoticeText;
- if(!siteNoticeRO&&window.ResizeObserver){siteNoticeRO=new ResizeObserver(syncNoticeHeight);siteNoticeRO.observe(el)}
  if(visible){
   if(el._lt){clearTimeout(el._lt);el._lt=null}
   el.classList.remove("leaving");
@@ -2678,12 +2682,10 @@ function renderSiteNotice(){
    x.innerHTML=ic('<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',14,2.2);
    x.onclick=()=>{siteNoticeDismissedText=siteNoticeText;renderSiteNotice()};el.appendChild(x);
   }
-  if(main)main.classList.add("has-site-notice");
-  requestAnimationFrame(syncNoticeHeight);
  }else if(!el.hidden){
   if(!el._lt){
    el.classList.add("leaving");
-   el._lt=setTimeout(()=>{el._lt=null;el.hidden=true;el.classList.remove("leaving");if(main)main.classList.remove("has-site-notice")},200);
+   el._lt=setTimeout(()=>{el._lt=null;el.hidden=true;el.classList.remove("leaving")},200);
   }
  }
 }
@@ -2827,7 +2829,7 @@ function refreshAdmin(){
  }).catch(err=>{finish();if(g===adminPanelGeneration)showAdminError(err)});
 }
 function renderAdminPanel(tab,query){
- currentSettingsView="admin";if(tab)adminTab=tab;if(query!=null)adminQuery=query;
+ currentSettingsView="admin";if(tab&&tab!==adminTab)adminFilterOpen=null;if(tab)adminTab=tab;if(query!=null)adminQuery=query;
  const generation=++adminPanelGeneration;
  $("modal-title").textContent="Admin panel";
  mbody.innerHTML=`<div class="admin-nav">${[["site","Site controls"],["accounts","Accounts"],["usage","Usage"],["audit","Audit log"]].map(t=>`<button type="button" class="pbtn ${adminTab===t[0]?"active":""}" data-admin-tab="${t[0]}">${t[1]}</button>`).join("")}</div><div id="admin-content" aria-live="polite"></div><div class="data-toolbar"><button type="button" class="pbtn" id="admin-refresh">Refresh</button><button type="button" class="pbtn" id="admin-back">Back to Settings</button></div>`;
@@ -2878,7 +2880,7 @@ function renderWhatsNewAdmin(){
  };
 }
 function paintAdminAccounts(box){
- box.innerHTML=`<div class="admin-search"><input id="admin-account-query" type="search" maxlength="20" placeholder="Search usernames" value="${escapeAttr(adminQuery)}" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"><button type="button" class="pbtn" id="admin-create-account">Create account</button></div>${filterChips("accounts",ACCOUNT_FILTERS,adminAccountFilter)}<div id="admin-account-results"></div>`;
+ box.innerHTML=`<div class="admin-search"><input id="admin-account-query" type="search" maxlength="20" placeholder="Search usernames" value="${escapeAttr(adminQuery)}" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"><button type="button" class="pbtn" id="admin-create-account">Create account</button></div>${filterDropdown("accounts",ACCOUNT_FILTERS,adminAccountFilters)}<div id="admin-account-results"></div>`;
  $("admin-account-query").oninput=e=>{adminQuery=e.target.value.trim();paintAccountList()};
  $("admin-create-account").onclick=renderCreateAccount;
  bindAdminFilters(box);
@@ -2898,32 +2900,28 @@ function paintAdminUsage(box){
  const r=adminData.usage||{},t=r.today||{},w=r.week||{};
  box.innerHTML=`<div class="admin-stat-grid"><div class="admin-stat"><span>Requests today</span><strong>${Number(t.total)||0}</strong></div><div class="admin-stat"><span>Requests in 7 days</span><strong>${Number(w.total)||0}</strong></div><div class="admin-stat"><span>Accounts</span><strong>${Number(r.accountCount)||0}</strong></div><div class="admin-stat"><span>Failed sign-ins today</span><strong>${Number(t.failedSignins)||0}</strong></div><div class="admin-stat"><span>Guest requests today</span><strong>${Number(t.guests)||0}</strong></div><div class="admin-stat"><span>Account requests today</span><strong>${Number(t.accounts)||0}</strong></div></div><p class="sm">Usage counts contain totals only; no prompts, responses, or chat text are included.</p>`;
 }
-let adminAuditFilter="all",adminAccountFilter="all";
-const ACCOUNT_FILTERS=[["all","All"],["admin","Admins"],["user","Users"],["active","Active"],["disabled","Disabled"]];
+let adminAuditFilters=new Set(),adminAccountFilters=new Set(),adminFilterOpen=null;
+const ACCOUNT_FILTERS=[["admin","Admins"],["user","Users"],["active","Active"],["disabled","Disabled"]];
 function accountMatchesFilter(a){
- const f=adminAccountFilter;
- if(f==="admin")return a.role==="admin";
- if(f==="user")return a.role!=="admin";
- if(f==="active")return a.status!=="disabled";
- if(f==="disabled")return a.status==="disabled";
- return true;
+ if(!adminAccountFilters.size)return true;
+ return adminAccountFilters.has(a.role==="admin"?"admin":"user")||adminAccountFilters.has(a.status==="disabled"?"disabled":"active");
 }
-function filterChips(group,options,active){
- return `<div class="admin-filters" role="group" aria-label="Filter ${esc(group)}">${options.map(o=>`<button type="button" class="pbtn admin-filter${o[0]===active?" active":""}" data-filter-group="${esc(group)}" data-filter="${escapeAttr(o[0])}" aria-pressed="${o[0]===active}">${esc(o[1])}</button>`).join("")}</div>`;
+function filterDropdown(group,options,selected){
+ const open=adminFilterOpen===group,n=selected.size;
+ return `<div class="admin-filter-wrap"><button type="button" class="pbtn admin-filter-btn${open?" active":""}" data-filter-toggle="${esc(group)}" aria-expanded="${open}">Filter${n?" · "+n:""}</button>${open?`<div class="admin-filter-menu" role="group" aria-label="Filter ${esc(group)}">${options.map(o=>`<label class="check-row"><input type="checkbox" data-filter-group="${esc(group)}" value="${escapeAttr(o[0])}"${selected.has(o[0])?" checked":""}> ${esc(o[1])}</label>`).join("")}${n?`<button type="button" class="pbtn" data-filter-clear="${esc(group)}">Clear filters</button>`:""}</div>`:""}</div>`;
 }
 function bindAdminFilters(box){
- box.querySelectorAll("[data-filter-group]").forEach(b=>b.onclick=()=>{
-  if(b.dataset.filterGroup==="audit")adminAuditFilter=b.dataset.filter;else adminAccountFilter=b.dataset.filter;
-  paintAdminTab();
- });
+ box.querySelectorAll("[data-filter-toggle]").forEach(b=>b.onclick=()=>{const g=b.dataset.filterToggle;adminFilterOpen=adminFilterOpen===g?null:g;paintAdminTab()});
+ box.querySelectorAll("[data-filter-group]").forEach(i=>i.onchange=()=>{const set=i.dataset.filterGroup==="audit"?adminAuditFilters:adminAccountFilters;if(i.checked)set.add(i.value);else set.delete(i.value);paintAdminTab()});
+ box.querySelectorAll("[data-filter-clear]").forEach(b=>b.onclick=()=>{(b.dataset.filterClear==="audit"?adminAuditFilters:adminAccountFilters).clear();paintAdminTab()});
 }
 function paintAdminAudit(box){
  const items=adminData.audit||[];
  const actions=[...new Set(items.map(i=>i.action).filter(Boolean))].sort();
- if(adminAuditFilter!=="all"&&actions.indexOf(adminAuditFilter)===-1)adminAuditFilter="all";
- const shown=adminAuditFilter==="all"?items:items.filter(i=>i.action===adminAuditFilter);
- const options=[["all","All"]].concat(actions.map(a=>[a,a.replace(/_/g," ")]));
- box.innerHTML=`<p class="sm">Latest ${items.length} admin and account-security events. Chat titles and messages are never recorded here.</p>${items.length?filterChips("audit",options,adminAuditFilter):""}${shown.length?shown.map(item=>`<article class="admin-audit-item"><strong>${esc(item.action)}</strong><span>${adminDate(item.timestamp)}</span><p>${esc(item.actor)} → ${esc(item.target||"—")}</p><small>${esc(item.detail||"")}</small></article>`).join(""):`<p class="sm">${items.length?"No entries for this filter.":"No audit entries yet."}</p>`}`;
+ [...adminAuditFilters].forEach(a=>{if(actions.indexOf(a)===-1)adminAuditFilters.delete(a)});
+ const shown=adminAuditFilters.size?items.filter(i=>adminAuditFilters.has(i.action)):items;
+ const options=actions.map(a=>[a,a.replace(/_/g," ")]);
+ box.innerHTML=`<p class="sm">Latest ${items.length} admin and account-security events. Chat titles and messages are never recorded here.</p>${items.length?filterDropdown("audit",options,adminAuditFilters):""}${shown.length?shown.map(item=>`<article class="admin-audit-item"><strong>${esc(item.action)}</strong><span>${adminDate(item.timestamp)}</span><p>${esc(item.actor)} → ${esc(item.target||"—")}</p><small>${esc(item.detail||"")}</small></article>`).join(""):`<p class="sm">${items.length?"No entries for this filter.":"No audit entries yet."}</p>`}`;
  bindAdminFilters(box);
 }
 function renderCreateAccount(){
