@@ -107,9 +107,9 @@ svg{display:block}
 .data-tool:hover{background:#eee}.data-tool:active{background:#e7e7e7}
 .data-tool .tool-icon{width:36px;height:36px;flex:none;border-radius:11px;background:#e8e8e8;display:grid;place-items:center;color:#333}
 .data-tool.danger .tool-icon{background:#fbe9e9;color:#c33333}.data-tool .tool-copy{flex:1;min-width:0}.data-tool strong{display:block;font-size:14px;line-height:1.25}.data-tool small{display:block;font-size:12px;line-height:1.35;color:#666;margin-top:3px}.data-tool .tool-arrow{flex:none;color:#777}
-.delete-choice{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;background:#f7f7f7;border:1px solid #e5e5e5;border-radius:13px;padding:10px;margin:8px 0}
-.delete-choice .choice-icon{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;background:#e8e8e8;color:#444}
-.delete-choice.danger .choice-icon{background:#fae7e7;color:#c33333}.delete-choice .choice-copy{min-width:0}.delete-choice strong{display:block;font-size:13.5px;line-height:1.25}.delete-choice p{font-size:12px;line-height:1.35;color:#666;margin:3px 0 0}.delete-choice .pbtn{padding:7px 10px;font-size:12.5px;white-space:nowrap}
+
+
+.delete-choice .choice-copy{min-width:0}.delete-choice strong{display:block;font-size:13.5px;line-height:1.25}.delete-choice p{font-size:12px;line-height:1.35;color:#666;margin:3px 0 0}.delete-choice .pbtn{padding:7px 10px;font-size:12.5px;white-space:nowrap}
 .confirm-panel{display:flex;gap:12px;align-items:flex-start;padding:12px;background:#f7f7f7;border:1px solid #e5e5e5;border-radius:14px;margin:12px 0}.confirm-panel .choice-icon{width:38px;height:38px;flex:none;display:grid;place-items:center;border-radius:12px;background:#fae7e7;color:#c33333}.confirm-panel p{margin:0;font-size:13px;color:#555}.confirm-panel p:empty{display:none}.app-confirm-card .confirm-panel{align-items:center}
 .data-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.data-toolbar .pbtn{flex:1}.data-toolbar .pbtn.danger{background:#fbeaea}.data-toolbar .pbtn.danger:hover{background:#f4dada}
 .export-contents{padding:10px 12px;background:#f5f5f5;border-radius:12px;margin:10px 0}.export-contents ul{margin:6px 0;padding-left:20px}.export-contents li{font-size:13px;margin:3px 0}
@@ -121,7 +121,7 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @supports (height:100dvh){html,body{height:100dvh}}
 button,.chat{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-.model .sep{margin-right:1px}
+
 @media (hover:none){.more{opacity:1}.chat:hover{background:var(--chip)}.chat.on:hover{background:var(--sel)}}
 @keyframes glow{0%,100%{box-shadow:-6px 4px 20px rgba(106,160,255,.35),6px 4px 20px rgba(244,114,182,.22),0 -4px 20px rgba(167,139,250,.22)}50%{box-shadow:6px 6px 28px rgba(106,160,255,.5),-6px 2px 28px rgba(244,114,182,.38),0 -6px 26px rgba(251,191,36,.28)}}
 
@@ -181,7 +181,7 @@ button:focus-visible,.chat:focus-visible,.model:focus-visible{outline:2px solid 
 .answer-sources[hidden]{display:none}.answer-sources ul{margin:0;padding-left:18px}.answer-sources li{margin:4px 0;overflow-wrap:anywhere}.answer-sources a{color:#2f6ee0;text-decoration:none}.answer-sources a:hover{text-decoration:underline}
 .bar .src{display:inline-flex;align-items:center;gap:5px;width:auto;height:26px;padding:0 9px;border-radius:13px;color:#333}.bar .src em{font-style:normal;margin-left:0;font-size:12.5px;color:#333}.bar .src[aria-expanded="true"]{background:#ddd}
 .thinking{align-self:flex-start;max-width:86%;font-size:13px;color:#555;margin:2px 0 -2px}.thinking summary{cursor:pointer;user-select:none;list-style:none;display:inline-flex;align-items:center;gap:6px;color:#666;padding:4px 2px}.thinking summary::-webkit-details-marker{display:none}.thinking summary::before{content:"\25B8";display:inline-block;transition:transform .15s}.thinking[open] summary::before{transform:rotate(90deg)}
-.thinking-body{white-space:pre-wrap;overflow-wrap:anywhere;border-left:2px solid #d6d6dc;margin:4px 0 0;padding:4px 0 4px 12px;color:#666;max-height:320px;overflow:auto}
+
 @keyframes typingDot{0%,60%,100%{transform:translateY(0);opacity:.38}30%{transform:translateY(-4px);opacity:1}}
 #export-data.cooldown{letter-spacing:.06em;font-variant-numeric:tabular-nums}
 @media (prefers-reduced-motion:reduce){.modal,.modal .mcard,.modal.closing,.modal.closing .mcard,.app-confirm-overlay,.app-confirm-card,#mbody.menu-content-enter,.fresh,.orb.think,.sync-spinner{animation:none!important;transition:none!important}}
@@ -326,18 +326,18 @@ body.access-locked .frame{filter:blur(6px);pointer-events:none;user-select:none}
 .admin-nav{display:flex;gap:6px;overflow:auto;margin:4px 0 13px;padding-bottom:3px}
 .admin-nav .pbtn{flex:none;white-space:nowrap;font-size:12.5px;padding:8px 10px}
 .admin-nav .pbtn.active{background:#dce7ff;color:#2458b8;box-shadow:inset 0 0 0 1px #c8d9ff}
-.admin-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(88px,130px);gap:8px;align-items:center;padding:10px;background:#f6f6f6;border-radius:12px}
-.admin-grid label{font-size:12.5px;color:#555}
-.admin-grid input{min-width:0;width:100%;height:38px;border:1px solid #ddd;border-radius:9px;padding:0 9px;background:#fff;font:inherit;font-size:14px}
+
+
+
 .admin-stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0 16px}
 .admin-stat{padding:11px 12px;border:1px solid #e5e5e5;border-radius:13px;background:#f7f7f7;min-width:0}
 .admin-stat span{display:block;font-size:11.5px;line-height:1.35;color:#666}
 .admin-stat strong{display:block;margin-top:4px;font-size:23px;line-height:1.2;font-weight:600;overflow-wrap:anywhere}
-.admin-table-wrap{max-width:100%;overflow:auto;margin:8px 0 14px;border:1px solid #e4e4e4;border-radius:12px}
-.admin-table{border-collapse:collapse;width:100%;min-width:210px;font-size:13px}
-.admin-table th,.admin-table td{padding:9px 11px;border-bottom:1px solid #e8e8e8;text-align:left}
-.admin-table th{background:#f3f3f3;font-weight:600;color:#444}
-.admin-table tr:last-child td{border-bottom:0}
+
+
+
+
+
 .admin-search{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
 .admin-search input{flex:1 1 120px;height:40px;font-size:14px}
 .admin-search .pbtn{flex:0 0 auto}
@@ -350,6 +350,7 @@ body.access-locked .frame{filter:blur(6px);pointer-events:none;user-select:none}
 .admin-account-actions .pbtn:disabled{opacity:.4;cursor:not-allowed}
 .admin-audit-item{padding:10px 11px;border:1px solid #e6e6e6;background:#fafafa;border-radius:11px;margin:7px 0;font-size:12.5px;overflow-wrap:anywhere}
 .admin-audit-item strong{display:block;font-size:13px;margin-bottom:3px}
+.admin-filters{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 12px}.admin-filter{font-size:12.5px;padding:6px 12px;text-transform:capitalize}.admin-filter.active{background:#dce7ff;color:#2458b8;box-shadow:inset 0 0 0 1px #c8d9ff}
 .one-time-password{font-size:20px;line-height:1.5;letter-spacing:.08em;overflow-wrap:anywhere;background:#f1f1f1;border-radius:12px;padding:12px;margin:12px 0}
 @media(max-width:360px){.admin-grid{grid-template-columns:minmax(0,1fr) minmax(75px,100px)}.admin-stat-grid{gap:6px}.admin-stat{padding:9px}}
 
@@ -408,9 +409,9 @@ input,textarea,select,[contenteditable="true"],.field textarea,.access-form inpu
 .access-form button{height:50px;width:50px}
 .access-admin-form button{min-height:50px}
 .chat-search{height:46px}
-.admin-grid input,.admin-search input,.account-form input,.account-form select{min-height:46px}
+.admin-search input,.account-form input,.account-form select{min-height:46px}
 }
-.account-form select,.admin-grid select,.mcard select{height:auto;min-height:48px;line-height:1.35;padding-top:10px;padding-bottom:10px;box-sizing:border-box}
+.account-form select,.mcard select{height:auto;min-height:48px;line-height:1.35;padding-top:10px;padding-bottom:10px;box-sizing:border-box}
 .gate-actions{display:flex;flex-wrap:wrap;gap:8px}.gate-status{margin:2px 0 0;font-size:13.5px;color:#555}.gate-status[hidden]{display:none}
 .confirm-radios{border:0;margin:12px 0 0;padding:0;min-width:0;display:grid;gap:8px}.confirm-radios legend{padding:0;margin:0 0 6px}
 .radio-row{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid #e2e2e2;border-radius:12px;background:#fafafa;cursor:pointer}.radio-row input{margin:3px 0 0;flex:none;accent-color:#2f6bff;width:18px;height:18px}.radio-row span{display:grid;gap:2px;min-width:0}.radio-row strong{font-size:14.5px;font-weight:600;color:#222}.radio-row small{font-size:12.5px;line-height:1.4;color:#666}
@@ -419,9 +420,9 @@ input,textarea,select,[contenteditable="true"],.field textarea,.access-form inpu
 .wn-card{box-sizing:border-box;width:min(440px,100%);max-height:calc(100dvh - 36px);overflow:auto;background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:22px;padding:20px 22px;box-shadow:0 12px 40px rgba(0,0,0,.22)}
 .wn-card h2{margin:0 0 4px;font-size:22px;font-weight:600;color:#111}.wn-card h2 .beta-pill{font-size:10px;margin-left:8px;top:-2px}
 .wn-intro{margin:0;font-size:14.5px;color:#555}.wn-list{list-style:none;margin:14px 0 16px;padding:0;display:grid;gap:12px}.wn-list li{display:grid;gap:2px}.wn-list strong{font-size:15px;font-weight:600;color:#111}.wn-list span{font-size:14px;line-height:1.45;color:#555}
-.whatsnew-admin{margin:4px 0 10px}.whatsnew-admin-body>label{font-size:13px;line-height:1.35;color:#555;font-weight:500;margin-top:3px}.whatsnew-admin-body>input{box-sizing:border-box;width:100%;min-width:0;height:44px;border:1px solid #dedede;border-radius:12px;background:#fafafa;color:#111;padding:10px 12px;font:inherit;outline:none}.whatsnew-admin-head{display:grid;gap:2px}.whatsnew-admin-head strong{font-size:15px}.whatsnew-admin-current summary{cursor:pointer;font-size:14px;font-weight:600;color:#333}.whatsnew-admin-current ul{margin:8px 0 0;padding-left:18px;display:grid;gap:6px;font-size:13.5px;line-height:1.4;color:#444}
+.whatsnew-admin-body>label{font-size:13px;line-height:1.35;color:#555;font-weight:500;margin-top:3px}.whatsnew-admin-body>input{box-sizing:border-box;width:100%;min-width:0;height:44px;border:1px solid #dedede;border-radius:12px;background:#fafafa;color:#111;padding:10px 12px;font:inherit;outline:none}.whatsnew-admin-head{display:grid;gap:2px}.whatsnew-admin-head strong{font-size:15px}.whatsnew-admin-current summary{cursor:pointer;font-size:14px;font-weight:600;color:#333}.whatsnew-admin-current ul{margin:8px 0 0;padding-left:18px;display:grid;gap:6px;font-size:13.5px;line-height:1.4;color:#444}
 .switch-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px;background:#f5f5f5;border-radius:10px;color:#333;font-size:13.5px;cursor:pointer}.switch-row input{position:absolute;opacity:0;width:1px;height:1px}.switch-ui{position:relative;flex:none;width:46px;height:28px;border-radius:999px;background:#cfcfcf;transition:background .15s}.switch-ui::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .15s}.switch-row input:checked+.switch-ui{background:#2f6bff}.switch-row input:checked+.switch-ui::after{transform:translateX(18px)}.switch-row input:focus-visible+.switch-ui{outline:2px solid #2f6bff;outline-offset:2px}
-.whatsnew-admin-old{margin:4px 0 10px}.whatsnew-admin-toggle{display:inline-flex;cursor:pointer;list-style:none;align-items:center}.whatsnew-admin-toggle::after{content:"Edit";margin-left:10px;font-size:13px;opacity:.7}.whatsnew-admin[open] .whatsnew-admin-toggle::after{content:"Close"}.whatsnew-admin-toggle::-webkit-details-marker{display:none}.whatsnew-admin[open] .whatsnew-admin-toggle{background:#cfcfcf}.whatsnew-admin-body{display:grid;gap:8px;margin-top:10px}
+.whatsnew-admin-toggle{display:inline-flex;cursor:pointer;list-style:none;align-items:center}.whatsnew-admin-toggle::after{content:"Edit";margin-left:10px;font-size:13px;opacity:.7}.whatsnew-admin[open] .whatsnew-admin-toggle::after{content:"Close"}.whatsnew-admin-toggle::-webkit-details-marker{display:none}.whatsnew-admin[open] .whatsnew-admin-toggle{background:#cfcfcf}.whatsnew-admin-body{display:grid;gap:8px;margin-top:10px}
 .wn-ok{width:100%;justify-content:center;min-height:46px}
 .export-scope{border:0;margin:12px 0 0;padding:0;min-width:0;display:grid;gap:8px}.export-scope legend{padding:0;margin:0 0 6px}.export-picks{display:grid;gap:6px;max-height:220px;overflow:auto;margin:10px 0 0;padding:4px}.export-picks[hidden]{display:none}.export-pick{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid #e2e2e2;border-radius:12px;background:#fafafa;font-size:14px;cursor:pointer}.export-pick input{width:18px;height:18px;flex:none;accent-color:#2f6bff}.export-pick span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* Text fields: no blue focus rings or borders */
@@ -596,11 +597,11 @@ html.stim-hueside #side{animation:stimHue 8s linear infinite}
 @media (max-height:640px){.access-gate,.school-lock{padding-bottom:112px}.access-gate .access-card,.school-lock-card{max-height:calc(100dvh - 150px);overflow:auto}}@media (max-height:640px){.main .scroll{min-height:0;flex:1 1 0;padding-bottom:12px}.main .school-notice{max-height:80px;overflow:auto;flex-shrink:1}.main #pre-school-reminder{max-height:none;overflow:visible;flex-shrink:0}.main.has-site-notice .school-notice{margin-top:calc(var(--notice-h,56px) + 10px)}#pre-school-reminder+.school-notice{margin-top:4px}}
 @media (max-height:400px){.main .school-notice{max-height:56px}.main #pre-school-reminder{max-height:56px;overflow:auto;flex-shrink:1}.main.has-site-notice .school-notice{margin-top:calc(var(--notice-h,56px) + 6px)}.main .note{margin-top:0}}
 /* Pill-shaped controls; large text boxes keep their radius */
-.pbtn,.model,.side .new,.side .gear,.side .profile-btn,.new,.gear,.mnew,.field,.one-time-password,.join input,.access-form input,.access-form button,.access-admin-form input,.access-admin-actions button,.check-row,.switch-row,.export-pick,.pick,.whatsnew-admin-body>input,.admin-grid input,.cmenu button,.bar button,.code-copy,.chart-act{border-radius:999px}
+.pbtn,.model,.side .new,.side .gear,.side .profile-btn,.new,.gear,.mnew,.field,.one-time-password,.join input,.access-form input,.access-form button,.access-admin-form input,.access-admin-actions button,.check-row,.switch-row,.export-pick,.pick,.cmenu button,.bar button,.code-copy,.chart-act{border-radius:999px}
 /* Settings rows, tiles and small chips: pill ends and round icon tiles */
-.data-tool,.delete-choice,.switch-row,.check-row,.bar .src,.bar .thk,.lock-link,.privacy-link,.access-admin-link{border-radius:999px}
+.data-tool,.switch-row,.check-row,.bar .src,.bar .thk,.lock-link,.privacy-link,.access-admin-link{border-radius:999px}
 textarea{border-radius:16px}
-.data-tool .tool-icon,.delete-choice .choice-icon,.confirm-panel .choice-icon{border-radius:50%}
+.data-tool .tool-icon,.confirm-panel .choice-icon{border-radius:50%}
 /* BETA badge: center the label optically */
 .beta-pill{top:0!important;display:inline-flex!important;align-items:center;justify-content:center;line-height:1!important;padding:calc(.3em + .5px) .7em calc(.3em - .5px)!important;vertical-align:middle}
 </style>
@@ -822,7 +823,6 @@ const esc=s=>String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").rep
 const CHART_PALETTE=["#3b6fd8","#d9782b","#2f9a66","#c94f7c","#7b5ea7","#2a9db5","#b8a22a","#6b6b6b"];
 function niceMax(v){const p=Math.pow(10,Math.floor(Math.log10(v))),n=v/p;return (n<=1?1:n<=2?2:n<=5?5:10)*p}
 function fmtN(v){return String(Math.round(v*100)/100)}
-function shortLabel(t,n){t=String(t);return t.length>n?t.slice(0,n-1)+"…":t}
 function chartSvg(type,labels,series){
  if(type==="bar"&&(labels.length>5||labels.some(l=>l.length>10)))type="hbar";
  const W=320,max=Math.max(0,...series.flatMap(s=>s.values.filter(v=>!isNaN(v))))||1,nm=niceMax(max);
@@ -962,7 +962,6 @@ function ago(t){
  const d=Math.floor(h/24);if(d<7)return d+(d===1?" day ago":" days ago");
  return new Date(t).toLocaleDateString();
 }
-const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function sleepUntilAbort(ms,signal){return new Promise(resolve=>{
  let done=false;const finish=()=>{if(done)return;done=true;clearTimeout(t);if(signal)signal.removeEventListener("abort",finish);resolve()};
  const t=setTimeout(finish,ms);
@@ -1289,7 +1288,6 @@ const ACCESS_STORAGE_KEY="whwai.earlyAccessUntil.v1",ACCESS_TOKEN_KEY="whwai.ear
 try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}
 const accessGate=$("access-gate"),accessCard=$("access-card"),accessTitle=$("access-title"),accessForm=$("access-form"),accessInput=$("access-code"),accessError=$("access-error"),accessButton=$("access-unlock");
 let aiDisabled=false,accessRequired=true,accountDisabledGate=false,accessUnlocked=false;
-function hasEarlyAccess(){return false}
 function syncAppInert(){
  const frame=$("app-frame");if(!frame)return;
  const blocked=!accessGate.hidden||!$("wn").hidden;
@@ -1638,7 +1636,7 @@ $("mnew").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',18,2.4);$("mnew").onclick=
 const modal=$("modal"),mbody=$("mbody");
 let siteStimDisabled=false,siteNoticeDismissible=false,siteNoticeOnGates=true,siteNoticeDismissedText=null;
 const COARSE=matchMedia("(pointer:coarse)").matches;const STIM_QUIET=COARSE?.45:1;
-let stimOn=false,stimTaps=[];const BASE_TITLE=document.title;
+let stimOn=false,stimTaps=[];
 let stimSound=true,stimParts=[],stimRAF=null,stimDodgeEl=null,stimBlobs=[],stimDodgeCount=0;
 function stimSettingsHtml(){return '<label class="switch-row" style="margin:6px 0 4px"><span>Stimulation Mode</span><input type="checkbox" id="stim-toggle" checked><span class="switch-ui"></span></label><label class="switch-row" style="margin:0 0 10px"><span>Sound effects</span><input type="checkbox" id="stim-sound"'+(stimSound?' checked':'')+'><span class="switch-ui"></span></label>'}
 function stimTone(f,dur,type,vol,slide){if(!stimOn||!stimSound)return;try{stimAudio=stimAudio||new (window.AudioContext||window.webkitAudioContext)();const t=stimAudio.currentTime,o=stimAudio.createOscillator(),g=stimAudio.createGain();o.type=type||"square";o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(40,f*slide),t+dur);g.gain.setValueAtTime((vol||.05)*STIM_QUIET,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g).connect(stimAudio.destination);o.start(t);o.stop(t+dur)}catch(e){}}
@@ -2039,7 +2037,6 @@ document.addEventListener("click",e=>{
 /* Stimulation Mode, round six: fifteen more things, crown, reset on exit */
 let stimMetroTimer=null,stimW=[],stimEnts=[],stimLoopRAF=null,stimLastT=0;
 const STIM_WIDGETS={breakout:()=>stimBreakout(),snake:()=>stimSnake(),flappy:()=>stimFlappy(),invaders:()=>stimInvaders(),radar:()=>stimRadar(),matrix:()=>stimMatrix(),lava:()=>stimLava(),spiro:()=>stimSpiro(),pacman:()=>stimPacman(),tanks:()=>stimTanks(),frogger:()=>stimFrogger(),life:()=>stimLife(),boids:()=>stimBoids(),tictactoe:()=>stimTTT(),pinball:()=>stimPinball()};
-function stimDockSlot(){return stimW.length+(stimPong?1:0)}
 function stimMakeWidget(w,h){const c=document.createElement("canvas");c.className="stim-w";c.width=w;c.height=h;document.body.appendChild(c);return stimDockAdd(c)}
 function stimStartWidget(id){const w=STIM_WIDGETS[id]();stimW.push(w);stimEnsureLoop()}
 function stimBreakout(){const c=stimMakeWidget(200,120),x=c.getContext("2d");const B={bx:100,by:90,vx:1.8,vy:-2.2,pad:100,bricks:[]};
@@ -2646,7 +2643,7 @@ function privacyBodyHTML(){return `<div class="policy-takeaways"><strong>Key tak
  <h3>How data is used</h3><p>Conversation data is used to display, save, restore, and sync chats and to generate replies and titles you request. WHW does not intend to sell conversations, use them for advertising or profiling, or train its own models on them. Admin tools show account metadata and chat counts only. They are designed not to return chat titles, messages, or chat content.</p>
  <h3>Hosting, storage, and access</h3><p>Signed-in chats and account details are stored on WHWai's server so they can sync across your devices. Authorized admins and support staff can view select account data to keep the service running and help with issues. Chat content is not shown in admin tools. The people who operate the server can reach stored data directly, outside the WHWai interface.</p>
  <h3>AI processing</h3><p>WHWai sends the prompt and recent conversation context (up to the latest 14 messages) to Groq to generate replies and chat titles. The models are OpenAI open-weight gpt-oss models running on Groq; requests go to Groq, not directly to OpenAI. Groq's documentation says ordinary inference prompts and outputs are not retained by default, but they may be temporarily logged for system reliability or suspected-abuse investigations for up to 30 days unless legally required longer. Zero Data Retention can prevent this limited retention, but WHWai cannot verify whether it is enabled for this account. See <a href="https://console.groq.com/docs/your-data" target="_blank" rel="noopener noreferrer">Groq's data documentation</a> and its <a href="https://console.groq.com/docs/legal/services-agreement" target="_blank" rel="noopener noreferrer">Services Agreement</a>.</p>
- <h3>Usage limits and security</h3><p>Usage is limited by a server-enforced daily limit. Guest use is limited per browser and by a shared daily guest pool; signed-in use is limited per account. A separate global daily cap adds protection. Browser identifiers are pseudonymous and can be cleared, so the guest pool and global cap are also used to reduce easy limit circumvention.</p>
+ <h3>Usage limits</h3><p>Usage is limited each day to keep WHWai available. Limits are enforced on our server and may change over time. Browser identifiers used for guest limits are pseudonymous and can be cleared.</p>
  <p>Passwords are never intentionally stored or logged in plain text. Account sessions can be revoked, and temporary passwords issued by an admin expire after 72 hours and must be changed at sign-in. WHW intends to take reasonable steps to protect data, but no online service can guarantee complete security. If a serious security issue is identified, WHW may restrict access, disable accounts or the service, revoke sessions, or delete active server-stored data.</p>
  <h3>Export, deletion, and contact</h3><p>You can export chats to a ZIP created in this browser. Anyone who obtains an export can read its conversations, so keep it private. Deleting data on this device removes the local cache and session but does not delete your account or server-stored account chats. You can delete your account from Account settings; this deletes its active server-stored chats and account record. WHW cannot guarantee immediate erasure of backups or historical versions held by infrastructure providers, and downloaded copies or chats retained in a browser that was offline may remain.</p>
  <h3>Service providers</h3><p>WHWai uses Groq to generate replies and titles, and Google services to host the WHWai server and store account data. When you set a password, WHWai checks it against the Have I Been Pwned Pwned Passwords service. That service receives only the first five characters of a hash of the password, never the password itself.</p>
@@ -2693,10 +2690,6 @@ function renderSiteNotice(){
 function setAccountFromResult(result){
  accountSession={token:String(result.token||""),user:result.user||null};accountReady=true;updateSchoolLock();refreshSendState();renderSyncStatus();
  try{if(accountSession.token)localStorage.setItem(ACCOUNT_SESSION_STORAGE_KEY,accountSession.token)}catch(e){}
-}
-function setGuestState(clearChats){
- clearAccountSession();
- if(clearChats){S={chats:[],cur:null,dead:[],model:"aries-1",col:!!S.col};store.set(JSON.stringify(persistedState()));renderList();renderChat()}
 }
 function applyLoginChats(result){
  const hadLocalChats=S.chats.length>0;
@@ -2885,17 +2878,18 @@ function renderWhatsNewAdmin(){
  };
 }
 function paintAdminAccounts(box){
- box.innerHTML=`<div class="admin-search"><input id="admin-account-query" type="search" maxlength="20" placeholder="Search usernames" value="${escapeAttr(adminQuery)}" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"><button type="button" class="pbtn" id="admin-create-account">Create account</button></div><div id="admin-account-results"></div>`;
+ box.innerHTML=`<div class="admin-search"><input id="admin-account-query" type="search" maxlength="20" placeholder="Search usernames" value="${escapeAttr(adminQuery)}" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"><button type="button" class="pbtn" id="admin-create-account">Create account</button></div>${filterChips("accounts",ACCOUNT_FILTERS,adminAccountFilter)}<div id="admin-account-results"></div>`;
  $("admin-account-query").oninput=e=>{adminQuery=e.target.value.trim();paintAccountList()};
  $("admin-create-account").onclick=renderCreateAccount;
+ bindAdminFilters(box);
  paintAccountList();
 }
 function isOtherAdminRow(a){if(accountSession&&accountSession.user&&accountSession.user.isBootstrap)return false;return a.role==="admin"&&(!accountSession||!accountSession.user||a.username!==accountSession.user.username)}
 function paintAccountList(){
  const target=$("admin-account-results");if(!target||!adminData)return;
  const q=String(adminQuery||"").trim().toLowerCase(),all=adminData.accounts||[];
- const list=q?all.filter(a=>String(a.username).toLowerCase().indexOf(q)!==-1):all;
- if(!list.length){target.innerHTML='<p class="sm">No accounts matched that search.</p>';return}
+ const byFilter=all.filter(accountMatchesFilter),list=q?byFilter.filter(a=>String(a.username).toLowerCase().indexOf(q)!==-1):byFilter;
+ if(!list.length){target.innerHTML='<p class="sm">No accounts match these filters.</p>';return}
  target.innerHTML=list.map(a=>`<article class="admin-account"><div class="admin-account-head"><strong>${esc(a.username)}</strong><span class="account-role">${esc(a.role)} · ${esc(a.status)}</span></div><div class="admin-account-meta">Created ${adminDate(a.createdAt)} · Last sign-in ${adminDate(a.lastLoginAt)} · ${Number(a.chatCount)||0} chats</div>${a.status==="disabled"?adminReasonHtml(a.disabledInfo||{text:a.disabledReason||""}):""}${a.status==="disabled"&&a.dataMode&&a.dataMode!=="keep"?`<div class="admin-account-meta">Chats: ${esc({download:"user can download them",download_delete:"user can download, then they are deleted",delete:"deleted"}[a.dataMode]||a.dataMode)}</div>`:""}<div class="admin-account-actions">${a.status==="active"?`<button type="button" class="pbtn" data-account-action="disable" data-target-id="${escapeAttr(a.id)}">Disable</button>`:`<button type="button" class="pbtn" data-account-action="enable" data-target-id="${escapeAttr(a.id)}">Enable</button>`}${a.status==="disabled"?`<button type="button" class="pbtn" data-account-action="edit_reason" data-target-id="${escapeAttr(a.id)}">Edit reason</button>`:""}<button type="button" class="pbtn" data-account-action="reset_password" data-target-id="${escapeAttr(a.id)}">Temp password</button><button type="button" class="pbtn" data-account-action="force_signout" data-target-id="${escapeAttr(a.id)}">Sign out all</button>${a.role==="admin"?`<button type="button" class="pbtn" data-account-action="demote" data-target-id="${escapeAttr(a.id)}" ${a.isBootstrap?"disabled":""}>Demote</button>`:`<button type="button" class="pbtn" data-account-action="promote" data-target-id="${escapeAttr(a.id)}">Make admin</button>`}<button type="button" class="pbtn danger" data-account-action="delete" data-target-id="${escapeAttr(a.id)}" ${a.isBootstrap?"disabled":""}>Delete</button></div></article>`).join("")+(adminData.truncated?'<p class="sm">Showing the first 500 accounts. Narrow your search for more specific results.</p>':"");
  target.querySelectorAll("[data-account-action]").forEach(button=>button.onclick=()=>runAdminAccountAction(button.dataset.accountAction,button.dataset.targetId));
  [...target.querySelectorAll("article.admin-account")].forEach((el,i)=>{if(list[i]&&isOtherAdminRow(list[i])){el.querySelectorAll("[data-account-action]").forEach(b=>{b.disabled=true;b.title="Only this admin can change this account"});el.insertAdjacentHTML("beforeend",'<p class="sm">Only this admin can change this account.</p>')}});
@@ -2904,9 +2898,33 @@ function paintAdminUsage(box){
  const r=adminData.usage||{},t=r.today||{},w=r.week||{};
  box.innerHTML=`<div class="admin-stat-grid"><div class="admin-stat"><span>Requests today</span><strong>${Number(t.total)||0}</strong></div><div class="admin-stat"><span>Requests in 7 days</span><strong>${Number(w.total)||0}</strong></div><div class="admin-stat"><span>Accounts</span><strong>${Number(r.accountCount)||0}</strong></div><div class="admin-stat"><span>Failed sign-ins today</span><strong>${Number(t.failedSignins)||0}</strong></div><div class="admin-stat"><span>Guest requests today</span><strong>${Number(t.guests)||0}</strong></div><div class="admin-stat"><span>Account requests today</span><strong>${Number(t.accounts)||0}</strong></div></div><p class="sm">Usage counts contain totals only; no prompts, responses, or chat text are included.</p>`;
 }
+let adminAuditFilter="all",adminAccountFilter="all";
+const ACCOUNT_FILTERS=[["all","All"],["admin","Admins"],["user","Users"],["active","Active"],["disabled","Disabled"]];
+function accountMatchesFilter(a){
+ const f=adminAccountFilter;
+ if(f==="admin")return a.role==="admin";
+ if(f==="user")return a.role!=="admin";
+ if(f==="active")return a.status!=="disabled";
+ if(f==="disabled")return a.status==="disabled";
+ return true;
+}
+function filterChips(group,options,active){
+ return `<div class="admin-filters" role="group" aria-label="Filter ${esc(group)}">${options.map(o=>`<button type="button" class="pbtn admin-filter${o[0]===active?" active":""}" data-filter-group="${esc(group)}" data-filter="${escapeAttr(o[0])}" aria-pressed="${o[0]===active}">${esc(o[1])}</button>`).join("")}</div>`;
+}
+function bindAdminFilters(box){
+ box.querySelectorAll("[data-filter-group]").forEach(b=>b.onclick=()=>{
+  if(b.dataset.filterGroup==="audit")adminAuditFilter=b.dataset.filter;else adminAccountFilter=b.dataset.filter;
+  paintAdminTab();
+ });
+}
 function paintAdminAudit(box){
  const items=adminData.audit||[];
- box.innerHTML=`<p class="sm">Latest ${items.length} admin and account-security events. Chat titles and messages are never recorded here.</p>${items.length?items.map(item=>`<article class="admin-audit-item"><strong>${esc(item.action)}</strong><span>${adminDate(item.timestamp)}</span><p>${esc(item.actor)} → ${esc(item.target||"—")}</p><small>${esc(item.detail||"")}</small></article>`).join(""):'<p class="sm">No audit entries yet.</p>'}`;
+ const actions=[...new Set(items.map(i=>i.action).filter(Boolean))].sort();
+ if(adminAuditFilter!=="all"&&actions.indexOf(adminAuditFilter)===-1)adminAuditFilter="all";
+ const shown=adminAuditFilter==="all"?items:items.filter(i=>i.action===adminAuditFilter);
+ const options=[["all","All"]].concat(actions.map(a=>[a,a.replace(/_/g," ")]));
+ box.innerHTML=`<p class="sm">Latest ${items.length} admin and account-security events. Chat titles and messages are never recorded here.</p>${items.length?filterChips("audit",options,adminAuditFilter):""}${shown.length?shown.map(item=>`<article class="admin-audit-item"><strong>${esc(item.action)}</strong><span>${adminDate(item.timestamp)}</span><p>${esc(item.actor)} → ${esc(item.target||"—")}</p><small>${esc(item.detail||"")}</small></article>`).join(""):`<p class="sm">${items.length?"No entries for this filter.":"No audit entries yet."}</p>`}`;
+ bindAdminFilters(box);
 }
 function renderCreateAccount(){
  currentSettingsView="admin-create";$("modal-title").textContent="Create account";
