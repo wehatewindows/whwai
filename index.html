@@ -1240,6 +1240,14 @@ function renderChat(fresh){
  updateJump();
 }
 const plain=t=>t.replace(/\*\*(.+?)\*\*/g,"$1").replace(/^[-*] /gm,"\u2022 ");
+async function copyText_(text){
+ try{if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(String(text));return true}}catch(e){}
+ try{
+  const a=document.createElement("textarea");a.value=String(text);a.setAttribute("readonly","");a.style.cssText="position:fixed;top:0;left:0;opacity:0";
+  document.body.appendChild(a);a.focus();a.select();a.setSelectionRange(0,a.value.length);
+  const ok=document.execCommand("copy");a.remove();return ok;
+ }catch(e){return false}
+}
 async function copyCode(text,button){
  const original=button.innerHTML;button.disabled=true;
  try{
@@ -3085,7 +3093,7 @@ function resolvePendingConfirmation(value){if(!pendingAppConfirmation)return fal
 function renderOneTimePassword(title,username,password,expiresAt,returnTab){
  currentSettingsView="one-time-password";$("modal-title").textContent=title;
  mbody.innerHTML=`<p><strong>${esc(username||"")}</strong></p><p class="sm">Copy this password now. WHWai will not display it again after you leave this screen. The password expires ${adminDate(expiresAt)} and must be changed at first sign-in.</p><div class="key"><span class="key-value" id="one-time-password-value">${escapeAttr(password||"")}</span><button type="button" id="one-time-password-copy" class="pbtn">Copy</button></div><p class="sm" id="one-time-password-status" role="status"></p><div class="data-toolbar"><button type="button" class="pbtn" id="one-time-password-done">I have saved it</button></div>`;
- $("one-time-password-copy").onclick=async()=>{try{await navigator.clipboard.writeText(password);$("one-time-password-status").textContent="Copied to clipboard."}catch(e){const el=$("one-time-password-value"),range=document.createRange();range.selectNodeContents(el);const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);$("one-time-password-status").textContent="Select the password above and copy it manually."}};
+ $("one-time-password-copy").onclick=async()=>{const ok=await copyText_(password);if(ok){$("one-time-password-status").textContent="Copied to clipboard.";return}const el=$("one-time-password-value"),range=document.createRange();range.selectNodeContents(el);const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);$("one-time-password-status").textContent="Couldn't copy automatically. Select the password above and copy it manually."};
  $("one-time-password-done").onclick=()=>renderAdminPanel(returnTab||"accounts");
 }
 
