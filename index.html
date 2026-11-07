@@ -345,13 +345,20 @@ body.access-locked .frame{filter:blur(6px);pointer-events:none;user-select:none}
 .admin-search{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
 .admin-search input{flex:1 1 120px;height:40px;font-size:14px}
 .admin-search .pbtn{flex:0 0 auto}
-.admin-account{padding:12px;border:1px solid #e4e4e4;border-radius:14px;background:#fafafa;margin:8px 0}
-.admin-account-head{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap}
-.admin-account-id{display:flex;align-items:center;gap:10px;min-width:0}
+.admin-account{padding:14px;border:1px solid #e4e4e4;border-radius:16px;background:#fafafa;margin:10px 0}
+.admin-account-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.account-head-end{display:flex;align-items:center;gap:6px;flex:none}
+.acct-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px 16px;margin:12px 0 0;padding-top:12px;border-top:1px solid #ececec}
+.acct-facts>div{min-width:0}
+.acct-facts dt{margin:0;font-size:11px;color:#888;line-height:1.2}
+.acct-facts dd{margin:3px 0 0;font-size:13px;color:#222;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.admin-account-id{display:flex;align-items:center;gap:10px;min-width:0;overflow:hidden}.admin-account-id strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
 .admin-avatar{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;flex:none;color:#fff;font-size:13px;font-weight:600;line-height:1}
 .account-role{font-size:11.5px;color:#555;background:#eee;border-radius:999px;padding:4px 7px;white-space:nowrap}
-.admin-account-meta{font-size:12px;line-height:1.4;color:#666;margin:7px 0 10px;overflow-wrap:anywhere}
+.admin-account-meta{font-size:12px;line-height:1.4;color:#666;margin:10px 0 0;overflow-wrap:anywhere}
 .admin-account-actions{display:flex;flex-wrap:wrap;gap:6px}
+.admin-account-meta+.admin-account-meta{margin-top:5px}
+.acct-lock{margin:12px 0 0;font-size:12px;color:#666}
 .acct-more{border:0;background:none;width:30px;height:30px;border-radius:50%;cursor:pointer;color:#555;display:grid;place-items:center;padding:0;flex:none}
 .acct-more:hover,.acct-more[aria-expanded="true"]{background:#e6e6e6}
 .acct-more:disabled{opacity:.35;cursor:default;background:none}
@@ -2861,6 +2868,7 @@ function renderDeleteAccountConfirm(){
 }
 function escapeAttr(text){return String(text||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
 let adminPanelGeneration=0,adminActionPending=false,adminData=null,adminDataAt=0,adminLoading=null,adminTab="site",adminQuery="";
+function adminDayText(value){const n=Number(value||0);return n?new Date(n).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}):"Never"}
 function adminDate(value){const n=Number(value||0);return n?new Date(n).toLocaleString():"Never"}
 function adminFetch(force){
  if(!force&&adminData)return Promise.resolve(adminData);
@@ -3047,11 +3055,11 @@ function paintAccountList(){
  const q=String(adminQuery||"").trim().toLowerCase(),all=adminData.accounts||[];
  const byFilter=all.filter(accountMatchesFilter),list=q?byFilter.filter(a=>String(a.username).toLowerCase().indexOf(q)!==-1):byFilter;
  if(!list.length){target.innerHTML='<p class="sm">No accounts match these filters.</p>';return}
- target.innerHTML=list.map(a=>`<article class="admin-account"><div class="admin-account-head"><span class="admin-account-id"><span class="admin-avatar" style="background:${escapeAttr(a.profileColor||"#4f7cf0")}" aria-hidden="true">${esc(String(a.username||"?").charAt(0).toUpperCase())}</span><strong>${esc(a.username)}</strong></span><span class="account-role">${esc(a.role)} · ${esc(a.status)}</span>${acctMoreHtml(a)}</div><div class="admin-account-meta">Created ${adminDate(a.createdAt)} · Last sign-in ${adminDate(a.lastLoginAt)} · ${Number(a.chatCount)||0} chats</div>${a.status==="disabled"?adminReasonHtml(a.disabledInfo||{text:a.disabledReason||""}):""}${a.status==="disabled"&&a.dataMode&&a.dataMode!=="keep"?`<div class="admin-account-meta">Chats: ${esc({download:"user can download them",download_delete:"user can download, then they are deleted",delete:"deleted"}[a.dataMode]||a.dataMode)}</div>`:""}${browserLineHtml(a)}${flagsLineHtml(a)}</article>`).join("")+(adminData.truncated?'<p class="sm">Showing the first 500 accounts. Narrow your search for more specific results.</p>':"");
+ target.innerHTML=list.map(a=>`<article class="admin-account"><div class="admin-account-head"><span class="admin-account-id"><span class="admin-avatar" style="background:${escapeAttr(a.profileColor||"#4f7cf0")}" aria-hidden="true">${esc(String(a.username||"?").charAt(0).toUpperCase())}</span><strong>${esc(a.username)}</strong></span><div class="account-head-end"><span class="account-role">${esc(a.role)} · ${esc(a.status)}</span>${acctMoreHtml(a)}</div></div><dl class="acct-facts"><div><dt>Created</dt><dd>${adminDayText(a.createdAt)}</dd></div><div><dt>Last sign-in</dt><dd>${adminDayText(a.lastLoginAt)}</dd></div><div><dt>Chats</dt><dd>${Number(a.chatCount)||0}</dd></div></dl>${a.status==="disabled"?adminReasonHtml(a.disabledInfo||{text:a.disabledReason||""}):""}${a.status==="disabled"&&a.dataMode&&a.dataMode!=="keep"?`<div class="admin-account-meta">Chats: ${esc({download:"user can download them",download_delete:"user can download, then they are deleted",delete:"deleted"}[a.dataMode]||a.dataMode)}</div>`:""}${browserLineHtml(a)}${flagsLineHtml(a)}</article>`).join("")+(adminData.truncated?'<p class="sm">Showing the first 500 accounts. Narrow your search for more specific results.</p>':"");
  target.querySelectorAll("[data-account-action]").forEach(button=>button.onclick=()=>runAdminAccountAction(button.dataset.accountAction,button.dataset.targetId));
  target.querySelectorAll("[data-flag-clear]").forEach(b=>b.onclick=()=>flagAction({flagAction:"clear",flagId:b.dataset.flagClear},"Flag marked reviewed."));
  target.querySelectorAll(".acct-more").forEach((b,i)=>b.onclick=e=>{e.stopPropagation();openAcctMenu(list[i],b)});
- [...target.querySelectorAll("article.admin-account")].forEach((el,i)=>{if(list[i]&&isOtherAdminRow(list[i]))el.insertAdjacentHTML("beforeend",'<p class="sm">Only this admin can change this account.</p>')});
+ [...target.querySelectorAll("article.admin-account")].forEach((el,i)=>{if(list[i]&&isOtherAdminRow(list[i]))el.insertAdjacentHTML("beforeend",'<p class="sm acct-lock">Only this admin can change this account.</p>')});
 }
 function acctMoreHtml(a){const other=isOtherAdminRow(a);return '<button type="button" class="acct-more" aria-haspopup="menu" aria-expanded="false" aria-label="Account options for '+escapeAttr(a.username)+'" title="'+(other?"Only this admin can change this account":"Account options")+'"'+(other?' disabled':'')+'>'+ic(DOTS,18)+'</button>'}
 const ACCT_ICONS={disable_browser:'<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M5 5l14 11"/>',edit_browser_reason:'<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>',enable_browser:'<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M8.5 10.5l2.5 2.5 4.5-4.5"/>',flag:'<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>',disable:'<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>',enable:'<circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-4.5"/>',edit_reason:PEN,reset_password:'<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3"/>',force_signout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',promote:'<path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M12 9v6M9 12h6"/>',demote:'<path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M9 12h6"/>',delete:TRASH};
