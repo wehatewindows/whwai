@@ -710,7 +710,7 @@ textarea{border-radius:16px}
   <div class="input">
    <div class="orb" id="orb"><span class="wheatley-face" aria-hidden="true"><svg viewBox="-12 -12 124 124"><defs><radialGradient id="wh3-shell" cx="40%" cy="32%" r="78%"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#e2e5e8"/><stop offset="1" stop-color="#9aa1a8"/></radialGradient><radialGradient id="wh3-core" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffffff"/><stop offset=".35" stop-color="#8fe0ff"/><stop offset=".75" stop-color="#2a7bf0"/><stop offset="1" stop-color="#0d2f8a"/></radialGradient><linearGradient id="wh3-plate" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6f8f9"/><stop offset="1" stop-color="#a9b1b8"/></linearGradient><clipPath id="wh3-tunnel"><circle cx="50" cy="50" r="17"/></clipPath></defs><circle cx="50" cy="50" r="34" fill="url(#wh3-shell)" stroke="#5b626a" stroke-width="1.6"/><g fill="none" stroke-linecap="round"><path d="M24 14 L28 34 M76 14 L72 34 M24 86 L28 66 M76 86 L72 66" stroke="#3b4147" stroke-width="5"/><path d="M24 14 Q50 6 76 14" stroke="#3b4147" stroke-width="6"/><path d="M24 14 Q50 6 76 14" stroke="#d6dce1" stroke-width="2"/><path d="M24 14 Q50 6 76 14" pathLength="100" stroke="#2f353b" stroke-width="6.5" stroke-dasharray="30 70" stroke-dashoffset="-35"/><path d="M24 86 Q50 94 76 86" stroke="#3b4147" stroke-width="6"/><path d="M24 86 Q50 94 76 86" stroke="#d6dce1" stroke-width="2"/><path d="M24 86 Q50 94 76 86" pathLength="100" stroke="#2f353b" stroke-width="6.5" stroke-dasharray="30 70" stroke-dashoffset="-35"/></g><circle cx="50" cy="50" r="22" fill="#a9b1b8" stroke="#5b626a" stroke-width="2"/><circle cx="50" cy="50" r="17" fill="#1d232a"/><circle cx="50" cy="50" r="12.5" fill="url(#wh3-core)"/><g clip-path="url(#wh3-tunnel)"><rect x="30" y="28" width="40" height="11" fill="url(#wh3-plate)"/><rect x="30" y="61" width="40" height="11" fill="url(#wh3-plate)"/></g><path d="M33 39 L67 39 M33 61 L67 61" stroke="#6b737b" stroke-width="1" stroke-linecap="butt"/><ellipse cx="46" cy="45" rx="3.5" ry="2" fill="#fff" opacity=".85"/><ellipse cx="38" cy="30" rx="13" ry="6" fill="#fff" opacity=".4"/></svg></span></div>
    <div class="field">
-    <textarea id="in" rows="1" placeholder="Message WHWai" aria-label="Message" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea>
+    <textarea id="in" rows="1" maxlength="10000" placeholder="Message WHWai" aria-label="Message" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea>
     <div class="mwrap">
      <button class="model" id="model" aria-haspopup="menu" aria-expanded="false"></button>
      <div class="info-pop" id="aries-info-pop" role="status" aria-live="polite" aria-label="About Aries" hidden>
@@ -1410,7 +1410,7 @@ function showWhatsNewIfNeeded(force){
  whatsNewShownThisPage=true;
  $("wn-intro").textContent=WHATS_NEW.intro;{const vEl=$("wn-ver");const v=whatsNewCfg&&whatsNewCfg.version?String(whatsNewCfg.version):"";vEl.textContent=v?"Version "+v:"";vEl.hidden=!v}
  $("wn-list").innerHTML=WHATS_NEW.items.map(it=>"<li><strong>"+esc(it.t)+"</strong><span>"+esc(it.d)+"</span></li>").join("");
- box.hidden=false;syncAppInert();
+ box.hidden=false;resetScroll();syncAppInert();
  $("wn-ok").onclick=()=>{hideEl(box);syncAppInert();try{localStorage.setItem(WHATS_NEW_KEY,whatsNewVersion())}catch(e){}if(!force)showAriesIntroOnce()};
  setTimeout(()=>{try{$("wn-ok").focus()}catch(e){}},50);
  return true;
@@ -1426,6 +1426,8 @@ function showAccountDisabled(message,info){
  document.body.classList.add("access-locked");(showEl(accessGate),setTimeout(updateSchoolLock,0));$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");swapText(accessTitle,"Your account has been disabled");accessForm.hidden=true;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=!(info&&info.isAdmin);$("access-admin-form").hidden=true;
  const wn=$("wn");if(wn)wn.hidden=true;
  renderGateReason(message,info);
+ if(info&&info.isAdmin){const nb=$("gate-body");if(nb)nb.insertAdjacentHTML("afterbegin",'<p class="gate-reason-text admin-test-note"><strong>For testing only.</strong> Disabling an admin is for testing. To fully disable an admin, demote them first, then disable them.</p>')}
+ resetScroll();
  const canDownload=!!(info&&info.canDownload),dl=$("gate-download"),st=$("gate-status");
  const notes={keep:"Your chats are still saved on your account.",delete:"Your chats were removed from this account."};
  dl.hidden=!canDownload;dl.disabled=false;dl.textContent="Download your chats";dl.onclick=downloadDisabledData;
@@ -1450,6 +1452,8 @@ function showBrowserDisabled(info){
  const wn=$("wn");if(wn)wn.hidden=true;
  const i=info||{};
  renderGateReason(i.message||"",{reasonTitle:i.reasonTitle,reason:i.reason});
+ if(Number(i.reenableAt)>0){const wait=Number(i.reenableAt)-Date.now();if(wait>0&&wait<2147483000)setTimeout(()=>location.reload(),wait+2000)}
+ resetScroll();
  const body=$("gate-body");
  if(body&&Number(i.reenableAt)>0)body.insertAdjacentHTML("beforeend",'<div class="policy-takeaways gate-box"><strong>This browser can be used again:</strong><p class="gate-box-text">'+esc(hstText(i.reenableAt))+'</p></div>');
  $("gate-download").hidden=true;$("gate-actions").hidden=true;
@@ -2905,9 +2909,30 @@ function adminFetch(force){
  if(!force&&adminData)return Promise.resolve(adminData);
  if(!adminLoading)adminLoading=post({action:"admin_overview"}).then(r=>{
   if(!r||!r.ok)throw Object.assign(new Error(r&&r.error||"failed"),{payload:r});
-  adminData=r;adminDataAt=Date.now();return r;
+  adminData=r;adminDataAt=Date.now();scheduleAdminExpiry();return r;
  }).finally(()=>{adminLoading=null});
  return adminLoading;
+}
+// Auto re-enable: when a disabled account or browser reaches its re-enable time, refetch so the panel shows it as active.
+let adminExpiryTimer=null;
+function nextAdminExpiry(){
+ let next=0;const consider=t=>{t=Number(t||0);if(t>Date.now()&&(!next||t<next))next=t};
+ ((adminData&&adminData.accounts)||[]).forEach(a=>{if(a.status==="disabled"&&a.disabledInfo)consider(a.disabledInfo.reenableAt)});
+ ((adminFlagsData&&adminFlagsData.browserDisables)||[]).forEach(b=>consider(b.reenableAt));
+ const s=selfDisabledInfo;if(s){if(s.account)consider(s.account.reenableAt);if(s.browser)consider(s.browser.reenableAt)}
+ return next;
+}
+function scheduleAdminExpiry(){
+ if(adminExpiryTimer!==null){clearTimeout(adminExpiryTimer);adminExpiryTimer=null}
+ const at=nextAdminExpiry();if(!at)return;
+ adminExpiryTimer=setTimeout(runAdminExpiry,Math.min(at-Date.now()+2000,2147483000));
+}
+function runAdminExpiry(){
+ adminExpiryTimer=null;
+ const s=selfDisabledInfo,now=Date.now();
+ if(s){if(s.account&&Number(s.account.reenableAt)<=now)s.account=null;if(s.browser&&Number(s.browser.reenableAt)<=now)s.browser=null;if(!s.account&&!s.browser)selfDisabledInfo=null}
+ adminFlagsData=null;
+ adminFetch(true).then(()=>{if(currentSettingsView==="admin")paintAdminTab()}).catch(()=>{});
 }
 function showAdminError(err){
  const box=$("admin-content");if(!box)return;
@@ -3385,7 +3410,9 @@ function renderOneTimePassword(title,username,password,expiresAt,returnTab){
 }
 
 /* Plays the entrance animation for the current Settings or admin screen */
-function animateMenuContent(){mbody.classList.remove("menu-content-enter");void mbody.offsetWidth;mbody.classList.add("menu-content-enter")}
+function animateMenuContent(){mbody.classList.remove("menu-content-enter");void mbody.offsetWidth;mbody.classList.add("menu-content-enter");resetScroll()}
+// Every opened overlay starts at the top, not the bottom of the previous view.
+function resetScroll(){[modal,accessGate,$("wn")].forEach(root=>{if(!root)return;root.scrollTop=0;root.querySelectorAll("*").forEach(el=>{if(el.scrollTop>0)el.scrollTop=0})})}
 new MutationObserver(()=>animateMenuContent()).observe(mbody,{childList:true});
 function wrapViewTransition(fn){return function(){const result=fn.apply(this,arguments);if(!modal.hidden)animateMenuContent();return result}}
 renderSettings=wrapViewTransition(renderSettings);
