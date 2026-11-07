@@ -375,6 +375,10 @@ body.access-locked .frame{filter:blur(6px);pointer-events:none;user-select:none}
 .admin-account-actions .pbtn.is-busy::after{content:"";display:inline-block;width:9px;height:9px;margin-left:6px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;vertical-align:-1px;animation:acctSpin .7s linear infinite}
 @keyframes acctSpin{to{transform:rotate(360deg)}}
 .acct-lock{margin:12px 0 0;font-size:12px;color:#666}
+.self-disabled-banner{padding:12px 14px;border:1px solid #f0c2c2;background:#fff4f4;border-radius:14px;margin:0 0 12px}
+.self-disabled-banner p{margin:6px 0 0}
+.admin-disable-note{margin:12px 0;padding:10px 12px;border:1px solid #ececec;border-radius:12px;background:#fafafa}
+.admin-disable-note p{margin:4px 0 8px}
 .acct-more{border:0;background:none;width:30px;height:30px;border-radius:50%;cursor:pointer;color:#555;display:grid;place-items:center;padding:0;flex:none}
 .acct-more:hover,.acct-more[aria-expanded="true"]{background:#e6e6e6}
 .acct-more:disabled{opacity:.35;cursor:default;background:none}
@@ -1411,12 +1415,15 @@ function showWhatsNewIfNeeded(force){
  setTimeout(()=>{try{$("wn-ok").focus()}catch(e){}},50);
  return true;
 }
+let selfDisabledInfo=null;
+function leaveDisabledGate(){accountDisabledGate=false;browserDisabledGate=false;accountReady=true;accessCard.classList.remove("disabled-mode");document.body.classList.remove("access-locked");$("app-frame").removeAttribute("aria-hidden");refreshSendState()}
 function showAccountDisabled(message,info){
+ if(selfDisabledInfo)return;
  if(accountDisabledGate)return;
  accountDisabledGate=true;refreshSendState();
  if(accountSyncTimer!==null){clearTimeout(accountSyncTimer);accountSyncTimer=null}
  accountReady=false;hideAriesIntro&&hideAriesIntro(false);
- document.body.classList.add("access-locked");(showEl(accessGate),setTimeout(updateSchoolLock,0));$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");swapText(accessTitle,"Your account has been disabled");accessForm.hidden=true;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=true;$("access-admin-form").hidden=true;
+ document.body.classList.add("access-locked");(showEl(accessGate),setTimeout(updateSchoolLock,0));$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");swapText(accessTitle,"Your account has been disabled");accessForm.hidden=true;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=!(info&&info.isAdmin);$("access-admin-form").hidden=true;
  const wn=$("wn");if(wn)wn.hidden=true;
  renderGateReason(message,info);
  const canDownload=!!(info&&info.canDownload),dl=$("gate-download"),st=$("gate-status");
@@ -1428,7 +1435,7 @@ function showAccountDisabled(message,info){
 }
 function showBrowserDisabled(info){
  if(info&&info.source==="account"){
-  if(accountDisabledGate||browserDisabledGate)return;
+  if(selfDisabledInfo||accountDisabledGate||browserDisabledGate)return;
   showAccountDisabled(info.message||"",info);
   $("gate-actions").hidden=true;$("gate-download").hidden=true;
   const body=$("gate-body");
@@ -2329,12 +2336,12 @@ orb.addEventListener("click",()=>{if(stimOn||siteStimDisabled)return;const now=D
 let smsg="",currentSettingsView="settings",closeModalTimer=null,closingModal=false,siteSignupMode="code",siteNoticeText="",siteStatusLoaded=false;
 const touch=c=>{c.mu=Date.now()};
 function clearAccountSession(){setTimeout(updateSchoolLock,0);if(accountSyncTimer!==null){clearTimeout(accountSyncTimer);accountSyncTimer=null}accountSession=null;accountSyncFailed=false;renderSyncStatus();refreshSendState();accountReady=true;accountInitialSyncPending=false;accountMergePendingToast=false;try{localStorage.removeItem(ACCOUNT_SESSION_STORAGE_KEY)}catch(e){}}
-function scheduleAccountSync(){
+function scheduleAccountSync(){if(selfDisabledInfo)return;
  if(accountDisabledGate||!accountSession||!accountSession.token||!accountReady||accountSession.user&&accountSession.user.mustChange)return;
  if(accountSyncTimer!==null)clearTimeout(accountSyncTimer);
  accountSyncTimer=setTimeout(()=>{accountSyncTimer=null;syncAccountChatsNow()},1200);
 }
-async function syncAccountChatsNow(){
+async function syncAccountChatsNow(){if(selfDisabledInfo)return;
  if(accountDisabledGate||!accountSession||!accountSession.token||!accountReady||accountSession.user&&accountSession.user.mustChange)return;
  if(accountSyncing){accountSyncAgain=true;return}
  if(navigator.onLine===false){accountSyncAgain=true;if(accountInitialSyncPending){accountInitialSyncPending=false;renderChat()}return}
@@ -3058,8 +3065,55 @@ function paintAdminTab(){
  const box=$("admin-content");if(!box||!adminData)return;
  mbody.querySelectorAll("[data-admin-tab]").forEach(b=>b.classList.toggle("active",b.dataset.adminTab===adminTab));
  if(adminTab==="site")paintAdminSite(box);else if(adminTab==="accounts")paintAdminAccounts(box);else if(adminTab==="usage")paintAdminUsage(box);else if(adminTab==="flags")paintAdminFlags(box);else paintAdminAudit(box);
+ if(selfDisabledInfo&&(selfDisabledInfo.account||selfDisabledInfo.browser)){box.insertAdjacentHTML("afterbegin",selfDisabledBannerHtml());wireSelfBanner(box.querySelector(".self-disabled-banner"))}
  if(adminData.problems&&adminData.problems.length)box.insertAdjacentHTML("afterbegin",'<p class="access-error" role="status">Some admin data could not load: '+adminData.problems.map(p=>esc(p.part+" – "+p.error)).join("; ")+'</p>');
 }
+function selfDisabledBannerHtml(){
+ const s=selfDisabledInfo,acct=s.account,br=s.browser;
+ let h='<section class="self-disabled-banner" role="status"><strong>'+(acct?"Your account is disabled":"This browser is disabled")+'</strong>';
+ if(acct&&(acct.reasonTitle||acct.reason))h+='<p class="sm">Reason: '+esc(acct.reasonTitle||"Custom reason")+(acct.reason?' · '+esc(acct.reason):'')+'</p>';
+ if(acct&&acct.reenableAt)h+='<p class="sm">Re-enables '+esc(hstText(acct.reenableAt))+'</p>';
+ if(acct&&br)h+='<p class="sm">This browser is also disabled from accessing WHWai.</p>';
+ h+='<div class="admin-account-actions">'+(acct?'<button type="button" class="pbtn" data-self-reenable="account">Re-enable my account</button>':'')+(br?'<button type="button" class="pbtn" data-self-reenable="browser">Re-enable this browser</button>':'')+'</div></section>';
+ return h;
+}
+function wireSelfBanner(el){
+ if(!el)return;
+ el.querySelectorAll("[data-self-reenable]").forEach(b=>b.onclick=()=>selfReenable(b.dataset.selfReenable));
+}
+async function selfReenable(kind){
+ const s=selfDisabledInfo;if(!s)return;
+ try{
+  if(kind==="account"){
+   const r=await post({action:"admin_account_action",accountAction:"enable",targetId:s.userId,reason:"",dataMode:"keep"});
+   if(!r||!r.ok)throw Object.assign(new Error(r&&r.error||"failed"),{payload:r});
+   s.account=null;
+  }else{
+   const r=await post({action:"admin_flag_action",flagAction:"enable_browser",deviceId:s.browser.deviceId});
+   if(!r||!r.ok)throw Object.assign(new Error(r&&r.error||"failed"),{payload:r});
+   s.browser=null;
+  }
+  adminFlagsData=null;await adminFetch(true).catch(()=>{});
+  toast(kind==="account"?"Account re-enabled.":"Browser re-enabled.");
+  if(!s.account&&!s.browser){selfDisabledInfo=null;scheduleAccountSync()}
+  if(!modal.hidden)renderAdminPanel(adminTab);
+ }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't re-enable that.")}
+}
+function adminDisableNoteHtml(row){
+ return '<div class="policy-takeaways admin-disable-note"><strong>For testing only</strong><p class="sm">Disabling an admin is for testing. To fully disable an admin, demote them first, then disable them.</p>'+(row.isBootstrap?'<p class="sm">This is the bootstrap admin, so it can\'t be demoted.</p>':'<button type="button" class="pbtn" id="dis-demote" data-demote-target="'+escapeAttr(row.id)+'">Demote first</button>')+'</div>';
+}
+async function demoteFromDisable(targetId){
+ resolvePendingConfirmation(false);
+ await new Promise(r=>setTimeout(r,280));
+ try{
+  const r=await post({action:"admin_account_action",accountAction:"demote",targetId:targetId,reason:"",dataMode:"keep"});
+  if(!r||!r.ok)throw Object.assign(new Error(r&&r.error||"failed"),{payload:r});
+  await adminFetch(true).catch(()=>{});
+  toast("Demoted. You can disable them now.");
+ }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't demote that account.");return}
+ runDisableAction("disable",targetId);
+}
+document.addEventListener("click",e=>{const d=e.target.closest&&e.target.closest("#dis-demote");if(d)demoteFromDisable(d.dataset.demoteTarget)});
 function paintAdminSite(box){
  const v=adminData.settings||{};
  box.innerHTML=`<p class="sm">These controls are enforced by the backend. Admin responses never include chat titles or messages.</p><form id="admin-settings-form" class="account-form" autocomplete="off"><label class="check-row"><input id="admin-ai-enabled" type="checkbox"> AI enabled</label><label class="check-row"><input id="admin-access-required" type="checkbox"> Require access code screen on page load</label><button type="button" class="pbtn data-manage-button" id="whatsnew-admin-open"><span>What's new screen</span></button><label for="admin-signup-mode">Sign-up mode</label><select id="admin-signup-mode"><option value="code">Access code required</option><option value="open">Open sign-up</option><option value="closed">Closed</option></select><label for="admin-site-notice">Site-wide notice (optional)</label><textarea id="admin-site-notice" rows="3" maxlength="240" placeholder="Leave blank to clear the notice" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea><label class="check-row"><input id="admin-notice-dismissible" type="checkbox"> Let users dismiss the announcement</label><label class="check-row"><input id="admin-notice-gates" type="checkbox"> Show the announcement on sign-in, access code, and disabled screens</label><label for="admin-new-access-code">Change access code (leave blank to keep current)</label><input id="admin-new-access-code" type="text" class="masked-field" maxlength="80" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"><p class="access-error" id="admin-settings-error" role="status" aria-live="polite" hidden></p><details class="admin-advanced"><summary>Advanced</summary><label class="check-row"><input id="admin-stim-disabled" type="checkbox"> Disable Stimulation Mode for everyone</label><label class="check-row"><input id="admin-school-override" type="checkbox"> Turn off the account requirement for today (resets at midnight Hawaii time)</label></details><div class="data-toolbar"><button class="pbtn" id="admin-settings-save" type="submit">Save changes</button></div></form>`;
@@ -3254,7 +3308,7 @@ function adminReasonHtml(i){
 async function runDisableAction(action,targetId){
  const edit=action==="edit_reason";
  const row=(adminData&&adminData.accounts||[]).find(a=>a.id===targetId),cur=row&&row.disabledInfo?row.disabledInfo:null;
- const accepted=await appConfirm({title:edit?"Edit the disable reason?":"Disable account?",message:edit?"The account stays disabled. The user sees the updated reason on their disabled screen.":"This account will no longer be able to use WHWai. The user sees the reason, sub-reason and any re-enable time you set.",confirmLabel:edit?"Save reason":"Disable",danger:!edit,extraHtml:disableFormHtml(cur)+(edit?"":'<label class="check-row acct-browsers-row"><input type="checkbox" id="dis-browsers"> Also disable the browsers this account is signed into, until the same re-enable time</label>'),onRender:wireDisableForm,radios:edit?null:DISABLE_DATA_RADIOS});
+ const accepted=await appConfirm({title:edit?"Edit the disable reason?":"Disable account?",message:edit?"The account stays disabled. The user sees the updated reason on their disabled screen.":"This account will no longer be able to use WHWai. The user sees the reason, sub-reason and any re-enable time you set.",confirmLabel:edit?"Save reason":"Disable",danger:!edit,extraHtml:disableFormHtml(cur)+(edit?"":(row&&row.role==="admin"?adminDisableNoteHtml(row):"")+'<label class="check-row acct-browsers-row"><input type="checkbox" id="dis-browsers"> Also disable the browsers this account is signed into, until the same re-enable time</label>'),onRender:wireDisableForm,radios:edit?null:DISABLE_DATA_RADIOS});
  if(!accepted){if(!modal.hidden&&!closingModal)renderAdminPanel("accounts");return}
  if(modal.hidden||currentSettingsView!=="app-confirm")return;
  const picked=document.querySelector('input[name="app-confirm-radio"]:checked');const dataMode=picked?picked.value:"keep";
@@ -3355,7 +3409,7 @@ $("access-admin-open").onclick=()=>gateAdminMode(true);$("access-admin-back").on
 $("access-admin-form").onsubmit=async e=>{
  e.preventDefault();const username=$("access-admin-user").value.trim().toLowerCase(),password=$("access-admin-password").value,b=$("access-admin-submit"),error=$("access-admin-error");if(!username||!password)return;
  b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Signing in…';error.hidden=true;
- try{const result=await post({action:"auth_admin_login",username,password});if(!result||!result.ok||!result.token)throw Object.assign(new Error(result&&result.error||"invalid_admin_credentials"),{payload:result});setAccountFromResult(result);$("access-admin-password").value="";hideEl(accessGate);openApp(true);if(result.user&&result.user.mustChange){openSettings();renderRequiredPasswordChange()}else{openSettings(()=>renderAdminPanel("site"))}}
+ try{const result=await post({action:"auth_admin_login",username,password});if(!result||!result.ok||!result.token)throw Object.assign(new Error(result&&result.error||"invalid_admin_credentials"),{payload:result});setAccountFromResult(result);if(result.selfDisabled){selfDisabledInfo={account:result.selfDisabled,browser:result.selfBrowser||null,userId:result.selfId||""};leaveDisabledGate()}$("access-admin-password").value="";hideEl(accessGate);openApp(true);if(result.user&&result.user.mustChange){openSettings();renderRequiredPasswordChange()}else{openSettings(()=>renderAdminPanel("site"))}}
  catch(err){error.textContent=err&&err.payload&&err.payload.message||"Invalid admin username or password.";error.hidden=false}
  finally{b.disabled=false;b.textContent="Sign in"}
 };
