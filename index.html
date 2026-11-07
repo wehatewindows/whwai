@@ -1419,6 +1419,14 @@ function showAccountDisabled(message,info){
  $("gate-actions").hidden=false;$("gate-signout").onclick=disabledSignOut;
 }
 function showBrowserDisabled(info){
+ if(info&&info.source==="account"){
+  if(accountDisabledGate||browserDisabledGate)return;
+  showAccountDisabled(info.message||"",info);
+  $("gate-actions").hidden=true;$("gate-download").hidden=true;
+  const body=$("gate-body");
+  if(body){body.insertAdjacentHTML("beforeend",'<div class="policy-takeaways gate-box"><p class="gate-box-text">This browser is also disabled from accessing WHWai.</p></div>'+(Number(info.reenableAt)>0?'<div class="policy-takeaways gate-box"><strong>This browser can be used again:</strong><p class="gate-box-text">'+esc(hstText(info.reenableAt))+'</p></div>':""))}
+  return;
+ }
  if(browserDisabledGate)return;
  browserDisabledGate=true;refreshSendState();
  if(accountSyncTimer!==null){clearTimeout(accountSyncTimer);accountSyncTimer=null}
@@ -2990,11 +2998,12 @@ async function resolveFlag(b){
  if(!ok){b.disabled=false;b.classList.remove("is-busy");b.textContent=label;if(item)item.classList.remove("is-resolving");return}
  if(!modal.hidden)renderAdminPanel(adminTab);
 }
+function forceBrowserTime(){const on=$("dis-reenable-on");if(!on)return;on.checked=true;on.disabled=true;const row=on.closest(".switch-row");if(row)row.hidden=true;const wrap=$("dis-reenable-wrap");if(wrap)wrap.hidden=false;const when=$("dis-reenable");if(when)when.required=true}
 async function disableBrowserByDevice(deviceId){
  disableSubject="browser";
  let accepted=false,form=null;
  try{
-  accepted=await appConfirm({title:"Disable browser?",message:"This browser will no longer be able to use WHWai. It sees the reason and any re-enable time you set.",confirmLabel:"Disable browser",danger:true,extraHtml:disableFormHtml(null),onRender:wireDisableForm});
+  accepted=await appConfirm({title:"Disable browser?",message:"This browser will no longer be able to use WHWai until the re-enable time you set, or until you enable it from this flag.",confirmLabel:"Disable browser",danger:true,extraHtml:disableFormHtml(null),onRender:()=>{wireDisableForm();forceBrowserTime()}});
   if(accepted&&!modal.hidden&&currentSettingsView==="app-confirm")form=readDisableForm();
  }finally{disableSubject="account"}
  if(!form){if(!modal.hidden&&!closingModal)renderAdminPanel(adminTab);return}
@@ -3011,10 +3020,11 @@ function paintAdminFlags(box){
  const disabledHtml=disables.map(b=>'<article class="admin-account"><div class="admin-account-head"><span class="admin-account-id"><strong>Browser ···'+esc(String(b.deviceId||"").slice(-6))+'</strong></span><span class="account-role">Browser disabled</span></div><div class="admin-account-meta">'+esc(b.accountId?(accountNameById(b.accountId)||"Account"):"No account")+(b.reasonTitle?" · "+esc(b.reasonTitle):"")+'</div><div class="admin-account-meta">'+(b.reenableAt?"Re-enables "+esc(hstText(b.reenableAt)):"Until an admin enables it")+'</div><div class="admin-account-actions"><button type="button" class="pbtn" data-enable-browser="'+escapeAttr(b.deviceId)+'">Enable browser</button></div></article>').join("");
  const flagHtml=flags.map(f=>{
   const uname=f.username||accountNameById(f.accountId);
-  const side=uname?'<button type="button" class="pbtn" data-open-account="'+escapeAttr(uname)+'">Open account</button>':(f.deviceId?'<button type="button" class="pbtn" data-flag-browser="'+escapeAttr(f.deviceId)+'">Disable browser…</button>':"");
-  return '<article class="admin-account"><div class="admin-account-head"><span class="admin-account-id"><strong>'+esc(FLAG_TYPE_LABELS[f.type]||f.type)+'</strong></span><span class="account-role">'+adminDate(f.createdAt)+'</span></div><div class="admin-account-meta">'+esc(uname||"No account")+(f.deviceId?" · Browser ···"+esc(f.deviceId.slice(-6)):"")+'</div>'+(f.summary?'<div class="admin-account-meta">'+esc(f.summary)+'</div>':"")+'<div class="admin-account-actions"><button type="button" class="pbtn" data-flag-clear="'+escapeAttr(f.id)+'">Resolve</button>'+side+'</div></article>';
+  const browserOff=!uname&&!!f.deviceId&&disables.some(x=>x.deviceId===f.deviceId);
+  const side=uname?'<button type="button" class="pbtn" data-open-account="'+escapeAttr(uname)+'">Open account</button>':(f.deviceId?(browserOff?'<button type="button" class="pbtn" data-enable-browser="'+escapeAttr(f.deviceId)+'">Enable browser</button>':'<button type="button" class="pbtn" data-flag-browser="'+escapeAttr(f.deviceId)+'">Disable browser…</button>'):"");
+  return '<article class="admin-account"><div class="admin-account-head"><span class="admin-account-id"><strong>'+esc(FLAG_TYPE_LABELS[f.type]||f.type)+'</strong></span><span class="account-role">'+adminDate(f.createdAt)+'</span></div><div class="admin-account-meta">'+esc(uname||"No account")+(f.deviceId?" · Browser ···"+esc(f.deviceId.slice(-6)):"")+'</div>'+(f.summary?'<div class="admin-account-meta">'+esc(f.summary)+'</div>':"")+'<div class="admin-account-actions"><button type="button" class="pbtn" data-flag-clear="'+escapeAttr(f.id)+'"'+(browserOff?' disabled title="Enable this browser before resolving this flag."':'')+'>Resolve</button>'+side+'</div>'+(browserOff?'<p class="sm acct-lock">Enable this browser before you can resolve this flag.</p>':'')+'</article>';
  }).join("");
- box.innerHTML='<p class="sm">Flags are private to admins. Users never see them. Account flags are handled on the Accounts tab.</p>'+(disables.length?'<h3 class="sm reason-label">Browser disabled</h3>'+disabledHtml:"")+'<h3 class="sm reason-label">Open flags</h3>'+(flags.length?flagHtml:'<p class="sm">No open flags.</p>');
+ box.innerHTML='<p class="sm">Flags are private to admins. Users never see them. Account flags are handled on the Accounts tab.</p>'+'<h3 class="sm reason-label">Open flags</h3>'+(flags.length?flagHtml:'<p class="sm">No open flags.</p>');
  box.querySelectorAll("[data-flag-clear]").forEach(b=>b.onclick=()=>resolveFlag(b));
  box.querySelectorAll("[data-enable-browser]").forEach(b=>b.onclick=()=>flagAction({flagAction:"enable_browser",deviceId:b.dataset.enableBrowser},"Browser enabled."));
  box.querySelectorAll("[data-flag-browser]").forEach(b=>b.onclick=()=>disableBrowserByDevice(b.dataset.flagBrowser));
@@ -3085,9 +3095,7 @@ function acctMoreHtml(a){const other=isOtherAdminRow(a);return '<button type="bu
 const ACCT_ICONS={disable_browser:'<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M5 5l14 11"/>',edit_browser_reason:'<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>',enable_browser:'<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M8.5 10.5l2.5 2.5 4.5-4.5"/>',flag:'<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>',disable:'<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>',enable:'<circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-4.5"/>',edit_reason:PEN,reset_password:'<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3"/>',force_signout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',promote:'<path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M12 9v6M9 12h6"/>',demote:'<path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M9 12h6"/>',delete:TRASH};
 function accountMenuHtml(a){
  const id=escapeAttr(a.id),item=(action,label,extra,cls)=>'<button type="button" role="menuitem" class="'+(cls||"")+'" data-account-action="'+action+'" data-target-id="'+id+'"'+(extra||"")+'>'+ic(ACCT_ICONS[action]||"",16)+'<span>'+esc(label)+'</span></button>';
- let h="";
- if(a.hasBrowser)h+=a.browserDisabled?item("edit_browser_reason","Edit browser reason")+item("enable_browser","Enable browser"):item("disable_browser","Disable browser");
- h+=item("flag","Flag account");
+ let h=item("flag","Flag account");
  h+=a.status==="active"?item("disable","Disable account"):item("enable","Enable account");
  if(a.status==="disabled")h+=item("edit_reason","Edit reason");
  h+=item("reset_password","Temp password")+item("force_signout","Sign out all");
@@ -3221,14 +3229,15 @@ function adminReasonHtml(i){
 async function runDisableAction(action,targetId){
  const edit=action==="edit_reason";
  const row=(adminData&&adminData.accounts||[]).find(a=>a.id===targetId),cur=row&&row.disabledInfo?row.disabledInfo:null;
- const accepted=await appConfirm({title:edit?"Edit the disable reason?":"Disable account?",message:edit?"The account stays disabled. The user sees the updated reason on their disabled screen.":"This account will no longer be able to use WHWai. The user sees the reason, sub-reason and any re-enable time you set.",confirmLabel:edit?"Save reason":"Disable",danger:!edit,extraHtml:disableFormHtml(cur),onRender:wireDisableForm,radios:edit?null:DISABLE_DATA_RADIOS});
+ const accepted=await appConfirm({title:edit?"Edit the disable reason?":"Disable account?",message:edit?"The account stays disabled. The user sees the updated reason on their disabled screen.":"This account will no longer be able to use WHWai. The user sees the reason, sub-reason and any re-enable time you set.",confirmLabel:edit?"Save reason":"Disable",danger:!edit,extraHtml:disableFormHtml(cur)+(edit?"":'<label class="check-row acct-browsers-row"><input type="checkbox" id="dis-browsers"> Also disable the browsers this account is signed into, until the same re-enable time</label>'),onRender:wireDisableForm,radios:edit?null:DISABLE_DATA_RADIOS});
  if(!accepted){if(!modal.hidden&&!closingModal)renderAdminPanel("accounts");return}
  if(modal.hidden||currentSettingsView!=="app-confirm")return;
  const picked=document.querySelector('input[name="app-confirm-radio"]:checked');const dataMode=picked?picked.value:"keep";
  const form=readDisableForm();
+ const alsoBrowsers=!!(document.getElementById("dis-browsers")&&document.getElementById("dis-browsers").checked);
  adminActionPending=true;$("modal-title").textContent="Working…";mbody.innerHTML='<div class="confirm-panel"><span class="choice-icon"><span class="sync-spinner" aria-hidden="true"></span></span><div><strong>Applying admin action…</strong><p>Please keep this window open while WHWai updates the account.</p></div></div>';animateMenuContent();
  try{
-  const payload=edit?Object.assign({action:"admin_account_action",accountAction:"update_disabled_reason",targetId:targetId},form):Object.assign({action:"admin_account_action",accountAction:"disable",targetId:targetId,dataMode:dataMode},form);
+  const payload=edit?Object.assign({action:"admin_account_action",accountAction:"update_disabled_reason",targetId:targetId},form):Object.assign({action:"admin_account_action",accountAction:"disable",targetId:targetId,dataMode:dataMode,disableBrowsers:alsoBrowsers},form);
   const result=await post(payload);
   if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});
   await adminFetch(true).catch(()=>{});
