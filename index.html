@@ -3173,12 +3173,14 @@ function acctMoreHtml(a){const other=isOtherAdminRow(a);return '<button type="bu
 const ACCT_ICONS={disable_browser:'<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M5 5l14 11"/>',edit_browser_reason:'<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>',enable_browser:'<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M8.5 10.5l2.5 2.5 4.5-4.5"/>',flag:'<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>',disable:'<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>',enable:'<circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-4.5"/>',edit_reason:PEN,reset_password:'<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3"/>',force_signout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',promote:'<path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M12 9v6M9 12h6"/>',demote:'<path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M9 12h6"/>',delete:TRASH};
 function accountMenuHtml(a){
  const id=escapeAttr(a.id),item=(action,label,extra,cls)=>'<button type="button" role="menuitem" class="'+(cls||"")+'" data-account-action="'+action+'" data-target-id="'+id+'"'+(extra||"")+'>'+ic(ACCT_ICONS[action]||"",16)+'<span>'+esc(label)+'</span></button>';
+ const self=!!(accountSession&&accountSession.user&&a.username===accountSession.user.username);
+ const selfOff=' disabled title="Not available on your own admin account"';
  let h=item("flag","Flag account");
- h+=a.status==="active"?item("disable","Disable account"):item("enable","Enable account");
+ h+=a.status==="active"?item("disable","Disable account",self?selfOff:""):item("enable","Enable account");
  if(a.status==="disabled")h+=item("edit_reason","Edit reason");
- h+=item("reset_password","Temp password")+item("force_signout","Sign out all");
- h+=a.role==="admin"?item("demote","Demote",a.isBootstrap?" disabled":""):item("promote","Make admin");
- h+=item("delete","Delete",a.isBootstrap?" disabled":"","danger");
+ h+=item("reset_password","Temp password",self?selfOff:"")+item("force_signout","Sign out all",self?selfOff:"");
+ h+=a.role==="admin"?item("demote","Demote",(a.isBootstrap||self)?(self?selfOff:" disabled"):""):item("promote","Make admin");
+ h+=item("delete","Delete",(a.isBootstrap||self)?(self?selfOff:" disabled"):"","danger");
  return h;
 }
 let acctMenuId=null;
