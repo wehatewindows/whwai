@@ -625,6 +625,8 @@ textarea{border-radius:16px}
 .tool-icon>.sync-spinner,.choice-icon>.sync-spinner,.round>.sync-spinner{margin:0;vertical-align:middle;width:18px;height:18px;border-width:2.5px}
 /* BETA badge: center the label optically */
 .beta-pill{top:0!important;display:inline-flex!important;align-items:center;justify-content:center;line-height:1!important;padding:calc(.3em + .5px) .7em calc(.3em - .5px)!important;vertical-align:middle}
+.flag-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.chat-ended-note{text-align:center;margin:16px 0}
 </style>
 </head>
 <body class="access-locked">
@@ -768,7 +770,7 @@ function safeChat(value){
  const created=Number(value.u!=null?value.u:value.createdAt)||Date.now();
  const chat={id,t:title||"New chat",u:created,m:[]};
  const updated=Number(value.mu!=null?value.mu:value.updatedAt);if(Number.isFinite(updated)&&updated>0)chat.mu=updated;
- if(value.auto)chat.auto=1;if(value.p||value.pinned)chat.p=1;
+ if(value.auto)chat.auto=1;if(value.ended)chat.ended=1;if(value.p||value.pinned)chat.p=1;
  const model=safeText(value.model,80);if(model)chat.model=model;
  const messages=Array.isArray(value.m)?value.m:(Array.isArray(value.messages)?value.messages:[]);
  chat.m=messages.map(safeMessage).filter(Boolean);
@@ -1233,6 +1235,7 @@ function renderChat(fresh){
     if(sb){const panel=document.createElement("div");panel.className="answer-sources";panel.hidden=true;const ol=document.createElement("ul");srcs.forEach(source=>{const li=document.createElement("li"),a=document.createElement("a");a.textContent=source.title;a.href=source.url;a.target="_blank";a.rel="noopener noreferrer";li.appendChild(a);ol.appendChild(li)});panel.appendChild(ol);chatEl.appendChild(panel);sb.onclick=()=>togglePanel(panel,sb,false)}
    }
  });
+ if(c.ended){const note=document.createElement("p");note.className="sm chat-ended-note";note.setAttribute("role","status");note.textContent="This chat was ended and can't be continued. Start a new chat to keep talking.";chatEl.appendChild(note)}
  if(fresh){const ms=chatEl.querySelectorAll(".msg");ms[ms.length-1].classList.add("fresh")}
  const newest=[...chatEl.querySelectorAll(".msg")].pop();[...chatEl.querySelectorAll(".chart-retry")].forEach(x=>{if(newest&&x.closest(".msg")===newest)x.onclick=regen;else x.remove()});
  if(fresh||switching||wasNear)toBottom();else chatEl.scrollTop=prevTop;
@@ -1302,6 +1305,7 @@ const ERR_TEXT="WHWai is busy or can't be reached right now. Wait a moment, then
 const hist=c=>c.m.filter(m=>!m.err).slice(-14).map(m=>({r:m.r,x:m.x}));
 async function post(body,externalSignal){
  const action=body.action;
+ if(!body.deviceId){try{const d=localStorage.getItem("whwai.device.v1")||"";if(/^[A-Za-z0-9_-]{8,80}$/.test(d))body={...body,deviceId:d}}catch(e){}}
  if(action!=="access_check"&&action!=="status_check"){try{const token=localStorage.getItem(ACCESS_TOKEN_KEY);if(token)body={...body,accessToken:token}}catch(e){}}
  if(accountSession&&accountSession.token&&!body.sessionToken&&["auth_login","auth_signup","auth_admin_login","status_check","access_check"].indexOf(action)===-1)body={...body,sessionToken:accountSession.token};
  const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),45000);
@@ -1309,7 +1313,7 @@ async function post(body,externalSignal){
  if(externalSignal){if(externalSignal.aborted)ctl.abort();else externalSignal.addEventListener("abort",forwardAbort,{once:true})}
  try{
   const r=await fetch(API_URL,{method:"POST",body:JSON.stringify(body),signal:ctl.signal});
-  const j=await r.json();if(j.error==='account_disabled'&&j.sessionToken)disabledSessionToken=j.sessionToken;if(j.error==='account_disabled'&&typeof showAccountDisabled==='function')showAccountDisabled(j.message,j);if(j.error){const error=new Error(j.error);error.payload=j;throw error}return j;
+  const j=await r.json();if(j.error==='device_banned'&&typeof showDeviceBanned==='function')showDeviceBanned(j);if(j.error==='account_disabled'&&j.sessionToken)disabledSessionToken=j.sessionToken;if(j.error==='account_disabled'&&typeof showAccountDisabled==='function')showAccountDisabled(j.message,j);if(j.error){const error=new Error(j.error);error.payload=j;throw error}return j;
  }finally{
   clearTimeout(tm);
   if(externalSignal)externalSignal.removeEventListener("abort",forwardAbort);
@@ -1318,7 +1322,7 @@ async function post(body,externalSignal){
 const ACCESS_STORAGE_KEY="whwai.earlyAccessUntil.v1",ACCESS_TOKEN_KEY="whwai.earlyAccessToken.v1",ACCESS_OFF_KEY="whwai.accessCodeOff.v1",ACCESS_TTL=24*60*60*1000;
 try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}
 const accessGate=$("access-gate"),accessCard=$("access-card"),accessTitle=$("access-title"),accessForm=$("access-form"),accessInput=$("access-code"),accessError=$("access-error"),accessButton=$("access-unlock");
-let aiDisabled=false,accessRequired=true,accountDisabledGate=false,accessUnlocked=false;
+let aiDisabled=false,accessRequired=true,accountDisabledGate=false,accessUnlocked=false,deviceBannedGate=false;
 function syncAppInert(){
  const frame=$("app-frame");if(!frame)return;
  const blocked=!accessGate.hidden||!$("wn").hidden;
@@ -1329,7 +1333,7 @@ function syncAppInert(){
 setInterval(syncAppInert,250);
 function openApp(force){if(accountDisabledGate)return;if(aiDisabled&&!force)return;document.body.classList.remove("access-locked");hideEl(accessGate,250);updateSchoolLock();$("app-frame").removeAttribute("aria-hidden");setTimeout(()=>{if(!showWhatsNewIfNeeded())showAriesIntroOnce()},650)}
 function unlockEarlyAccess(token,expiresAt){if(aiDisabled)return;accessUnlocked=true;try{const until=Number(expiresAt)||Date.now()+ACCESS_TTL;localStorage.setItem(ACCESS_STORAGE_KEY,String(until));localStorage.setItem(ACCESS_TOKEN_KEY,String(token||""))}catch(e){}openApp();if(accountSession&&accountSession.token&&!(accountSession.user&&accountSession.user.username)&&typeof resumeAccountSession==="function")resumeAccountSession()}
-function lockEarlyAccess(showGate){if(accountDisabledGate)return;try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");(showEl(accessGate),setTimeout(updateSchoolLock,0));$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.remove("disabled-mode");swapText(accessTitle,"Enter early access code");$("gate-body").hidden=true;$("gate-actions").hidden=true;accessForm.hidden=false;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false;$("access-admin-form").hidden=true;if(showGate){accessInput.value="";setTimeout(()=>accessInput.focus(),50)}}
+function lockEarlyAccess(showGate){if(accountDisabledGate||deviceBannedGate)return;try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");(showEl(accessGate),setTimeout(updateSchoolLock,0));$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.remove("disabled-mode");swapText(accessTitle,"Enter early access code");$("gate-body").hidden=true;$("gate-actions").hidden=true;accessForm.hidden=false;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false;$("access-admin-form").hidden=true;if(showGate){accessInput.value="";setTimeout(()=>accessInput.focus(),50)}}
 function showAIDisabled(){aiDisabled=true;refreshSendState();try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");(showEl(accessGate),setTimeout(updateSchoolLock,0));$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");swapText(accessTitle,"WHWai is currently disabled");$("gate-actions").hidden=true;accessForm.hidden=true;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false;setGateBody("Please check back later.")}
 function hstText(ms){try{return new Date(Number(ms)).toLocaleString("en-US",{timeZone:"Pacific/Honolulu",weekday:"short",month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"})+" HST"}catch(e){return ""}}
 function renderGateReason(message,info){
@@ -1390,6 +1394,17 @@ function showAccountDisabled(message,info){
  const note=canDownload?(info.deleteAfterDownload?"Download your chats before they are removed. Once you download them, they will be deleted from your account.":"You can download a copy of your chats at any time."):(notes[info&&info.dataMode]||"");
  st.hidden=!note;st.textContent=note;
  $("gate-actions").hidden=false;$("gate-signout").onclick=disabledSignOut;
+}
+function showDeviceBanned(info){
+ if(deviceBannedGate)return;
+ deviceBannedGate=true;refreshSendState();
+ if(accountSyncTimer!==null){clearTimeout(accountSyncTimer);accountSyncTimer=null}
+ accountReady=false;
+ document.body.classList.add("access-locked");(showEl(accessGate),setTimeout(updateSchoolLock,0));$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");swapText(accessTitle,"This browser is temporarily disabled");accessForm.hidden=true;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=true;$("access-admin-form").hidden=true;
+ const wn=$("wn");if(wn)wn.hidden=true;
+ const body=$("gate-body");if(body){body.innerHTML="";const p=document.createElement("p");p.textContent="WHWai can't be used from this browser until the ban ends.";body.appendChild(p)}
+ $("gate-download").hidden=true;$("gate-actions").hidden=true;
+ const st=$("gate-status");const until=Number(info&&info.until)||0;st.hidden=false;st.textContent=until?"The ban ends "+hstText(until)+".":"Try again after the ban ends.";
 }
 document.addEventListener("pointerdown",e=>{const b=e.target.closest&&e.target.closest("#gate-signout");if(!b||b.disabled)return;const r=b.getBoundingClientRect();const s=document.createElement("span");s.className="btn-ripple";s.style.left=(e.clientX-r.left)+"px";s.style.top=(e.clientY-r.top)+"px";b.appendChild(s);setTimeout(()=>s.remove(),700)});
 async function disabledSignOut(){
@@ -1488,19 +1503,19 @@ async function answer(c,q){
   tick();timer=setInterval(tick,1800);
  }
  try{
-  let full,err=0,sources=[],thinking="",usedModel=null,limitNow=false;
+  let full,err=0,sources=[],thinking="",usedModel=null,limitNow=false,endedNow=false;
   if(API_URL){
    try{
     const modelId=availableModels.some(m=>m.id===c.model)?c.model:(S.model||"aries-1");
     if(c.model!==modelId)c.model=modelId;
-    const j=await post({action:"chat",model:modelId,deviceId:getDeviceId(),messages:hist(c)},controller.signal);
+    const j=await post({action:"chat",model:modelId,chatId:c.id,messages:hist(c)},controller.signal);
     if(responseWasStopped||run!==answerRunId)return;
     if(j.quota&&typeof j.quota.remaining==="number")toast(j.quota.remaining+" messages left today on this model");
-    full=j.text||ERR_TEXT;sources=Array.isArray(j.sources)?j.sources:[];thinking=typeof j.thinking==="string"?j.thinking:"";if(!j.text||j.disabled)err=1;
+    full=j.text||ERR_TEXT;sources=Array.isArray(j.sources)?j.sources:[];thinking=typeof j.thinking==="string"?j.thinking:"";if(j.ended)endedNow=true;if(!j.text||j.disabled)err=1;
    }catch(e){
     if(responseWasStopped||run!==answerRunId||e&&e.name==="AbortError"&&controller.signal.aborted)return;
-    if(e&&e.payload&&e.payload.error==="vela_unavailable"){
-     try{const j2=await post({action:"chat",model:"aries-1",deviceId:getDeviceId(),messages:hist(c)},controller.signal);if(responseWasStopped||run!==answerRunId)return;full=j2.text||ERR_TEXT;usedModel="aries-1";if(!j2.text)err=1;toast("Vela couldn't finish that answer, so Aries answered instead.")}
+    if(e&&e.payload&&e.payload.error==="chat_ended"){endedNow=true;full=e.payload.message||"This chat was ended.";}else if(e&&e.payload&&e.payload.error==="vela_unavailable"){
+     try{const j2=await post({action:"chat",model:"aries-1",chatId:c.id,messages:hist(c)},controller.signal);if(responseWasStopped||run!==answerRunId)return;full=j2.text||ERR_TEXT;usedModel="aries-1";if(!j2.text)err=1;toast("Vela couldn't finish that answer, so Aries answered instead.")}
      catch(e2){if(responseWasStopped||run!==answerRunId||e2&&e2.name==="AbortError")return;full=ERR_TEXT;err=1}
     }
     else{    if(e&&e.payload&&e.payload.error==="guest_limit"){setLimitHit();limitNow=true}full=e&&e.message==="daily_limit"?(e.payload&&e.payload.message||"You've reached this model's daily limit. Please try again tomorrow."):e&&e.message==="model_unavailable"?"That model is not available right now.":e&&e.payload&&e.payload.message?e.payload.message:ERR_TEXT;err=1;}
@@ -1517,7 +1532,7 @@ async function answer(c,q){
   if(responseWasStopped||run!==answerRunId)return;
   const target=S.chats.find(x=>x.id===c.id);
   if(!target)return;
-  if(limitNow)full="You've hit your usage limit.";target.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1,limit:limitNow?1:0}:{r:"a",x:full,at:Date.now(),sources:sources,thinking:thinking,model:usedModel||target.model||S.model||"aries-1",_l:1});target.u=Date.now();touch(target);save();renderList();renderChat();
+  if(limitNow)full="You've hit your usage limit.";target.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1,limit:limitNow?1:0}:{r:"a",x:full,at:Date.now(),sources:sources,thinking:thinking,model:usedModel||target.model||S.model||"aries-1",_l:1});if(endedNow)target.ended=1;target.u=Date.now();touch(target);save();renderList();renderChat();
   if(API_URL&&!err&&target.auto)genTitle(target);
 
  }finally{
@@ -1540,6 +1555,8 @@ function limitHit(){try{return localStorage.getItem(LIMIT_DAY_KEY)===hiDay()}cat
 function setLimitHit(){try{localStorage.setItem(LIMIT_DAY_KEY,hiDay())}catch(e){}refreshSendState()}
 function sendBlockReason(){
  if(aiDisabled)return"WHWai is turned off right now, so messages can't be sent.";
+ if(deviceBannedGate)return"This browser is temporarily disabled, so messages can't be sent.";
+ if(C()&&C().ended)return"This chat was ended, so messages can't be sent. Start a new chat to continue.";
  if(accountDisabledGate)return"This account is disabled, so messages can't be sent.";
  if(limitHit()&&!(accountSession&&accountSession.token))return"You've reached today's usage limit. You can sign in or try again after midnight Hawaii time.";
  return"";
@@ -2852,7 +2869,7 @@ function refreshAdmin(){
  if(b){b.disabled=true;b.setAttribute("aria-busy","true");b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Refreshing…'}
  const finish=()=>{const nb=$("admin-refresh");if(nb){nb.disabled=false;nb.removeAttribute("aria-busy");nb.textContent="Refresh"}};
  return adminFetch(true).then(()=>{
-  finish();
+  finish();adminFlagsData=null;
   if(g===adminPanelGeneration&&currentSettingsView==="admin"){paintAdminTab();toast("Admin data refreshed.")}
  }).catch(err=>{finish();if(g===adminPanelGeneration)showAdminError(err)});
 }
@@ -2860,17 +2877,57 @@ function renderAdminPanel(tab,query){
  currentSettingsView="admin";if(tab&&tab!==adminTab)adminFilterOpen=null;if(tab)adminTab=tab;if(query!=null)adminQuery=query;
  const generation=++adminPanelGeneration;
  $("modal-title").textContent="Admin panel";
- mbody.innerHTML=`<div class="admin-nav">${[["site","Site controls"],["accounts","Accounts"],["usage","Usage"],["audit","Audit log"]].map(t=>`<button type="button" class="pbtn ${adminTab===t[0]?"active":""}" data-admin-tab="${t[0]}">${t[1]}</button>`).join("")}</div><div id="admin-content" aria-live="polite"></div><div class="data-toolbar"><button type="button" class="pbtn" id="admin-refresh">Refresh</button><button type="button" class="pbtn" id="admin-back">Back to Settings</button></div>`;
+ mbody.innerHTML=`<div class="admin-nav">${[["site","Site controls"],["accounts","Accounts"],["flags","Flags"],["usage","Usage"],["audit","Audit log"]].map(t=>`<button type="button" class="pbtn ${adminTab===t[0]?"active":""}" data-admin-tab="${t[0]}">${t[1]}</button>`).join("")}</div><div id="admin-content" aria-live="polite"></div><div class="data-toolbar"><button type="button" class="pbtn" id="admin-refresh">Refresh</button><button type="button" class="pbtn" id="admin-back">Back to Settings</button></div>`;
  mbody.querySelectorAll("[data-admin-tab]").forEach(b=>b.onclick=()=>renderAdminPanel(b.dataset.adminTab));
  $("admin-back").onclick=renderSettings;$("admin-refresh").onclick=()=>refreshAdmin();
  if(adminData){paintAdminTab();if(Date.now()-adminDataAt>60000)refreshAdmin();return}
  $("admin-content").innerHTML='<p class="sm"><span class="sync-spinner" aria-hidden="true"></span>Loading admin data…</p>';
  adminFetch().then(()=>{if(generation===adminPanelGeneration&&currentSettingsView==="admin")paintAdminTab()}).catch(err=>{if(generation===adminPanelGeneration)showAdminError(err)});
 }
+let adminFlagsData=null,adminFlagsLoading=null;
+const FLAG_TYPE_LABELS={ai_ended:"AI ended chat",ban_evasion:"Banned browser tried to use WHWai",manual:"Admin note"};
+const BROWSER_BAN_ITEMS=[{value:"1",label:"1 hour",hint:"Short cool-down."},{value:"24",label:"1 day",hint:""},{value:"168",label:"7 days",hint:""},{value:"720",label:"30 days",hint:""},{value:"8760",label:"1 year",hint:""}];
+function loadAdminFlags(){
+ if(!adminFlagsLoading)adminFlagsLoading=post({action:"admin_flags"}).then(r=>{if(!r||!r.ok)throw Object.assign(new Error(r&&r.error||"failed"),{payload:r});adminFlagsData=r;return r}).finally(()=>{adminFlagsLoading=null});
+ return adminFlagsLoading;
+}
+function paintAdminFlags(box){
+ if(!adminFlagsData){
+  box.innerHTML='<p class="sm"><span class="sync-spinner" aria-hidden="true"></span>Loading flags…</p>';
+  const g=adminPanelGeneration;
+  loadAdminFlags().then(()=>{if(g===adminPanelGeneration&&adminTab==="flags"&&currentSettingsView==="admin")paintAdminTab()}).catch(err=>{if(g===adminPanelGeneration)showAdminError(err)});
+  return;
+ }
+ const flags=adminFlagsData.flags||[],bans=adminFlagsData.bans||[],accounts=(adminData&&adminData.accounts)||[];
+ const banHtml=bans.length?'<h3 class="sm reason-label">Active browser bans</h3>'+bans.map(b=>`<article class="admin-audit-item"><strong>Browser ···${esc(String(b.deviceId||"").slice(-6))}</strong><span>Ends ${esc(hstText(b.until))}</span><p>${esc(b.reason||"")}</p><div class="flag-actions"><button type="button" class="pbtn" data-unban="${escapeAttr(b.deviceId)}">Remove ban</button></div></article>`).join(""):"";
+ const flagHtml=flags.length?flags.map(f=>`<article class="admin-audit-item"><strong>${esc(FLAG_TYPE_LABELS[f.type]||f.type)}</strong><span>${adminDate(f.createdAt)}</span><p>${f.username?esc(f.username)+" · ":""}${f.deviceId?"Browser ···"+esc(f.deviceId.slice(-6)):"No browser recorded"}</p><small>${esc(f.summary||"")}</small><div class="flag-actions"><button type="button" class="pbtn" data-flag-clear="${escapeAttr(f.id)}">Mark reviewed</button>${f.deviceId?`<button type="button" class="pbtn" data-flag-ban="${escapeAttr(f.id)}">Ban browser…</button>`:""}</div></article>`).join(""):'<p class="sm">No open flags.</p>';
+ const options=accounts.map(a=>`<option value="${escapeAttr(a.id)}">${esc(a.username)}</option>`).join("");
+ box.innerHTML=`<p class="sm">Flags are private to admins. Users never see them.</p>${banHtml}<h3 class="sm reason-label">Open flags</h3>${flagHtml}<h3 class="sm reason-label">Add a note</h3><form id="flag-manual-form" class="account-form" autocomplete="off"><label class="sm reason-label" for="flag-target">Account (optional)</label><select id="flag-target" class="reason-input"><option value="">No account</option>${options}</select><label class="sm reason-label" for="flag-note">Note (admins only, up to 300 characters)</label><textarea id="flag-note" class="reason-input" rows="2" maxlength="300" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea><div class="flag-actions"><button type="submit" class="pbtn">Add flag</button></div></form>`;
+ box.querySelectorAll("[data-flag-clear]").forEach(b=>b.onclick=()=>flagAction({flagAction:"clear",flagId:b.dataset.flagClear},"Flag marked reviewed."));
+ box.querySelectorAll("[data-unban]").forEach(b=>b.onclick=()=>flagAction({flagAction:"unban_browser",deviceId:b.dataset.unban},"Browser ban removed."));
+ box.querySelectorAll("[data-flag-ban]").forEach(b=>b.onclick=()=>banFromFlag(b.dataset.flagBan));
+ $("flag-manual-form").onsubmit=e=>{e.preventDefault();const note=$("flag-note").value.trim();if(!note){toast("Add a short note first.");return}flagAction({flagAction:"manual",accountId:$("flag-target").value,note:note},"Flag added.")};
+}
+async function flagAction(payload,doneText){
+ try{
+  const r=await post(Object.assign({action:"admin_flag_action"},payload));
+  if(!r||!r.ok)throw Object.assign(new Error(r&&r.error||"failed"),{payload:r});
+  adminFlagsData=null;toast(doneText);
+  if(!modal.hidden)renderAdminPanel("flags");
+ }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't update that flag.")}
+}
+async function banFromFlag(flagId){
+ const flag=((adminFlagsData&&adminFlagsData.flags)||[]).find(f=>f.id===flagId);
+ if(!flag||!flag.deviceId){toast("No browser is recorded for that flag.");return}
+ const accepted=await appConfirm({title:"Ban this browser?",message:"The browser sees that it is disabled and when the ban ends. It has no sign-out button. Clearing browser storage gets around a ban.",confirmLabel:"Ban browser",danger:true,radios:{label:"How long?",items:BROWSER_BAN_ITEMS.map(it=>Object.assign({},it,{checked:it.value==="24"}))}});
+ if(!accepted)return;
+ const picked=document.querySelector('input[name="app-confirm-radio"]:checked');
+ await flagAction({flagAction:"ban_browser",deviceId:flag.deviceId,hours:picked?picked.value:"24",reason:"From flag: "+(FLAG_TYPE_LABELS[flag.type]||flag.type)},"Browser banned.");
+}
 function paintAdminTab(){
  const box=$("admin-content");if(!box||!adminData)return;
  mbody.querySelectorAll("[data-admin-tab]").forEach(b=>b.classList.toggle("active",b.dataset.adminTab===adminTab));
- if(adminTab==="site")paintAdminSite(box);else if(adminTab==="accounts")paintAdminAccounts(box);else if(adminTab==="usage")paintAdminUsage(box);else paintAdminAudit(box);
+ if(adminTab==="site")paintAdminSite(box);else if(adminTab==="accounts")paintAdminAccounts(box);else if(adminTab==="usage")paintAdminUsage(box);else if(adminTab==="flags")paintAdminFlags(box);else paintAdminAudit(box);
  box.insertAdjacentHTML("beforeend",'<p class="sm">Server build: '+esc(adminData.build||"unknown")+'</p>');if(adminData.problems&&adminData.problems.length)box.insertAdjacentHTML("afterbegin",'<p class="access-error" role="status">Some admin data could not load: '+adminData.problems.map(p=>esc(p.part+" – "+p.error)).join("; ")+'</p>');
 }
 function paintAdminSite(box){
@@ -3000,13 +3057,13 @@ const DISABLE_PRESETS=[
 {sub:"Required before use",text:"This account needs a security check before it can be used again. It has been disabled until the check is complete."}]}
 ];
 const DISABLE_DATA_RADIOS={label:"What happens to their chats?",items:[{value:"keep",label:"Keep their chats",hint:"The user is not offered a download. Chats stay on the account.",checked:true},{value:"download",label:"Let them download their chats",hint:"A download button appears on their disabled screen. Chats stay on the account."},{value:"download_delete",label:"Download, then delete",hint:"They can download their chats. Once they do, the chats are deleted from the account."},{value:"delete",label:"Delete their chats now",hint:"Chats are deleted from the account right away. This cannot be undone."}]};
-function disableFormHtml(cur){
+function disableFormHtml(cur,edit){
  let sel="custom";const c=cur||{};
  DISABLE_PRESETS.forEach((p,i)=>p.subs.forEach((s,j)=>{if(c.title===p.title&&c.sub===s.sub&&c.text===s.text)sel=i+"-"+j}));
  const opts=DISABLE_PRESETS.map((p,i)=>'<optgroup label="'+escapeAttr(p.title)+'">'+p.subs.map((s,j)=>'<option value="'+i+'-'+j+'"'+(sel===i+"-"+j?" selected":"")+'>'+esc(s.sub)+'</option>').join("")+'</optgroup>').join("")+'<option value="custom"'+(sel==="custom"?" selected":"")+'>Custom reason</option>';
  const custom=sel==="custom"?String(c.text||""):"";
  const re=c.reenableAt?new Date(Number(c.reenableAt)+36e5*10).toISOString().slice(0,16):"";
- return '<div class="disable-form"><label class="sm reason-label" for="dis-preset">Reason</label><select id="dis-preset" class="reason-input">'+opts+'</select><p class="sm dis-preview" id="dis-preview"></p><label class="sm reason-label" id="dis-custom-label" for="dis-custom" hidden>Custom reason (shown to the user, up to 200 characters)</label><textarea id="dis-custom" class="reason-input" rows="3" maxlength="200" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true" hidden>'+esc(custom)+'</textarea><div class="reenable-card"><label class="switch-row reenable-row"><span><strong>Re-enable automatically</strong><small>Turn on to choose a date and time in HST. Off keeps the account disabled until you enable it.</small></span><input type="checkbox" id="dis-reenable-on"'+(re?" checked":"")+'><span class="switch-ui"></span></label><div class="reenable-when" id="dis-reenable-wrap"'+(re?"":" hidden")+'><label class="sm reason-label" for="dis-reenable">Re-enable at (HST)</label><input type="datetime-local" id="dis-reenable" class="reason-input" autocomplete="off" value="'+escapeAttr(re)+'"></div></div>';
+ return '<div class="disable-form"><label class="sm reason-label" for="dis-preset">Reason</label><select id="dis-preset" class="reason-input">'+opts+'</select><p class="sm dis-preview" id="dis-preview"></p><label class="sm reason-label" id="dis-custom-label" for="dis-custom" hidden>Custom reason (shown to the user, up to 200 characters)</label><textarea id="dis-custom" class="reason-input" rows="3" maxlength="200" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true" hidden>'+esc(custom)+'</textarea><div class="reenable-card"><label class="switch-row reenable-row"><span><strong>Re-enable automatically</strong><small>Turn on to choose a date and time in HST. Off keeps the account disabled until you enable it.</small></span><input type="checkbox" id="dis-reenable-on"'+(re?" checked":"")+'><span class="switch-ui"></span></label><div class="reenable-when" id="dis-reenable-wrap"'+(re?"":" hidden")+'><label class="sm reason-label" for="dis-reenable">Re-enable at (HST)</label><input type="datetime-local" id="dis-reenable" class="reason-input" autocomplete="off" value="'+escapeAttr(re)+'"></div></div>'+(edit?'':'<label class="sm reason-label" for="dis-browser-ban">Also disable their browser</label><select id="dis-browser-ban" class="reason-input"><option value="0" selected>No browser ban</option>'+BROWSER_BAN_ITEMS.map(it=>'<option value="'+it.value+'">'+esc(it.label)+'</option>').join("")+'</select><p class="sm">Applies only if a browser is on record for this account. Clearing browser storage gets around it.</p>');
 }
 function wireDisableForm(){
  const sel=$("dis-preset"),prev=$("dis-preview"),custom=$("dis-custom"),lab=$("dis-custom-label");
@@ -3018,7 +3075,7 @@ function wireDisableForm(){
 function readDisableForm(){
  const v=$("dis-preset").value;let title="",sub="",text="";
  if(v==="custom"){text=$("dis-custom").value.trim()}else{const [i,j]=v.split("-").map(Number),p=DISABLE_PRESETS[i],s=p.subs[j];title=p.title;sub=s.sub;text=s.text}
- return {reasonTitle:title,reasonSub:sub,reasonText:text,reenableAt:($("dis-reenable-on").checked&&$("dis-reenable").value)||""};
+ return {reasonTitle:title,reasonSub:sub,reasonText:text,reenableAt:($("dis-reenable-on").checked&&$("dis-reenable").value)||"",banBrowserHours:$("dis-browser-ban")?$("dis-browser-ban").value:"0"};
 }
 function adminReasonHtml(i){
  const info=i||{};let h='<div class="admin-account-meta">Reason: '+esc(info.title||"Custom reason")+(info.sub?' · '+esc(info.sub):"")+'</div>';
@@ -3029,7 +3086,7 @@ function adminReasonHtml(i){
 async function runDisableAction(action,targetId){
  const edit=action==="edit_reason";
  const row=(adminData&&adminData.accounts||[]).find(a=>a.id===targetId),cur=row&&row.disabledInfo?row.disabledInfo:null;
- const accepted=await appConfirm({title:edit?"Edit the disable reason?":"Disable account?",message:edit?"The account stays disabled. The user sees the updated reason on their disabled screen.":"This account will no longer be able to use WHWai. The user sees the reason, sub-reason and any re-enable time you set.",confirmLabel:edit?"Save reason":"Disable",danger:!edit,extraHtml:disableFormHtml(cur),onRender:wireDisableForm,radios:edit?null:DISABLE_DATA_RADIOS});
+ const accepted=await appConfirm({title:edit?"Edit the disable reason?":"Disable account?",message:edit?"The account stays disabled. The user sees the updated reason on their disabled screen.":"This account will no longer be able to use WHWai. The user sees the reason, sub-reason and any re-enable time you set.",confirmLabel:edit?"Save reason":"Disable",danger:!edit,extraHtml:disableFormHtml(cur,edit),onRender:wireDisableForm,radios:edit?null:DISABLE_DATA_RADIOS});
  if(!accepted){if(!modal.hidden&&!closingModal)renderAdminPanel("accounts");return}
  if(modal.hidden||currentSettingsView!=="app-confirm")return;
  const picked=document.querySelector('input[name="app-confirm-radio"]:checked');const dataMode=picked?picked.value:"keep";
