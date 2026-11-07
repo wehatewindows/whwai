@@ -358,6 +358,14 @@ body.access-locked .frame{filter:blur(6px);pointer-events:none;user-select:none}
 .admin-account-meta{font-size:12px;line-height:1.4;color:#666;margin:10px 0 0;overflow-wrap:anywhere}
 .admin-account-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .admin-account-meta+.admin-account-meta{margin-top:5px}
+.flag-item{transition:opacity .26s ease,transform .26s ease,height .26s ease,padding .26s ease,margin .26s ease}
+.acct-flags{margin-top:12px;padding:10px 12px;border:1px solid #f1d27a;background:#fff7e0;border-radius:12px}
+.acct-flags-head{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;font-weight:600;color:#7a5200}
+.acct-flags-count{min-width:22px;text-align:center;background:#f2c14e;color:#3b2a00;border-radius:999px;padding:1px 7px;font-size:11.5px}
+.acct-flag{padding-top:10px;margin-top:10px;border-top:1px solid #f1d27a}
+.acct-flags-head+.acct-flag{margin-top:8px}
+.acct-flag-meta{font-size:12px;color:#7a5200}
+.acct-flag-summary{font-size:13px;color:#222;margin-top:3px;overflow-wrap:anywhere}
 .flag-item{transition:opacity .26s ease,transform .26s ease}
 .flag-item.is-resolving,.admin-account.is-resolving{opacity:0;transform:translateX(12px) scale(.98)}
 .admin-account{transition:opacity .26s ease,transform .26s ease}
@@ -2935,7 +2943,7 @@ function browserLineHtml(a){
 function flagsLineHtml(a){
  const open=((adminFlagsData&&adminFlagsData.flags)||[]).filter(f=>f.accountId===a.id);
  if(!open.length)return "";
- return '<div class="admin-account-meta">Open flags: '+open.length+'</div>'+open.map(f=>'<div class="flag-item"><div class="admin-account-meta">'+esc(FLAG_TYPE_LABELS[f.type]||f.type)+' · '+adminDate(f.createdAt)+'<br>'+esc(f.summary||"")+'</div><div class="admin-account-actions"><button type="button" class="pbtn" data-flag-clear="'+escapeAttr(f.id)+'">Resolve</button></div></div>').join("");
+ return '<section class="acct-flags" data-acct-flags><div class="acct-flags-head"><span>Open flags</span><span class="acct-flags-count">'+open.length+'</span></div>'+open.map(f=>'<div class="flag-item acct-flag"><div class="acct-flag-meta">'+esc(FLAG_TYPE_LABELS[f.type]||f.type)+' · '+adminDate(f.createdAt)+'</div><div class="acct-flag-summary">'+esc(f.summary||"")+'</div><div class="admin-account-actions"><button type="button" class="pbtn" data-flag-clear="'+escapeAttr(f.id)+'">Resolve</button></div></div>').join("")+'</section>';
 }
 function browserButtonsHtml(a){
  const id=escapeAttr(a.id);let h="";
@@ -2989,14 +2997,23 @@ async function flagAction(payload,doneText,opts){
 }
 async function resolveFlag(b){
  if(!b||b.disabled)return;
- const item=b.closest(".flag-item")||b.closest("article"),label=b.textContent;
+ const id=b.dataset.flagClear,item=b.closest(".flag-item"),label=b.textContent;
  b.disabled=true;b.classList.add("is-busy");b.textContent="Resolving";
  if(item)item.classList.add("is-resolving");
- const request=flagAction({flagAction:"clear",flagId:b.dataset.flagClear},"Flag resolved.",{noRender:true});
- await new Promise(r=>setTimeout(r,260));
- const ok=await request;
- if(!ok){b.disabled=false;b.classList.remove("is-busy");b.textContent=label;if(item)item.classList.remove("is-resolving");return}
- if(!modal.hidden)renderAdminPanel(adminTab);
+ let ok=false,msg="Couldn't update that flag.";
+ try{const r=await post({action:"admin_flag_action",flagAction:"clear",flagId:id});ok=!!(r&&r.ok);if(!ok&&r&&r.message)msg=r.message}catch(e){}
+ if(!ok){b.disabled=false;b.classList.remove("is-busy");b.textContent=label;if(item)item.classList.remove("is-resolving");toast(msg);return}
+ if(adminFlagsData)adminFlagsData=Object.assign({},adminFlagsData,{flags:(adminFlagsData.flags||[]).filter(f=>f.id!==id)});
+ toast("Flag resolved.");
+ if(item){await collapseEl(item);item.remove()}
+ refreshFlagCounts();
+}
+function collapseEl(el){return new Promise(res=>{const hgt=el.offsetHeight;el.style.height=hgt+"px";el.style.overflow="hidden";requestAnimationFrame(()=>requestAnimationFrame(()=>{el.style.height="0px";el.style.paddingTop="0px";el.style.paddingBottom="0px";el.style.marginTop="0px";el.style.marginBottom="0px";}));setTimeout(res,280)})}
+function refreshFlagCounts(){
+ document.querySelectorAll("[data-acct-flags]").forEach(sec=>{const left=sec.querySelectorAll(".flag-item").length;if(!left){sec.remove()}else{const c=sec.querySelector(".acct-flags-count");if(c)c.textContent=left}});
+ const list=$("admin-flag-list");
+ if(list&&!list.querySelector(".flag-item")&&!list.querySelector("p.sm")&&!list.querySelector("h3"))list.insertAdjacentHTML("beforeend",'<p class="sm">No open flags.</p>');
+ if(adminAccountFilters.has("flagged")&&!modal.hidden&&adminTab==="accounts")paintAccountList();
 }
 function forceBrowserTime(){const on=$("dis-reenable-on");if(!on)return;on.checked=true;on.disabled=true;const row=on.closest(".switch-row");if(row)row.hidden=true;const wrap=$("dis-reenable-wrap");if(wrap)wrap.hidden=false;const when=$("dis-reenable");if(when)when.required=true}
 async function disableBrowserByDevice(deviceId){
@@ -3009,6 +3026,13 @@ async function disableBrowserByDevice(deviceId){
  if(!form){if(!modal.hidden&&!closingModal)renderAdminPanel(adminTab);return}
  await flagAction(Object.assign({flagAction:"disable_browser",deviceId:deviceId},form),"Browser disabled.");
 }
+let adminFlagQuery="";
+function flagCardHtml(f,disables){
+ const uname=f.username||accountNameById(f.accountId);
+ const browserOff=!uname&&!!f.deviceId&&disables.some(x=>x.deviceId===f.deviceId);
+ const side=uname?'<button type="button" class="pbtn" data-open-account="'+escapeAttr(uname)+'">Show account</button>':(f.deviceId?(browserOff?'<button type="button" class="pbtn" data-enable-browser="'+escapeAttr(f.deviceId)+'">Enable browser</button>':'<button type="button" class="pbtn" data-flag-browser="'+escapeAttr(f.deviceId)+'">Disable browser…</button>'):"");
+ return '<article class="admin-account flag-item"><div class="admin-account-head"><span class="admin-account-id"><strong>'+esc(FLAG_TYPE_LABELS[f.type]||f.type)+'</strong></span><span class="account-role">'+adminDate(f.createdAt)+'</span></div><div class="admin-account-meta">'+esc(uname||"No account")+(f.deviceId?" · Browser ···"+esc(String(f.deviceId).slice(-6)):"")+'</div>'+(f.summary?'<div class="admin-account-meta">'+esc(f.summary)+'</div>':"")+'<div class="admin-account-actions"><button type="button" class="pbtn" data-flag-clear="'+escapeAttr(f.id)+'"'+(browserOff?' disabled title="Enable this browser before resolving this flag."':'')+'>Resolve</button>'+side+'</div>'+(browserOff?'<p class="sm acct-lock">Enable this browser before you can resolve this flag.</p>':'')+'</article>';
+}
 function paintAdminFlags(box){
  if(!adminFlagsData){
   box.innerHTML='<p class="sm"><span class="sync-spinner" aria-hidden="true"></span>Loading flags…</p>';
@@ -3016,19 +3040,19 @@ function paintAdminFlags(box){
   loadAdminFlags().then(()=>{if(g===adminPanelGeneration&&adminTab==="flags"&&currentSettingsView==="admin")paintAdminTab()}).catch(err=>{if(g===adminPanelGeneration)showAdminError(err)});
   return;
  }
- const flags=adminFlagsData.flags||[],disables=adminFlagsData.browserDisables||[];
- const disabledHtml=disables.map(b=>'<article class="admin-account"><div class="admin-account-head"><span class="admin-account-id"><strong>Browser ···'+esc(String(b.deviceId||"").slice(-6))+'</strong></span><span class="account-role">Browser disabled</span></div><div class="admin-account-meta">'+esc(b.accountId?(accountNameById(b.accountId)||"Account"):"No account")+(b.reasonTitle?" · "+esc(b.reasonTitle):"")+'</div><div class="admin-account-meta">'+(b.reenableAt?"Re-enables "+esc(hstText(b.reenableAt)):"Until an admin enables it")+'</div><div class="admin-account-actions"><button type="button" class="pbtn" data-enable-browser="'+escapeAttr(b.deviceId)+'">Enable browser</button></div></article>').join("");
- const flagHtml=flags.map(f=>{
-  const uname=f.username||accountNameById(f.accountId);
-  const browserOff=!uname&&!!f.deviceId&&disables.some(x=>x.deviceId===f.deviceId);
-  const side=uname?'<button type="button" class="pbtn" data-open-account="'+escapeAttr(uname)+'">Show account</button>':(f.deviceId?(browserOff?'<button type="button" class="pbtn" data-enable-browser="'+escapeAttr(f.deviceId)+'">Enable browser</button>':'<button type="button" class="pbtn" data-flag-browser="'+escapeAttr(f.deviceId)+'">Disable browser…</button>'):"");
-  return '<article class="admin-account"><div class="admin-account-head"><span class="admin-account-id"><strong>'+esc(FLAG_TYPE_LABELS[f.type]||f.type)+'</strong></span><span class="account-role">'+adminDate(f.createdAt)+'</span></div><div class="admin-account-meta">'+esc(uname||"No account")+(f.deviceId?" · Browser ···"+esc(f.deviceId.slice(-6)):"")+'</div>'+(f.summary?'<div class="admin-account-meta">'+esc(f.summary)+'</div>':"")+'<div class="admin-account-actions"><button type="button" class="pbtn" data-flag-clear="'+escapeAttr(f.id)+'"'+(browserOff?' disabled title="Enable this browser before resolving this flag."':'')+'>Resolve</button>'+side+'</div>'+(browserOff?'<p class="sm acct-lock">Enable this browser before you can resolve this flag.</p>':'')+'</article>';
- }).join("");
- box.innerHTML='<p class="sm">Flags are private to admins. Users never see them. Account flags are handled on the Accounts tab.</p>'+'<h3 class="sm reason-label">Open flags</h3>'+(flags.length?flagHtml:'<p class="sm">No open flags.</p>');
- box.querySelectorAll("[data-flag-clear]").forEach(b=>b.onclick=()=>resolveFlag(b));
- box.querySelectorAll("[data-enable-browser]").forEach(b=>b.onclick=()=>flagAction({flagAction:"enable_browser",deviceId:b.dataset.enableBrowser},"Browser enabled."));
- box.querySelectorAll("[data-flag-browser]").forEach(b=>b.onclick=()=>disableBrowserByDevice(b.dataset.flagBrowser));
- box.querySelectorAll("[data-open-account]").forEach(b=>b.onclick=()=>renderAdminPanel("accounts",b.dataset.openAccount));
+ box.innerHTML='<div class="admin-search"><input id="admin-flag-query" type="search" maxlength="60" placeholder="Search flags" value="'+escapeAttr(adminFlagQuery)+'" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></div><div id="admin-flag-list"></div>';
+ $("admin-flag-query").oninput=e=>{adminFlagQuery=e.target.value;paintFlagList()};
+ paintFlagList();
+}
+function paintFlagList(){
+ const list=$("admin-flag-list");if(!list||!adminFlagsData)return;
+ const all=adminFlagsData.flags||[],disables=adminFlagsData.browserDisables||[],q=adminFlagQuery.trim().toLowerCase();
+ const shown=q?all.filter(f=>[FLAG_TYPE_LABELS[f.type]||f.type,f.summary,f.username,accountNameById(f.accountId),f.deviceId?String(f.deviceId).slice(-6):"",adminDate(f.createdAt)].join(" ").toLowerCase().indexOf(q)!==-1):all;
+ list.innerHTML=shown.length?'<h3 class="sm reason-label">Open flags</h3>'+shown.map(f=>flagCardHtml(f,disables)).join(""):'<p class="sm">'+(all.length?"No flags match that search.":"No open flags.")+'</p>';
+ list.querySelectorAll("[data-flag-clear]").forEach(b=>b.onclick=()=>resolveFlag(b));
+ list.querySelectorAll("[data-enable-browser]").forEach(b=>b.onclick=()=>flagAction({flagAction:"enable_browser",deviceId:b.dataset.enableBrowser},"Browser enabled."));
+ list.querySelectorAll("[data-flag-browser]").forEach(b=>b.onclick=()=>disableBrowserByDevice(b.dataset.flagBrowser));
+ list.querySelectorAll("[data-open-account]").forEach(b=>b.onclick=()=>renderAdminPanel("accounts",b.dataset.openAccount));
 }
 function paintAdminTab(){
  const box=$("admin-content");if(!box||!adminData)return;
@@ -3129,9 +3153,10 @@ function paintAdminUsage(box){
  box.innerHTML=`<div class="admin-stat-grid"><div class="admin-stat"><span>Requests today</span><strong>${Number(t.total)||0}</strong></div><div class="admin-stat"><span>Requests in 7 days</span><strong>${Number(w.total)||0}</strong></div><div class="admin-stat"><span>Accounts</span><strong>${Number(r.accountCount)||0}</strong></div><div class="admin-stat"><span>Failed sign-ins today</span><strong>${Number(t.failedSignins)||0}</strong></div><div class="admin-stat"><span>Guest requests today</span><strong>${Number(t.guests)||0}</strong></div><div class="admin-stat"><span>Account requests today</span><strong>${Number(t.accounts)||0}</strong></div></div><p class="sm">Usage counts contain totals only; no prompts, responses, or chat text are included.</p>`;
 }
 let adminAuditFilters=new Set(),adminAccountFilters=new Set(),adminFilterOpen=null,filterSettled=false,filterClosing=false;
-const ACCOUNT_FILTERS=[["admin","Admins"],["user","Users"],["active","Active"],["disabled","Disabled"]];
+const ACCOUNT_FILTERS=[["admin","Admins"],["user","Users"],["active","Active"],["disabled","Disabled"],["flagged","Flagged"]];
 function accountMatchesFilter(a){
  if(!adminAccountFilters.size)return true;
+ if(adminAccountFilters.has("flagged")&&((adminFlagsData&&adminFlagsData.flags)||[]).some(f=>f.accountId===a.id))return true;
  return adminAccountFilters.has(a.role==="admin"?"admin":"user")||adminAccountFilters.has(a.status==="disabled"?"disabled":"active");
 }
 function filterDropdown(group,options,selected){
