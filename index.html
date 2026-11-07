@@ -1400,11 +1400,14 @@ function showDeviceBanned(info){
  deviceBannedGate=true;refreshSendState();
  if(accountSyncTimer!==null){clearTimeout(accountSyncTimer);accountSyncTimer=null}
  accountReady=false;
- document.body.classList.add("access-locked");(showEl(accessGate),setTimeout(updateSchoolLock,0));$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");swapText(accessTitle,"This browser is temporarily disabled");accessForm.hidden=true;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=true;$("access-admin-form").hidden=true;
+ document.body.classList.add("access-locked");(showEl(accessGate),setTimeout(updateSchoolLock,0));$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");swapText(accessTitle,"This browser has been disabled");accessForm.hidden=true;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=true;$("access-admin-form").hidden=true;
  const wn=$("wn");if(wn)wn.hidden=true;
- const body=$("gate-body");if(body){body.innerHTML="";const p=document.createElement("p");p.textContent="WHWai can't be used from this browser until the ban ends.";body.appendChild(p)}
+ const i=info||{};
+ renderGateReason(i.message||"",{reasonTitle:i.reasonTitle,reason:i.reason});
+ const body=$("gate-body");
+ if(body&&i.until){body.insertAdjacentHTML("beforeend",'<div class="policy-takeaways gate-box"><strong>This browser can be used again:</strong><p class="gate-box-text">'+esc(hstText(i.until))+'</p></div>')}
  $("gate-download").hidden=true;$("gate-actions").hidden=true;
- const st=$("gate-status");const until=Number(info&&info.until)||0;st.hidden=false;st.textContent=until?"The ban ends "+hstText(until)+".":"Try again after the ban ends.";
+ const st=$("gate-status");if(st){st.hidden=true;st.textContent=""}
 }
 document.addEventListener("pointerdown",e=>{const b=e.target.closest&&e.target.closest("#gate-signout");if(!b||b.disabled)return;const r=b.getBoundingClientRect();const s=document.createElement("span");s.className="btn-ripple";s.style.left=(e.clientX-r.left)+"px";s.style.top=(e.clientY-r.top)+"px";b.appendChild(s);setTimeout(()=>s.remove(),700)});
 async function disabledSignOut(){
@@ -2899,10 +2902,10 @@ function paintAdminFlags(box){
   return;
  }
  const flags=adminFlagsData.flags||[],bans=adminFlagsData.bans||[],accounts=(adminData&&adminData.accounts)||[];
- const banHtml=bans.length?'<h3 class="sm reason-label">Active browser bans</h3>'+bans.map(b=>`<article class="admin-audit-item"><strong>Browser ···${esc(String(b.deviceId||"").slice(-6))}</strong><span>Ends ${esc(hstText(b.until))}</span><p>${esc(b.reason||"")}</p><div class="flag-actions"><button type="button" class="pbtn" data-unban="${escapeAttr(b.deviceId)}">Remove ban</button></div></article>`).join(""):"";
- const flagHtml=flags.length?flags.map(f=>`<article class="admin-audit-item"><strong>${esc(FLAG_TYPE_LABELS[f.type]||f.type)}</strong><span>${adminDate(f.createdAt)}</span><p>${f.username?esc(f.username)+" · ":""}${f.deviceId?"Browser ···"+esc(f.deviceId.slice(-6)):"No browser recorded"}</p><small>${esc(f.summary||"")}</small><div class="flag-actions"><button type="button" class="pbtn" data-flag-clear="${escapeAttr(f.id)}">Mark reviewed</button>${f.deviceId?`<button type="button" class="pbtn" data-flag-ban="${escapeAttr(f.id)}">Ban browser…</button>`:""}</div></article>`).join(""):'<p class="sm">No open flags.</p>';
+ const banHtml=bans.map(b=>`<article class="admin-account"><div class="admin-account-head"><span class="admin-account-id"><strong>Browser ···${esc(String(b.deviceId||"").slice(-6))}</strong></span><span class="account-role">Ban active</span></div><div class="admin-account-meta">Ends ${esc(hstText(b.until))}</div>${b.reason?`<div class="admin-account-meta">${esc(b.reason)}</div>`:""}<div class="admin-account-actions"><button type="button" class="pbtn" data-unban="${escapeAttr(b.deviceId)}">Remove ban</button></div></article>`).join("");
+ const flagHtml=flags.map(f=>`<article class="admin-account"><div class="admin-account-head"><span class="admin-account-id"><strong>${esc(FLAG_TYPE_LABELS[f.type]||f.type)}</strong></span><span class="account-role">${adminDate(f.createdAt)}</span></div><div class="admin-account-meta">${f.username?esc(f.username):"No account"} · ${f.deviceId?"Browser ···"+esc(f.deviceId.slice(-6)):"No browser recorded"}</div>${f.summary?`<div class="admin-account-meta">${esc(f.summary)}</div>`:""}<div class="admin-account-actions"><button type="button" class="pbtn" data-flag-clear="${escapeAttr(f.id)}">Mark reviewed</button>${f.deviceId?`<button type="button" class="pbtn" data-flag-ban="${escapeAttr(f.id)}">Ban browser…</button>`:""}</div></article>`).join("");
  const options=accounts.map(a=>`<option value="${escapeAttr(a.id)}">${esc(a.username)}</option>`).join("");
- box.innerHTML=`<p class="sm">Flags are private to admins. Users never see them.</p>${banHtml}<h3 class="sm reason-label">Open flags</h3>${flagHtml}<h3 class="sm reason-label">Add a note</h3><form id="flag-manual-form" class="account-form" autocomplete="off"><label class="sm reason-label" for="flag-target">Account (optional)</label><select id="flag-target" class="reason-input"><option value="">No account</option>${options}</select><label class="sm reason-label" for="flag-note">Note (admins only, up to 300 characters)</label><textarea id="flag-note" class="reason-input" rows="2" maxlength="300" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea><div class="flag-actions"><button type="submit" class="pbtn">Add flag</button></div></form>`;
+ box.innerHTML=`<p class="sm">Flags are private to admins. Users never see them.</p>${bans.length?'<h3 class="sm reason-label">Active browser bans</h3>'+banHtml:""}<h3 class="sm reason-label">Open flags</h3>${flags.length?flagHtml:'<p class="sm">No open flags.</p>'}<h3 class="sm reason-label">Add a note</h3><form id="flag-manual-form" class="account-form" autocomplete="off"><label class="sm reason-label" for="flag-target">Account (optional)</label><select id="flag-target" class="reason-input"><option value="">No account</option>${options}</select><label class="sm reason-label" for="flag-note">Note (admins only, up to 300 characters)</label><textarea id="flag-note" class="reason-input" rows="2" maxlength="300" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea><div class="admin-account-actions"><button type="submit" class="pbtn">Add flag</button></div></form>`;
  box.querySelectorAll("[data-flag-clear]").forEach(b=>b.onclick=()=>flagAction({flagAction:"clear",flagId:b.dataset.flagClear},"Flag marked reviewed."));
  box.querySelectorAll("[data-unban]").forEach(b=>b.onclick=()=>flagAction({flagAction:"unban_browser",deviceId:b.dataset.unban},"Browser ban removed."));
  box.querySelectorAll("[data-flag-ban]").forEach(b=>b.onclick=()=>banFromFlag(b.dataset.flagBan));
@@ -2922,7 +2925,7 @@ async function banFromFlag(flagId){
  const accepted=await appConfirm({title:"Ban this browser?",message:"The browser sees that it is disabled and when the ban ends. It has no sign-out button. Clearing browser storage gets around a ban.",confirmLabel:"Ban browser",danger:true,radios:{label:"How long?",items:BROWSER_BAN_ITEMS.map(it=>Object.assign({},it,{checked:it.value==="24"}))}});
  if(!accepted)return;
  const picked=document.querySelector('input[name="app-confirm-radio"]:checked');
- await flagAction({flagAction:"ban_browser",deviceId:flag.deviceId,hours:picked?picked.value:"24",reason:"From flag: "+(FLAG_TYPE_LABELS[flag.type]||flag.type)},"Browser banned.");
+ await flagAction({flagAction:"ban_browser",deviceId:flag.deviceId,hours:picked?picked.value:"24"},"Browser banned.");
 }
 function paintAdminTab(){
  const box=$("admin-content");if(!box||!adminData)return;
