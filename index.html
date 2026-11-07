@@ -358,6 +358,14 @@ body.access-locked .frame{filter:blur(6px);pointer-events:none;user-select:none}
 .admin-account-meta{font-size:12px;line-height:1.4;color:#666;margin:10px 0 0;overflow-wrap:anywhere}
 .admin-account-actions{display:flex;flex-wrap:wrap;gap:6px}
 .admin-account-meta+.admin-account-meta{margin-top:5px}
+.flag-item{transition:opacity .26s ease,transform .26s ease}
+.flag-item.is-resolving,.admin-account.is-resolving{opacity:0;transform:translateX(12px) scale(.98)}
+.admin-account{transition:opacity .26s ease,transform .26s ease}
+.admin-account-actions .pbtn{transition:transform .12s ease,background-color .16s ease,opacity .2s ease}
+.admin-account-actions .pbtn:active:not(:disabled){transform:scale(.93)}
+.admin-account-actions .pbtn.is-busy{cursor:progress;opacity:.8}
+.admin-account-actions .pbtn.is-busy::after{content:"";display:inline-block;width:9px;height:9px;margin-left:6px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;vertical-align:-1px;animation:acctSpin .7s linear infinite}
+@keyframes acctSpin{to{transform:rotate(360deg)}}
 .acct-lock{margin:12px 0 0;font-size:12px;color:#666}
 .acct-more{border:0;background:none;width:30px;height:30px;border-radius:50%;cursor:pointer;color:#555;display:grid;place-items:center;padding:0;flex:none}
 .acct-more:hover,.acct-more[aria-expanded="true"]{background:#e6e6e6}
@@ -2919,7 +2927,7 @@ function browserLineHtml(a){
 function flagsLineHtml(a){
  const open=((adminFlagsData&&adminFlagsData.flags)||[]).filter(f=>f.accountId===a.id);
  if(!open.length)return "";
- return '<div class="admin-account-meta">Open flags: '+open.length+'</div>'+open.map(f=>'<div class="admin-account-meta">'+esc(FLAG_TYPE_LABELS[f.type]||f.type)+' · '+adminDate(f.createdAt)+'<br>'+esc(f.summary||"")+'</div><div class="admin-account-actions"><button type="button" class="pbtn" data-flag-clear="'+escapeAttr(f.id)+'">Mark reviewed</button></div>').join("");
+ return '<div class="admin-account-meta">Open flags: '+open.length+'</div>'+open.map(f=>'<div class="flag-item"><div class="admin-account-meta">'+esc(FLAG_TYPE_LABELS[f.type]||f.type)+' · '+adminDate(f.createdAt)+'<br>'+esc(f.summary||"")+'</div><div class="admin-account-actions"><button type="button" class="pbtn" data-flag-clear="'+escapeAttr(f.id)+'">Resolve</button></div></div>').join("");
 }
 function browserButtonsHtml(a){
  const id=escapeAttr(a.id);let h="";
@@ -2962,13 +2970,25 @@ async function runFlagAccount(targetId){
  if(!note){toast("Add a short note first.");renderAdminPanel("accounts");return}
  await runAccountWork({action:"admin_account_action",accountAction:"flag",targetId:targetId,note:note},"Flag added.");
 }
-async function flagAction(payload,doneText){
+async function flagAction(payload,doneText,opts){
  try{
   const r=await post(Object.assign({action:"admin_flag_action"},payload));
   if(!r||!r.ok)throw Object.assign(new Error(r&&r.error||"failed"),{payload:r});
   adminFlagsData=null;toast(doneText);
-  if(!modal.hidden)renderAdminPanel(adminTab);
- }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't update that flag.")}
+  if(!(opts&&opts.noRender)&&!modal.hidden)renderAdminPanel(adminTab);
+  return true;
+ }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't update that flag.");return false}
+}
+async function resolveFlag(b){
+ if(!b||b.disabled)return;
+ const item=b.closest(".flag-item")||b.closest("article"),label=b.textContent;
+ b.disabled=true;b.classList.add("is-busy");b.textContent="Resolving";
+ if(item)item.classList.add("is-resolving");
+ const request=flagAction({flagAction:"clear",flagId:b.dataset.flagClear},"Flag resolved.",{noRender:true});
+ await new Promise(r=>setTimeout(r,260));
+ const ok=await request;
+ if(!ok){b.disabled=false;b.classList.remove("is-busy");b.textContent=label;if(item)item.classList.remove("is-resolving");return}
+ if(!modal.hidden)renderAdminPanel(adminTab);
 }
 async function disableBrowserByDevice(deviceId){
  disableSubject="browser";
@@ -2992,10 +3012,10 @@ function paintAdminFlags(box){
  const flagHtml=flags.map(f=>{
   const uname=f.username||accountNameById(f.accountId);
   const side=uname?'<button type="button" class="pbtn" data-open-account="'+escapeAttr(uname)+'">Open account</button>':(f.deviceId?'<button type="button" class="pbtn" data-flag-browser="'+escapeAttr(f.deviceId)+'">Disable browser…</button>':"");
-  return '<article class="admin-account"><div class="admin-account-head"><span class="admin-account-id"><strong>'+esc(FLAG_TYPE_LABELS[f.type]||f.type)+'</strong></span><span class="account-role">'+adminDate(f.createdAt)+'</span></div><div class="admin-account-meta">'+esc(uname||"No account")+(f.deviceId?" · Browser ···"+esc(f.deviceId.slice(-6)):"")+'</div>'+(f.summary?'<div class="admin-account-meta">'+esc(f.summary)+'</div>':"")+'<div class="admin-account-actions"><button type="button" class="pbtn" data-flag-clear="'+escapeAttr(f.id)+'">Mark reviewed</button>'+side+'</div></article>';
+  return '<article class="admin-account"><div class="admin-account-head"><span class="admin-account-id"><strong>'+esc(FLAG_TYPE_LABELS[f.type]||f.type)+'</strong></span><span class="account-role">'+adminDate(f.createdAt)+'</span></div><div class="admin-account-meta">'+esc(uname||"No account")+(f.deviceId?" · Browser ···"+esc(f.deviceId.slice(-6)):"")+'</div>'+(f.summary?'<div class="admin-account-meta">'+esc(f.summary)+'</div>':"")+'<div class="admin-account-actions"><button type="button" class="pbtn" data-flag-clear="'+escapeAttr(f.id)+'">Resolve</button>'+side+'</div></article>';
  }).join("");
  box.innerHTML='<p class="sm">Flags are private to admins. Users never see them. Account flags are handled on the Accounts tab.</p>'+(disables.length?'<h3 class="sm reason-label">Browser disabled</h3>'+disabledHtml:"")+'<h3 class="sm reason-label">Open flags</h3>'+(flags.length?flagHtml:'<p class="sm">No open flags.</p>');
- box.querySelectorAll("[data-flag-clear]").forEach(b=>b.onclick=()=>flagAction({flagAction:"clear",flagId:b.dataset.flagClear},"Flag marked reviewed."));
+ box.querySelectorAll("[data-flag-clear]").forEach(b=>b.onclick=()=>resolveFlag(b));
  box.querySelectorAll("[data-enable-browser]").forEach(b=>b.onclick=()=>flagAction({flagAction:"enable_browser",deviceId:b.dataset.enableBrowser},"Browser enabled."));
  box.querySelectorAll("[data-flag-browser]").forEach(b=>b.onclick=()=>disableBrowserByDevice(b.dataset.flagBrowser));
  box.querySelectorAll("[data-open-account]").forEach(b=>b.onclick=()=>renderAdminPanel("accounts",b.dataset.openAccount));
@@ -3057,7 +3077,7 @@ function paintAccountList(){
  if(!list.length){target.innerHTML='<p class="sm">No accounts match these filters.</p>';return}
  target.innerHTML=list.map(a=>`<article class="admin-account"><div class="admin-account-head"><span class="admin-account-id"><span class="admin-avatar" style="background:${escapeAttr(a.profileColor||"#4f7cf0")}" aria-hidden="true">${esc(String(a.username||"?").charAt(0).toUpperCase())}</span><strong>${esc(a.username)}</strong></span><div class="account-head-end"><span class="account-role">${esc(a.role)} · ${esc(a.status)}</span>${acctMoreHtml(a)}</div></div><dl class="acct-facts"><div><dt>Created</dt><dd>${adminDayText(a.createdAt)}</dd></div><div><dt>Last sign-in</dt><dd>${adminDayText(a.lastLoginAt)}</dd></div><div><dt>Chats</dt><dd>${Number(a.chatCount)||0}</dd></div></dl>${a.status==="disabled"?adminReasonHtml(a.disabledInfo||{text:a.disabledReason||""}):""}${a.status==="disabled"&&a.dataMode&&a.dataMode!=="keep"?`<div class="admin-account-meta">Chats: ${esc({download:"user can download them",download_delete:"user can download, then they are deleted",delete:"deleted"}[a.dataMode]||a.dataMode)}</div>`:""}${browserLineHtml(a)}${flagsLineHtml(a)}</article>`).join("")+(adminData.truncated?'<p class="sm">Showing the first 500 accounts. Narrow your search for more specific results.</p>':"");
  target.querySelectorAll("[data-account-action]").forEach(button=>button.onclick=()=>runAdminAccountAction(button.dataset.accountAction,button.dataset.targetId));
- target.querySelectorAll("[data-flag-clear]").forEach(b=>b.onclick=()=>flagAction({flagAction:"clear",flagId:b.dataset.flagClear},"Flag marked reviewed."));
+ target.querySelectorAll("[data-flag-clear]").forEach(b=>b.onclick=()=>resolveFlag(b));
  target.querySelectorAll(".acct-more").forEach((b,i)=>b.onclick=e=>{e.stopPropagation();openAcctMenu(list[i],b)});
  [...target.querySelectorAll("article.admin-account")].forEach((el,i)=>{if(list[i]&&isOtherAdminRow(list[i]))el.insertAdjacentHTML("beforeend",'<p class="sm acct-lock">Only this admin can change this account.</p>')});
 }
