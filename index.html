@@ -1432,7 +1432,7 @@ function showBrowserDisabled(info){
   showAccountDisabled(info.message||"",info);
   $("gate-actions").hidden=true;$("gate-download").hidden=true;
   const body=$("gate-body");
-  if(body){body.insertAdjacentHTML("beforeend",'<div class="policy-takeaways gate-box"><p class="gate-box-text">This browser is also disabled from accessing WHWai.</p></div>'+(Number(info.reenableAt)>0?'<div class="policy-takeaways gate-box"><strong>This browser can be used again:</strong><p class="gate-box-text">'+esc(hstText(info.reenableAt))+'</p></div>':""))}
+  if(body){body.insertAdjacentHTML("beforeend",'<p class="gate-reason-text">This browser is also disabled from accessing WHWai.</p>')}
   return;
  }
  if(browserDisabledGate)return;
