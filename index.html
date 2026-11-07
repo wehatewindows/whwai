@@ -1313,7 +1313,7 @@ async function post(body,externalSignal){
  if(externalSignal){if(externalSignal.aborted)ctl.abort();else externalSignal.addEventListener("abort",forwardAbort,{once:true})}
  try{
   const r=await fetch(API_URL,{method:"POST",body:JSON.stringify(body),signal:ctl.signal});
-  const j=await r.json();if(j.error==='device_banned'&&typeof showDeviceBanned==='function')showDeviceBanned(j);if(j.error==='account_disabled'&&j.sessionToken)disabledSessionToken=j.sessionToken;if(j.error==='account_disabled'&&typeof showAccountDisabled==='function')showAccountDisabled(j.message,j);if(j.error){const error=new Error(j.error);error.payload=j;throw error}return j;
+  const j=await r.json();if(j.error==='browser_disabled'&&typeof showBrowserDisabled==='function')showBrowserDisabled(j);if(j.error==='account_disabled'&&j.sessionToken)disabledSessionToken=j.sessionToken;if(j.error==='account_disabled'&&typeof showAccountDisabled==='function')showAccountDisabled(j.message,j);if(j.error){const error=new Error(j.error);error.payload=j;throw error}return j;
  }finally{
   clearTimeout(tm);
   if(externalSignal)externalSignal.removeEventListener("abort",forwardAbort);
@@ -1322,7 +1322,7 @@ async function post(body,externalSignal){
 const ACCESS_STORAGE_KEY="whwai.earlyAccessUntil.v1",ACCESS_TOKEN_KEY="whwai.earlyAccessToken.v1",ACCESS_OFF_KEY="whwai.accessCodeOff.v1",ACCESS_TTL=24*60*60*1000;
 try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}
 const accessGate=$("access-gate"),accessCard=$("access-card"),accessTitle=$("access-title"),accessForm=$("access-form"),accessInput=$("access-code"),accessError=$("access-error"),accessButton=$("access-unlock");
-let aiDisabled=false,accessRequired=true,accountDisabledGate=false,accessUnlocked=false,deviceBannedGate=false;
+let aiDisabled=false,accessRequired=true,accountDisabledGate=false,accessUnlocked=false,browserDisabledGate=false;
 function syncAppInert(){
  const frame=$("app-frame");if(!frame)return;
  const blocked=!accessGate.hidden||!$("wn").hidden;
@@ -1333,7 +1333,7 @@ function syncAppInert(){
 setInterval(syncAppInert,250);
 function openApp(force){if(accountDisabledGate)return;if(aiDisabled&&!force)return;document.body.classList.remove("access-locked");hideEl(accessGate,250);updateSchoolLock();$("app-frame").removeAttribute("aria-hidden");setTimeout(()=>{if(!showWhatsNewIfNeeded())showAriesIntroOnce()},650)}
 function unlockEarlyAccess(token,expiresAt){if(aiDisabled)return;accessUnlocked=true;try{const until=Number(expiresAt)||Date.now()+ACCESS_TTL;localStorage.setItem(ACCESS_STORAGE_KEY,String(until));localStorage.setItem(ACCESS_TOKEN_KEY,String(token||""))}catch(e){}openApp();if(accountSession&&accountSession.token&&!(accountSession.user&&accountSession.user.username)&&typeof resumeAccountSession==="function")resumeAccountSession()}
-function lockEarlyAccess(showGate){if(accountDisabledGate||deviceBannedGate)return;try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");(showEl(accessGate),setTimeout(updateSchoolLock,0));$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.remove("disabled-mode");swapText(accessTitle,"Enter early access code");$("gate-body").hidden=true;$("gate-actions").hidden=true;accessForm.hidden=false;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false;$("access-admin-form").hidden=true;if(showGate){accessInput.value="";setTimeout(()=>accessInput.focus(),50)}}
+function lockEarlyAccess(showGate){if(accountDisabledGate||browserDisabledGate)return;try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");(showEl(accessGate),setTimeout(updateSchoolLock,0));$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.remove("disabled-mode");swapText(accessTitle,"Enter early access code");$("gate-body").hidden=true;$("gate-actions").hidden=true;accessForm.hidden=false;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false;$("access-admin-form").hidden=true;if(showGate){accessInput.value="";setTimeout(()=>accessInput.focus(),50)}}
 function showAIDisabled(){aiDisabled=true;refreshSendState();try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");(showEl(accessGate),setTimeout(updateSchoolLock,0));$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");swapText(accessTitle,"WHWai is currently disabled");$("gate-actions").hidden=true;accessForm.hidden=true;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false;setGateBody("Please check back later.")}
 function hstText(ms){try{return new Date(Number(ms)).toLocaleString("en-US",{timeZone:"Pacific/Honolulu",weekday:"short",month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"})+" HST"}catch(e){return ""}}
 function renderGateReason(message,info){
@@ -1395,9 +1395,9 @@ function showAccountDisabled(message,info){
  st.hidden=!note;st.textContent=note;
  $("gate-actions").hidden=false;$("gate-signout").onclick=disabledSignOut;
 }
-function showDeviceBanned(info){
- if(deviceBannedGate)return;
- deviceBannedGate=true;refreshSendState();
+function showBrowserDisabled(info){
+ if(browserDisabledGate)return;
+ browserDisabledGate=true;refreshSendState();
  if(accountSyncTimer!==null){clearTimeout(accountSyncTimer);accountSyncTimer=null}
  accountReady=false;
  document.body.classList.add("access-locked");(showEl(accessGate),setTimeout(updateSchoolLock,0));$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");swapText(accessTitle,"This browser has been disabled");accessForm.hidden=true;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=true;$("access-admin-form").hidden=true;
@@ -1405,7 +1405,7 @@ function showDeviceBanned(info){
  const i=info||{};
  renderGateReason(i.message||"",{reasonTitle:i.reasonTitle,reason:i.reason});
  const body=$("gate-body");
- if(body&&i.until){body.insertAdjacentHTML("beforeend",'<div class="policy-takeaways gate-box"><strong>This browser can be used again:</strong><p class="gate-box-text">'+esc(hstText(i.until))+'</p></div>')}
+ if(body&&Number(i.reenableAt)>0)body.insertAdjacentHTML("beforeend",'<div class="policy-takeaways gate-box"><strong>This browser can be used again:</strong><p class="gate-box-text">'+esc(hstText(i.reenableAt))+'</p></div>');
  $("gate-download").hidden=true;$("gate-actions").hidden=true;
  const st=$("gate-status");if(st){st.hidden=true;st.textContent=""}
 }
@@ -1558,7 +1558,7 @@ function limitHit(){try{return localStorage.getItem(LIMIT_DAY_KEY)===hiDay()}cat
 function setLimitHit(){try{localStorage.setItem(LIMIT_DAY_KEY,hiDay())}catch(e){}refreshSendState()}
 function sendBlockReason(){
  if(aiDisabled)return"WHWai is turned off right now, so messages can't be sent.";
- if(deviceBannedGate)return"This browser is temporarily disabled, so messages can't be sent.";
+ if(browserDisabledGate)return"This browser is disabled, so messages can't be sent.";
  if(C()&&C().ended)return"This chat was ended, so messages can't be sent. Start a new chat to continue.";
  if(accountDisabledGate)return"This account is disabled, so messages can't be sent.";
  if(limitHit()&&!(accountSession&&accountSession.token))return"You've reached today's usage limit. You can sign in or try again after midnight Hawaii time.";
@@ -2887,12 +2887,82 @@ function renderAdminPanel(tab,query){
  $("admin-content").innerHTML='<p class="sm"><span class="sync-spinner" aria-hidden="true"></span>Loading admin data…</p>';
  adminFetch().then(()=>{if(generation===adminPanelGeneration&&currentSettingsView==="admin")paintAdminTab()}).catch(err=>{if(generation===adminPanelGeneration)showAdminError(err)});
 }
-let adminFlagsData=null,adminFlagsLoading=null;
-const FLAG_TYPE_LABELS={ai_ended:"AI ended chat",ban_evasion:"Banned browser tried to use WHWai",manual:"Admin note"};
-const BROWSER_BAN_ITEMS=[{value:"1",label:"1 hour",hint:"Short cool-down."},{value:"24",label:"1 day",hint:""},{value:"168",label:"7 days",hint:""},{value:"720",label:"30 days",hint:""},{value:"8760",label:"1 year",hint:""}];
+let adminFlagsData=null,adminFlagsLoading=null,disableSubject="account";
+const FLAG_TYPE_LABELS={ai_ended:"AI ended chat",browser_evasion:"Disabled browser tried to use WHWai",manual:"Manual flag"};
+function subjectText(t){return disableSubject==="browser"?String(t).replace(/This account/g,"This browser").replace(/this account/g,"this browser"):t}
 function loadAdminFlags(){
  if(!adminFlagsLoading)adminFlagsLoading=post({action:"admin_flags"}).then(r=>{if(!r||!r.ok)throw Object.assign(new Error(r&&r.error||"failed"),{payload:r});adminFlagsData=r;return r}).finally(()=>{adminFlagsLoading=null});
  return adminFlagsLoading;
+}
+function accountNameById(id){const a=((adminData&&adminData.accounts)||[]).find(x=>x.id===id);return a?a.username:""}
+function browserLineHtml(a){
+ const bd=a.browserDisabled;
+ if(bd)return '<div class="admin-account-meta">Browser disabled: '+esc(bd.reasonTitle||"Custom reason")+(bd.reasonSub?" · "+esc(bd.reasonSub):"")+(bd.reenableAt?" · Re-enables "+esc(hstText(bd.reenableAt)):" · Until an admin enables it")+'</div>';
+ return '<div class="admin-account-meta">'+(a.hasBrowser?"Browser active":"No browser on record")+'</div>';
+}
+function flagsLineHtml(a){
+ const open=((adminFlagsData&&adminFlagsData.flags)||[]).filter(f=>f.accountId===a.id);
+ if(!open.length)return "";
+ return '<div class="admin-account-meta">Open flags: '+open.length+'</div>'+open.map(f=>'<div class="admin-account-meta">'+esc(FLAG_TYPE_LABELS[f.type]||f.type)+' · '+adminDate(f.createdAt)+'<br>'+esc(f.summary||"")+'</div><div class="admin-account-actions"><button type="button" class="pbtn" data-flag-clear="'+escapeAttr(f.id)+'">Mark reviewed</button></div>').join("");
+}
+function browserButtonsHtml(a){
+ const id=escapeAttr(a.id);let h="";
+ if(a.hasBrowser){
+  h+=a.browserDisabled
+   ?'<button type="button" class="pbtn" data-account-action="edit_browser_reason" data-target-id="'+id+'">Edit browser reason</button><button type="button" class="pbtn" data-account-action="enable_browser" data-target-id="'+id+'">Enable browser</button>'
+   :'<button type="button" class="pbtn" data-account-action="disable_browser" data-target-id="'+id+'">Disable browser</button>';
+ }
+ return h+'<button type="button" class="pbtn" data-account-action="flag" data-target-id="'+id+'">Flag account</button>';
+}
+async function runAccountWork(payload,doneText){
+ adminActionPending=true;$("modal-title").textContent="Working…";mbody.innerHTML='<div class="confirm-panel"><span class="choice-icon"><span class="sync-spinner" aria-hidden="true"></span></span><div><strong>Applying admin action…</strong><p>Please keep this window open while WHWai updates.</p></div></div>';animateMenuContent();
+ try{
+  const result=await post(payload);
+  if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});
+  await adminFetch(true).catch(()=>{});
+  adminFlagsData=null;toast(doneText);
+  if(!modal.hidden)renderAdminPanel("accounts");
+ }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't update that account.");if(!modal.hidden)renderAdminPanel("accounts")}
+ finally{adminActionPending=false}
+}
+async function runBrowserAction(action,targetId){
+ const edit=action==="edit_browser_reason";
+ const row=(adminData&&adminData.accounts||[]).find(a=>a.id===targetId),bd=row&&row.browserDisabled;
+ const cur=bd?{title:bd.reasonTitle,sub:bd.reasonSub,text:bd.reason,reenableAt:bd.reenableAt}:null;
+ disableSubject="browser";
+ let accepted=false,form=null;
+ try{
+  accepted=await appConfirm({title:edit?"Edit the browser reason?":"Disable browser?",message:edit?"The browser stays disabled. It sees the updated reason.":"This browser will no longer be able to use WHWai. It sees the reason and any re-enable time you set.",confirmLabel:edit?"Save reason":"Disable browser",danger:!edit,extraHtml:disableFormHtml(cur),onRender:wireDisableForm});
+  if(accepted&&!modal.hidden&&currentSettingsView==="app-confirm")form=readDisableForm();
+ }finally{disableSubject="account"}
+ if(!form){if(!modal.hidden&&!closingModal)renderAdminPanel("accounts");return}
+ await runAccountWork(Object.assign({action:"admin_account_action",accountAction:edit?"edit_browser_reason":"disable_browser",targetId:targetId},form),edit?"Browser reason updated.":"Browser disabled.");
+}
+async function runFlagAccount(targetId){
+ const accepted=await appConfirm({title:"Flag this account?",message:"Flags are visible only to admins. The user is not told.",confirmLabel:"Add flag",danger:false,extraHtml:'<label class="sm reason-label" for="flag-note-input">Note (admins only, up to 300 characters)</label><textarea id="flag-note-input" class="reason-input" rows="3" maxlength="300" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea>'});
+ if(!accepted){if(!modal.hidden&&!closingModal)renderAdminPanel("accounts");return}
+ if(modal.hidden||currentSettingsView!=="app-confirm")return;
+ const note=($("flag-note-input")?$("flag-note-input").value:"").trim();
+ if(!note){toast("Add a short note first.");renderAdminPanel("accounts");return}
+ await runAccountWork({action:"admin_account_action",accountAction:"flag",targetId:targetId,note:note},"Flag added.");
+}
+async function flagAction(payload,doneText){
+ try{
+  const r=await post(Object.assign({action:"admin_flag_action"},payload));
+  if(!r||!r.ok)throw Object.assign(new Error(r&&r.error||"failed"),{payload:r});
+  adminFlagsData=null;toast(doneText);
+  if(!modal.hidden)renderAdminPanel(adminTab);
+ }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't update that flag.")}
+}
+async function disableBrowserByDevice(deviceId){
+ disableSubject="browser";
+ let accepted=false,form=null;
+ try{
+  accepted=await appConfirm({title:"Disable browser?",message:"This browser will no longer be able to use WHWai. It sees the reason and any re-enable time you set.",confirmLabel:"Disable browser",danger:true,extraHtml:disableFormHtml(null),onRender:wireDisableForm});
+  if(accepted&&!modal.hidden&&currentSettingsView==="app-confirm")form=readDisableForm();
+ }finally{disableSubject="account"}
+ if(!form){if(!modal.hidden&&!closingModal)renderAdminPanel(adminTab);return}
+ await flagAction(Object.assign({flagAction:"disable_browser",deviceId:deviceId},form),"Browser disabled.");
 }
 function paintAdminFlags(box){
  if(!adminFlagsData){
@@ -2901,31 +2971,18 @@ function paintAdminFlags(box){
   loadAdminFlags().then(()=>{if(g===adminPanelGeneration&&adminTab==="flags"&&currentSettingsView==="admin")paintAdminTab()}).catch(err=>{if(g===adminPanelGeneration)showAdminError(err)});
   return;
  }
- const flags=adminFlagsData.flags||[],bans=adminFlagsData.bans||[],accounts=(adminData&&adminData.accounts)||[];
- const banHtml=bans.map(b=>`<article class="admin-account"><div class="admin-account-head"><span class="admin-account-id"><strong>Browser ···${esc(String(b.deviceId||"").slice(-6))}</strong></span><span class="account-role">Ban active</span></div><div class="admin-account-meta">Ends ${esc(hstText(b.until))}</div>${b.reason?`<div class="admin-account-meta">${esc(b.reason)}</div>`:""}<div class="admin-account-actions"><button type="button" class="pbtn" data-unban="${escapeAttr(b.deviceId)}">Remove ban</button></div></article>`).join("");
- const flagHtml=flags.map(f=>`<article class="admin-account"><div class="admin-account-head"><span class="admin-account-id"><strong>${esc(FLAG_TYPE_LABELS[f.type]||f.type)}</strong></span><span class="account-role">${adminDate(f.createdAt)}</span></div><div class="admin-account-meta">${f.username?esc(f.username):"No account"} · ${f.deviceId?"Browser ···"+esc(f.deviceId.slice(-6)):"No browser recorded"}</div>${f.summary?`<div class="admin-account-meta">${esc(f.summary)}</div>`:""}<div class="admin-account-actions"><button type="button" class="pbtn" data-flag-clear="${escapeAttr(f.id)}">Mark reviewed</button>${f.deviceId?`<button type="button" class="pbtn" data-flag-ban="${escapeAttr(f.id)}">Ban browser…</button>`:""}</div></article>`).join("");
- const options=accounts.map(a=>`<option value="${escapeAttr(a.id)}">${esc(a.username)}</option>`).join("");
- box.innerHTML=`<p class="sm">Flags are private to admins. Users never see them.</p>${bans.length?'<h3 class="sm reason-label">Active browser bans</h3>'+banHtml:""}<h3 class="sm reason-label">Open flags</h3>${flags.length?flagHtml:'<p class="sm">No open flags.</p>'}<h3 class="sm reason-label">Add a note</h3><form id="flag-manual-form" class="account-form" autocomplete="off"><label class="sm reason-label" for="flag-target">Account (optional)</label><select id="flag-target" class="reason-input"><option value="">No account</option>${options}</select><label class="sm reason-label" for="flag-note">Note (admins only, up to 300 characters)</label><textarea id="flag-note" class="reason-input" rows="2" maxlength="300" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea><div class="admin-account-actions"><button type="submit" class="pbtn">Add flag</button></div></form>`;
+ const flags=adminFlagsData.flags||[],disables=adminFlagsData.browserDisables||[];
+ const disabledHtml=disables.map(b=>'<article class="admin-account"><div class="admin-account-head"><span class="admin-account-id"><strong>Browser ···'+esc(String(b.deviceId||"").slice(-6))+'</strong></span><span class="account-role">Browser disabled</span></div><div class="admin-account-meta">'+esc(b.accountId?(accountNameById(b.accountId)||"Account"):"No account")+(b.reasonTitle?" · "+esc(b.reasonTitle):"")+'</div><div class="admin-account-meta">'+(b.reenableAt?"Re-enables "+esc(hstText(b.reenableAt)):"Until an admin enables it")+'</div><div class="admin-account-actions"><button type="button" class="pbtn" data-enable-browser="'+escapeAttr(b.deviceId)+'">Enable browser</button></div></article>').join("");
+ const flagHtml=flags.map(f=>{
+  const uname=f.username||accountNameById(f.accountId);
+  const side=uname?'<button type="button" class="pbtn" data-open-account="'+escapeAttr(uname)+'">Open account</button>':(f.deviceId?'<button type="button" class="pbtn" data-flag-browser="'+escapeAttr(f.deviceId)+'">Disable browser…</button>':"");
+  return '<article class="admin-account"><div class="admin-account-head"><span class="admin-account-id"><strong>'+esc(FLAG_TYPE_LABELS[f.type]||f.type)+'</strong></span><span class="account-role">'+adminDate(f.createdAt)+'</span></div><div class="admin-account-meta">'+esc(uname||"No account")+(f.deviceId?" · Browser ···"+esc(f.deviceId.slice(-6)):"")+'</div>'+(f.summary?'<div class="admin-account-meta">'+esc(f.summary)+'</div>':"")+'<div class="admin-account-actions"><button type="button" class="pbtn" data-flag-clear="'+escapeAttr(f.id)+'">Mark reviewed</button>'+side+'</div></article>';
+ }).join("");
+ box.innerHTML='<p class="sm">Flags are private to admins. Users never see them. Account flags are handled on the Accounts tab.</p>'+(disables.length?'<h3 class="sm reason-label">Browser disabled</h3>'+disabledHtml:"")+'<h3 class="sm reason-label">Open flags</h3>'+(flags.length?flagHtml:'<p class="sm">No open flags.</p>');
  box.querySelectorAll("[data-flag-clear]").forEach(b=>b.onclick=()=>flagAction({flagAction:"clear",flagId:b.dataset.flagClear},"Flag marked reviewed."));
- box.querySelectorAll("[data-unban]").forEach(b=>b.onclick=()=>flagAction({flagAction:"unban_browser",deviceId:b.dataset.unban},"Browser ban removed."));
- box.querySelectorAll("[data-flag-ban]").forEach(b=>b.onclick=()=>banFromFlag(b.dataset.flagBan));
- $("flag-manual-form").onsubmit=e=>{e.preventDefault();const note=$("flag-note").value.trim();if(!note){toast("Add a short note first.");return}flagAction({flagAction:"manual",accountId:$("flag-target").value,note:note},"Flag added.")};
-}
-async function flagAction(payload,doneText){
- try{
-  const r=await post(Object.assign({action:"admin_flag_action"},payload));
-  if(!r||!r.ok)throw Object.assign(new Error(r&&r.error||"failed"),{payload:r});
-  adminFlagsData=null;toast(doneText);
-  if(!modal.hidden)renderAdminPanel("flags");
- }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't update that flag.")}
-}
-async function banFromFlag(flagId){
- const flag=((adminFlagsData&&adminFlagsData.flags)||[]).find(f=>f.id===flagId);
- if(!flag||!flag.deviceId){toast("No browser is recorded for that flag.");return}
- const accepted=await appConfirm({title:"Ban this browser?",message:"The browser sees that it is disabled and when the ban ends. It has no sign-out button. Clearing browser storage gets around a ban.",confirmLabel:"Ban browser",danger:true,radios:{label:"How long?",items:BROWSER_BAN_ITEMS.map(it=>Object.assign({},it,{checked:it.value==="24"}))}});
- if(!accepted)return;
- const picked=document.querySelector('input[name="app-confirm-radio"]:checked');
- await flagAction({flagAction:"ban_browser",deviceId:flag.deviceId,hours:picked?picked.value:"24"},"Browser banned.");
+ box.querySelectorAll("[data-enable-browser]").forEach(b=>b.onclick=()=>flagAction({flagAction:"enable_browser",deviceId:b.dataset.enableBrowser},"Browser enabled."));
+ box.querySelectorAll("[data-flag-browser]").forEach(b=>b.onclick=()=>disableBrowserByDevice(b.dataset.flagBrowser));
+ box.querySelectorAll("[data-open-account]").forEach(b=>b.onclick=()=>renderAdminPanel("accounts",b.dataset.openAccount));
 }
 function paintAdminTab(){
  const box=$("admin-content");if(!box||!adminData)return;
@@ -2977,11 +3034,13 @@ function paintAdminAccounts(box){
 function isOtherAdminRow(a){if(accountSession&&accountSession.user&&accountSession.user.isBootstrap)return false;return a.role==="admin"&&(!accountSession||!accountSession.user||a.username!==accountSession.user.username)}
 function paintAccountList(){
  const target=$("admin-account-results");if(!target||!adminData)return;
+ if(!adminFlagsData&&!adminFlagsLoading)loadAdminFlags().then(()=>{if(adminTab==="accounts")paintAccountList()}).catch(()=>{});
  const q=String(adminQuery||"").trim().toLowerCase(),all=adminData.accounts||[];
  const byFilter=all.filter(accountMatchesFilter),list=q?byFilter.filter(a=>String(a.username).toLowerCase().indexOf(q)!==-1):byFilter;
  if(!list.length){target.innerHTML='<p class="sm">No accounts match these filters.</p>';return}
- target.innerHTML=list.map(a=>`<article class="admin-account"><div class="admin-account-head"><span class="admin-account-id"><span class="admin-avatar" style="background:${escapeAttr(a.profileColor||"#4f7cf0")}" aria-hidden="true">${esc(String(a.username||"?").charAt(0).toUpperCase())}</span><strong>${esc(a.username)}</strong></span><span class="account-role">${esc(a.role)} · ${esc(a.status)}</span></div><div class="admin-account-meta">Created ${adminDate(a.createdAt)} · Last sign-in ${adminDate(a.lastLoginAt)} · ${Number(a.chatCount)||0} chats</div>${a.status==="disabled"?adminReasonHtml(a.disabledInfo||{text:a.disabledReason||""}):""}${a.status==="disabled"&&a.dataMode&&a.dataMode!=="keep"?`<div class="admin-account-meta">Chats: ${esc({download:"user can download them",download_delete:"user can download, then they are deleted",delete:"deleted"}[a.dataMode]||a.dataMode)}</div>`:""}<div class="admin-account-actions">${a.status==="active"?`<button type="button" class="pbtn" data-account-action="disable" data-target-id="${escapeAttr(a.id)}">Disable</button>`:`<button type="button" class="pbtn" data-account-action="enable" data-target-id="${escapeAttr(a.id)}">Enable</button>`}${a.status==="disabled"?`<button type="button" class="pbtn" data-account-action="edit_reason" data-target-id="${escapeAttr(a.id)}">Edit reason</button>`:""}<button type="button" class="pbtn" data-account-action="reset_password" data-target-id="${escapeAttr(a.id)}">Temp password</button><button type="button" class="pbtn" data-account-action="force_signout" data-target-id="${escapeAttr(a.id)}">Sign out all</button>${a.role==="admin"?`<button type="button" class="pbtn" data-account-action="demote" data-target-id="${escapeAttr(a.id)}" ${a.isBootstrap?"disabled":""}>Demote</button>`:`<button type="button" class="pbtn" data-account-action="promote" data-target-id="${escapeAttr(a.id)}">Make admin</button>`}<button type="button" class="pbtn danger" data-account-action="delete" data-target-id="${escapeAttr(a.id)}" ${a.isBootstrap?"disabled":""}>Delete</button></div></article>`).join("")+(adminData.truncated?'<p class="sm">Showing the first 500 accounts. Narrow your search for more specific results.</p>':"");
+ target.innerHTML=list.map(a=>`<article class="admin-account"><div class="admin-account-head"><span class="admin-account-id"><span class="admin-avatar" style="background:${escapeAttr(a.profileColor||"#4f7cf0")}" aria-hidden="true">${esc(String(a.username||"?").charAt(0).toUpperCase())}</span><strong>${esc(a.username)}</strong></span><span class="account-role">${esc(a.role)} · ${esc(a.status)}</span></div><div class="admin-account-meta">Created ${adminDate(a.createdAt)} · Last sign-in ${adminDate(a.lastLoginAt)} · ${Number(a.chatCount)||0} chats</div>${a.status==="disabled"?adminReasonHtml(a.disabledInfo||{text:a.disabledReason||""}):""}${a.status==="disabled"&&a.dataMode&&a.dataMode!=="keep"?`<div class="admin-account-meta">Chats: ${esc({download:"user can download them",download_delete:"user can download, then they are deleted",delete:"deleted"}[a.dataMode]||a.dataMode)}</div>`:""}${browserLineHtml(a)}${flagsLineHtml(a)}<div class="admin-account-actions">${browserButtonsHtml(a)}${a.status==="active"?`<button type="button" class="pbtn" data-account-action="disable" data-target-id="${escapeAttr(a.id)}">Disable</button>`:`<button type="button" class="pbtn" data-account-action="enable" data-target-id="${escapeAttr(a.id)}">Enable</button>`}${a.status==="disabled"?`<button type="button" class="pbtn" data-account-action="edit_reason" data-target-id="${escapeAttr(a.id)}">Edit reason</button>`:""}<button type="button" class="pbtn" data-account-action="reset_password" data-target-id="${escapeAttr(a.id)}">Temp password</button><button type="button" class="pbtn" data-account-action="force_signout" data-target-id="${escapeAttr(a.id)}">Sign out all</button>${a.role==="admin"?`<button type="button" class="pbtn" data-account-action="demote" data-target-id="${escapeAttr(a.id)}" ${a.isBootstrap?"disabled":""}>Demote</button>`:`<button type="button" class="pbtn" data-account-action="promote" data-target-id="${escapeAttr(a.id)}">Make admin</button>`}<button type="button" class="pbtn danger" data-account-action="delete" data-target-id="${escapeAttr(a.id)}" ${a.isBootstrap?"disabled":""}>Delete</button></div></article>`).join("")+(adminData.truncated?'<p class="sm">Showing the first 500 accounts. Narrow your search for more specific results.</p>':"");
  target.querySelectorAll("[data-account-action]").forEach(button=>button.onclick=()=>runAdminAccountAction(button.dataset.accountAction,button.dataset.targetId));
+ target.querySelectorAll("[data-flag-clear]").forEach(b=>b.onclick=()=>flagAction({flagAction:"clear",flagId:b.dataset.flagClear},"Flag marked reviewed."));
  [...target.querySelectorAll("article.admin-account")].forEach((el,i)=>{if(list[i]&&isOtherAdminRow(list[i])){el.querySelectorAll("[data-account-action]").forEach(b=>{b.disabled=true;b.title="Only this admin can change this account"});el.insertAdjacentHTML("beforeend",'<p class="sm">Only this admin can change this account.</p>')}});
 }
 function paintAdminUsage(box){
@@ -3060,25 +3119,25 @@ const DISABLE_PRESETS=[
 {sub:"Required before use",text:"This account needs a security check before it can be used again. It has been disabled until the check is complete."}]}
 ];
 const DISABLE_DATA_RADIOS={label:"What happens to their chats?",items:[{value:"keep",label:"Keep their chats",hint:"The user is not offered a download. Chats stay on the account.",checked:true},{value:"download",label:"Let them download their chats",hint:"A download button appears on their disabled screen. Chats stay on the account."},{value:"download_delete",label:"Download, then delete",hint:"They can download their chats. Once they do, the chats are deleted from the account."},{value:"delete",label:"Delete their chats now",hint:"Chats are deleted from the account right away. This cannot be undone."}]};
-function disableFormHtml(cur,edit){
+function disableFormHtml(cur){
  let sel="custom";const c=cur||{};
  DISABLE_PRESETS.forEach((p,i)=>p.subs.forEach((s,j)=>{if(c.title===p.title&&c.sub===s.sub&&c.text===s.text)sel=i+"-"+j}));
  const opts=DISABLE_PRESETS.map((p,i)=>'<optgroup label="'+escapeAttr(p.title)+'">'+p.subs.map((s,j)=>'<option value="'+i+'-'+j+'"'+(sel===i+"-"+j?" selected":"")+'>'+esc(s.sub)+'</option>').join("")+'</optgroup>').join("")+'<option value="custom"'+(sel==="custom"?" selected":"")+'>Custom reason</option>';
  const custom=sel==="custom"?String(c.text||""):"";
  const re=c.reenableAt?new Date(Number(c.reenableAt)+36e5*10).toISOString().slice(0,16):"";
- return '<div class="disable-form"><label class="sm reason-label" for="dis-preset">Reason</label><select id="dis-preset" class="reason-input">'+opts+'</select><p class="sm dis-preview" id="dis-preview"></p><label class="sm reason-label" id="dis-custom-label" for="dis-custom" hidden>Custom reason (shown to the user, up to 200 characters)</label><textarea id="dis-custom" class="reason-input" rows="3" maxlength="200" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true" hidden>'+esc(custom)+'</textarea><div class="reenable-card"><label class="switch-row reenable-row"><span><strong>Re-enable automatically</strong><small>Turn on to choose a date and time in HST. Off keeps the account disabled until you enable it.</small></span><input type="checkbox" id="dis-reenable-on"'+(re?" checked":"")+'><span class="switch-ui"></span></label><div class="reenable-when" id="dis-reenable-wrap"'+(re?"":" hidden")+'><label class="sm reason-label" for="dis-reenable">Re-enable at (HST)</label><input type="datetime-local" id="dis-reenable" class="reason-input" autocomplete="off" value="'+escapeAttr(re)+'"></div></div>'+(edit?'':'<label class="sm reason-label" for="dis-browser-ban">Also disable their browser</label><select id="dis-browser-ban" class="reason-input"><option value="0" selected>No browser ban</option>'+BROWSER_BAN_ITEMS.map(it=>'<option value="'+it.value+'">'+esc(it.label)+'</option>').join("")+'</select><p class="sm">Applies only if a browser is on record for this account. Clearing browser storage gets around it.</p>');
+ return '<div class="disable-form"><label class="sm reason-label" for="dis-preset">Reason</label><select id="dis-preset" class="reason-input">'+opts+'</select><p class="sm dis-preview" id="dis-preview"></p><label class="sm reason-label" id="dis-custom-label" for="dis-custom" hidden>Custom reason (shown to the user, up to 200 characters)</label><textarea id="dis-custom" class="reason-input" rows="3" maxlength="200" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true" hidden>'+esc(custom)+'</textarea><div class="reenable-card"><label class="switch-row reenable-row"><span><strong>Re-enable automatically</strong><small>Turn on to choose a date and time in HST. Off keeps the '+(disableSubject==="browser"?"browser":"account")+' disabled until you enable it.</small></span><input type="checkbox" id="dis-reenable-on"'+(re?" checked":"")+'><span class="switch-ui"></span></label><div class="reenable-when" id="dis-reenable-wrap"'+(re?"":" hidden")+'><label class="sm reason-label" for="dis-reenable">Re-enable at (HST)</label><input type="datetime-local" id="dis-reenable" class="reason-input" autocomplete="off" value="'+escapeAttr(re)+'"></div></div>';
 }
 function wireDisableForm(){
  const sel=$("dis-preset"),prev=$("dis-preview"),custom=$("dis-custom"),lab=$("dis-custom-label");
- const update=()=>{const isCustom=sel.value==="custom";custom.hidden=!isCustom;lab.hidden=!isCustom;if(isCustom){prev.textContent="Write the reason the user will see, up to 200 characters."}else{const [i,j]=sel.value.split("-").map(Number);prev.textContent="The user sees: "+DISABLE_PRESETS[i].subs[j].text}};
+ const update=()=>{const isCustom=sel.value==="custom";custom.hidden=!isCustom;lab.hidden=!isCustom;if(isCustom){prev.textContent="Write the reason the user will see, up to 200 characters."}else{const [i,j]=sel.value.split("-").map(Number);prev.textContent="The user sees: "+subjectText(DISABLE_PRESETS[i].subs[j].text)}};
  sel.onchange=update;update();
  const on=$("dis-reenable-on"),wrap=$("dis-reenable-wrap"),when=$("dis-reenable");
  on.onchange=()=>{wrap.hidden=!on.checked;if(!on.checked)when.value=""};
 }
 function readDisableForm(){
  const v=$("dis-preset").value;let title="",sub="",text="";
- if(v==="custom"){text=$("dis-custom").value.trim()}else{const [i,j]=v.split("-").map(Number),p=DISABLE_PRESETS[i],s=p.subs[j];title=p.title;sub=s.sub;text=s.text}
- return {reasonTitle:title,reasonSub:sub,reasonText:text,reenableAt:($("dis-reenable-on").checked&&$("dis-reenable").value)||"",banBrowserHours:$("dis-browser-ban")?$("dis-browser-ban").value:"0"};
+ if(v==="custom"){text=$("dis-custom").value.trim()}else{const [i,j]=v.split("-").map(Number),p=DISABLE_PRESETS[i],s=p.subs[j];title=p.title;sub=s.sub;text=subjectText(s.text)}
+ return {reasonTitle:title,reasonSub:sub,reasonText:text,reenableAt:($("dis-reenable-on").checked&&$("dis-reenable").value)||""};
 }
 function adminReasonHtml(i){
  const info=i||{};let h='<div class="admin-account-meta">Reason: '+esc(info.title||"Custom reason")+(info.sub?' · '+esc(info.sub):"")+'</div>';
@@ -3089,7 +3148,7 @@ function adminReasonHtml(i){
 async function runDisableAction(action,targetId){
  const edit=action==="edit_reason";
  const row=(adminData&&adminData.accounts||[]).find(a=>a.id===targetId),cur=row&&row.disabledInfo?row.disabledInfo:null;
- const accepted=await appConfirm({title:edit?"Edit the disable reason?":"Disable account?",message:edit?"The account stays disabled. The user sees the updated reason on their disabled screen.":"This account will no longer be able to use WHWai. The user sees the reason, sub-reason and any re-enable time you set.",confirmLabel:edit?"Save reason":"Disable",danger:!edit,extraHtml:disableFormHtml(cur,edit),onRender:wireDisableForm,radios:edit?null:DISABLE_DATA_RADIOS});
+ const accepted=await appConfirm({title:edit?"Edit the disable reason?":"Disable account?",message:edit?"The account stays disabled. The user sees the updated reason on their disabled screen.":"This account will no longer be able to use WHWai. The user sees the reason, sub-reason and any re-enable time you set.",confirmLabel:edit?"Save reason":"Disable",danger:!edit,extraHtml:disableFormHtml(cur),onRender:wireDisableForm,radios:edit?null:DISABLE_DATA_RADIOS});
  if(!accepted){if(!modal.hidden&&!closingModal)renderAdminPanel("accounts");return}
  if(modal.hidden||currentSettingsView!=="app-confirm")return;
  const picked=document.querySelector('input[name="app-confirm-radio"]:checked');const dataMode=picked?picked.value:"keep";
@@ -3106,7 +3165,9 @@ async function runDisableAction(action,targetId){
 }
 async function runAdminAccountAction(action,targetId){
  if(action==="disable"||action==="edit_reason")return runDisableAction(action,targetId);
- const choices={enable:{title:"Enable account?",message:"This account will be allowed to sign in again.",label:"Enable",danger:false},reset_password:{title:"Issue temporary password?",message:"A new one-time password will replace the current password and sign out this account everywhere. It expires after 72 hours.",label:"Issue password"},force_signout:{title:"Sign out everywhere?",message:"All active sessions for this account will be revoked.",label:"Sign out all"},promote:{title:"Make administrator?",message:"This account will gain access to administrative controls.",label:"Make admin"},demote:{title:"Remove administrator role?",message:"This account will lose access to administrative controls.",label:"Demote"},delete:{title:"Delete account permanently?",message:"The account and its active server-stored chats will be deleted. This cannot be undone from WHWai.",label:"Delete account"}};
+ if(action==="disable_browser"||action==="edit_browser_reason")return runBrowserAction(action,targetId);
+ if(action==="flag")return runFlagAccount(targetId);
+ const choices={enable_browser:{title:"Enable browser?",message:"This browser will be able to use WHWai again.",label:"Enable",danger:false},enable:{title:"Enable account?",message:"This account will be allowed to sign in again.",label:"Enable",danger:false},reset_password:{title:"Issue temporary password?",message:"A new one-time password will replace the current password and sign out this account everywhere. It expires after 72 hours.",label:"Issue password"},force_signout:{title:"Sign out everywhere?",message:"All active sessions for this account will be revoked.",label:"Sign out all"},promote:{title:"Make administrator?",message:"This account will gain access to administrative controls.",label:"Make admin"},demote:{title:"Remove administrator role?",message:"This account will lose access to administrative controls.",label:"Demote"},delete:{title:"Delete account permanently?",message:"The account and its active server-stored chats will be deleted. This cannot be undone from WHWai.",label:"Delete account"}};
  const choice=choices[action];if(!choice)return;
  const accepted=await appConfirm({title:choice.title,message:choice.message,confirmLabel:choice.label,danger:choice.danger!==false,input:choice.input,radios:choice.radios});
  const reason=(choice.input&&$("app-confirm-input"))?$("app-confirm-input").value.trim():"";
