@@ -356,7 +356,7 @@ body.access-locked .frame{filter:blur(6px);pointer-events:none;user-select:none}
 .admin-avatar{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;flex:none;color:#fff;font-size:13px;font-weight:600;line-height:1}
 .account-role{font-size:11.5px;color:#555;background:#eee;border-radius:999px;padding:4px 7px;white-space:nowrap}
 .admin-account-meta{font-size:12px;line-height:1.4;color:#666;margin:10px 0 0;overflow-wrap:anywhere}
-.admin-account-actions{display:flex;flex-wrap:wrap;gap:6px}
+.admin-account-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .admin-account-meta+.admin-account-meta{margin-top:5px}
 .flag-item{transition:opacity .26s ease,transform .26s ease}
 .flag-item.is-resolving,.admin-account.is-resolving{opacity:0;transform:translateX(12px) scale(.98)}
@@ -3021,7 +3021,7 @@ function paintAdminFlags(box){
  const flagHtml=flags.map(f=>{
   const uname=f.username||accountNameById(f.accountId);
   const browserOff=!uname&&!!f.deviceId&&disables.some(x=>x.deviceId===f.deviceId);
-  const side=uname?'<button type="button" class="pbtn" data-open-account="'+escapeAttr(uname)+'">Open account</button>':(f.deviceId?(browserOff?'<button type="button" class="pbtn" data-enable-browser="'+escapeAttr(f.deviceId)+'">Enable browser</button>':'<button type="button" class="pbtn" data-flag-browser="'+escapeAttr(f.deviceId)+'">Disable browser…</button>'):"");
+  const side=uname?'<button type="button" class="pbtn" data-open-account="'+escapeAttr(uname)+'">Show account</button>':(f.deviceId?(browserOff?'<button type="button" class="pbtn" data-enable-browser="'+escapeAttr(f.deviceId)+'">Enable browser</button>':'<button type="button" class="pbtn" data-flag-browser="'+escapeAttr(f.deviceId)+'">Disable browser…</button>'):"");
   return '<article class="admin-account"><div class="admin-account-head"><span class="admin-account-id"><strong>'+esc(FLAG_TYPE_LABELS[f.type]||f.type)+'</strong></span><span class="account-role">'+adminDate(f.createdAt)+'</span></div><div class="admin-account-meta">'+esc(uname||"No account")+(f.deviceId?" · Browser ···"+esc(f.deviceId.slice(-6)):"")+'</div>'+(f.summary?'<div class="admin-account-meta">'+esc(f.summary)+'</div>':"")+'<div class="admin-account-actions"><button type="button" class="pbtn" data-flag-clear="'+escapeAttr(f.id)+'"'+(browserOff?' disabled title="Enable this browser before resolving this flag."':'')+'>Resolve</button>'+side+'</div>'+(browserOff?'<p class="sm acct-lock">Enable this browser before you can resolve this flag.</p>':'')+'</article>';
  }).join("");
  box.innerHTML='<p class="sm">Flags are private to admins. Users never see them. Account flags are handled on the Accounts tab.</p>'+'<h3 class="sm reason-label">Open flags</h3>'+(flags.length?flagHtml:'<p class="sm">No open flags.</p>');
