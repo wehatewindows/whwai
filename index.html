@@ -2896,7 +2896,7 @@ function adminFetch(force){
 }
 function showAdminError(err){
  const box=$("admin-content");if(!box)return;
- const p=err&&err.payload||{};box.innerHTML=`<p class="access-error" role="status">${esc(p.message||"Couldn't load admin data. Check the account session and sheet setup.")}${p.detail?esc(" ("+p.detail+")"):""}</p><p class="sm">Server build: ${esc(p.build||"unknown")}</p><button type="button" class="pbtn" id="admin-retry">Retry</button>`;
+ const p=err&&err.payload||{};box.innerHTML=`<p class="access-error" role="status">${esc(p.message||"Couldn't load admin data. Check the account session and sheet setup.")}${p.detail?esc(" ("+p.detail+")"):""}</p><button type="button" class="pbtn" id="admin-retry">Retry</button>`;
  $("admin-retry").onclick=()=>refreshAdmin();
 }
 function refreshAdmin(){
@@ -3034,7 +3034,7 @@ function paintAdminTab(){
  const box=$("admin-content");if(!box||!adminData)return;
  mbody.querySelectorAll("[data-admin-tab]").forEach(b=>b.classList.toggle("active",b.dataset.adminTab===adminTab));
  if(adminTab==="site")paintAdminSite(box);else if(adminTab==="accounts")paintAdminAccounts(box);else if(adminTab==="usage")paintAdminUsage(box);else if(adminTab==="flags")paintAdminFlags(box);else paintAdminAudit(box);
- box.insertAdjacentHTML("beforeend",'<p class="sm">Server build: '+esc(adminData.build||"unknown")+'</p>');if(adminData.problems&&adminData.problems.length)box.insertAdjacentHTML("afterbegin",'<p class="access-error" role="status">Some admin data could not load: '+adminData.problems.map(p=>esc(p.part+" – "+p.error)).join("; ")+'</p>');
+ if(adminData.problems&&adminData.problems.length)box.insertAdjacentHTML("afterbegin",'<p class="access-error" role="status">Some admin data could not load: '+adminData.problems.map(p=>esc(p.part+" – "+p.error)).join("; ")+'</p>');
 }
 function paintAdminSite(box){
  const v=adminData.settings||{};
