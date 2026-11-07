@@ -327,7 +327,7 @@ body.access-locked .frame{filter:blur(6px);pointer-events:none;user-select:none}
 .account-form .data-toolbar{margin-top:6px}
 .check-row{display:flex;align-items:center;gap:9px;padding:8px 10px;background:#f5f5f5;border-radius:10px;color:#333;font-size:13.5px}
 .check-row input{width:17px;height:17px;flex:none;accent-color:#6aa0ff}
-.admin-nav{display:flex;gap:6px;overflow:auto;margin:4px 0 13px;padding-bottom:3px}
+.admin-nav{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 13px}
 .admin-nav .pbtn{flex:none;white-space:nowrap;font-size:12.5px;padding:8px 10px}
 .admin-nav .pbtn.active{background:#dce7ff;color:#2458b8;box-shadow:inset 0 0 0 1px #c8d9ff}
 
@@ -352,6 +352,11 @@ body.access-locked .frame{filter:blur(6px);pointer-events:none;user-select:none}
 .account-role{font-size:11.5px;color:#555;background:#eee;border-radius:999px;padding:4px 7px;white-space:nowrap}
 .admin-account-meta{font-size:12px;line-height:1.4;color:#666;margin:7px 0 10px;overflow-wrap:anywhere}
 .admin-account-actions{display:flex;flex-wrap:wrap;gap:6px}
+.acct-more{border:0;background:none;width:30px;height:30px;border-radius:50%;cursor:pointer;color:#555;display:grid;place-items:center;padding:0;flex:none}
+.acct-more:hover,.acct-more[aria-expanded="true"]{background:#e6e6e6}
+.acct-more:disabled{opacity:.35;cursor:default;background:none}
+#acctmenu{position:fixed;right:auto;width:210px;max-height:70vh;overflow:auto;z-index:120}
+.bar .tool-chip{margin-left:0;display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 9px;border-radius:13px;color:#333;font-size:12.5px}.bar .tool-chip em{font-style:normal}
 .admin-account-actions .pbtn{font-size:11.5px;padding:6px 8px}
 .admin-account-actions .pbtn:disabled{opacity:.4;cursor:not-allowed}
 .admin-audit-item{padding:10px 11px;border:1px solid #e6e6e6;background:#fafafa;border-radius:11px;margin:7px 0;font-size:12.5px;overflow-wrap:anywhere}
@@ -759,7 +764,7 @@ function safeMessage(value){
  if(r==="a"){
   const sources=safeSources(value.sources);if(sources.length)item.sources=sources;
   const model=safeText(value.model,80);if(model)item.model=model;
-  const thinking=safeText(value.thinking,6000);if(thinking)item.thinking=thinking;
+  const thinking=safeText(value.thinking,6000);if(thinking)item.thinking=thinking;const toolList=Array.isArray(value.tools)?value.tools.filter(t=>typeof t==="string"&&/^[a-z_]{1,40}$/.test(t)).slice(0,5):[];if(toolList.length)item.tools=toolList;
  }
  return item;
 }
@@ -1222,12 +1227,15 @@ function renderChat(fresh){
     return;
    }
    if(m.r==="a"){
-    const canRegen=i===c.m.length-1,b=document.createElement("div");b.className="bar";
+    const canRegen=i===c.m.length-1&&!c.ended,b=document.createElement("div");b.className="bar";
     const srcs=Array.isArray(m.sources)?m.sources.filter(source=>source&&typeof source.title==="string"&&typeof source.url==="string"&&/^https:\/\//i.test(source.url)&&!/[\s<>"']/.test(source.url)).slice(0,5):[];
     const steps=m.thinking?thinkingSteps(m.thinking):[];
     const srcIcon='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>';
     const thkIcon='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l2.5-6 4 12 2.5-6H21"/></svg>';
-    b.innerHTML='<button class="cp" title="Copy" aria-label="Copy">'+I.copy+'</button>'+(canRegen?'<button class="rg" title="Regenerate" aria-label="Regenerate">'+I.regen+'</button>':'')+(steps.length?'<button class="thk" type="button" aria-expanded="false" title="Show thought process">'+thkIcon+'<em>Thought process</em></button>':'')+(srcs.length?'<button class="src" type="button" aria-expanded="false" aria-label="Show sources" title="Show sources">'+srcIcon+'<em>'+srcs.length+(srcs.length===1?' source':' sources')+'</em></button>':'')+'<span data-t="'+m.at+'">'+ago(m.at)+'</span>';
+    const wrenchIcon='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>';
+    const toolNames=Array.isArray(m.tools)?m.tools.filter(t=>typeof t==="string"):[];
+    const toolChip=toolNames.length?'<span class="tool-chip" title="Tool used" aria-label="Tool used: '+escapeAttr(toolNames.join(", "))+'">'+wrenchIcon+'<em>'+esc(toolNames.join(", "))+'</em></span>':'';
+    b.innerHTML='<button class="cp" title="Copy" aria-label="Copy">'+I.copy+'</button>'+(canRegen?'<button class="rg" title="Regenerate" aria-label="Regenerate">'+I.regen+'</button>':'')+(steps.length?'<button class="thk" type="button" aria-expanded="false" title="Show thought process">'+thkIcon+'<em>Thought process</em></button>':'')+(srcs.length?'<button class="src" type="button" aria-expanded="false" aria-label="Show sources" title="Show sources">'+srcIcon+'<em>'+srcs.length+(srcs.length===1?' source':' sources')+'</em></button>':'')+toolChip+'<span data-t="'+m.at+'">'+ago(m.at)+'</span>';
     const cp=b.querySelector(".cp"),rg=b.querySelector(".rg"),tk=b.querySelector(".thk"),sb=b.querySelector(".src");
     cp.onclick=()=>copy(m.x,cp);if(rg)rg.onclick=regen;
     chatEl.appendChild(b);
@@ -1506,7 +1514,7 @@ async function answer(c,q){
   tick();timer=setInterval(tick,1800);
  }
  try{
-  let full,err=0,sources=[],thinking="",usedModel=null,limitNow=false,endedNow=false;
+  let full,err=0,sources=[],thinking="",usedModel=null,limitNow=false,endedNow=false,usedTools=[];
   if(API_URL){
    try{
     const modelId=availableModels.some(m=>m.id===c.model)?c.model:(S.model||"aries-1");
@@ -1514,7 +1522,7 @@ async function answer(c,q){
     const j=await post({action:"chat",model:modelId,chatId:c.id,messages:hist(c)},controller.signal);
     if(responseWasStopped||run!==answerRunId)return;
     if(j.quota&&typeof j.quota.remaining==="number")toast(j.quota.remaining+" messages left today on this model");
-    full=j.text||ERR_TEXT;sources=Array.isArray(j.sources)?j.sources:[];thinking=typeof j.thinking==="string"?j.thinking:"";if(j.ended)endedNow=true;if(!j.text||j.disabled)err=1;
+    full=j.text||ERR_TEXT;sources=Array.isArray(j.sources)?j.sources:[];thinking=typeof j.thinking==="string"?j.thinking:"";if(j.ended)endedNow=true;if(Array.isArray(j.tools))usedTools=j.tools.filter(t=>typeof t==="string").slice(0,5);if(!j.text||j.disabled)err=1;
    }catch(e){
     if(responseWasStopped||run!==answerRunId||e&&e.name==="AbortError"&&controller.signal.aborted)return;
     if(e&&e.payload&&e.payload.error==="chat_ended"){endedNow=true;full=e.payload.message||"This chat was ended.";}else if(e&&e.payload&&e.payload.error==="vela_unavailable"){
@@ -1535,7 +1543,7 @@ async function answer(c,q){
   if(responseWasStopped||run!==answerRunId)return;
   const target=S.chats.find(x=>x.id===c.id);
   if(!target)return;
-  if(limitNow)full="You've hit your usage limit.";target.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1,limit:limitNow?1:0}:{r:"a",x:full,at:Date.now(),sources:sources,thinking:thinking,model:usedModel||target.model||S.model||"aries-1",_l:1});if(endedNow)target.ended=1;target.u=Date.now();touch(target);save();renderList();renderChat();
+  if(limitNow)full="You've hit your usage limit.";target.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1,limit:limitNow?1:0}:{r:"a",x:full,at:Date.now(),sources:sources,thinking:thinking,tools:usedTools,model:usedModel||target.model||S.model||"aries-1",_l:1});if(endedNow)target.ended=1;target.u=Date.now();touch(target);save();renderList();renderChat();
   if(API_URL&&!err&&target.auto)genTitle(target);
 
  }finally{
@@ -1600,7 +1608,7 @@ function send(){
  c.u=Date.now();touch(c);save();renderList();renderChat(true);answer(c,q);
 }
 function regen(){
- const c=C();if(busy||!c)return;c.m.pop();touch(c);
+ const c=C();if(busy||!c||c.ended)return;c.m.pop();touch(c);
  const q=[...c.m].reverse().find(m=>m.r==="u");save();renderChat();if(q)answer(c,q.x);
 }
 function openChat(id){if(busy)return;S.cur=id;save();renderList();renderChat();side(false)}
@@ -2898,7 +2906,7 @@ function accountNameById(id){const a=((adminData&&adminData.accounts)||[]).find(
 function browserLineHtml(a){
  const bd=a.browserDisabled;
  if(bd)return '<div class="admin-account-meta">Browser disabled: '+esc(bd.reasonTitle||"Custom reason")+(bd.reasonSub?" · "+esc(bd.reasonSub):"")+(bd.reenableAt?" · Re-enables "+esc(hstText(bd.reenableAt)):" · Until an admin enables it")+'</div>';
- return '<div class="admin-account-meta">'+(a.hasBrowser?"Browser active":"No browser on record")+'</div>';
+ return '';
 }
 function flagsLineHtml(a){
  const open=((adminFlagsData&&adminFlagsData.flags)||[]).filter(f=>f.accountId===a.id);
@@ -3034,15 +3042,51 @@ function paintAdminAccounts(box){
 function isOtherAdminRow(a){if(accountSession&&accountSession.user&&accountSession.user.isBootstrap)return false;return a.role==="admin"&&(!accountSession||!accountSession.user||a.username!==accountSession.user.username)}
 function paintAccountList(){
  const target=$("admin-account-results");if(!target||!adminData)return;
+ closeAcctMenu();
  if(!adminFlagsData&&!adminFlagsLoading)loadAdminFlags().then(()=>{if(adminTab==="accounts")paintAccountList()}).catch(()=>{});
  const q=String(adminQuery||"").trim().toLowerCase(),all=adminData.accounts||[];
  const byFilter=all.filter(accountMatchesFilter),list=q?byFilter.filter(a=>String(a.username).toLowerCase().indexOf(q)!==-1):byFilter;
  if(!list.length){target.innerHTML='<p class="sm">No accounts match these filters.</p>';return}
- target.innerHTML=list.map(a=>`<article class="admin-account"><div class="admin-account-head"><span class="admin-account-id"><span class="admin-avatar" style="background:${escapeAttr(a.profileColor||"#4f7cf0")}" aria-hidden="true">${esc(String(a.username||"?").charAt(0).toUpperCase())}</span><strong>${esc(a.username)}</strong></span><span class="account-role">${esc(a.role)} · ${esc(a.status)}</span></div><div class="admin-account-meta">Created ${adminDate(a.createdAt)} · Last sign-in ${adminDate(a.lastLoginAt)} · ${Number(a.chatCount)||0} chats</div>${a.status==="disabled"?adminReasonHtml(a.disabledInfo||{text:a.disabledReason||""}):""}${a.status==="disabled"&&a.dataMode&&a.dataMode!=="keep"?`<div class="admin-account-meta">Chats: ${esc({download:"user can download them",download_delete:"user can download, then they are deleted",delete:"deleted"}[a.dataMode]||a.dataMode)}</div>`:""}${browserLineHtml(a)}${flagsLineHtml(a)}<div class="admin-account-actions">${browserButtonsHtml(a)}${a.status==="active"?`<button type="button" class="pbtn" data-account-action="disable" data-target-id="${escapeAttr(a.id)}">Disable</button>`:`<button type="button" class="pbtn" data-account-action="enable" data-target-id="${escapeAttr(a.id)}">Enable</button>`}${a.status==="disabled"?`<button type="button" class="pbtn" data-account-action="edit_reason" data-target-id="${escapeAttr(a.id)}">Edit reason</button>`:""}<button type="button" class="pbtn" data-account-action="reset_password" data-target-id="${escapeAttr(a.id)}">Temp password</button><button type="button" class="pbtn" data-account-action="force_signout" data-target-id="${escapeAttr(a.id)}">Sign out all</button>${a.role==="admin"?`<button type="button" class="pbtn" data-account-action="demote" data-target-id="${escapeAttr(a.id)}" ${a.isBootstrap?"disabled":""}>Demote</button>`:`<button type="button" class="pbtn" data-account-action="promote" data-target-id="${escapeAttr(a.id)}">Make admin</button>`}<button type="button" class="pbtn danger" data-account-action="delete" data-target-id="${escapeAttr(a.id)}" ${a.isBootstrap?"disabled":""}>Delete</button></div></article>`).join("")+(adminData.truncated?'<p class="sm">Showing the first 500 accounts. Narrow your search for more specific results.</p>':"");
+ target.innerHTML=list.map(a=>`<article class="admin-account"><div class="admin-account-head"><span class="admin-account-id"><span class="admin-avatar" style="background:${escapeAttr(a.profileColor||"#4f7cf0")}" aria-hidden="true">${esc(String(a.username||"?").charAt(0).toUpperCase())}</span><strong>${esc(a.username)}</strong></span><span class="account-role">${esc(a.role)} · ${esc(a.status)}</span>${acctMoreHtml(a)}</div><div class="admin-account-meta">Created ${adminDate(a.createdAt)} · Last sign-in ${adminDate(a.lastLoginAt)} · ${Number(a.chatCount)||0} chats</div>${a.status==="disabled"?adminReasonHtml(a.disabledInfo||{text:a.disabledReason||""}):""}${a.status==="disabled"&&a.dataMode&&a.dataMode!=="keep"?`<div class="admin-account-meta">Chats: ${esc({download:"user can download them",download_delete:"user can download, then they are deleted",delete:"deleted"}[a.dataMode]||a.dataMode)}</div>`:""}${browserLineHtml(a)}${flagsLineHtml(a)}</article>`).join("")+(adminData.truncated?'<p class="sm">Showing the first 500 accounts. Narrow your search for more specific results.</p>':"");
  target.querySelectorAll("[data-account-action]").forEach(button=>button.onclick=()=>runAdminAccountAction(button.dataset.accountAction,button.dataset.targetId));
  target.querySelectorAll("[data-flag-clear]").forEach(b=>b.onclick=()=>flagAction({flagAction:"clear",flagId:b.dataset.flagClear},"Flag marked reviewed."));
- [...target.querySelectorAll("article.admin-account")].forEach((el,i)=>{if(list[i]&&isOtherAdminRow(list[i])){el.querySelectorAll("[data-account-action]").forEach(b=>{b.disabled=true;b.title="Only this admin can change this account"});el.insertAdjacentHTML("beforeend",'<p class="sm">Only this admin can change this account.</p>')}});
+ target.querySelectorAll(".acct-more").forEach((b,i)=>b.onclick=e=>{e.stopPropagation();openAcctMenu(list[i],b)});
+ [...target.querySelectorAll("article.admin-account")].forEach((el,i)=>{if(list[i]&&isOtherAdminRow(list[i]))el.insertAdjacentHTML("beforeend",'<p class="sm">Only this admin can change this account.</p>')});
 }
+function acctMoreHtml(a){const other=isOtherAdminRow(a);return '<button type="button" class="acct-more" aria-haspopup="menu" aria-expanded="false" aria-label="Account options for '+escapeAttr(a.username)+'" title="'+(other?"Only this admin can change this account":"Account options")+'"'+(other?' disabled':'')+'>'+ic(DOTS,18)+'</button>'}
+function accountMenuHtml(a){
+ const id=escapeAttr(a.id),item=(action,label,extra,cls)=>'<button type="button" role="menuitem" class="'+(cls||"")+'" data-account-action="'+action+'" data-target-id="'+id+'"'+(extra||"")+'>'+esc(label)+'</button>';
+ let h="";
+ if(a.hasBrowser)h+=a.browserDisabled?item("edit_browser_reason","Edit browser reason")+item("enable_browser","Enable browser"):item("disable_browser","Disable browser");
+ h+=item("flag","Flag account");
+ h+=a.status==="active"?item("disable","Disable account"):item("enable","Enable account");
+ if(a.status==="disabled")h+=item("edit_reason","Edit reason");
+ h+=item("reset_password","Temp password")+item("force_signout","Sign out all");
+ h+=a.role==="admin"?item("demote","Demote",a.isBootstrap?" disabled":""):item("promote","Make admin");
+ h+=item("delete","Delete",a.isBootstrap?" disabled":"","danger");
+ return h;
+}
+let acctMenuId=null;
+function closeAcctMenu(){const m=$("acctmenu");if(acctMenuId===null&&(!m||m.hidden))return;acctMenuId=null;if(m)hideEl(m);document.querySelectorAll(".acct-more").forEach(b=>b.setAttribute("aria-expanded","false"))}
+function openAcctMenu(a,btn){
+ if(!a||!btn)return;
+ let m=$("acctmenu");
+ if(!m){m=document.createElement("div");m.id="acctmenu";m.className="cmenu";m.hidden=true;m.setAttribute("role","menu");document.body.appendChild(m);
+  m.addEventListener("click",e=>{const b=e.target.closest("[data-account-action]");if(!b||b.disabled)return;closeAcctMenu();runAdminAccountAction(b.dataset.accountAction,b.dataset.targetId)})}
+ if(acctMenuId===a.id){closeAcctMenu();return}
+ closeMenu();
+ m.innerHTML=accountMenuHtml(a);
+ acctMenuId=a.id;
+ showEl(m);
+ const r=btn.getBoundingClientRect(),w=m.offsetWidth,hh=m.offsetHeight;
+ m.style.left=Math.max(8,Math.min(r.right-w,innerWidth-w-8))+"px";
+ m.style.top=(r.bottom+4+hh>innerHeight?Math.max(8,r.top-hh-4):r.bottom+4)+"px";
+ btn.setAttribute("aria-expanded","true");
+}
+document.addEventListener("click",e=>{if(acctMenuId!==null&&!e.target.closest("#acctmenu,.acct-more"))closeAcctMenu()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&acctMenuId!==null){closeAcctMenu();e.stopPropagation()}},true);
+window.addEventListener("scroll",()=>{if(acctMenuId!==null)closeAcctMenu()},{capture:true,passive:true});
+window.addEventListener("resize",()=>{if(acctMenuId!==null)closeAcctMenu()});
 function paintAdminUsage(box){
  const r=adminData.usage||{},t=r.today||{},w=r.week||{};
  box.innerHTML=`<div class="admin-stat-grid"><div class="admin-stat"><span>Requests today</span><strong>${Number(t.total)||0}</strong></div><div class="admin-stat"><span>Requests in 7 days</span><strong>${Number(w.total)||0}</strong></div><div class="admin-stat"><span>Accounts</span><strong>${Number(r.accountCount)||0}</strong></div><div class="admin-stat"><span>Failed sign-ins today</span><strong>${Number(t.failedSignins)||0}</strong></div><div class="admin-stat"><span>Guest requests today</span><strong>${Number(t.guests)||0}</strong></div><div class="admin-stat"><span>Account requests today</span><strong>${Number(t.accounts)||0}</strong></div></div><p class="sm">Usage counts contain totals only; no prompts, responses, or chat text are included.</p>`;
@@ -3255,7 +3299,7 @@ $("access-admin-form").onsubmit=async e=>{
 $("gear").onclick=openSettings;$("mx").onclick=closeSettings;modal.onclick=e=>{if(e.target===modal)closeSettings()};
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&accountSession&&accountSession.token&&!busy)scheduleAccountSync()});
 window.addEventListener("online",()=>{renderSyncStatus();if(accountSession&&accountSession.token)scheduleAccountSync()});window.addEventListener("offline",renderSyncStatus);
-setInterval(()=>document.querySelectorAll(".bar span,.cm").forEach(el=>el.textContent=ago(+el.dataset.t)),1000);
+setInterval(()=>document.querySelectorAll(".bar span[data-t],.cm").forEach(el=>el.textContent=ago(+el.dataset.t)),1000);
 renderList();renderChat();renderSiteNotice();
 if(accountSession&&accountSession.token){accountReady=false;resumeAccountSession()}
 const fr=document.querySelector(".frame");fr.classList.add("no-anim");fr.classList.toggle("collapsed",!!S.col);requestAnimationFrame(()=>requestAnimationFrame(()=>fr.classList.remove("no-anim")));
