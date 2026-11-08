@@ -693,6 +693,16 @@ textarea{border-radius:16px}
 .hst-time select{flex:1 1 0;min-width:0;-webkit-appearance:none;appearance:none;padding:8px 22px 8px 10px;border-radius:10px;border:1px solid #ddd;background-color:#fafafa;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='14' viewBox='0 0 10 14'%3E%3Cpath d='M1 5l4-4 4 4M1 9l4 4 4-4' fill='none' stroke='%23555' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 7px center;background-size:9px 12px;font-family:var(--f);font-size:16px;color:#111;cursor:pointer}
 .hst-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
 .hst-msg{color:#c33333;font-size:13px;margin:8px 0 0}
+.usage-sub{font-size:15px;margin:14px 0 8px}
+.usage-tok-grid{display:grid;gap:6px;margin:0 0 12px}
+.usage-tok-row{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:6px;align-items:center;padding:9px 12px;border:1px solid #e6e6e6;border-radius:12px;background:#f7f7f7;font-size:13.5px}
+.usage-tok-row span:not(:first-child){text-align:right;font-variant-numeric:tabular-nums}
+.usage-tok-head{background:transparent;border-color:transparent;font-size:12px;color:#777;padding:0 12px}
+.usage-user{padding:10px 12px;border:1px solid #e6e6e6;border-radius:14px;background:#f7f7f7;margin:0 0 8px}
+.usage-user-head strong{display:block;font-size:14px;color:#111}
+.usage-user-head small{display:block;color:#6b6b6b;font-size:12px;margin-top:2px}
+.usage-user-nums{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:8px;font-size:12.5px;color:#555}
+.usage-user-nums b{color:#111;font-weight:600}
 .pw-row{position:relative}
 .pw-row input{box-sizing:border-box;width:100%;min-width:0;border:1px solid #dedede;border-radius:12px;background:#fafafa;color:#111;padding:10px 48px 10px 12px;font:inherit;outline:none;height:44px;min-height:46px}
 .pw-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:36px;height:36px;border:0;border-radius:50%;background:none;color:#555;display:grid;place-items:center;cursor:pointer}
@@ -3158,12 +3168,12 @@ function refreshAdmin(){
  }).catch(err=>{finish();if(g===adminPanelGeneration)showAdminError(err)});
 }
 function renderAdminPanel(tab,query){
- currentSettingsView="admin";if(tab&&tab!==adminTab)adminFilterOpen=null;if(tab)adminTab=tab;if(query!=null)adminQuery=query;
+ currentSettingsView="admin";if(tab&&tab!==adminTab){adminFilterOpen=null;if(tab==="usage")adminUsageView="summary"}if(tab)adminTab=tab;if(query!=null)adminQuery=query;
  const generation=++adminPanelGeneration;
  $("modal-title").textContent="Admin panel";
  mbody.innerHTML=`<div class="admin-nav">${[["site","Site controls"],["accounts","Accounts"],["flags","Flags"],["usage","Usage"],["audit","Audit log"]].map(t=>`<button type="button" class="pbtn ${adminTab===t[0]?"active":""}" data-admin-tab="${t[0]}">${t[1]}</button>`).join("")}</div><div id="admin-content" aria-live="polite"></div><div class="data-toolbar"><button type="button" class="pbtn" id="admin-refresh">Refresh</button><button type="button" class="pbtn" id="admin-back">Back to Settings</button></div>`;
  mbody.querySelectorAll("[data-admin-tab]").forEach(b=>b.onclick=()=>renderAdminPanel(b.dataset.adminTab));
- $("admin-back").onclick=renderSettings;$("admin-refresh").onclick=()=>refreshAdmin();
+ $("admin-refresh").onclick=()=>refreshAdmin();syncAdminBack();
  if(adminData){paintAdminTab();if(Date.now()-adminDataAt>60000)refreshAdmin();return}
  $("admin-content").innerHTML='<p class="sm"><span class="sync-spinner" aria-hidden="true"></span>Loading admin data…</p>';
  adminFetch().then(()=>{if(generation===adminPanelGeneration&&currentSettingsView==="admin")paintAdminTab()}).catch(err=>{if(generation===adminPanelGeneration)showAdminError(err)});
@@ -3461,9 +3471,39 @@ document.addEventListener("click",e=>{if(acctMenuId!==null&&!e.target.closest("#
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&acctMenuId!==null){closeAcctMenu();e.stopPropagation()}},true);
 window.addEventListener("scroll",()=>{if(acctMenuId!==null)closeAcctMenu()},{capture:true,passive:true});
 window.addEventListener("resize",()=>{if(acctMenuId!==null)closeAcctMenu()});
+let adminUsageView="summary",adminUsersUsage=null,adminUsersLoading=null,adminUsageQuery="";
+function syncAdminBack(){const bk=$("admin-back");if(!bk)return;if(adminTab==="usage"&&adminUsageView==="users"){bk.textContent="Back";bk.onclick=()=>{adminUsageView="summary";paintAdminTab()}}else{bk.textContent="Back to Settings";bk.onclick=renderSettings}}
+function fmtTok(n){return (Number(n)||0).toLocaleString("en-US")}
+function fmtTokShort(n){n=Number(n)||0;if(n>=1e6)return (n/1e6).toFixed(n>=1e7?0:1)+"M";if(n>=1e3)return (n/1e3).toFixed(n>=1e4?0:1)+"k";return String(n)}
+function fmtHstWhen(ms){return new Date(ms).toLocaleString("en-US",{timeZone:"Pacific/Honolulu",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})+" HST"}
+function tokenRow(label,i,o){const ii=Number(i)||0,oo=Number(o)||0;return '<div class="usage-tok-row"><span>'+label+'</span><span>'+fmtTokShort(ii)+'</span><span>'+fmtTokShort(oo)+'</span><span><strong>'+fmtTokShort(ii+oo)+'</strong></span></div>'}
 function paintAdminUsage(box){
- const r=adminData.usage||{},t=r.today||{},w=r.week||{};
- box.innerHTML=`<div class="admin-stat-grid"><div class="admin-stat"><span>Requests today</span><strong>${Number(t.total)||0}</strong></div><div class="admin-stat"><span>Requests in 7 days</span><strong>${Number(w.total)||0}</strong></div><div class="admin-stat"><span>Accounts</span><strong>${Number(r.accountCount)||0}</strong></div><div class="admin-stat"><span>Failed sign-ins today</span><strong>${Number(t.failedSignins)||0}</strong></div><div class="admin-stat"><span>Guest requests today</span><strong>${Number(t.guests)||0}</strong></div><div class="admin-stat"><span>Account requests today</span><strong>${Number(t.accounts)||0}</strong></div></div><p class="sm">Usage counts contain totals only; no prompts, responses, or chat text are included.</p>`;
+ if(adminUsageView==="users"){paintAdminUsageUsers(box);return}
+ const r=(adminData&&adminData.usage)||{},t=r.today||{},w=r.week||{};
+ box.innerHTML=`<div class="admin-stat-grid"><div class="admin-stat"><span>Requests today</span><strong>${Number(t.total)||0}</strong></div><div class="admin-stat"><span>Requests in 7 days</span><strong>${Number(w.total)||0}</strong></div><div class="admin-stat"><span>Accounts</span><strong>${Number(r.accountCount)||0}</strong></div><div class="admin-stat"><span>Failed sign-ins today</span><strong>${Number(t.failedSignins)||0}</strong></div><div class="admin-stat"><span>Guest requests today</span><strong>${Number(t.guests)||0}</strong></div><div class="admin-stat"><span>Account requests today</span><strong>${Number(t.accounts)||0}</strong></div></div>`
+  +`<h3 class="usage-sub">Groq tokens</h3><div class="usage-tok-grid"><div class="usage-tok-row usage-tok-head"><span></span><span>Input</span><span>Output</span><span>Total</span></div>${tokenRow("Today",t.inputTokens,t.outputTokens)}${tokenRow("Last 7 days",w.inputTokens,w.outputTokens)}</div>`
+  +`<div class="data-toolbar"><button type="button" class="pbtn" id="usage-by-user">By user, all time</button></div>`;
+ box.querySelector("#usage-by-user").onclick=()=>{adminUsersUsage=null;adminUsageView="users";paintAdminUsage(box)};
+ syncAdminBack();
+}
+function paintAdminUsageUsers(box){
+ box.innerHTML=`<h3 class="usage-sub">All-time usage</h3><div class="admin-search"><input id="usage-user-query" type="search" maxlength="20" placeholder="Search usernames" value="${escapeAttr(adminUsageQuery)}" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></div><p class="sm" id="usage-users-msg">Loading…</p><div id="usage-users-list"></div>`;
+ syncAdminBack();
+ const input=box.querySelector("#usage-user-query");
+ input.oninput=e=>{adminUsageQuery=e.target.value.trim().toLowerCase();fill()};
+ const fill=()=>{
+  if(!box.isConnected||adminUsageView!=="users"||!adminUsersUsage)return;
+  const msg=box.querySelector("#usage-users-msg"),list=box.querySelector("#usage-users-list");
+  if(msg)msg.hidden=true;
+  const all=[...(adminUsersUsage.users||[])].sort((x,y)=>((Number(y.inputTokens)||0)+(Number(y.outputTokens)||0))-((Number(x.inputTokens)||0)+(Number(x.outputTokens)||0))||String(x.username).localeCompare(String(y.username)));
+  const users=adminUsageQuery?all.filter(u=>String(u.username).toLowerCase().indexOf(adminUsageQuery)!==-1):all;
+  if(!all.length){list.innerHTML='<p class="sm">No accounts yet.</p>';return}
+  if(!users.length){list.innerHTML='<p class="sm">No usernames match.</p>';return}
+  list.innerHTML=users.map(u=>{const total=(Number(u.inputTokens)||0)+(Number(u.outputTokens)||0);return '<div class="usage-user"><div class="usage-user-head"><strong>'+esc(u.username)+'</strong><small>'+(u.role==="admin"?"Admin":"User")+' · '+(u.lastUsedAt?"Last used "+fmtHstWhen(u.lastUsedAt):"Never used")+'</small></div><div class="usage-user-nums"><span><b>'+fmtTok(u.requests)+'</b> requests</span><span><b>'+fmtTok(u.inputTokens)+'</b> in</span><span><b>'+fmtTok(u.outputTokens)+'</b> out</span><span><b>'+fmtTok(total)+'</b> total</span></div></div>'}).join("")+(adminUsersUsage.truncated?'<p class="sm">Showing the first 500 accounts.</p>':"");
+ };
+ if(adminUsersUsage){fill();return}
+ if(!adminUsersLoading)adminUsersLoading=post({action:"admin_usage_users"}).then(r=>{if(!r||!r.ok)throw Object.assign(new Error(r&&r.error||"failed"),{payload:r});adminUsersUsage=r;return r}).finally(()=>{adminUsersLoading=null});
+ adminUsersLoading.then(fill,()=>{const msg=box.querySelector("#usage-users-msg");if(msg)msg.textContent="Couldn't load usage. Try again."});
 }
 let adminAuditFilters=new Set(),adminAccountFilters=new Set(),adminFilterOpen=null,filterSettled=false,filterClosing=false;
 const ACCOUNT_FILTERS=[["admin","Admins"],["user","Users"],["active","Active"],["disabled","Disabled"],["flagged","Flagged"]];
