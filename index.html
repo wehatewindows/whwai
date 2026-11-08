@@ -666,8 +666,8 @@ textarea{border-radius:16px}
 .hst-seg{flex:1;min-width:0;box-sizing:border-box;display:flex;align-items:center;gap:1px;height:44px;padding:0 10px;border:1px solid #dedede;border-radius:12px;background:#fafafa;color:#111;font-size:16px;font-variant-numeric:tabular-nums;transition:border-color .15s,box-shadow .15s}
 .hst-seg:focus-within{border-color:#4f7cf0;box-shadow:0 0 0 3px rgba(79,124,240,.15)}
 .hst-part{border:0;background:transparent;padding:0;margin:0;font:inherit;color:inherit;text-align:center;outline:none;width:24px;min-width:0}
-.hst-part.hst-y{width:52px}
-.hst-part.hst-ap{width:32px}
+.hst-part.hst-y{width:50px}
+.hst-part.hst-ap{width:30px}
 .hst-part::placeholder{color:#b3b3b3}
 .hst-sep{color:#9a9a9a;padding:0 2px}
 .hst-gap{width:8px;flex:none}
@@ -682,13 +682,15 @@ textarea{border-radius:16px}
 .hst-nav:hover{background:#e4e4e4}
 .hst-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
 .hst-dow{font-size:11px;color:#777;padding:4px 0}
-.hst-day{height:34px;border:0;border-radius:50%;background:transparent;font-size:14px;cursor:pointer;color:#222}
-.hst-day:hover:not(:disabled){background:#eee}
-.hst-day[aria-pressed="true"]{background:#4f7cf0;color:#fff}
+.hst-day{width:100%;max-width:36px;aspect-ratio:1;justify-self:center;height:auto;border:0;border-radius:50%;background:transparent;font-size:14px;cursor:pointer;color:#222;padding:0}
+@media (hover:hover){.hst-day:hover:not(:disabled){background:#eee}}
+.hst-day:focus-visible{outline:2px solid #4f7cf0;outline-offset:1px}
+.hst-day[aria-pressed="true"],.hst-day[aria-pressed="true"]:hover:not(:disabled){background:#4f7cf0;color:#fff}
 .hst-day.is-today{box-shadow:inset 0 0 0 1px #4f7cf0}
 .hst-day:disabled{color:#bbb;cursor:default}
-.hst-time{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap}
-.hst-time select{padding:8px;border-radius:10px;border:1px solid #ddd;background:#fafafa;font-size:14px}
+.hst-time{display:flex;gap:6px;align-items:center;margin-top:12px}
+.hst-time>label{flex:none;margin:0 4px 0 0}
+.hst-time select{flex:1 1 0;min-width:0;padding:8px;border-radius:10px;border:1px solid #ddd;background:#fafafa;font-size:14px}
 .hst-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
 .hst-msg{color:#c33333;font-size:13px;margin:8px 0 0}
 .pw-row{position:relative}
@@ -2900,11 +2902,11 @@ function mountHstPicker(hidden,host){
  const part=(k,ph,label)=>'<input type="text" class="hst-part hst-'+k+'" data-part="'+k+'" id="dis-reenable-'+k+'" inputmode="'+(k==="ap"?"text":"numeric")+'" maxlength="'+MAXLEN[k]+'" placeholder="'+ph+'" aria-label="'+label+'" autocomplete="off" spellcheck="false">';
  const sep=t=>'<span class="hst-sep" aria-hidden="true">'+t+'</span>';
  host.innerHTML='<div class="hst-field"><div class="hst-seg" id="dis-reenable-text" role="group" aria-label="Re-enable date and time, Hawaii time">'
-  +part("m","MM","Month")+sep("/")+part("d","DD","Day")+sep("/")+part("y","YYYY","Year")
+  +part("m","--","Month")+sep("/")+part("d","--","Day")+sep("/")+part("y","----","Year")
   +'<span class="hst-gap"></span>'
-  +part("h","hh","Hour")+sep(":")+part("min","mm","Minute")
+  +part("h","--","Hour")+sep(":")+part("min","--","Minute")
   +'<span class="hst-gap"></span>'
-  +part("ap","AM","AM or PM")
+  +part("ap","--","AM or PM")
   +'</div><button type="button" class="hst-cal-btn" id="dis-reenable-btn" aria-label="Open calendar" aria-haspopup="dialog" aria-expanded="false"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M16 3v4M8 3v4M3 10h18"/></svg></button></div><div class="hst-pop" id="dis-reenable-pop" role="dialog" aria-label="Choose re-enable date and time" hidden></div><p class="hst-msg" id="dis-reenable-msg" role="status" hidden></p>';
  const group=host.querySelector(".hst-seg"), parts={}, btn=host.querySelector(".hst-cal-btn"), pop=host.querySelector(".hst-pop"), msg=host.querySelector(".hst-msg");
  group.querySelectorAll("[data-part]").forEach(i=>{parts[i.dataset.part]=i});
@@ -2915,7 +2917,7 @@ function mountHstPicker(hidden,host){
   parts.m.value=pad(sel.m+1);parts.d.value=pad(sel.d);parts.y.value=String(sel.y);
   parts.h.value=pad(((sel.h+11)%12)+1);parts.min.value=pad(sel.min);parts.ap.value=sel.h<12?"AM":"PM";
  };
- const writeValue=p=>{sel=p;hidden.value=p?p.y+"-"+pad(p.m+1)+"-"+pad(p.d)+"T"+pad(p.h)+":"+pad(p.min):"";syncParts()};
+ const writeValue=p=>{sel=p;hidden.value=p?p.y+"-"+pad(p.m+1)+"-"+pad(p.d)+"T"+pad(p.h)+":"+pad(p.min):"";syncParts();if(open&&p&&typeof paintPop==="function"){draft={...p};view={y:p.y,m:p.m};paintPop()}};
  const close=()=>{open=false;pop.hidden=true;btn.setAttribute("aria-expanded","false")};
  const normalise=()=>{
   ["m","d","h","min"].forEach(k=>{if(/^\d$/.test(parts[k].value))parts[k].value="0"+parts[k].value});
