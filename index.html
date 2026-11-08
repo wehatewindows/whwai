@@ -680,11 +680,17 @@ textarea{border-radius:16px}
 .pw-row input{box-sizing:border-box;width:100%;min-width:0;border:1px solid #dedede;border-radius:12px;background:#fafafa;color:#111;padding:10px 48px 10px 12px;font:inherit;outline:none;height:44px;min-height:46px}
 .pw-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:36px;height:36px;border:0;border-radius:50%;background:none;color:#555;display:grid;place-items:center;cursor:pointer}
 .pw-toggle:hover{background:#eee}
-.rule-list{list-style:none;margin:6px 4px 6px;padding:0;display:grid;gap:4px;font-size:12.5px;color:#777}
+.rule-list{list-style:none;margin:0 4px;padding:0;display:grid;gap:4px;font-size:12.5px;color:#777;max-height:0;opacity:0;overflow:hidden;transition:max-height .32s ease,opacity .24s ease,margin .32s ease}
+.rule-list.is-open{margin:6px 4px 6px;max-height:160px;opacity:1}
 .rule-list li{display:flex;align-items:center;gap:7px;transition:color .2s}
 .rule-list li::before{content:"";width:8px;height:8px;border-radius:50%;background:#ccc;flex:none;transition:background .2s}
 .rule-list li.ok{color:#2fa35a}.rule-list li.ok::before{background:#2fa35a}
 .rule-list li.bad{color:#c33333}.rule-list li.bad::before{background:#c33333}
+.consent-row{margin:14px 0 6px}
+.consent-label{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.45;color:#333;cursor:pointer}
+.consent-label input{margin:2px 0 0;flex:none;width:18px;height:18px;accent-color:#4f7cf0}
+.consent-label a{color:#2f5fd6}
+#account-auth-submit:disabled{opacity:.45;cursor:not-allowed}
 </style>
 </head>
 <body class="access-locked">
@@ -2905,7 +2911,7 @@ function enhanceAuthForm(signup){
   const ul=document.createElement("ul");ul.className="rule-list";ul.setAttribute("aria-label","Requirements");
   ul.innerHTML=rules.map((r,i)=>'<li data-i="'+i+'">'+esc(r.label)+'</li>').join("");
   (input.parentElement&&input.parentElement.classList.contains("pw-row")?input.parentElement:input).insertAdjacentElement("afterend",ul);
-  return ()=>{const v=input.value;rules.forEach((r,i)=>{const li=ul.children[i];if(!v){li.className="";return}li.className=r.test(v)?"ok":"bad"})};
+  return ()=>{const v=input.value;ul.classList.toggle("is-open",!!v);rules.forEach((r,i)=>{const li=ul.children[i];if(!v){li.className="";return}li.className=r.test(v)?"ok":"bad"})};
  };
  const userRules=[{label:"3 to 20 characters",test:v=>v.length>=3&&v.length<=20},{label:"Lowercase letters and numbers only",test:v=>/^[a-z0-9]+$/.test(v)}];
  const passRules=[{label:"At least 8 characters",test:v=>v.length>=8},{label:"Matches the confirm password",test:v=>v===pc.value}];
@@ -2914,6 +2920,19 @@ function enhanceAuthForm(signup){
  const all=()=>{paintUser();paintPass();paintConf()};
  [user,pw,pc].forEach(i=>i.addEventListener("input",all));
  all();
+ // Age and terms consent: sign-up stays blocked until it is ticked (client-side; the server does not check it).
+ const form=$("account-auth-form"),submit=$("account-auth-submit");
+ if(!form||!submit)return;
+ const row=document.createElement("div");row.className="consent-row";
+ row.innerHTML='<label class="consent-label"><input type="checkbox" id="account-age-consent"><span>I am 13 or older, and I agree to the <a href="#" data-legal="terms">Terms of Use</a> and <a href="#" data-legal="privacy">Privacy Policy</a>. If I am under 18, I have my parent or guardian\'s permission to use WHWai.</span></label>';
+ const last=pc.closest(".pw-row").nextElementSibling;
+ (last&&last.classList.contains("rule-list")?last:pc.closest(".pw-row")).insertAdjacentElement("afterend",row);
+ const cb=row.querySelector("#account-age-consent");
+ const syncConsent=()=>{submit.disabled=!cb.checked;submit.setAttribute("aria-disabled",String(!cb.checked))};
+ cb.addEventListener("change",syncConsent);syncConsent();
+ // Enter in a field also submits the form, so block it here too (capture runs before the form's own handler)
+ form.addEventListener("submit",e=>{if(!cb.checked){e.preventDefault();e.stopImmediatePropagation()}},true);
+ row.querySelectorAll("[data-legal]").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();openLegalPanel(a.dataset.legal)}));
 }
 function renderAccountAuth(mode){
  currentSettingsView="account-auth";const signup=mode==="signup";$("modal-title").textContent=signup?"Create account":"Sign in";
