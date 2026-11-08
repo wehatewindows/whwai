@@ -437,6 +437,8 @@ html,body{touch-action:manipulation}
 @media (max-width:640px){.side .profile-menu{left:var(--edge);right:var(--edge);width:auto;bottom:124px}}
 .reason-label{display:block;margin:12px 0 6px}
 .gate-reason-row,.gate-reason-text{display:block;margin:0 0 8px}.gate-body p{margin:0 0 8px}.gate-box{margin:10px 0 12px;padding:12px 14px;border-radius:14px}.gate-box strong{display:block;margin:0 0 4px;color:#444;font-size:13px}.gate-box-text{margin:0!important;color:#222;font-size:15px;line-height:1.45}.gate-box-text+.gate-box-text{margin-top:2px!important}.gate-reason-text{color:#555}.gate-reenable{color:#111}.dis-preview{margin:8px 0 0;color:#444}.breach-ack{margin-top:8px}.modal .mcard{max-height:calc(100% - 28px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.jump-bottom{position:absolute;right:16px;bottom:190px;width:40px;height:40px;border-radius:50%;border:1px solid #dedede;background:#fff;color:#222;box-shadow:0 4px 14px rgba(0,0,0,.14);display:grid;place-items:center;cursor:pointer;z-index:5;padding:0}.jump-bottom[hidden]{display:none}.jump-bottom{transition:opacity .16s ease,transform .16s ease}.jump-bottom.is-hidden{opacity:0;pointer-events:none}.jump-bottom:hover{background:#f3f3f3}.chart,.tbl-wrap{margin:8px 0}.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid rgba(127,127,127,.35);border-radius:12px}.msg table{border-collapse:collapse;font-size:13.5px;width:max-content;min-width:100%}.msg th,.msg td{border:1px solid rgba(127,127,127,.35);padding:6px 8px;text-align:left;vertical-align:top;word-break:keep-all;overflow-wrap:normal;white-space:normal}.msg th{font-weight:600}.chart{overflow:hidden;border:1px solid rgba(127,127,127,.35);border-radius:12px;padding:10px 12px 12px;margin:10px 0;color:inherit}.chart{position:relative}.chart figcaption{font-weight:600;font-size:13px;margin-bottom:6px;padding-right:36px}.chart-actions{position:absolute;top:8px;right:8px;z-index:2}.chart-act{display:flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:1px solid #d4d4d4;border-radius:8px;background:#f7f7f7;color:#222;cursor:pointer}.chart-act:hover{background:#e8e8e8}@media (hover:hover){.chart .chart-actions{opacity:0;transition:opacity .15s ease}.chart:hover .chart-actions,.chart:focus-within .chart-actions{opacity:1}}@media (hover:none) and (pointer:coarse){.chart-act,.code-copy{width:40px;height:40px}}.chart-svg{display:block;width:100%;height:auto;max-width:440px;margin:0;color:inherit;text-align:left}.chart-bad{overflow:hidden;border:1px dashed rgba(127,127,127,.5);border-radius:12px;padding:10px 12px;margin:8px 0;text-align:left}.chart-bad p{margin:0 0 8px}.chart,.tbl-wrap,.chart-legend{text-align:left}.chart-svg text{font-size:11px;fill:currentColor}.chart-svg .grid{stroke:currentColor;stroke-opacity:.15}.chart-donut{width:180px}.chart-legend{list-style:none;padding:0;margin:8px 0;display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px}.chart-legend li{display:flex;align-items:center}.swatch{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;flex:none}.chart-data{font-size:12px;margin-top:6px;width:100%}.chart .tbl-wrap{border:0;border-radius:0;margin:10px 0 0}.chart .chart-data th,.chart .chart-data td{border-top:0;border-left:0;border-right:0;border-bottom:1px solid rgba(127,127,127,.35)}.chart .chart-data thead th{border-top:0}.chart .chart-data tbody tr:last-child>*{border-bottom:0}.chart .chart-data tr>*:first-child{border-left:0}.chart .chart-data tr>*:last-child{border-right:0}.chart .chart-data th:first-child,.chart .chart-data td:first-child{border-left:0}.chart-pending{opacity:.7}.reenable-card{background:#f5f5f5;border:1px solid #e6e6e6;border-radius:14px;margin:12px 0 4px;overflow:hidden}.reenable-row{background:transparent;border-radius:0;padding:12px 14px;align-items:center;font-size:14px}.reenable-row small{display:block;color:#6b6b6b;font-size:12px;line-height:1.4;margin-top:2px}.reenable-when{padding:0 14px 14px}.reenable-when[hidden]{display:none}.reenable-when .reason-label{margin-top:2px}
+.browsers-card{margin:10px 0 4px}
+#dis-preset.reason-input{border-radius:999px;padding:11px 40px 11px 18px;-webkit-appearance:none;appearance:none;background-color:#fafafa;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23555' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;background-size:12px 8px;cursor:pointer}
 .reason-input{box-sizing:border-box;width:100%;min-width:0;border:1px solid #dedede;border-radius:12px;background:#fafafa;color:#111;padding:10px 12px;font:inherit;font-size:16px;outline:none;resize:vertical}
 .gate-actions{margin:0 0 12px}.gate-actions[hidden]{display:none}
 .main .site-notice{position:absolute;left:12px;right:12px;top:10px;width:auto;max-width:none;margin:0;border:1px solid rgba(190,210,245,.7);border-radius:14px;background:rgba(232,241,255,.5);-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);z-index:4;padding:10px 16px;text-align:center}
@@ -659,7 +661,11 @@ textarea{border-radius:16px}
 .flag-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .chat-ended-note{text-align:center;margin:16px 0}
 
-.hst-trigger{width:100%;justify-content:flex-start;text-align:left;margin-top:4px}
+.hst-field{display:flex;gap:8px;align-items:center}
+.hst-field .hst-input{flex:1;min-width:0}
+.hst-cal-btn{flex:none;width:44px;height:44px;border:1px solid #dedede;border-radius:12px;background:#fafafa;color:#333;display:grid;place-items:center;cursor:pointer}
+.hst-cal-btn:hover{background:#eee}
+.hst-cal-btn[aria-expanded="true"]{background:#e8efff;border-color:#4f7cf0;color:#2f5fd6}
 .hst-pop{margin-top:8px;padding:12px;border:1px solid #e4e4e4;border-radius:16px;background:#fff}
 .hst-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .hst-head strong{font-size:15px}
@@ -2842,23 +2848,43 @@ function renderSettings(){
 // Writes "YYYY-MM-DDTHH:MM" in HST into the hidden #dis-reenable input, the same format the server already reads.
 const HST_OFFSET_MS=10*3600000;
 function hstNowParts(ms){const d=new Date(ms-HST_OFFSET_MS);return {y:d.getUTCFullYear(),m:d.getUTCMonth(),d:d.getUTCDate(),h:d.getUTCHours(),min:d.getUTCMinutes()}}
-function hstValueText(v){
- const mt=String(v||"").match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/);if(!mt)return "";
- const y=+mt[1],m=+mt[2]-1,d=+mt[3],h=+mt[4],mi=+mt[5];
- const day=new Date(Date.UTC(y,m,d)).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric",timeZone:"UTC"});
- return day+" at "+(((h+11)%12)+1)+":"+String(mi).padStart(2,"0")+" "+(h<12?"AM":"PM")+" HST";
+// Accepts "2026-11-10 9:00 AM", "2026-11-10 21:00", "11/10/2026 9:00 PM", or a date with no time (9:00 AM). Returns null if invalid.
+function parseHstInput(text){
+ const t=String(text||"").trim().replace(/\s+/g," ").toUpperCase().replace(/\s*HST$/,"");
+ let m=t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?: (\d{1,2}):(\d{2}) ?(AM|PM)?)?$/);
+ let y,mo,d,h=9,mi=0,ap;
+ if(m){y=+m[1];mo=+m[2];d=+m[3];ap=m[6];if(m[4]!==undefined){h=+m[4];mi=+m[5]}}
+ else{m=t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?: (\d{1,2}):(\d{2}) ?(AM|PM)?)?$/);if(!m)return null;mo=+m[1];d=+m[2];y=+m[3];ap=m[6];if(m[4]!==undefined){h=+m[4];mi=+m[5]}}
+ if(ap){if(h<1||h>12)return null;h=(h%12)+(ap==="PM"?12:0)}
+ if(h>23||mi>59||mo<1||mo>12||d<1)return null;
+ const dt=new Date(Date.UTC(y,mo-1,d));if(dt.getUTCMonth()!==mo-1||dt.getUTCDate()!==d)return null;
+ return {y:y,m:mo-1,d:d,h:h,min:mi};
 }
 function mountHstPicker(hidden,host){
  const pad=n=>String(n).padStart(2,"0"), nowP=hstNowParts(Date.now()), todayKey=nowP.y*10000+nowP.m*100+nowP.d;
  const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
- const parsed=(v)=>{const mt=String(v||"").match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/);return mt?{y:+mt[1],m:+mt[2]-1,d:+mt[3],h:+mt[4],min:+mt[5]}:null};
- let sel=parsed(hidden.value), draft=null, view=null, open=false;
- host.innerHTML='<button type="button" class="pbtn hst-trigger" id="dis-reenable-btn" aria-haspopup="dialog" aria-expanded="false"></button><div class="hst-pop" id="dis-reenable-pop" role="dialog" aria-label="Choose re-enable date and time" hidden></div><p class="hst-msg" id="dis-reenable-msg" role="status" hidden></p>';
- const btn=host.querySelector(".hst-trigger"),pop=host.querySelector(".hst-pop"),msg=host.querySelector(".hst-msg");
- const paintTrigger=()=>{btn.textContent=sel?hstValueText(hidden.value):"Choose date and time (HST)"};
+ const parsedVal=v=>{const mt=String(v||"").match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/);return mt?{y:+mt[1],m:+mt[2]-1,d:+mt[3],h:+mt[4],min:+mt[5]}:null};
+ const canonText=p=>((p.h+11)%12+1)+":"+pad(p.min)+" "+(p.h<12?"AM":"PM");
+ const fullText=p=>p.y+"-"+pad(p.m+1)+"-"+pad(p.d)+" "+canonText(p);
+ const futureOk=p=>Date.UTC(p.y,p.m,p.d,p.h,p.min)+HST_OFFSET_MS>Date.now()+60000;
+ let sel=parsedVal(hidden.value), draft=null, view=null, open=false;
+ host.innerHTML='<div class="hst-field"><input type="text" class="reason-input hst-input" id="dis-reenable-text" autocomplete="off" spellcheck="false" placeholder="2026-11-10 9:00 AM" aria-label="Re-enable date and time, Hawaii time"><button type="button" class="hst-cal-btn" id="dis-reenable-btn" aria-label="Open calendar" aria-haspopup="dialog" aria-expanded="false">'+'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>'+'</button></div><div class="hst-pop" id="dis-reenable-pop" role="dialog" aria-label="Choose re-enable date and time" hidden></div><p class="hst-msg" id="dis-reenable-msg" role="status" hidden></p>';
+ const input=host.querySelector("#dis-reenable-text"),btn=host.querySelector(".hst-cal-btn"),pop=host.querySelector(".hst-pop"),msg=host.querySelector(".hst-msg");
  const showMsg=t=>{msg.textContent=t||"";msg.hidden=!t};
- const commit=()=>{hidden.value=draft.y+"-"+pad(draft.m+1)+"-"+pad(draft.d)+"T"+pad(draft.h)+":"+pad(draft.min)};
+ const syncInput=()=>{input.value=sel?fullText(sel):""};
+ const writeValue=p=>{sel=p;hidden.value=p?p.y+"-"+pad(p.m+1)+"-"+pad(p.d)+"T"+pad(p.h)+":"+pad(p.min):"";syncInput()};
  const close=()=>{open=false;pop.hidden=true;btn.setAttribute("aria-expanded","false")};
+ const applyText=()=>{
+  const raw=input.value.trim();
+  if(!raw){writeValue(null);showMsg("");return}
+  const p=parseHstInput(raw);
+  if(!p){showMsg("Type a date and time like 2026-11-10 9:00 AM, or use the calendar.");return}
+  if(!futureOk(p)){showMsg("Pick a time at least a minute from now.");return}
+  writeValue(p);showMsg("");
+ };
+ input.addEventListener("change",applyText);
+ input.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();applyText()}});
+ input.addEventListener("input",()=>showMsg(""));
  const paintPop=()=>{
   const first=new Date(Date.UTC(view.y,view.m,1)).getUTCDay(), days=new Date(Date.UTC(view.y,view.m+1,0)).getUTCDate();
   const cells=[];for(let i=0;i<first;i++)cells.push('<span></span>');
@@ -2876,21 +2902,21 @@ function mountHstPicker(hidden,host){
   pop.querySelectorAll(".hst-nav").forEach(b=>b.onclick=()=>{let mm=view.m+Number(b.dataset.nav),yy=view.y;if(mm<0){mm=11;yy--}if(mm>11){mm=0;yy++}view={y:yy,m:mm};paintPop()});
   pop.querySelectorAll(".hst-day").forEach(b=>b.onclick=()=>{draft.y=view.y;draft.m=view.m;draft.d=Number(b.dataset.day);paintPop()});
   const sync=()=>{const h12=Number(pop.querySelector('[data-part="hour"]').value),ap=pop.querySelector('[data-part="ampm"]').value;draft.h=(h12%12)+(ap==="PM"?12:0);draft.min=Number(pop.querySelector('[data-part="min"]').value)};
-  pop.querySelectorAll("select").forEach(x=>x.onchange=()=>{sync();showMsg("")});
-  pop.querySelector('[data-act="cancel"]').onclick=()=>{close();showMsg("")};
+  pop.querySelectorAll("select").forEach(x=>x.onchange=()=>{sync()});
+  pop.querySelector('[data-act="cancel"]').onclick=()=>close();
   pop.querySelector('[data-act="set"]').onclick=()=>{
-   sync();const when=Date.UTC(draft.y,draft.m,draft.d,draft.h,draft.min)+HST_OFFSET_MS;
-   if(when<=Date.now()+60000){showMsg("Pick a time at least a minute from now.");return}
-   sel={...draft};commit();paintTrigger();showMsg("");close();
+   sync();
+   if(!futureOk(draft)){showMsg("Pick a time at least a minute from now.");return}
+   writeValue({...draft});showMsg("");close();
   };
  };
  btn.onclick=()=>{
   if(open){close();return}
-  const tm=new Date(Date.UTC(nowP.y,nowP.m,nowP.d+1)),base=sel||{y:tm.getUTCFullYear(),m:tm.getUTCMonth(),d:tm.getUTCDate(),h:9,min:0};
+  const tm=new Date(Date.UTC(nowP.y,nowP.m,nowP.d+1)), base=sel?{...sel}:{y:tm.getUTCFullYear(),m:tm.getUTCMonth(),d:tm.getUTCDate(),h:9,min:0};
   draft={...base};view={y:draft.y,m:draft.m};open=true;pop.hidden=false;btn.setAttribute("aria-expanded","true");paintPop();
  };
- host._refresh=()=>{sel=parsed(hidden.value);paintTrigger();close();showMsg("")};
- paintTrigger();
+ host._refresh=()=>{sel=parsedVal(hidden.value);syncInput();close();showMsg("")};
+ syncInput();
 }
 
 // ---- Sign-up: live rules under the fields and show/hide toggles ----
@@ -3445,7 +3471,7 @@ function disableFormHtml(cur){
  const opts=DISABLE_PRESETS.map((p,i)=>'<optgroup label="'+escapeAttr(p.title)+'">'+p.subs.map((s,j)=>'<option value="'+i+'-'+j+'"'+(sel===i+"-"+j?" selected":"")+'>'+esc(s.sub)+'</option>').join("")+'</optgroup>').join("")+'<option value="custom"'+(sel==="custom"?" selected":"")+'>Custom reason</option>';
  const custom=sel==="custom"?String(c.text||""):"";
  const re=c.reenableAt?new Date(Number(c.reenableAt)+36e5*10).toISOString().slice(0,16):"";
- return '<div class="disable-form"><label class="sm reason-label" for="dis-preset">Reason</label><select id="dis-preset" class="reason-input">'+opts+'</select><p class="sm dis-preview" id="dis-preview"></p><label class="sm reason-label" id="dis-custom-label" for="dis-custom" hidden>Custom reason (shown to the user, up to 200 characters)</label><textarea id="dis-custom" class="reason-input" rows="3" maxlength="200" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true" hidden>'+esc(custom)+'</textarea><div class="reenable-card"><label class="switch-row reenable-row"><span><strong>Re-enable automatically</strong><small>Turn on to choose a date and time in HST. Off keeps the '+(disableSubject==="browser"?"browser":"account")+' disabled until you enable it.</small></span><input type="checkbox" id="dis-reenable-on"'+(re?" checked":"")+'><span class="switch-ui"></span></label><div class="reenable-when" id="dis-reenable-wrap"'+(re?"":" hidden")+'><label class="sm reason-label" for="dis-reenable-btn">Re-enable at (HST)</label><input type="hidden" id="dis-reenable" value="'+escapeAttr(re)+'"><div id="dis-picker"></div></div></div>';
+ return '<div class="disable-form"><label class="sm reason-label" for="dis-preset">Reason</label><select id="dis-preset" class="reason-input">'+opts+'</select><p class="sm dis-preview" id="dis-preview"></p><label class="sm reason-label" id="dis-custom-label" for="dis-custom" hidden>Custom reason (shown to the user, up to 200 characters)</label><textarea id="dis-custom" class="reason-input" rows="3" maxlength="200" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true" hidden>'+esc(custom)+'</textarea><div class="reenable-card"><label class="switch-row reenable-row"><span><strong>Re-enable automatically</strong><small>Turn on to choose a date and time in HST. Off keeps the '+(disableSubject==="browser"?"browser":"account")+' disabled until you enable it.</small></span><input type="checkbox" id="dis-reenable-on"'+(re?" checked":"")+'><span class="switch-ui"></span></label><div class="reenable-when" id="dis-reenable-wrap"'+(re?"":" hidden")+'><label class="sm reason-label" for="dis-reenable-text">Re-enable at (HST)</label><input type="hidden" id="dis-reenable" value="'+escapeAttr(re)+'"><div id="dis-picker"></div></div></div>';
 }
 function wireDisableForm(){
  const sel=$("dis-preset"),prev=$("dis-preview"),custom=$("dis-custom"),lab=$("dis-custom-label");
@@ -3469,7 +3495,7 @@ function adminReasonHtml(i){
 async function runDisableAction(action,targetId){
  const edit=action==="edit_reason";
  const row=(adminData&&adminData.accounts||[]).find(a=>a.id===targetId),cur=row&&row.disabledInfo?row.disabledInfo:null;
- const accepted=await appConfirm({title:edit?"Edit the disable reason?":"Disable account?",message:edit?"The account stays disabled. The user sees the updated reason on their disabled screen.":"This account will no longer be able to use WHWai. The user sees the reason, sub-reason and any re-enable time you set.",confirmLabel:edit?"Save reason":"Disable",danger:!edit,extraHtml:disableFormHtml(cur)+(edit?"":(row&&row.role==="admin"?adminDisableNoteHtml(row):"")+'<label class="check-row acct-browsers-row"><input type="checkbox" id="dis-browsers"> Also disable the browsers this account is signed into, until the same re-enable time</label>'),onRender:wireDisableForm,radios:edit?null:DISABLE_DATA_RADIOS});
+ const accepted=await appConfirm({title:edit?"Edit the disable reason?":"Disable account?",message:edit?"The account stays disabled. The user sees the updated reason on their disabled screen.":"This account will no longer be able to use WHWai. The user sees the reason, sub-reason and any re-enable time you set.",confirmLabel:edit?"Save reason":"Disable",danger:!edit,extraHtml:disableFormHtml(cur)+(edit?"":(row&&row.role==="admin"?adminDisableNoteHtml(row):"")+'<div class="reenable-card browsers-card"><label class="switch-row reenable-row"><span><strong>Disable browsers</strong><small>Blocks every browser this account is signed into. Those browsers unblock at the re-enable time, if you set one.</small></span><input type="checkbox" id="dis-browsers"><span class="switch-ui"></span></label></div>'),onRender:wireDisableForm,radios:edit?null:DISABLE_DATA_RADIOS});
  if(!accepted){if(!modal.hidden&&!closingModal)renderAdminPanel("accounts");return}
  if(modal.hidden||currentSettingsView!=="app-confirm")return;
  const picked=document.querySelector('input[name="app-confirm-radio"]:checked');const dataMode=picked?picked.value:"keep";
