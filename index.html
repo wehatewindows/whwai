@@ -326,7 +326,7 @@ body.access-locked .frame{filter:blur(6px);pointer-events:none;user-select:none}
 
 .account-form .data-toolbar{margin-top:6px}
 .check-row{display:flex;align-items:center;gap:9px;padding:8px 10px;background:#f5f5f5;border-radius:10px;color:#333;font-size:13.5px}
-.check-row input{width:17px;height:17px;flex:none;accent-color:#6aa0ff}
+.check-row input{flex:none}
 .admin-nav{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 13px}
 .admin-nav .pbtn{flex:none;white-space:nowrap;font-size:12.5px;padding:8px 10px}
 .admin-nav .pbtn.active{background:#dce7ff;color:#2458b8;box-shadow:inset 0 0 0 1px #c8d9ff}
@@ -472,7 +472,7 @@ input,textarea,select,[contenteditable="true"],.field textarea,.access-form inpu
 .switch-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px;background:#f5f5f5;border-radius:10px;color:#333;font-size:13.5px;cursor:pointer}.switch-row input{position:absolute;opacity:0;width:1px;height:1px}.switch-ui{position:relative;flex:none;width:46px;height:28px;border-radius:999px;background:#cfcfcf;transition:background .15s}.switch-ui::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .15s}.switch-row input:checked+.switch-ui{background:#2f6bff}.switch-row input:checked+.switch-ui::after{transform:translateX(18px)}.switch-row input:focus-visible+.switch-ui{outline:2px solid #2f6bff;outline-offset:2px}
 .whatsnew-admin-toggle{display:inline-flex;cursor:pointer;list-style:none;align-items:center}.whatsnew-admin-toggle::after{content:"Edit";margin-left:10px;font-size:13px;opacity:.7}.whatsnew-admin[open] .whatsnew-admin-toggle::after{content:"Close"}.whatsnew-admin-toggle::-webkit-details-marker{display:none}.whatsnew-admin[open] .whatsnew-admin-toggle{background:#cfcfcf}.whatsnew-admin-body{display:grid;gap:8px;margin-top:10px}
 .wn-ok{width:100%;justify-content:center;min-height:46px}
-.export-scope{border:0;margin:12px 0 0;padding:0;min-width:0;display:grid;gap:8px}.export-scope legend{padding:0;margin:0 0 6px}.export-picks{display:grid;gap:6px;max-height:220px;overflow:auto;margin:10px 0 0;padding:4px}.export-picks[hidden]{display:none}.export-pick{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid #e2e2e2;border-radius:12px;background:#fafafa;font-size:14px;cursor:pointer}.export-pick input{width:18px;height:18px;flex:none;accent-color:#2f6bff}.export-pick span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.export-scope{border:0;margin:12px 0 0;padding:0;min-width:0;display:grid;gap:8px}.export-scope legend{padding:0;margin:0 0 6px}.export-picks{display:grid;gap:6px;max-height:220px;overflow:auto;margin:10px 0 0;padding:4px}.export-picks[hidden]{display:none}.export-pick{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid #e2e2e2;border-radius:12px;background:#fafafa;font-size:14px;cursor:pointer}.export-pick input{flex:none}.export-pick span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* Text fields: no blue focus rings or borders */
 input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,textarea:focus,select:focus{outline:none!important;box-shadow:none!important;border-color:#9a9a9a!important}
 .wn-ver{margin:6px 0 0;font-size:12.5px;color:#777}
@@ -715,7 +715,15 @@ textarea{border-radius:16px}
 .rule-list li.bad{color:#c33333}.rule-list li.bad::before{background:#c33333}
 .consent-row{margin:14px 0 6px}
 .consent-label{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.45;color:#333;cursor:pointer}
-.consent-label input{margin:2px 0 0;flex:none;width:18px;height:18px;accent-color:#4f7cf0}
+.consent-label input{margin:2px 0 0;flex:none}
+/* One checkbox style for the whole site. Switches (.switch-row) keep their own look. */
+input[type=checkbox]:not(.switch-row *){-webkit-appearance:none;appearance:none;width:18px;height:18px;min-width:18px;min-height:18px;max-height:18px;padding:0;align-self:center;flex:none;margin:0;border:1.5px solid #b8b8b8;border-radius:5px;background:#fff;display:inline-grid;place-content:center;cursor:pointer;transition:background-color .14s ease,border-color .14s ease;vertical-align:middle}
+input[type=checkbox]:not(.switch-row *)::after{content:"";width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:translateY(-1px) rotate(45deg) scale(0);transition:transform .14s ease}
+input[type=checkbox]:not(.switch-row *):checked{background:#2f6bff;border-color:#2f6bff}
+input[type=checkbox]:not(.switch-row *):checked::after{transform:translateY(-1px) rotate(45deg) scale(1)}
+input[type=checkbox]:not(.switch-row *):focus-visible{outline:2px solid #4f7cf0;outline-offset:2px}
+input[type=checkbox]:not(.switch-row *):disabled{opacity:.45;cursor:default}
+@media (prefers-reduced-motion:reduce){input[type=checkbox]:not(.switch-row *),input[type=checkbox]:not(.switch-row *)::after{transition:none!important}}
 .consent-label a{color:#2f5fd6}
 #account-auth-submit:disabled{opacity:.45;cursor:not-allowed}
 </style>
