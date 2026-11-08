@@ -153,7 +153,7 @@ button:focus-visible,.chat:focus-visible,.model:focus-visible{outline:2px solid 
 .modal .mcard{animation:menuIn .2s cubic-bezier(.2,.7,.2,1) both;transform-origin:center}
 .modal.closing{animation:modalFadeOut .16s ease-in both;pointer-events:none}
 .modal.closing .mcard{animation:menuOut .16s ease-in both}
-#mbody.menu-content-enter{animation:menuScreenIn .17s ease-out both}
+#mbody.menu-content-enter,#admin-content.menu-content-enter{animation:menuScreenIn .17s ease-out both}
 @keyframes modalFadeIn{from{opacity:0}to{opacity:1}}
 @keyframes modalFadeOut{from{opacity:1}to{opacity:0}}
 @keyframes menuIn{from{opacity:0;transform:translateY(7px) scale(.993)}to{opacity:1;transform:translateY(0) scale(1)}}
@@ -188,7 +188,7 @@ button:focus-visible,.chat:focus-visible,.model:focus-visible{outline:2px solid 
 
 @keyframes typingDot{0%,60%,100%{transform:translateY(0);opacity:.38}30%{transform:translateY(-4px);opacity:1}}
 #export-data.cooldown{letter-spacing:.06em;font-variant-numeric:tabular-nums}
-@media (prefers-reduced-motion:reduce){.modal,.modal .mcard,.modal.closing,.modal.closing .mcard,.app-confirm-overlay,.app-confirm-card,#mbody.menu-content-enter,.fresh,.orb.think,.sync-spinner{animation:none!important;transition:none!important}}
+@media (prefers-reduced-motion:reduce){.modal,.modal .mcard,.modal.closing,.modal.closing .mcard,.app-confirm-overlay,.app-confirm-card,#mbody.menu-content-enter,#admin-content.menu-content-enter,.fresh,.orb.think,.sync-spinner{animation:none!important;transition:none!important}}
 
 
 
@@ -3171,7 +3171,7 @@ function renderAdminPanel(tab,query){
  currentSettingsView="admin";if(tab&&tab!==adminTab){adminFilterOpen=null;if(tab==="usage")adminUsageView="summary"}if(tab)adminTab=tab;if(query!=null)adminQuery=query;
  const generation=++adminPanelGeneration;
  $("modal-title").textContent="Admin panel";
- mbody.innerHTML=`<div class="admin-nav">${[["site","Site controls"],["accounts","Accounts"],["flags","Flags"],["usage","Usage"],["audit","Audit log"]].map(t=>`<button type="button" class="pbtn ${adminTab===t[0]?"active":""}" data-admin-tab="${t[0]}">${t[1]}</button>`).join("")}</div><div id="admin-content" aria-live="polite"></div><div class="data-toolbar"><button type="button" class="pbtn" id="admin-refresh">Refresh</button><button type="button" class="pbtn" id="admin-back">Back to Settings</button></div>`;
+ mbody.innerHTML=`<div class="admin-nav">${[["site","Site controls"],["accounts","Accounts"],["flags","Flags"],["usage","Usage"],["audit","Audit log"]].map(t=>`<button type="button" class="pbtn ${adminTab===t[0]?"active":""}" data-admin-tab="${t[0]}">${t[1]}</button>`).join("")}</div><div id="admin-content" aria-live="polite"></div><div class="data-toolbar"><button type="button" class="pbtn" id="admin-back">Back to Settings</button><button type="button" class="pbtn" id="admin-refresh">Refresh</button></div>`;
  mbody.querySelectorAll("[data-admin-tab]").forEach(b=>b.onclick=()=>renderAdminPanel(b.dataset.adminTab));
  $("admin-refresh").onclick=()=>refreshAdmin();syncAdminBack();
  if(adminData){paintAdminTab();if(Date.now()-adminDataAt>60000)refreshAdmin();return}
@@ -3472,7 +3472,8 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&acctMenuId!==null){
 window.addEventListener("scroll",()=>{if(acctMenuId!==null)closeAcctMenu()},{capture:true,passive:true});
 window.addEventListener("resize",()=>{if(acctMenuId!==null)closeAcctMenu()});
 let adminUsageView="summary",adminUsersUsage=null,adminUsersLoading=null,adminUsageQuery="";
-function syncAdminBack(){const bk=$("admin-back");if(!bk)return;if(adminTab==="usage"&&adminUsageView==="users"){bk.textContent="Back";bk.onclick=()=>{adminUsageView="summary";paintAdminTab()}}else{bk.textContent="Back to Settings";bk.onclick=renderSettings}}
+function syncAdminBack(){const bk=$("admin-back");if(!bk)return;if(adminTab==="usage"&&adminUsageView==="users"){bk.textContent="Back";bk.onclick=()=>{adminUsageView="summary";paintAdminTab();animateAdminContent()}}else{bk.textContent="Back to Settings";bk.onclick=renderSettings}}
+function animateAdminContent(){const box=$("admin-content");if(!box)return;box.classList.remove("menu-content-enter");void box.offsetWidth;box.classList.add("menu-content-enter")}
 function fmtTok(n){return (Number(n)||0).toLocaleString("en-US")}
 function fmtTokShort(n){n=Number(n)||0;if(n>=1e6)return (n/1e6).toFixed(n>=1e7?0:1)+"M";if(n>=1e3)return (n/1e3).toFixed(n>=1e4?0:1)+"k";return String(n)}
 function fmtHstWhen(ms){return new Date(ms).toLocaleString("en-US",{timeZone:"Pacific/Honolulu",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})+" HST"}
@@ -3482,8 +3483,8 @@ function paintAdminUsage(box){
  const r=(adminData&&adminData.usage)||{},t=r.today||{},w=r.week||{};
  box.innerHTML=`<div class="admin-stat-grid"><div class="admin-stat"><span>Requests today</span><strong>${Number(t.total)||0}</strong></div><div class="admin-stat"><span>Requests in 7 days</span><strong>${Number(w.total)||0}</strong></div><div class="admin-stat"><span>Accounts</span><strong>${Number(r.accountCount)||0}</strong></div><div class="admin-stat"><span>Failed sign-ins today</span><strong>${Number(t.failedSignins)||0}</strong></div><div class="admin-stat"><span>Guest requests today</span><strong>${Number(t.guests)||0}</strong></div><div class="admin-stat"><span>Account requests today</span><strong>${Number(t.accounts)||0}</strong></div></div>`
   +`<h3 class="usage-sub">Groq tokens</h3><div class="usage-tok-grid"><div class="usage-tok-row usage-tok-head"><span></span><span>Input</span><span>Output</span><span>Total</span></div>${tokenRow("Today",t.inputTokens,t.outputTokens)}${tokenRow("Last 7 days",w.inputTokens,w.outputTokens)}</div>`
-  +`<div class="data-toolbar"><button type="button" class="pbtn" id="usage-by-user">By user, all time</button></div>`;
- box.querySelector("#usage-by-user").onclick=()=>{adminUsersUsage=null;adminUsageView="users";paintAdminUsage(box)};
+  +`<div class="data-toolbar"><button type="button" class="pbtn" id="usage-by-user">Per user usage</button></div>`;
+ box.querySelector("#usage-by-user").onclick=()=>{adminUsersUsage=null;adminUsageView="users";paintAdminUsage(box);animateAdminContent()};
  syncAdminBack();
 }
 function paintAdminUsageUsers(box){
