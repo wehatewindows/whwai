@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.github.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>WHWai</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -476,6 +476,8 @@ input,textarea,select,[contenteditable="true"],.field textarea,.access-form inpu
 /* Text fields: no blue focus rings or borders */
 input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,textarea:focus,select:focus{outline:none!important;box-shadow:none!important;border-color:#9a9a9a!important}
 .wn-ver{margin:6px 0 0;font-size:12.5px;color:#777}
+.wn-ver-btn{display:inline-block;cursor:pointer;border-radius:6px;padding:2px 4px;margin-left:-4px;-webkit-tap-highlight-color:transparent}
+.wn-ver-btn:focus-visible{outline:2px solid #4f7cf0;outline-offset:2px}
 .masked-field{-webkit-text-security:disc}
 /* Desktop: keep the banner clear of the sidebar reopen button when the sidebar is collapsed */
 @media (min-width:641px){.frame.collapsed .main .site-notice{left:52px}}
@@ -2829,6 +2831,26 @@ function applyLoginChats(result){
  else if(!modal.hidden&&currentSettingsView==="account-auth")renderAccount();
 }
 function showAccountAuthError(message){const el=mbody.querySelector("#account-auth-error");if(el){el.textContent=message||"The account action could not be completed.";el.hidden=false}else setMsg(message)}
+let buildIdCache="",buildIdLoading=null,buildIdShown=false;
+// Short ID of the latest commit on main (the version the app is built from). Public GitHub API, no user data sent.
+function loadBuildId(){
+ if(buildIdCache)return Promise.resolve(buildIdCache);
+ if(!buildIdLoading)buildIdLoading=fetch("https://api.github.com/repos/wehatewindows/whwai/commits/main",{headers:{Accept:"application/vnd.github+json"}})
+  .then(r=>{if(!r.ok)throw new Error("status "+r.status);return r.json()})
+  .then(j=>{const sha=String(j&&j.sha||"");if(!/^[0-9a-f]{40}$/.test(sha))throw new Error("bad id");buildIdCache=sha.slice(0,7);return buildIdCache})
+  .finally(()=>{buildIdLoading=null});
+ return buildIdLoading;
+}
+async function toggleBuildId(){
+ const el=document.getElementById("settings-ver");if(!el||!whatsNewCfg)return;
+ const base=String(whatsNewCfg.version);
+ if(buildIdShown){buildIdShown=false;el.textContent=base;el.setAttribute("aria-expanded","false");return}
+ el.setAttribute("aria-expanded","true");
+ let label;
+ try{label=await loadBuildId()}catch(e){label="unavailable"}
+ const now=document.getElementById("settings-ver");if(!now)return;
+ buildIdShown=true;now.textContent=base+" ("+label+")";
+}
 function renderSettings(){
  currentSettingsView="settings";if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}
  $("modal-title").textContent="Settings";
@@ -2841,13 +2863,14 @@ function renderSettings(){
   <h3>Data & privacy</h3><p class="sm">Back up, import, or remove chats saved in this browser.</p><button class="pbtn data-manage-button" id="data-tools-open" type="button"><span class="manage-icon">${ic('<path d="M4 5h16v14H4z"/><path d="M8 9h8M8 12h8M8 15h5"/>',17)}</span><span>Manage your data</span></button>${confirmDeleteEnabled()?"":'<button type="button" class="subtle-link" id="restore-delete-confirm">Ask before deleting chats again</button>'}
   ${signed&&user.role==="admin"?`<h3>Administration</h3><button class="pbtn data-manage-button" id="admin-open" type="button"><span class="manage-icon">${ic('<path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z"/>',17)}</span><span>Admin panel</span></button>`:""}
   ${stimOn?stimSettingsHtml():""}
-  <p class="sm" id="s-msg" role="status">${esc(smsg)}</p><div class="privacy-row"><a href="#" class="privacy-link" id="privacy-open">Privacy Policy</a><a href="#" class="privacy-link" id="terms-open">Terms of Use</a><a href="#" class="privacy-link" id="whatsnew-open">What's new</a>${accessRequired?'<button type="button" class="lock-link" id="lock-whwai-now">Lock WHWai</button>':''}</div>${whatsNewCfg&&whatsNewCfg.version?'<p class="wn-ver">'+esc(String(whatsNewCfg.version))+'</p>':''}`;
+  <p class="sm" id="s-msg" role="status">${esc(smsg)}</p><div class="privacy-row"><a href="#" class="privacy-link" id="privacy-open">Privacy Policy</a><a href="#" class="privacy-link" id="terms-open">Terms of Use</a><a href="#" class="privacy-link" id="whatsnew-open">What's new</a>${accessRequired?'<button type="button" class="lock-link" id="lock-whwai-now">Lock WHWai</button>':''}</div>${whatsNewCfg&&whatsNewCfg.version?'<p class="wn-ver wn-ver-btn" id="settings-ver" role="button" tabindex="0" aria-expanded="false" title="Tap to show the build ID">'+esc(String(whatsNewCfg.version))+'</p>':''}`;
  const q=id=>mbody.querySelector("#"+id);
  if(q("account-open"))q("account-open").onclick=renderAccount;
  if(q("account-signin"))q("account-signin").onclick=()=>renderAccountAuth("login");
  if(q("account-signup"))q("account-signup").onclick=()=>renderAccountAuth("signup");
  q("data-tools-open").onclick=renderDataManagement;{const st=q("stim-toggle");if(st)st.onchange=()=>{if(!st.checked){setStimulation(false);renderSettings()}};const ss=q("stim-sound");if(ss)ss.onchange=()=>{stimSound=ss.checked}}{const rd=q("restore-delete-confirm");if(rd)rd.onclick=()=>{setConfirmDelete(true);toast("Delete confirmation is back on.");renderSettings()}}q("privacy-open").onclick=e=>{e.preventDefault();renderPrivacyPolicy()};q("terms-open").onclick=e=>{e.preventDefault();renderTerms()};q("whatsnew-open").onclick=e=>{e.preventDefault();closeSettings();setTimeout(()=>showWhatsNewIfNeeded(true),320)};
  if(q("admin-open"))q("admin-open").onclick=()=>renderAdminPanel("site");
+ buildIdShown=false;{const sv=q("settings-ver");if(sv){sv.onclick=toggleBuildId;sv.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();toggleBuildId()}}}}
  if(q("lock-whwai-now"))q("lock-whwai-now").onclick=()=>{closeSettings();side(false);lockEarlyAccess(true)};
 }
 
