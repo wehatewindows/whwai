@@ -658,6 +658,33 @@ textarea{border-radius:16px}
 .beta-pill{top:0!important;display:inline-flex!important;align-items:center;justify-content:center;line-height:1!important;padding:calc(.3em + .5px) .7em calc(.3em - .5px)!important;vertical-align:middle}
 .flag-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .chat-ended-note{text-align:center;margin:16px 0}
+
+.hst-trigger{width:100%;justify-content:flex-start;text-align:left;margin-top:4px}
+.hst-pop{margin-top:8px;padding:12px;border:1px solid #e4e4e4;border-radius:16px;background:#fff}
+.hst-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.hst-head strong{font-size:15px}
+.hst-nav{width:32px;height:32px;border:0;border-radius:50%;background:#f0f0f0;font-size:18px;cursor:pointer;color:#333}
+.hst-nav:hover{background:#e4e4e4}
+.hst-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.hst-dow{font-size:11px;color:#777;padding:4px 0}
+.hst-day{height:34px;border:0;border-radius:50%;background:transparent;font-size:14px;cursor:pointer;color:#222}
+.hst-day:hover:not(:disabled){background:#eee}
+.hst-day[aria-pressed="true"]{background:#4f7cf0;color:#fff}
+.hst-day.is-today{box-shadow:inset 0 0 0 1px #4f7cf0}
+.hst-day:disabled{color:#bbb;cursor:default}
+.hst-time{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.hst-time select{padding:8px;border-radius:10px;border:1px solid #ddd;background:#fafafa;font-size:14px}
+.hst-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+.hst-msg{color:#c33333;font-size:13px;margin:8px 0 0}
+.pw-row{position:relative}
+.pw-row input{box-sizing:border-box;width:100%;min-width:0;border:1px solid #dedede;border-radius:12px;background:#fafafa;color:#111;padding:10px 48px 10px 12px;font:inherit;outline:none;height:44px;min-height:46px}
+.pw-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:36px;height:36px;border:0;border-radius:50%;background:none;color:#555;display:grid;place-items:center;cursor:pointer}
+.pw-toggle:hover{background:#eee}
+.rule-list{list-style:none;margin:6px 4px 6px;padding:0;display:grid;gap:4px;font-size:12.5px;color:#777}
+.rule-list li{display:flex;align-items:center;gap:7px;transition:color .2s}
+.rule-list li::before{content:"";width:8px;height:8px;border-radius:50%;background:#ccc;flex:none;transition:background .2s}
+.rule-list li.ok{color:#2fa35a}.rule-list li.ok::before{background:#2fa35a}
+.rule-list li.bad{color:#c33333}.rule-list li.bad::before{background:#c33333}
 </style>
 </head>
 <body class="access-locked">
@@ -2804,12 +2831,96 @@ function renderSettings(){
  if(q("admin-open"))q("admin-open").onclick=()=>renderAdminPanel("site");
  if(q("lock-whwai-now"))q("lock-whwai-now").onclick=()=>{closeSettings();side(false);lockEarlyAccess(true)};
 }
+
+// ---- Hawaii-time date and time picker (admin disable dialog) ----
+// Writes "YYYY-MM-DDTHH:MM" in HST into the hidden #dis-reenable input, the same format the server already reads.
+const HST_OFFSET_MS=10*3600000;
+function hstNowParts(ms){const d=new Date(ms-HST_OFFSET_MS);return {y:d.getUTCFullYear(),m:d.getUTCMonth(),d:d.getUTCDate(),h:d.getUTCHours(),min:d.getUTCMinutes()}}
+function hstValueText(v){
+ const mt=String(v||"").match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/);if(!mt)return "";
+ const y=+mt[1],m=+mt[2]-1,d=+mt[3],h=+mt[4],mi=+mt[5];
+ const day=new Date(Date.UTC(y,m,d)).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric",timeZone:"UTC"});
+ return day+" at "+(((h+11)%12)+1)+":"+String(mi).padStart(2,"0")+" "+(h<12?"AM":"PM")+" HST";
+}
+function mountHstPicker(hidden,host){
+ const pad=n=>String(n).padStart(2,"0"), nowP=hstNowParts(Date.now()), todayKey=nowP.y*10000+nowP.m*100+nowP.d;
+ const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+ const parsed=(v)=>{const mt=String(v||"").match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/);return mt?{y:+mt[1],m:+mt[2]-1,d:+mt[3],h:+mt[4],min:+mt[5]}:null};
+ let sel=parsed(hidden.value), draft=null, view=null, open=false;
+ host.innerHTML='<button type="button" class="pbtn hst-trigger" id="dis-reenable-btn" aria-haspopup="dialog" aria-expanded="false"></button><div class="hst-pop" id="dis-reenable-pop" role="dialog" aria-label="Choose re-enable date and time" hidden></div><p class="hst-msg" id="dis-reenable-msg" role="status" hidden></p>';
+ const btn=host.querySelector(".hst-trigger"),pop=host.querySelector(".hst-pop"),msg=host.querySelector(".hst-msg");
+ const paintTrigger=()=>{btn.textContent=sel?hstValueText(hidden.value):"Choose date and time (HST)"};
+ const showMsg=t=>{msg.textContent=t||"";msg.hidden=!t};
+ const commit=()=>{hidden.value=draft.y+"-"+pad(draft.m+1)+"-"+pad(draft.d)+"T"+pad(draft.h)+":"+pad(draft.min)};
+ const close=()=>{open=false;pop.hidden=true;btn.setAttribute("aria-expanded","false")};
+ const paintPop=()=>{
+  const first=new Date(Date.UTC(view.y,view.m,1)).getUTCDay(), days=new Date(Date.UTC(view.y,view.m+1,0)).getUTCDate();
+  const cells=[];for(let i=0;i<first;i++)cells.push('<span></span>');
+  for(let d=1;d<=days;d++){
+   const key=view.y*10000+view.m*100+d, past=key<todayKey, isSel=draft&&draft.y===view.y&&draft.m===view.m&&draft.d===d, isToday=key===todayKey;
+   cells.push('<button type="button" class="hst-day'+(isToday?' is-today':'')+'" data-day="'+d+'" aria-pressed="'+(isSel?'true':'false')+'"'+(past?' disabled':'')+'>'+d+'</button>');
+  }
+  const hour12=((draft.h+11)%12)+1, ampm=draft.h<12?"AM":"PM";
+  const hours=[1,2,3,4,5,6,7,8,9,10,11,12].map(x=>'<option value="'+x+'"'+(x===hour12?' selected':'')+'>'+x+'</option>').join("");
+  const mins=[0,15,30,45].map(x=>'<option value="'+x+'"'+(x===draft.min?' selected':'')+'>'+pad(x)+'</option>').join("");
+  pop.innerHTML='<div class="hst-head"><button type="button" class="hst-nav" data-nav="-1" aria-label="Previous month">‹</button><strong>'+MONTHS[view.m]+' '+view.y+'</strong><button type="button" class="hst-nav" data-nav="1" aria-label="Next month">›</button></div>'
+   +'<div class="hst-grid">'+["Su","Mo","Tu","We","Th","Fr","Sa"].map(x=>'<span class="hst-dow">'+x+'</span>').join("")+cells.join("")+'</div>'
+   +'<div class="hst-time"><label class="sm">Time (HST)</label><select data-part="hour" aria-label="Hour">'+hours+'</select><span>:</span><select data-part="min" aria-label="Minute">'+mins+'</select><select data-part="ampm" aria-label="AM or PM"><option value="AM"'+(ampm==="AM"?' selected':'')+'>AM</option><option value="PM"'+(ampm==="PM"?' selected':'')+'>PM</option></select></div>'
+   +'<div class="hst-actions"><button type="button" class="pbtn" data-act="cancel">Cancel</button><button type="button" class="pbtn active" data-act="set">Set time</button></div>';
+  pop.querySelectorAll(".hst-nav").forEach(b=>b.onclick=()=>{let mm=view.m+Number(b.dataset.nav),yy=view.y;if(mm<0){mm=11;yy--}if(mm>11){mm=0;yy++}view={y:yy,m:mm};paintPop()});
+  pop.querySelectorAll(".hst-day").forEach(b=>b.onclick=()=>{draft.y=view.y;draft.m=view.m;draft.d=Number(b.dataset.day);paintPop()});
+  const sync=()=>{const h12=Number(pop.querySelector('[data-part="hour"]').value),ap=pop.querySelector('[data-part="ampm"]').value;draft.h=(h12%12)+(ap==="PM"?12:0);draft.min=Number(pop.querySelector('[data-part="min"]').value)};
+  pop.querySelectorAll("select").forEach(x=>x.onchange=()=>{sync();showMsg("")});
+  pop.querySelector('[data-act="cancel"]').onclick=()=>{close();showMsg("")};
+  pop.querySelector('[data-act="set"]').onclick=()=>{
+   sync();const when=Date.UTC(draft.y,draft.m,draft.d,draft.h,draft.min)+HST_OFFSET_MS;
+   if(when<=Date.now()+60000){showMsg("Pick a time at least a minute from now.");return}
+   sel={...draft};commit();paintTrigger();showMsg("");close();
+  };
+ };
+ btn.onclick=()=>{
+  if(open){close();return}
+  const tm=new Date(Date.UTC(nowP.y,nowP.m,nowP.d+1)),base=sel||{y:tm.getUTCFullYear(),m:tm.getUTCMonth(),d:tm.getUTCDate(),h:9,min:0};
+  draft={...base};view={y:draft.y,m:draft.m};open=true;pop.hidden=false;btn.setAttribute("aria-expanded","true");paintPop();
+ };
+ host._refresh=()=>{sel=parsed(hidden.value);paintTrigger();close();showMsg("")};
+ paintTrigger();
+}
+
+// ---- Sign-up: live rules under the fields and show/hide toggles ----
+function enhanceAuthForm(signup){
+ if(!signup)return;
+ const user=$("account-username"),pw=$("account-password"),pc=$("account-password-confirm");
+ if(!user||!pw||!pc)return;
+ const EYE='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+ const EYE_OFF='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a9.8 9.8 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+ const wrapWithToggle=input=>{
+  const row=document.createElement("div");row.className="pw-row";input.parentNode.insertBefore(row,input);row.appendChild(input);
+  const b=document.createElement("button");b.type="button";b.className="pw-toggle";b.setAttribute("aria-label","Show password");b.setAttribute("aria-pressed","false");b.innerHTML=EYE;
+  b.onclick=()=>{const show=input.type==="password";input.type=show?"text":"password";b.innerHTML=show?EYE_OFF:EYE;b.setAttribute("aria-label",show?"Hide password":"Show password");b.setAttribute("aria-pressed",show?"true":"false")};
+  row.appendChild(b);
+ };
+ wrapWithToggle(pw);wrapWithToggle(pc);
+ const makeList=(input,rules)=>{
+  const ul=document.createElement("ul");ul.className="rule-list";ul.setAttribute("aria-label","Requirements");
+  ul.innerHTML=rules.map((r,i)=>'<li data-i="'+i+'">'+esc(r.label)+'</li>').join("");
+  (input.parentElement&&input.parentElement.classList.contains("pw-row")?input.parentElement:input).insertAdjacentElement("afterend",ul);
+  return ()=>{const v=input.value;rules.forEach((r,i)=>{const li=ul.children[i];if(!v){li.className="";return}li.className=r.test(v)?"ok":"bad"})};
+ };
+ const userRules=[{label:"3 to 20 characters",test:v=>v.length>=3&&v.length<=20},{label:"Lowercase letters and numbers only",test:v=>/^[a-z0-9]+$/.test(v)}];
+ const passRules=[{label:"At least 8 characters",test:v=>v.length>=8},{label:"Matches the confirm password",test:v=>v===pc.value}];
+ const confRules=[{label:"Matches the password",test:v=>v===pw.value}];
+ const paintUser=makeList(user,userRules), paintPass=makeList(pw,passRules), paintConf=makeList(pc,confRules);
+ const all=()=>{paintUser();paintPass();paintConf()};
+ [user,pw,pc].forEach(i=>i.addEventListener("input",all));
+ all();
+}
 function renderAccountAuth(mode){
  currentSettingsView="account-auth";const signup=mode==="signup";$("modal-title").textContent=signup?"Create account":"Sign in";
  const codeField=signup&&siteSignupMode==="code"?'<label for="account-invite-code">Access code</label><input id="account-invite-code" type="text" class="masked-field" maxlength="80" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true" required>':'';
- mbody.innerHTML=`<p class="sm">${signup?(siteSignupMode==="code"?"The current access code is required to sign up.":"No email is required."):"Passwords are case-sensitive."}</p>
+ mbody.innerHTML=`${signup&&siteSignupMode!=="code"?"":`<p class="sm">${signup?"The current access code is required to sign up.":"Passwords are case-sensitive."}</p>`}
   <form id="account-auth-form" class="account-form" autocomplete="off"><label for="account-username">Username</label><input id="account-username" name="username" type="text" minlength="3" maxlength="20" ${signup?'pattern="[a-z0-9]{3,20}"':'pattern="[a-zA-Z0-9_]{3,20}"'} autocapitalize="off" autocomplete="username" required><label for="account-password">Password</label><input id="account-password" name="password" type="password" maxlength="200" autocomplete="${signup?"new-password":"current-password"}" required>${signup?"":'<button type="button" class="forgot-link">Forgot password?</button>'}${signup?'<label for="account-password-confirm">Confirm password</label><input id="account-password-confirm" type="password" maxlength="200" autocomplete="new-password" required>':''}${codeField}<p class="access-error" id="account-auth-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar"><button type="button" class="pbtn" id="account-auth-back">Back</button><button type="submit" class="pbtn" id="account-auth-submit">${signup?"Create account":"Sign in"}</button></div></form>`;
- const form=mbody.querySelector("#account-auth-form");
+ const form=mbody.querySelector("#account-auth-form");enhanceAuthForm(signup);
  mbody.querySelector("#account-auth-back").onclick=renderSettings;
  form.onsubmit=async e=>{
   e.preventDefault();const rawUser=mbody.querySelector("#account-username").value.trim(),username=signup?rawUser:rawUser.toLowerCase(),password=mbody.querySelector("#account-password").value;
@@ -3315,14 +3426,15 @@ function disableFormHtml(cur){
  const opts=DISABLE_PRESETS.map((p,i)=>'<optgroup label="'+escapeAttr(p.title)+'">'+p.subs.map((s,j)=>'<option value="'+i+'-'+j+'"'+(sel===i+"-"+j?" selected":"")+'>'+esc(s.sub)+'</option>').join("")+'</optgroup>').join("")+'<option value="custom"'+(sel==="custom"?" selected":"")+'>Custom reason</option>';
  const custom=sel==="custom"?String(c.text||""):"";
  const re=c.reenableAt?new Date(Number(c.reenableAt)+36e5*10).toISOString().slice(0,16):"";
- return '<div class="disable-form"><label class="sm reason-label" for="dis-preset">Reason</label><select id="dis-preset" class="reason-input">'+opts+'</select><p class="sm dis-preview" id="dis-preview"></p><label class="sm reason-label" id="dis-custom-label" for="dis-custom" hidden>Custom reason (shown to the user, up to 200 characters)</label><textarea id="dis-custom" class="reason-input" rows="3" maxlength="200" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true" hidden>'+esc(custom)+'</textarea><div class="reenable-card"><label class="switch-row reenable-row"><span><strong>Re-enable automatically</strong><small>Turn on to choose a date and time in HST. Off keeps the '+(disableSubject==="browser"?"browser":"account")+' disabled until you enable it.</small></span><input type="checkbox" id="dis-reenable-on"'+(re?" checked":"")+'><span class="switch-ui"></span></label><div class="reenable-when" id="dis-reenable-wrap"'+(re?"":" hidden")+'><label class="sm reason-label" for="dis-reenable">Re-enable at (HST)</label><input type="datetime-local" id="dis-reenable" class="reason-input" autocomplete="off" value="'+escapeAttr(re)+'"></div></div>';
+ return '<div class="disable-form"><label class="sm reason-label" for="dis-preset">Reason</label><select id="dis-preset" class="reason-input">'+opts+'</select><p class="sm dis-preview" id="dis-preview"></p><label class="sm reason-label" id="dis-custom-label" for="dis-custom" hidden>Custom reason (shown to the user, up to 200 characters)</label><textarea id="dis-custom" class="reason-input" rows="3" maxlength="200" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true" hidden>'+esc(custom)+'</textarea><div class="reenable-card"><label class="switch-row reenable-row"><span><strong>Re-enable automatically</strong><small>Turn on to choose a date and time in HST. Off keeps the '+(disableSubject==="browser"?"browser":"account")+' disabled until you enable it.</small></span><input type="checkbox" id="dis-reenable-on"'+(re?" checked":"")+'><span class="switch-ui"></span></label><div class="reenable-when" id="dis-reenable-wrap"'+(re?"":" hidden")+'><label class="sm reason-label" for="dis-reenable-btn">Re-enable at (HST)</label><input type="hidden" id="dis-reenable" value="'+escapeAttr(re)+'"><div id="dis-picker"></div></div></div>';
 }
 function wireDisableForm(){
  const sel=$("dis-preset"),prev=$("dis-preview"),custom=$("dis-custom"),lab=$("dis-custom-label");
  const update=()=>{const isCustom=sel.value==="custom";custom.hidden=!isCustom;lab.hidden=!isCustom;if(isCustom){prev.textContent="Write the reason the user will see, up to 200 characters."}else{const [i,j]=sel.value.split("-").map(Number);prev.textContent="The user sees: "+subjectText(DISABLE_PRESETS[i].subs[j].text)}};
  sel.onchange=update;update();
  const on=$("dis-reenable-on"),wrap=$("dis-reenable-wrap"),when=$("dis-reenable");
- on.onchange=()=>{wrap.hidden=!on.checked;if(!on.checked)when.value=""};
+ on.onchange=()=>{wrap.hidden=!on.checked;if(!on.checked)when.value="";const host=$("dis-picker");if(host&&host._refresh)host._refresh()};
+ const pickerHost=$("dis-picker");if(pickerHost)mountHstPicker(when,pickerHost);
 }
 function readDisableForm(){
  const v=$("dis-preset").value;let title="",sub="",text="";
