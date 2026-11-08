@@ -358,7 +358,7 @@ body.access-locked .frame{filter:blur(6px);pointer-events:none;user-select:none}
 .admin-account-meta{font-size:12px;line-height:1.4;color:#666;margin:10px 0 0;overflow-wrap:anywhere}
 .admin-account-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .admin-account-meta+.admin-account-meta{margin-top:5px}
-.flag-item{transition:opacity .26s ease,transform .26s ease,height .26s ease,padding .26s ease,margin .26s ease}
+.flag-item{transition:opacity .22s ease,transform .22s ease,height .3s cubic-bezier(.4,0,.2,1),padding .3s cubic-bezier(.4,0,.2,1),margin .3s cubic-bezier(.4,0,.2,1),border-width .3s cubic-bezier(.4,0,.2,1)}
 .acct-flags{margin-top:12px;padding:10px 12px;border:1px solid #f1d27a;background:#fff7e0;border-radius:12px}
 .acct-flags-head{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;font-weight:600;color:#7a5200}
 .acct-flags-count{min-width:22px;text-align:center;background:#f2c14e;color:#3b2a00;border-radius:999px;padding:1px 7px;font-size:11.5px}
@@ -366,8 +366,7 @@ body.access-locked .frame{filter:blur(6px);pointer-events:none;user-select:none}
 .acct-flags-head+.acct-flag{margin-top:8px}
 .acct-flag-meta{font-size:12px;color:#7a5200}
 .acct-flag-summary{font-size:13px;color:#222;margin-top:3px;overflow-wrap:anywhere}
-.flag-item{transition:opacity .26s ease,transform .26s ease}
-.flag-item.is-resolving,.admin-account.is-resolving{opacity:0;transform:translateX(12px) scale(.98)}
+.flag-item.is-resolving,.admin-account.is-resolving{opacity:0;transform:translateX(10px)}
 .admin-account{transition:opacity .26s ease,transform .26s ease}
 .admin-account-actions .pbtn{transition:transform .12s ease,background-color .16s ease,opacity .2s ease}
 .admin-account-actions .pbtn:active:not(:disabled){transform:scale(.93)}
@@ -3027,22 +3026,45 @@ async function flagAction(payload,doneText,opts){
   return true;
  }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't update that flag.");return false}
 }
+// Resolve is optimistic: the flag fades and collapses at once, the request runs alongside,
+// and the row comes back if the server refuses.
 async function resolveFlag(b){
  if(!b||b.disabled)return;
  const id=b.dataset.flagClear,item=b.closest(".flag-item"),label=b.textContent;
- b.disabled=true;b.classList.add("is-busy");b.textContent="Resolving";
+ b.disabled=true;b.classList.add("is-busy");b.textContent="Resolving…";
  if(item)item.classList.add("is-resolving");
- let ok=false,msg="Couldn't update that flag.";
- try{const r=await post({action:"admin_flag_action",flagAction:"clear",flagId:id});ok=!!(r&&r.ok);if(!ok&&r&&r.message)msg=r.message}catch(e){}
- if(!ok){b.disabled=false;b.classList.remove("is-busy");b.textContent=label;if(item)item.classList.remove("is-resolving");toast(msg);return}
+ const pending=post({action:"admin_flag_action",flagAction:"clear",flagId:id}).then(r=>(r&&r.ok)?{ok:true}:{ok:false,msg:r&&r.message},()=>({ok:false}));
+ if(item)await setFlagCollapsed(item,true);
+ const res=await pending;
+ if(!res.ok){
+  b.disabled=false;b.classList.remove("is-busy");b.textContent=label;
+  if(item){item.classList.remove("is-resolving");await setFlagCollapsed(item,false)}
+  toast(res.msg||"Couldn't update that flag.");return;
+ }
  if(adminFlagsData)adminFlagsData=Object.assign({},adminFlagsData,{flags:(adminFlagsData.flags||[]).filter(f=>f.id!==id)});
+ if(item)item.remove();
  toast("Flag resolved.");
- if(item){await collapseEl(item);item.remove()}
  refreshFlagCounts();
 }
-function collapseEl(el){return new Promise(res=>{const hgt=el.offsetHeight;el.style.height=hgt+"px";el.style.overflow="hidden";requestAnimationFrame(()=>requestAnimationFrame(()=>{el.style.height="0px";el.style.paddingTop="0px";el.style.paddingBottom="0px";el.style.marginTop="0px";el.style.marginBottom="0px";}));setTimeout(res,280)})}
+// Collapses (on=true) or expands (on=false) a flag row. Resolves when the height transition ends.
+function setFlagCollapsed(el,on){
+ return new Promise(res=>{
+  let done=false;const finish=()=>{if(!done){done=true;el.removeEventListener("transitionend",onEnd);res()}};
+  const onEnd=e=>{if(e.target===el&&e.propertyName==="height")finish()};
+  el.addEventListener("transitionend",onEnd);setTimeout(finish,450);
+  if(on){
+   el.style.height=el.offsetHeight+"px";el.style.overflow="hidden";void el.offsetHeight;
+   el.style.height="0px";el.style.paddingTop="0px";el.style.paddingBottom="0px";el.style.marginTop="0px";el.style.marginBottom="0px";el.style.borderTopWidth="0px";el.style.borderBottomWidth="0px";
+  }else{
+   el.style.paddingTop="";el.style.paddingBottom="";el.style.marginTop="";el.style.marginBottom="";el.style.borderTopWidth="";el.style.borderBottomWidth="";
+   el.style.height="0px";void el.offsetHeight;
+   el.style.height=el.scrollHeight+"px";
+   setTimeout(()=>{el.style.height="";el.style.overflow=""},460);
+  }
+ });
+}
 function refreshFlagCounts(){
- document.querySelectorAll("[data-acct-flags]").forEach(sec=>{const left=sec.querySelectorAll(".flag-item").length;if(!left){sec.remove()}else{const c=sec.querySelector(".acct-flags-count");if(c)c.textContent=left}});
+ document.querySelectorAll("[data-acct-flags]").forEach(sec=>{const left=sec.querySelectorAll(".flag-item").length;if(!left){if(sec.dataset.leaving)return;sec.dataset.leaving="1";sec.style.transition="opacity .25s ease";sec.style.opacity="0";setTimeout(()=>sec.remove(),260)}else{const c=sec.querySelector(".acct-flags-count");if(c)c.textContent=left}});
  const list=$("admin-flag-list");
  if(list&&!list.querySelector(".flag-item")&&!list.querySelector("p.sm")&&!list.querySelector("h3"))list.insertAdjacentHTML("beforeend",'<p class="sm">No open flags.</p>');
  if(adminAccountFilters.has("flagged")&&!modal.hidden&&adminTab==="accounts")paintAccountList();
