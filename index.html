@@ -762,6 +762,13 @@ input[type=checkbox]:not(.switch-row *):disabled{opacity:.45;cursor:default}
 .reason-view .radio-row{border-radius:999px;padding:11px 18px}
 .reason-view .data-toolbar{margin-top:14px}
 .reason-sheet-legend{padding:0;margin:0 0 8px;font-size:12px;color:#666}
+/* Length limits: small counter inside the text box */
+.char-wrap{position:relative;display:block}
+.char-wrap>textarea{padding-bottom:22px}
+.char-wrap:has(>textarea[hidden]){display:none}
+.char-count{position:absolute;right:12px;bottom:7px;font-size:11px;line-height:1;color:#8a8a8a;pointer-events:none;font-variant-numeric:tabular-nums}
+.char-count.near{color:#b8730a}
+.char-count.full{color:#d93b3b}
 /* Disabled controls and options: one gray style */
 button:disabled,select:disabled,textarea:disabled,input:disabled,.radio-row:has(input:disabled),.check-row:has(input:disabled),.switch-row:has(input:disabled),.reason-option:has(input:disabled){opacity:.5;cursor:not-allowed}
 .radio-row:has(input:disabled) span,.check-row:has(input:disabled) span,.switch-row:has(input:disabled) span,.reason-option:has(input:disabled) span{color:#9a9a9a}
@@ -3284,7 +3291,7 @@ async function runBrowserAction(action,targetId){
  await runAccountWork(Object.assign({action:"admin_account_action",accountAction:edit?"edit_browser_reason":"disable_browser",targetId:targetId},form),edit?"Browser reason updated.":"Browser disabled.");
 }
 async function runFlagAccount(targetId){
- const accepted=await appConfirm({title:"Flag this account?",message:"Flags are visible only to admins. The user is not told.",confirmLabel:"Add flag",danger:false,extraHtml:'<label class="sm reason-label" for="flag-note-input">Note (admins only, up to 300 characters)</label><textarea id="flag-note-input" class="reason-input" rows="3" maxlength="300" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea>'});
+ const accepted=await appConfirm({title:"Flag this account?",message:"Flags are visible only to admins. The user is not told.",confirmLabel:"Add flag",danger:false,extraHtml:'<label class="sm reason-label" for="flag-note-input">Note (admins only)</label><textarea id="flag-note-input" class="reason-input" rows="3" maxlength="300" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea>'});
  if(!accepted){if(!modal.hidden&&!closingModal)renderAdminPanel("accounts");return}
  if(modal.hidden||currentSettingsView!=="app-confirm")return;
  const note=($("flag-note-input")?$("flag-note-input").value:"").trim();
@@ -3420,7 +3427,7 @@ async function selfReenable(kind){
  }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't re-enable that.")}
 }
 function adminDisableNoteHtml(row){
- return '<div class="admin-disable-note"><p class="sm">You\'ll have to demote this admin first for an actual disable.</p>'+(row.isBootstrap?'<p class="sm">The bootstrap admin can\'t be demoted.</p>':'<button type="button" class="pbtn" id="dis-demote" data-demote-target="'+escapeAttr(row.id)+'">Demote first</button>')+'</div>';
+ return '<div class="admin-disable-note"><p class="sm">Demote this admin first to disable them.</p>'+(row.isBootstrap?'<p class="sm">The bootstrap admin can\'t be demoted.</p>':'<button type="button" class="pbtn" id="dis-demote" data-demote-target="'+escapeAttr(row.id)+'">Demote first</button>')+'</div>';
 }
 async function demoteFromDisable(targetId){
  resolvePendingConfirmation(false);
@@ -3639,15 +3646,15 @@ function disableFormHtml(cur){
  const groups=DISABLE_PRESETS.map((p,i)=>'<div class="reason-group"><p class="reason-group-title">'+esc(p.title)+'</p>'+p.subs.map((s,j)=>reasonRadioHtml(i+"-"+j,s.sub,sel)).join("")+"</div>").join("");
  const custom=sel==="custom"?String(c.text||""):"";
  const re=c.reenableAt?new Date(Number(c.reenableAt)+36e5*10).toISOString().slice(0,16):"";
- return '<div class="disable-form"><button type="button" class="reason-row-btn" id="dis-reason-open" aria-haspopup="true"><span class="reason-row-label">Reason</span><span class="reason-row-value" id="dis-reason-now"></span>'+ic('<path d="M9 18l6-6-6-6"/>',16)+'</button><div class="reason-view" id="dis-reason-view" hidden><fieldset class="reason-set" id="dis-reasons">'+groups+'<div class="reason-group">'+reasonRadioHtml("custom","Custom reason",sel)+'</div></fieldset><div class="data-toolbar"><button type="button" class="pbtn" id="dis-reason-back">Back to disable form</button></div></div><p class="sm dis-preview" id="dis-preview"></p><label class="sm reason-label" id="dis-custom-label" for="dis-custom" hidden>Custom reason (shown to the user, up to 200 characters)</label><textarea id="dis-custom" class="reason-input" rows="3" maxlength="200" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true" hidden>'+esc(custom)+'</textarea><div class="reenable-card"><label class="switch-row reenable-row"><span><strong>Re-enable automatically</strong><small>Turn on to choose a date and time in HST. Off keeps the '+(disableSubject==="browser"?"browser":"account")+' disabled until you enable it.</small></span><input type="checkbox" id="dis-reenable-on"'+(re?" checked":"")+'><span class="switch-ui"></span></label><div class="reenable-when" id="dis-reenable-wrap"'+(re?"":" hidden")+'><label class="sm reason-label" for="dis-reenable-m">Re-enable at (HST)</label><input type="hidden" id="dis-reenable" value="'+escapeAttr(re)+'"><div id="dis-picker"></div></div></div></div>';
+ return '<div class="disable-form"><button type="button" class="reason-row-btn" id="dis-reason-open" aria-haspopup="true"><span class="reason-row-label">Reason</span><span class="reason-row-value" id="dis-reason-now"></span>'+ic('<path d="M9 18l6-6-6-6"/>',16)+'</button><div class="reason-view" id="dis-reason-view" hidden><fieldset class="reason-set" id="dis-reasons">'+groups+'<div class="reason-group">'+reasonRadioHtml("custom","Custom reason",sel)+'</div></fieldset><div class="data-toolbar"><button type="button" class="pbtn" id="dis-reason-back">Back to disable form</button></div></div><p class="sm dis-preview" id="dis-preview"></p><textarea id="dis-custom" class="reason-input" rows="3" maxlength="200" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true" hidden>'+esc(custom)+'</textarea><div class="reenable-card"><label class="switch-row reenable-row"><span><strong>Re-enable automatically</strong><small>Turn on to choose a date and time in HST. Off keeps the '+(disableSubject==="browser"?"browser":"account")+' disabled until you enable it.</small></span><input type="checkbox" id="dis-reenable-on"'+(re?" checked":"")+'><span class="switch-ui"></span></label><div class="reenable-when" id="dis-reenable-wrap"'+(re?"":" hidden")+'><label class="sm reason-label" for="dis-reenable-m">Re-enable at (HST)</label><input type="hidden" id="dis-reenable" value="'+escapeAttr(re)+'"><div id="dis-picker"></div></div></div></div>';
 }
 function wireDisableForm(){
  mbody.classList.remove("reason-picking");
- const prev=$("dis-preview"),custom=$("dis-custom"),lab=$("dis-custom-label");
+ const prev=$("dis-preview"),custom=$("dis-custom");
  const radios=[...document.querySelectorAll('input[name="dis-preset"]')];
  const form=document.querySelector(".disable-form"),view=$("dis-reason-view"),openBtn=$("dis-reason-open"),backBtn=$("dis-reason-back"),now=$("dis-reason-now");
  let titleBefore="";
- const update=()=>{const r=document.querySelector('input[name="dis-preset"]:checked');const v=r?r.value:"custom";const isCustom=v==="custom";custom.hidden=!isCustom;lab.hidden=!isCustom;if(isCustom){now.textContent="Custom reason";prev.textContent="Write the reason the user will see, up to 200 characters."}else{const [i,j]=v.split("-").map(Number);now.textContent=DISABLE_PRESETS[i].title+" · "+DISABLE_PRESETS[i].subs[j].sub;prev.textContent="The user sees: "+subjectText(DISABLE_PRESETS[i].subs[j].text)}};
+ const update=()=>{const r=document.querySelector('input[name="dis-preset"]:checked');const v=r?r.value:"custom";const isCustom=v==="custom";custom.hidden=!isCustom;if(isCustom){now.textContent="Custom reason";prev.textContent=""}else{const [i,j]=v.split("-").map(Number);now.textContent=DISABLE_PRESETS[i].title+" · "+DISABLE_PRESETS[i].subs[j].sub;prev.textContent="The user sees: "+subjectText(DISABLE_PRESETS[i].subs[j].text)}};
  const showPicker=()=>{const t=$("modal-title");titleBefore=t?t.textContent:"";if(t)t.textContent="Choose a reason";form.classList.add("picking");view.hidden=false;mbody.classList.add("reason-picking");openBtn.setAttribute("aria-expanded","true");for(let el=view;el;el=el.parentElement){if(el.scrollTop)el.scrollTop=0}const c=document.querySelector('input[name="dis-preset"]:checked');setTimeout(()=>{try{(c||backBtn).focus({preventScroll:true})}catch(e){}for(let el=view;el;el=el.parentElement){if(el.scrollTop)el.scrollTop=0}},0)};
  const hidePicker=()=>{if(view.hidden)return;view.hidden=true;form.classList.remove("picking");mbody.classList.remove("reason-picking");openBtn.setAttribute("aria-expanded","false");const t=$("modal-title");if(t&&titleBefore)t.textContent=titleBefore;try{openBtn.focus()}catch(e){}};
  openBtn.onclick=showPicker;backBtn.onclick=hidePicker;
@@ -3657,6 +3664,17 @@ function wireDisableForm(){
  on.onchange=()=>{wrap.hidden=!on.checked;if(!on.checked)when.value="";const host=$("dis-picker");if(host&&host._refresh)host._refresh()};
  const pickerHost=$("dis-picker");if(pickerHost)mountHstPicker(when,pickerHost);
 }
+function attachCharCounters(){
+ document.querySelectorAll("textarea[maxlength]").forEach(t=>{
+  if(t.id==="in"||(t.parentElement&&t.parentElement.classList.contains("char-wrap")))return;
+  const w=document.createElement("span");w.className="char-wrap";t.parentNode.insertBefore(w,t);w.appendChild(t);
+  const c=document.createElement("span");c.className="char-count";c.setAttribute("aria-hidden","true");w.appendChild(c);
+  const upd=()=>{const n=t.value.length,m=Number(t.getAttribute("maxlength"))||0;c.textContent=n+"/"+m;c.classList.toggle("near",m>0&&n>=m*0.9&&n<m);c.classList.toggle("full",m>0&&n>=m)};
+  t.addEventListener("input",upd);upd();
+ });
+}
+new MutationObserver(()=>attachCharCounters()).observe(document.body,{childList:true,subtree:true});
+attachCharCounters();
 function readDisableForm(){
  const r=document.querySelector('input[name="dis-preset"]:checked');const v=r?r.value:"custom";let title="",sub="",text="";
  if(v==="custom"){text=$("dis-custom").value.trim()}else{const [i,j]=v.split("-").map(Number),p=DISABLE_PRESETS[i],s=p.subs[j];title=p.title;sub=s.sub;text=subjectText(s.text)}
