@@ -746,19 +746,21 @@ input[type=checkbox]:not(.switch-row *):disabled{opacity:.45;cursor:default}
 /* Phones: search gets its own row; the filter and Create account share the next one */
 @media (max-width:640px){.admin-search input{flex:1 1 100%}.admin-search .pbtn{flex:1 1 auto}}
 
-/* Disable reason: button opens a sub-screen with the grouped list */
-.reason-trigger{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;margin-top:12px;padding:10px 14px;border:1px solid #dcdcdc;border-radius:14px;background:#fff;font:inherit;font-size:14px;color:#222;text-align:left;cursor:pointer}
-.reason-trigger:hover{background:#fafafa}
-.reason-trigger:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
-.reason-trigger-label{flex:none;color:#666;font-size:13px}
-.reason-trigger-value{flex:1;min-width:0;overflow-wrap:anywhere;font-weight:600}
-.reason-trigger-chev{flex:none;font-size:22px;line-height:1;color:#888}
-.reason-sheet{position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;background:#fff;overflow:hidden}
-.reason-sheet[hidden]{display:none!important}
-.reason-sheet-bar{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid #ececec;flex:none}
-.reason-sheet-bar strong{font-size:16px}
-.reason-back{min-height:40px;padding:0 12px;border:0;border-radius:999px;background:#efefef;font:inherit;font-size:14px;font-weight:600;color:#222;cursor:pointer}
-.reason-sheet-body{flex:1 1 auto;min-height:0;overflow:auto;padding:14px}
+/* Disable reason: pill row opens the reason list in place, like the other sub-screens */
+.reason-row-btn{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;margin-top:12px;padding:8px 10px 8px 20px;border:1px solid #e4e4e4;border-radius:999px;background:#f7f7f7;font:inherit;font-size:14px;color:#222;text-align:left;cursor:pointer}
+.reason-row-btn:hover{background:#f0f0f0}
+.reason-row-btn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.reason-row-btn svg{flex:none;color:#888}
+.reason-row-label{flex:none;color:#666;font-size:13px}
+.reason-row-value{flex:1;min-width:0;overflow-wrap:anywhere;font-weight:600}
+.disable-form.picking>:not(.reason-view){display:none!important}
+.reason-picking .confirm-panel,.reason-picking .confirm-foot,.reason-picking .admin-disable-note,.reason-picking .browsers-card,.reason-picking .confirm-radios,.reason-picking .confirm-skip{display:none!important}
+.reason-view{margin-top:12px}
+.reason-view[hidden]{display:none!important}
+.reason-view .reason-group{margin-bottom:4px}
+.reason-view .reason-group-title{padding-left:18px}
+.reason-view .radio-row{border-radius:999px;padding:11px 18px}
+.reason-view .data-toolbar{margin-top:14px}
 .reason-sheet-legend{padding:0;margin:0 0 8px;font-size:12px;color:#666}
 /* Disabled controls and options: one gray style */
 button:disabled,select:disabled,textarea:disabled,input:disabled,.radio-row:has(input:disabled),.check-row:has(input:disabled),.switch-row:has(input:disabled),.reason-option:has(input:disabled){opacity:.5;cursor:not-allowed}
@@ -3634,23 +3636,23 @@ function reasonRadioHtml(v,label,sel){return '<label class="radio-row reason-opt
 function disableFormHtml(cur){
  let sel="custom";const c=cur||{};
  DISABLE_PRESETS.forEach((p,i)=>p.subs.forEach((s,j)=>{if(c.title===p.title&&c.sub===s.sub&&c.text===s.text)sel=i+"-"+j}));
- const groups=DISABLE_PRESETS.map((p,i)=>'<div class="reason-group"><p class="reason-group-title">'+esc(p.title)+'</p>'+p.subs.map((s,j)=>reasonRadioHtml(i+"-"+j,s.sub,sel)).join("")+'</div>').join("");
+ const groups=DISABLE_PRESETS.map((p,i)=>'<div class="reason-group"><p class="reason-group-title">'+esc(p.title)+'</p>'+p.subs.map((s,j)=>reasonRadioHtml(i+"-"+j,s.sub,sel)).join("")+"</div>").join("");
  const custom=sel==="custom"?String(c.text||""):"";
  const re=c.reenableAt?new Date(Number(c.reenableAt)+36e5*10).toISOString().slice(0,16):"";
- return '<div class="disable-form"><button type="button" class="reason-trigger" id="dis-reason-open" aria-haspopup="dialog" aria-expanded="false"><span class="reason-trigger-label">Reason</span><span class="reason-trigger-value" id="dis-reason-now"></span><span class="reason-trigger-chev" aria-hidden="true">›</span></button><div class="reason-sheet" id="dis-reason-sheet" hidden role="dialog" aria-modal="true" aria-labelledby="dis-reason-title"><div class="reason-sheet-bar"><button type="button" class="reason-back" id="dis-reason-back">Back</button><strong id="dis-reason-title">Choose a reason</strong></div><div class="reason-sheet-body"><fieldset class="reason-set" id="dis-reasons"><legend class="reason-sheet-legend">Reason</legend>'+groups+'<div class="reason-group">'+reasonRadioHtml("custom","Custom reason",sel)+'</div></fieldset></div></div><p class="sm dis-preview" id="dis-preview"></p><label class="sm reason-label" id="dis-custom-label" for="dis-custom" hidden>Custom reason (shown to the user, up to 200 characters)</label><textarea id="dis-custom" class="reason-input" rows="3" maxlength="200" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true" hidden>'+esc(custom)+'</textarea><div class="reenable-card"><label class="switch-row reenable-row"><span><strong>Re-enable automatically</strong><small>Turn on to choose a date and time in HST. Off keeps the '+(disableSubject==="browser"?"browser":"account")+' disabled until you enable it.</small></span><input type="checkbox" id="dis-reenable-on"'+(re?" checked":"")+'><span class="switch-ui"></span></label><div class="reenable-when" id="dis-reenable-wrap"'+(re?"":" hidden")+'><label class="sm reason-label" for="dis-reenable-m">Re-enable at (HST)</label><input type="hidden" id="dis-reenable" value="'+escapeAttr(re)+'"><div id="dis-picker"></div></div></div></div>';
+ return '<div class="disable-form"><button type="button" class="reason-row-btn" id="dis-reason-open" aria-haspopup="true"><span class="reason-row-label">Reason</span><span class="reason-row-value" id="dis-reason-now"></span>'+ic('<path d="M9 18l6-6-6-6"/>',16)+'</button><div class="reason-view" id="dis-reason-view" hidden><fieldset class="reason-set" id="dis-reasons">'+groups+'<div class="reason-group">'+reasonRadioHtml("custom","Custom reason",sel)+'</div></fieldset><div class="data-toolbar"><button type="button" class="pbtn" id="dis-reason-back">Back to disable form</button></div></div><p class="sm dis-preview" id="dis-preview"></p><label class="sm reason-label" id="dis-custom-label" for="dis-custom" hidden>Custom reason (shown to the user, up to 200 characters)</label><textarea id="dis-custom" class="reason-input" rows="3" maxlength="200" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true" hidden>'+esc(custom)+'</textarea><div class="reenable-card"><label class="switch-row reenable-row"><span><strong>Re-enable automatically</strong><small>Turn on to choose a date and time in HST. Off keeps the '+(disableSubject==="browser"?"browser":"account")+' disabled until you enable it.</small></span><input type="checkbox" id="dis-reenable-on"'+(re?" checked":"")+'><span class="switch-ui"></span></label><div class="reenable-when" id="dis-reenable-wrap"'+(re?"":" hidden")+'><label class="sm reason-label" for="dis-reenable-m">Re-enable at (HST)</label><input type="hidden" id="dis-reenable" value="'+escapeAttr(re)+'"><div id="dis-picker"></div></div></div></div>';
 }
 function wireDisableForm(){
- document.querySelectorAll("body > .reason-sheet").forEach(n=>n.remove());
+ mbody.classList.remove("reason-picking");
  const prev=$("dis-preview"),custom=$("dis-custom"),lab=$("dis-custom-label");
  const radios=[...document.querySelectorAll('input[name="dis-preset"]')];
- const now=$("dis-reason-now"),openBtn=$("dis-reason-open"),sheet=$("dis-reason-sheet"),backBtn=$("dis-reason-back");
- document.body.appendChild(sheet);
+ const form=document.querySelector(".disable-form"),view=$("dis-reason-view"),openBtn=$("dis-reason-open"),backBtn=$("dis-reason-back"),now=$("dis-reason-now");
+ let titleBefore="";
  const update=()=>{const r=document.querySelector('input[name="dis-preset"]:checked');const v=r?r.value:"custom";const isCustom=v==="custom";custom.hidden=!isCustom;lab.hidden=!isCustom;if(isCustom){now.textContent="Custom reason";prev.textContent="Write the reason the user will see, up to 200 characters."}else{const [i,j]=v.split("-").map(Number);now.textContent=DISABLE_PRESETS[i].title+" · "+DISABLE_PRESETS[i].subs[j].sub;prev.textContent="The user sees: "+subjectText(DISABLE_PRESETS[i].subs[j].text)}};
- const closeSheet=()=>{if(sheet.hidden)return;sheet.hidden=true;openBtn.setAttribute("aria-expanded","false");openBtn.focus()};
- const openSheet=()=>{sheet.hidden=false;openBtn.setAttribute("aria-expanded","true");const c=document.querySelector('input[name="dis-preset"]:checked');setTimeout(()=>{try{(c||backBtn).focus()}catch(e){}},0)};
- openBtn.onclick=openSheet;backBtn.onclick=closeSheet;
- sheet.addEventListener("keydown",e=>{if(e.key==="Escape"){e.stopPropagation();e.preventDefault();closeSheet()}});
- radios.forEach(r=>{r.onchange=()=>{update();closeSheet()}});update();
+ const showPicker=()=>{const t=$("modal-title");titleBefore=t?t.textContent:"";if(t)t.textContent="Choose a reason";form.classList.add("picking");view.hidden=false;mbody.classList.add("reason-picking");openBtn.setAttribute("aria-expanded","true");for(let el=view;el;el=el.parentElement){if(el.scrollTop)el.scrollTop=0}const c=document.querySelector('input[name="dis-preset"]:checked');setTimeout(()=>{try{(c||backBtn).focus({preventScroll:true})}catch(e){}for(let el=view;el;el=el.parentElement){if(el.scrollTop)el.scrollTop=0}},0)};
+ const hidePicker=()=>{if(view.hidden)return;view.hidden=true;form.classList.remove("picking");mbody.classList.remove("reason-picking");openBtn.setAttribute("aria-expanded","false");const t=$("modal-title");if(t&&titleBefore)t.textContent=titleBefore;try{openBtn.focus()}catch(e){}};
+ openBtn.onclick=showPicker;backBtn.onclick=hidePicker;
+ view.addEventListener("keydown",e=>{if(e.key==="Escape"){e.stopPropagation();e.preventDefault();hidePicker()}});
+ radios.forEach(r=>{r.onchange=()=>{update();hidePicker()}});update();
  const on=$("dis-reenable-on"),wrap=$("dis-reenable-wrap"),when=$("dis-reenable");
  on.onchange=()=>{wrap.hidden=!on.checked;if(!on.checked)when.value="";const host=$("dis-picker");if(host&&host._refresh)host._refresh()};
  const pickerHost=$("dis-picker");if(pickerHost)mountHstPicker(when,pickerHost);
