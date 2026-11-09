@@ -732,6 +732,10 @@ input[type=checkbox]:not(.switch-row *):disabled{opacity:.45;cursor:default}
 #account-auth-submit:disabled{opacity:.45;cursor:not-allowed}
 /* Announcement banner spans the full width of the main area, like the other banners */
 .main .site-notice,.banner-stack>.site-notice{align-self:stretch;width:auto;max-width:none;min-width:0;margin:0;left:auto;right:auto}
+/* Flag titles wrap instead of cutting off on phones */
+.flag-item .admin-account-head{flex-wrap:wrap;gap:6px;align-items:flex-start}
+.flag-item .admin-account-id{min-width:0;flex:1 1 180px}
+.flag-item .admin-account-id strong{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
 </style>
 </head>
 <body class="access-locked">
@@ -787,7 +791,7 @@ input[type=checkbox]:not(.switch-row *):disabled{opacity:.45;cursor:default}
     <div class="mwrap">
      <button class="model" id="model" aria-haspopup="menu" aria-expanded="false"></button>
      <div class="info-pop" id="aries-info-pop" role="status" aria-live="polite" aria-label="About Aries" hidden>
-      <p>Aries's knowledge goes up to around mid-2024, and it cannot browse the web.</p>
+      <p>Aries can't browse the web, and its knowledge has a cutoff date.</p>
       <button type="button" id="aries-info-got-it">Got it</button>
      </div>
      <div class="pop" id="pop" role="menu" hidden>
@@ -1461,7 +1465,7 @@ function renderGateReason(message,info){
   }
   h+='<p class="gate-reason-row">Contact support at wehatewindows.help@gmail.com for help.</p>';
  }else{
-  let text=String(message||"").replace(/^\s*This account has been disabled\.?\s*/i,"").trim();
+  let text=String(message||"").replace(/^\s*(This|Your) (account|browser) (has been|is) disabled\.?\s*/i,"").trim();
   h=esc(text||"Contact support at wehatewindows.help@gmail.com for help.");
  }
  b.innerHTML=h;b.hidden=false;
@@ -3546,7 +3550,7 @@ function paintAdminAudit(box){
  [...adminAuditFilters].forEach(a=>{if(actions.indexOf(a)===-1)adminAuditFilters.delete(a)});
  const shown=adminAuditFilters.size?items.filter(i=>adminAuditFilters.has(i.action)):items;
  const options=actions.map(a=>[a,a.replace(/_/g," ")]);
- box.innerHTML=`<p class="sm">Latest ${items.length} admin and account-security events. Chat titles and messages are never recorded here.</p>${items.length?filterDropdown("audit",options,adminAuditFilters):""}${shown.length?shown.map(item=>`<article class="admin-audit-item"><strong>${esc(item.action)}</strong><span>${adminDate(item.timestamp)}</span><p>${esc(item.actor)} → ${esc(item.target||"—")}</p><small>${esc(item.detail||"")}</small></article>`).join(""):`<p class="sm">${items.length?"No entries for this filter.":"No audit entries yet."}</p>`}`;
+ box.innerHTML=`<p class="sm">${items.length===1?"1 event":items.length+" events"}, admin and account-security only. Chat titles and messages are never recorded here.</p>${items.length?filterDropdown("audit",options,adminAuditFilters):""}${shown.length?shown.map(item=>`<article class="admin-audit-item"><strong>${esc(String(item.action||"").replace(/_/g," ").replace(/^./,c=>c.toUpperCase()))}</strong><span>${adminDate(item.timestamp)}</span><p>${esc(item.actor)} → ${esc(item.target||"—")}</p><small>${esc(item.detail||"")}</small></article>`).join(""):`<p class="sm">${items.length?"No entries for this filter.":"No audit entries yet."}</p>`}`;
  bindAdminFilters(box);
 }
 function renderCreateAccount(){
