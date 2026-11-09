@@ -3425,7 +3425,7 @@ function renderWhatsNewAdmin(){
  };
 }
 function paintAdminAccounts(box){
- box.innerHTML=`<div class="admin-search"><input id="admin-account-query" type="search" maxlength="20" placeholder="Search usernames" value="${escapeAttr(adminQuery)}" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"><button type="button" class="pbtn" id="admin-create-account">Create account</button></div>${filterDropdown("accounts",ACCOUNT_FILTERS,adminAccountFilters)}<div id="admin-account-results"></div>`;
+ box.innerHTML=`<div class="admin-search"><input id="admin-account-query" type="search" maxlength="20" placeholder="Search users" value="${escapeAttr(adminQuery)}" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"><button type="button" class="pbtn" id="admin-create-account">Create account</button></div>${filterDropdown("accounts",ACCOUNT_FILTERS,adminAccountFilters)}<div id="admin-account-results"></div>`;
  $("admin-account-query").oninput=e=>{adminQuery=e.target.value.trim();paintAccountList()};
  $("admin-create-account").onclick=renderCreateAccount;
  bindAdminFilters(box);
@@ -3497,7 +3497,7 @@ function paintAdminUsage(box){
  syncAdminBack();
 }
 function paintAdminUsageUsers(box){
- box.innerHTML=`<h3 class="usage-sub">All-time usage</h3><div class="admin-search"><input id="usage-user-query" type="search" maxlength="20" placeholder="Search usernames" value="${escapeAttr(adminUsageQuery)}" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></div><p class="sm" id="usage-users-msg">Loading…</p><div id="usage-users-list"></div>`;
+ box.innerHTML=`<h3 class="usage-sub">All-time usage</h3><div class="admin-search"><input id="usage-user-query" type="search" maxlength="20" placeholder="Search users" value="${escapeAttr(adminUsageQuery)}" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></div><p class="sm" id="usage-users-msg">Loading…</p><div id="usage-users-list"></div>`;
  syncAdminBack();
  const input=box.querySelector("#usage-user-query");
  input.oninput=e=>{adminUsageQuery=e.target.value.trim().toLowerCase();fill()};
