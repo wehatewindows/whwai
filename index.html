@@ -781,6 +781,15 @@ button:disabled,select:disabled,textarea:disabled,input:disabled,.radio-row:has(
 @media (max-width:640px){.admin-nav .pbtn,button[aria-label="Close"]{min-height:40px}}
 @media (max-width:640px){.pbtn{min-height:40px}.menubtn,.mnew{min-width:40px;min-height:40px}}
 @media (max-width:640px){#aries-info-got-it{min-height:40px;padding:0 16px}}
+/* Audit fixes: minimum control sizes and the Beta badge text */
+#pre-close{min-width:28px;min-height:28px;display:inline-grid;place-items:center}
+.forgot-link{min-height:28px;padding:4px 0}
+.beta-pill{font-size:max(10px,.36em)}
+@media (max-width:640px){
+.forgot-link{min-height:44px}
+.mt .beta-pill{font-size:11px}
+#mx{min-width:44px;min-height:44px}
+}
 </style>
 </head>
 <body class="access-locked">
