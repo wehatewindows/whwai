@@ -766,9 +766,7 @@ input[type=checkbox]:not(.switch-row *):disabled{opacity:.45;cursor:default}
 .char-wrap{position:relative;display:block}
 .char-wrap>textarea{padding-bottom:22px}
 .char-wrap:has(>textarea[hidden]){display:none}
-.char-count{position:absolute;right:12px;bottom:7px;font-size:11px;line-height:1;color:#8a8a8a;pointer-events:none;font-variant-numeric:tabular-nums}
-.char-count.near{color:#b8730a}
-.char-count.full{color:#d93b3b}
+.char-count{position:absolute;right:12px;bottom:7px;font-family:var(--f);font-size:11px;line-height:1;color:#6b6b6b;pointer-events:none;font-variant-numeric:tabular-nums}
 /* Disabled controls and options: one gray style */
 button:disabled,select:disabled,textarea:disabled,input:disabled,.radio-row:has(input:disabled),.check-row:has(input:disabled),.switch-row:has(input:disabled),.reason-option:has(input:disabled){opacity:.5;cursor:not-allowed}
 .radio-row:has(input:disabled) span,.check-row:has(input:disabled) span,.switch-row:has(input:disabled) span,.reason-option:has(input:disabled) span{color:#9a9a9a}
@@ -3427,7 +3425,7 @@ async function selfReenable(kind){
  }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't re-enable that.")}
 }
 function adminDisableNoteHtml(row){
- return '<div class="admin-disable-note"><p class="sm">Demote this admin first to disable them.</p>'+(row.isBootstrap?'<p class="sm">The bootstrap admin can\'t be demoted.</p>':'<button type="button" class="pbtn" id="dis-demote" data-demote-target="'+escapeAttr(row.id)+'">Demote first</button>')+'</div>';
+ return '<div class="admin-disable-note"><p class="sm">Demote this admin first to disable them.</p><p class="sm">Disabling this admin now without demoting them allows them to sign back in easily for testing purposes.</p>'+(row.isBootstrap?'<p class="sm">The bootstrap admin can\'t be demoted.</p>':'<button type="button" class="pbtn" id="dis-demote" data-demote-target="'+escapeAttr(row.id)+'">Demote first</button>')+'</div>';
 }
 async function demoteFromDisable(targetId){
  resolvePendingConfirmation(false);
