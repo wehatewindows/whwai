@@ -835,6 +835,7 @@ input.has-err:not([type=checkbox]):not([type=radio]):not([type=file]):focus,text
 .cs-btn svg{transition:transform .2s ease}.cs-btn[aria-expanded="true"] svg{transform:rotate(180deg)}
 .admin-filter-wrap{display:inline-block;vertical-align:top}
 .admin-filter-menu{left:0;right:auto;transform-origin:top left;min-width:240px}
+.admin-filter-menu.flip{left:auto;right:0;transform-origin:top right}
 </style>
 
 </head>
@@ -3640,7 +3641,8 @@ function closeFilterMenu(box){
  setTimeout(()=>{filterClosing=false;filterSettled=true;adminFilterOpen=null;paintAdminTab()},180);
 }
 function bindAdminFilters(box){
- box.querySelectorAll("[data-filter-toggle]").forEach(b=>b.onclick=()=>{const g=b.dataset.filterToggle;if(adminFilterOpen===g){closeFilterMenu(box);return}filterSettled=false;adminFilterOpen=g;paintAdminTab()});
+ box.querySelectorAll("[data-filter-toggle]").forEach(b=>b.onclick=()=>{const g=b.dataset.filterToggle;if(adminFilterOpen===g){closeFilterMenu(box);return}filterSettled=false;adminFilterOpen=g;paintAdminTab();requestAnimationFrame(fitFilterMenus)});
+function fitFilterMenus(){document.querySelectorAll(".admin-filter-menu").forEach(m=>{m.classList.remove("flip");const card=m.closest(".mcard"),btn=m.parentElement&&m.parentElement.querySelector(".admin-filter-btn");if(!card||!btn)return;const c=card.getBoundingClientRect(),b=btn.getBoundingClientRect(),w=m.getBoundingClientRect().width;const fitsRight=b.left+w<=c.right-8,fitsLeft=b.right-w>=c.left+8;if(!fitsRight&&fitsLeft)m.classList.add("flip")})}
  box.querySelectorAll("[data-filter-group]").forEach(i=>i.onchange=()=>{const set=i.dataset.filterGroup==="audit"?adminAuditFilters:adminAccountFilters;if(i.checked)set.add(i.value);else set.delete(i.value);filterSettled=true;paintAdminTab()});
  box.querySelectorAll("[data-filter-clear]").forEach(b=>b.onclick=()=>{(b.dataset.filterClear==="audit"?adminAuditFilters:adminAccountFilters).clear();filterSettled=true;paintAdminTab()});
 }
