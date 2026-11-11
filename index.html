@@ -813,6 +813,18 @@ button:disabled,select:disabled,textarea:disabled,input:disabled,.radio-row:has(
 .banner-stack>*{align-self:stretch!important}
 .field{transition:border-radius .2s ease}
 .field.multi{border-radius:18px}
+.cs{position:relative;min-width:0;width:100%}
+.cs-native{position:absolute!important;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none;overflow:hidden}
+.cs-btn{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:44px;box-sizing:border-box;padding:10px 12px;border:1px solid #dedede;border-radius:12px;background:#fafafa;color:#111;font:inherit;font-size:16px;text-align:left;cursor:pointer}
+.cs-btn:disabled{opacity:.6;cursor:default}
+.cs-btn svg{flex:none;color:#666}
+.cs-val{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cs-pop{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:40;background:#fff;border:1px solid #ddd;border-radius:24px;box-shadow:0 8px 30px rgba(0,0,0,.16);padding:8px;display:grid;gap:6px;max-height:260px;overflow:auto}
+.cs-pop .mi{width:100%}
+.cs-pop .mi i{margin-left:auto;display:inline-flex;color:#2559c9}
+.cs-btn.has-err,.has-err{border-color:#c93434!important;box-shadow:0 0 0 3px rgba(201,52,52,.12)!important}
+.field-err{display:flex;align-items:center;gap:7px;margin:6px 2px 0;color:#b52a2a;font-size:12.5px;line-height:1.35}
+.field-err::before{content:"!";display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;background:#b52a2a;color:#fff;font-size:11px;font-weight:700;flex:none}
 </style>
 
 </head>
@@ -3854,5 +3866,50 @@ function updateSchoolNotice(){const pre=$("pre-school-reminder");if(pre){const o
 updateSchoolNotice();setInterval(updateSchoolNotice,10000);
 </script>
 <div class="wn-overlay" id="wn" hidden role="dialog" aria-modal="true" aria-labelledby="wn-title"><div class="wn-card"><h2 id="wn-title">What's new</h2><p class="wn-ver" id="wn-ver" hidden></p><p class="wn-intro" id="wn-intro"></p><ul class="wn-list" id="wn-list"></ul><button type="button" class="pbtn wn-ok" id="wn-ok">Got it</button></div></div>
+<script>
+/* Custom dropdowns (native select kept as the value store) */
+(function(){
+ const chev='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+ const desc=Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,"value");
+ let openMenu=null;
+ function closeAll(except){ if(openMenu&&openMenu!==except){openMenu.close();} }
+ function enhance(sel){
+  if(sel._cs||sel.multiple||sel.size>1)return; sel._cs=true;
+  const wrap=document.createElement("div");wrap.className="cs";
+  const btn=document.createElement("button");btn.type="button";btn.className="cs-btn";btn.setAttribute("aria-haspopup","listbox");btn.setAttribute("aria-expanded","false");
+  const menu=document.createElement("div");menu.className="cs-pop";menu.setAttribute("role","listbox");menu.hidden=true;
+  sel.parentNode.insertBefore(wrap,sel);wrap.append(btn,menu,sel);
+  sel.classList.add("cs-native");sel.tabIndex=-1;sel.setAttribute("aria-hidden","true");
+  const label=()=>{const o=sel.options[sel.selectedIndex];btn.innerHTML='<span class="cs-val"></span>'+chev;btn.querySelector(".cs-val").textContent=o?o.text:"";btn.disabled=sel.disabled};
+  const build=()=>{menu.innerHTML="";[...sel.options].forEach(o=>{const b=document.createElement("button");b.type="button";b.className="mi";b.setAttribute("role","option");b.setAttribute("aria-selected",String(o.selected));const c=document.createElement("div");c.textContent=o.text;const t=document.createElement("i");t.innerHTML=o.selected?'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>':"";b.append(c,t);b.onclick=()=>{desc.set.call(sel,o.value);sel.dispatchEvent(new Event("change",{bubbles:true}));api.close();btn.focus()};menu.appendChild(b)})};
+  const api={open(){closeAll(api);build();menu.hidden=false;btn.setAttribute("aria-expanded","true");openMenu=api},close(){menu.hidden=true;btn.setAttribute("aria-expanded","false");if(openMenu===api)openMenu=null}};
+  btn.onclick=()=>menu.hidden?api.open():api.close();
+  btn.onkeydown=e=>{if(e.key==="Escape"){api.close()}else if(e.key==="ArrowDown"&&menu.hidden){e.preventDefault();api.open();const f=menu.querySelector(".mi");if(f)f.focus()}};
+  menu.onkeydown=e=>{if(e.key==="Escape"){api.close();btn.focus()}};
+  Object.defineProperty(sel,"value",{configurable:true,get(){return desc.get.call(this)},set(v){desc.set.call(this,v);label()}});
+  sel.addEventListener("change",label);
+  label();
+ }
+ document.addEventListener("pointerdown",e=>{
+  document.querySelectorAll(".cs-pop:not([hidden])").forEach(m=>{if(!m.parentNode.contains(e.target)){m.hidden=true;m.parentNode.querySelector(".cs-btn").setAttribute("aria-expanded","false")}})},true);
+ const scan=root=>{(root.matches&&root.matches("select")?[root]:[]).concat([...(root.querySelectorAll?root.querySelectorAll("select"):[])]).forEach(enhance)};
+ scan(document);
+ new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType===1)scan(n)}))).observe(document.body,{childList:true,subtree:true});
+})();
+
+/* Custom required-field messages (replaces the browser bubble) */
+(function(){
+ const hostOf=t=>t.closest(".pw-row,.cs")||t;
+ const msgOf=t=>{const v=t.validity;if(v.valueMissing)return "This field is required.";if(v.tooShort)return "Use at least "+t.minLength+" characters.";if(v.patternMismatch)return t.dataset.err||"Use only letters or numbers, "+(t.minLength||3)+" to "+(t.maxLength||20)+" characters.";if(v.tooLong)return "Use no more than "+t.maxLength+" characters.";return "Check this field."};
+ const clear=t=>{const h=hostOf(t);const e=h.nextElementSibling;if(e&&e.classList.contains("field-err"))e.remove();t.classList.remove("has-err");t.removeAttribute("aria-invalid");const b=h.querySelector(".cs-btn");if(b)b.classList.remove("has-err")};
+ document.addEventListener("invalid",e=>{const t=e.target;if(!(t instanceof HTMLElement))return;e.preventDefault();
+  const h=hostOf(t);let err=h.nextElementSibling;if(!(err&&err.classList.contains("field-err"))){err=document.createElement("div");err.className="field-err";err.setAttribute("role","alert");h.insertAdjacentElement("afterend",err)}
+  err.textContent=msgOf(t);t.setAttribute("aria-invalid","true");t.classList.add("has-err");const b=h.querySelector(".cs-btn");if(b)b.classList.add("has-err");
+  if(!t._fe){t._fe=1;const c=()=>clear(t);t.addEventListener("input",c);t.addEventListener("change",c)}
+  if(!document._fvFocused){document._fvFocused=1;setTimeout(()=>{document._fvFocused=0},0);const f=(b&&!b.disabled)?b:t;if(f.focus)f.focus()}
+ },true);
+})();
+</script>
+
 </body>
 </html>
