@@ -449,7 +449,7 @@ html,body{touch-action:manipulation}
 @media (max-width:640px){.main.has-site-notice .scroll{padding-top:calc(var(--bar) + var(--notice-h,56px) + 22px)}}
 /* iOS Safari zooms the page when a focused field is under 16px; keep every field at 16px or larger */
 input,textarea,select,[contenteditable="true"]{font-size:max(16px,1rem)!important}
-.beta-pill{display:inline-block;vertical-align:middle;margin-left:.4em;padding:.18em .6em;border-radius:999px;background:#2559c9;color:#fff;font:600 .36em/1.2 var(--f);letter-spacing:.04em;text-transform:uppercase;position:relative;top:-.12em;white-space:nowrap}
+.beta-pill{display:inline-block;vertical-align:middle;margin-left:.4em;padding:.18em .6em;border-radius:999px;background:#2f6bff;color:#fff;font:600 .36em/1.2 var(--f);letter-spacing:.04em;text-transform:uppercase;position:relative;top:-.12em;white-space:nowrap}
 .mt .beta-pill{font-size:9px;margin-left:6px;top:-1px}
 input,textarea,select,button,[contenteditable="true"]{touch-action:manipulation}
 @media (max-width:640px),(hover:none) and (pointer:coarse){
@@ -825,6 +825,16 @@ button:disabled,select:disabled,textarea:disabled,input:disabled,.radio-row:has(
 .cs-btn.has-err,.has-err{border-color:#c93434!important;box-shadow:0 0 0 3px rgba(201,52,52,.12)!important}
 .field-err{display:flex;align-items:center;gap:7px;margin:6px 2px 0;color:#b52a2a;font-size:12.5px;line-height:1.35}
 .field-err::before{content:"!";display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;background:#b52a2a;color:#fff;font-size:11px;font-weight:700;flex:none}
+input.has-err:not([type=checkbox]):not([type=radio]):not([type=file]):focus,textarea.has-err:focus,.cs.has-err .cs-btn:focus{border-color:#c93434!important;box-shadow:0 0 0 3px rgba(201,52,52,.14)!important;outline:none!important}
+.cs-btn,input,textarea{transition:border-color .2s ease,box-shadow .2s ease}
+.field-err{animation:fadeIn .2s ease both}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.cs-pop{animation:fadeIn .18s ease both}
+.cs-pop.closing{animation:fadeOut .16s ease-in both}
+@keyframes fadeOut{from{opacity:1}to{opacity:0}}
+.cs-btn svg{transition:transform .2s ease}.cs-btn[aria-expanded="true"] svg{transform:rotate(180deg)}
+.admin-filter-wrap{display:inline-block;vertical-align:top}
+.admin-filter-menu{left:0;right:auto;transform-origin:top left;min-width:240px}
 </style>
 
 </head>
@@ -3882,7 +3892,7 @@ updateSchoolNotice();setInterval(updateSchoolNotice,10000);
   sel.classList.add("cs-native");sel.tabIndex=-1;sel.setAttribute("aria-hidden","true");
   const label=()=>{const o=sel.options[sel.selectedIndex];btn.innerHTML='<span class="cs-val"></span>'+chev;btn.querySelector(".cs-val").textContent=o?o.text:"";btn.disabled=sel.disabled};
   const build=()=>{menu.innerHTML="";[...sel.options].forEach(o=>{const b=document.createElement("button");b.type="button";b.className="mi";b.setAttribute("role","option");b.setAttribute("aria-selected",String(o.selected));const c=document.createElement("div");c.textContent=o.text;const t=document.createElement("i");t.innerHTML=o.selected?'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>':"";b.append(c,t);b.onclick=()=>{desc.set.call(sel,o.value);sel.dispatchEvent(new Event("change",{bubbles:true}));api.close();btn.focus()};menu.appendChild(b)})};
-  const api={open(){closeAll(api);build();menu.hidden=false;btn.setAttribute("aria-expanded","true");openMenu=api},close(){menu.hidden=true;btn.setAttribute("aria-expanded","false");if(openMenu===api)openMenu=null}};
+  const api={open(){closeAll(api);build();menu.classList.remove("closing");menu.hidden=false;btn.setAttribute("aria-expanded","true");openMenu=api},close(){if(menu.hidden)return;btn.setAttribute("aria-expanded","false");if(openMenu===api)openMenu=null;menu.classList.add("closing");clearTimeout(menu._ct);menu._ct=setTimeout(()=>{menu.hidden=true;menu.classList.remove("closing")},160)}};
   btn.onclick=()=>menu.hidden?api.open():api.close();
   btn.onkeydown=e=>{if(e.key==="Escape"){api.close()}else if(e.key==="ArrowDown"&&menu.hidden){e.preventDefault();api.open();const f=menu.querySelector(".mi");if(f)f.focus()}};
   menu.onkeydown=e=>{if(e.key==="Escape"){api.close();btn.focus()}};
@@ -3891,7 +3901,7 @@ updateSchoolNotice();setInterval(updateSchoolNotice,10000);
   label();
  }
  document.addEventListener("pointerdown",e=>{
-  document.querySelectorAll(".cs-pop:not([hidden])").forEach(m=>{if(!m.parentNode.contains(e.target)){m.hidden=true;m.parentNode.querySelector(".cs-btn").setAttribute("aria-expanded","false")}})},true);
+  document.querySelectorAll(".cs-pop:not([hidden])").forEach(m=>{if(!m.parentNode.contains(e.target)){m.parentNode.querySelector(".cs-btn").click&&m.parentNode.querySelector(".cs-btn").setAttribute("aria-expanded","false");m.classList.add("closing");setTimeout(()=>{m.hidden=true;m.classList.remove("closing")},160)}})},true);
  const scan=root=>{(root.matches&&root.matches("select")?[root]:[]).concat([...(root.querySelectorAll?root.querySelectorAll("select"):[])]).forEach(enhance)};
  scan(document);
  new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType===1)scan(n)}))).observe(document.body,{childList:true,subtree:true});
