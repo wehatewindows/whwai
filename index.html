@@ -836,6 +836,8 @@ input.has-err:not([type=checkbox]):not([type=radio]):not([type=file]):focus,text
 .admin-filter-wrap{display:inline-block;vertical-align:top}
 .admin-filter-menu{left:0;right:auto;transform-origin:top left;min-width:240px}
 .admin-filter-menu.flip{left:auto;right:0;transform-origin:top right}
+.admin-filter-menu.portal{position:fixed;z-index:60;margin:0;top:auto;left:auto;right:auto;transform-origin:top left}
+.cs-pop.portal{position:fixed;z-index:60;top:auto;left:auto;right:auto}
 </style>
 
 </head>
@@ -3442,7 +3444,7 @@ function paintFlagList(){
  list.querySelectorAll("[data-flag-browser]").forEach(b=>b.onclick=()=>disableBrowserByDevice(b.dataset.flagBrowser));
  list.querySelectorAll("[data-open-account]").forEach(b=>b.onclick=()=>renderAdminPanel("accounts",b.dataset.openAccount));
 }
-function paintAdminTab(){
+function paintAdminTab(){document.querySelectorAll("body > .admin-filter-menu").forEach(m=>m.remove());
  const box=$("admin-content");if(!box||!adminData)return;
  mbody.querySelectorAll("[data-admin-tab]").forEach(b=>b.classList.toggle("active",b.dataset.adminTab===adminTab));
  if(adminTab==="site")paintAdminSite(box);else if(adminTab==="accounts")paintAdminAccounts(box);else if(adminTab==="usage")paintAdminUsage(box);else if(adminTab==="flags")paintAdminFlags(box);else paintAdminAudit(box);
@@ -3633,7 +3635,7 @@ function filterDropdown(group,options,selected){
 }
 function closeFilterMenu(box){
  if(filterClosing)return;
- const menu=box.querySelector(".admin-filter-menu"),btn=box.querySelector("[data-filter-toggle]");
+ const menu=box.querySelector(".admin-filter-menu")||document.querySelector("body > .admin-filter-menu"),btn=box.querySelector("[data-filter-toggle]");
  if(!menu){adminFilterOpen=null;paintAdminTab();return}
  filterClosing=true;
  menu.classList.add("closing");
@@ -3642,7 +3644,9 @@ function closeFilterMenu(box){
 }
 function bindAdminFilters(box){
  box.querySelectorAll("[data-filter-toggle]").forEach(b=>b.onclick=()=>{const g=b.dataset.filterToggle;if(adminFilterOpen===g){closeFilterMenu(box);return}filterSettled=false;adminFilterOpen=g;paintAdminTab();requestAnimationFrame(fitFilterMenus)});
-function fitFilterMenus(){document.querySelectorAll(".admin-filter-menu").forEach(m=>{m.classList.remove("flip");const card=m.closest(".mcard"),btn=m.parentElement&&m.parentElement.querySelector(".admin-filter-btn");if(!card||!btn)return;const c=card.getBoundingClientRect(),b=btn.getBoundingClientRect(),w=m.getBoundingClientRect().width;const fitsRight=b.left+w<=c.right-8,fitsLeft=b.right-w>=c.left+8;if(!fitsRight&&fitsLeft)m.classList.add("flip")})}
+function placeFilterMenu(){document.querySelectorAll("body > .admin-filter-menu").forEach(m=>{const a=m._anchor;if(!a||!a.isConnected){m.remove();return}const b=a.getBoundingClientRect();const w=Math.min(240,innerWidth-16);m.style.width=w+"px";const h=m.offsetHeight;let left=b.left;if(left+w>innerWidth-8)left=Math.max(8,b.right-w);let top=b.bottom+6;if(top+h>innerHeight-8)top=Math.max(8,b.top-6-h);m.style.left=left+"px";m.style.top=top+"px"})}
+function fitFilterMenus(){const m=document.querySelector(".mcard .admin-filter-menu");if(!m)return;const btn=m.parentElement&&m.parentElement.querySelector(".admin-filter-btn");if(!btn)return;m._anchor=btn;document.body.appendChild(m);m.classList.add("portal");placeFilterMenu()}
+window.addEventListener("resize",placeFilterMenu);document.addEventListener("scroll",placeFilterMenu,true);
  box.querySelectorAll("[data-filter-group]").forEach(i=>i.onchange=()=>{const set=i.dataset.filterGroup==="audit"?adminAuditFilters:adminAccountFilters;if(i.checked)set.add(i.value);else set.delete(i.value);filterSettled=true;paintAdminTab()});
  box.querySelectorAll("[data-filter-clear]").forEach(b=>b.onclick=()=>{(b.dataset.filterClear==="audit"?adminAuditFilters:adminAccountFilters).clear();filterSettled=true;paintAdminTab()});
 }
@@ -3879,22 +3883,25 @@ updateSchoolNotice();setInterval(updateSchoolNotice,10000);
 </script>
 <div class="wn-overlay" id="wn" hidden role="dialog" aria-modal="true" aria-labelledby="wn-title"><div class="wn-card"><h2 id="wn-title">What's new</h2><p class="wn-ver" id="wn-ver" hidden></p><p class="wn-intro" id="wn-intro"></p><ul class="wn-list" id="wn-list"></ul><button type="button" class="pbtn wn-ok" id="wn-ok">Got it</button></div></div>
 <script>
-/* Custom dropdowns (native select kept as the value store) */
+/* Custom dropdowns (native select kept as the value store); menus float above everything */
 (function(){
  const chev='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+ const check='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
  const desc=Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,"value");
- let openMenu=null;
- function closeAll(except){ if(openMenu&&openMenu!==except){openMenu.close();} }
+ let openApi=null;
+ function place(menu){const a=menu._anchor;if(!a||!a.isConnected)return;const b=a.getBoundingClientRect();const w=Math.min(Math.max(b.width,220),innerWidth-16);menu.style.width=w+"px";const h=menu.offsetHeight;let left=b.left;if(left+w>innerWidth-8)left=Math.max(8,b.right-w);let top=b.bottom+6;if(top+h>innerHeight-8)top=Math.max(8,b.top-6-h);menu.style.left=left+"px";menu.style.top=top+"px"}
  function enhance(sel){
-  if(sel._cs||sel.multiple||sel.size>1)return; sel._cs=true;
+  if(sel._cs||sel.multiple||sel.size>1)return;sel._cs=true;
   const wrap=document.createElement("div");wrap.className="cs";
   const btn=document.createElement("button");btn.type="button";btn.className="cs-btn";btn.setAttribute("aria-haspopup","listbox");btn.setAttribute("aria-expanded","false");
   const menu=document.createElement("div");menu.className="cs-pop";menu.setAttribute("role","listbox");menu.hidden=true;
   sel.parentNode.insertBefore(wrap,sel);wrap.append(btn,menu,sel);
   sel.classList.add("cs-native");sel.tabIndex=-1;sel.setAttribute("aria-hidden","true");
   const label=()=>{const o=sel.options[sel.selectedIndex];btn.innerHTML='<span class="cs-val"></span>'+chev;btn.querySelector(".cs-val").textContent=o?o.text:"";btn.disabled=sel.disabled};
-  const build=()=>{menu.innerHTML="";[...sel.options].forEach(o=>{const b=document.createElement("button");b.type="button";b.className="mi";b.setAttribute("role","option");b.setAttribute("aria-selected",String(o.selected));const c=document.createElement("div");c.textContent=o.text;const t=document.createElement("i");t.innerHTML=o.selected?'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>':"";b.append(c,t);b.onclick=()=>{desc.set.call(sel,o.value);sel.dispatchEvent(new Event("change",{bubbles:true}));api.close();btn.focus()};menu.appendChild(b)})};
-  const api={open(){closeAll(api);build();menu.classList.remove("closing");menu.hidden=false;btn.setAttribute("aria-expanded","true");openMenu=api},close(){if(menu.hidden)return;btn.setAttribute("aria-expanded","false");if(openMenu===api)openMenu=null;menu.classList.add("closing");clearTimeout(menu._ct);menu._ct=setTimeout(()=>{menu.hidden=true;menu.classList.remove("closing")},160)}};
+  const build=()=>{menu.innerHTML="";[...sel.options].forEach(o=>{const b=document.createElement("button");b.type="button";b.className="mi";b.setAttribute("role","option");b.setAttribute("aria-selected",String(o.selected));const c=document.createElement("div");c.textContent=o.text;const t=document.createElement("i");t.innerHTML=o.selected?check:"";b.append(c,t);b.onclick=()=>{desc.set.call(sel,o.value);sel.dispatchEvent(new Event("change",{bubbles:true}));api.close();btn.focus()};menu.appendChild(b)})};
+  const api={menu,wrap,btn,
+   open(){if(openApi&&openApi!==api)openApi.close();build();clearTimeout(menu._ct);menu.classList.remove("closing");menu._anchor=btn;document.body.appendChild(menu);menu.classList.add("portal");menu.hidden=false;place(menu);btn.setAttribute("aria-expanded","true");openApi=api},
+   close(){if(menu.hidden||menu.classList.contains("closing"))return;btn.setAttribute("aria-expanded","false");if(openApi===api)openApi=null;menu.classList.add("closing");clearTimeout(menu._ct);menu._ct=setTimeout(()=>{menu.hidden=true;menu.classList.remove("closing","portal");menu.style.left=menu.style.top=menu.style.width="";wrap.appendChild(menu)},160)}};
   btn.onclick=()=>menu.hidden?api.open():api.close();
   btn.onkeydown=e=>{if(e.key==="Escape"){api.close()}else if(e.key==="ArrowDown"&&menu.hidden){e.preventDefault();api.open();const f=menu.querySelector(".mi");if(f)f.focus()}};
   menu.onkeydown=e=>{if(e.key==="Escape"){api.close();btn.focus()}};
@@ -3902,8 +3909,9 @@ updateSchoolNotice();setInterval(updateSchoolNotice,10000);
   sel.addEventListener("change",label);
   label();
  }
- document.addEventListener("pointerdown",e=>{
-  document.querySelectorAll(".cs-pop:not([hidden])").forEach(m=>{if(!m.parentNode.contains(e.target)){m.parentNode.querySelector(".cs-btn").click&&m.parentNode.querySelector(".cs-btn").setAttribute("aria-expanded","false");m.classList.add("closing");setTimeout(()=>{m.hidden=true;m.classList.remove("closing")},160)}})},true);
+ document.addEventListener("pointerdown",e=>{if(openApi&&!openApi.wrap.contains(e.target)&&!openApi.menu.contains(e.target))openApi.close()},true);
+ window.addEventListener("resize",()=>document.querySelectorAll(".cs-pop.portal").forEach(place));
+ document.addEventListener("scroll",()=>document.querySelectorAll(".cs-pop.portal").forEach(place),true);
  const scan=root=>{(root.matches&&root.matches("select")?[root]:[]).concat([...(root.querySelectorAll?root.querySelectorAll("select"):[])]).forEach(enhance)};
  scan(document);
  new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType===1)scan(n)}))).observe(document.body,{childList:true,subtree:true});
