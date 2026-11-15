@@ -838,6 +838,19 @@ input.has-err:not([type=checkbox]):not([type=radio]):not([type=file]):focus,text
 .admin-filter-menu.flip{left:auto;right:0;transform-origin:top right}
 .admin-filter-menu.portal{position:fixed;z-index:60;margin:0;top:auto;left:auto;right:auto;transform-origin:top left}
 .cs-pop.portal{position:fixed;z-index:60;top:auto;left:auto;right:auto}
+.visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;padding:0;margin:-1px}
+.skel{display:block;border-radius:999px;background:linear-gradient(90deg,#ececec 0%,#f8f8f8 45%,#ececec 90%);background-size:220% 100%;animation:skelShimmer 1.3s ease-in-out infinite}
+.skel-wrap{display:grid;gap:10px;position:relative}
+.skel-card{border:1px solid #e3e3e3;border-radius:18px;padding:14px 16px;background:#fff;animation:fadeIn .25s ease both}
+.skel-row{display:flex;align-items:center;gap:12px}
+.skel-avatar{width:36px;height:36px;border-radius:50%;flex:none}
+.skel-lines{flex:1;display:grid;gap:8px;min-width:0}
+.skel-line{height:12px}
+.skel-thin{height:9px}
+.skel-pill{width:84px;height:24px;flex:none}
+.skel-grid{display:grid;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid #eee}
+@keyframes skelShimmer{0%{background-position:120% 0}100%{background-position:-120% 0}}
+@media (prefers-reduced-motion:reduce){.skel,.skel-card{animation:none!important}}
 </style>
 
 </head>
@@ -3284,6 +3297,7 @@ function refreshAdmin(){
   if(g===adminPanelGeneration&&currentSettingsView==="admin"){paintAdminTab();toast("Admin data refreshed.")}
  }).catch(err=>{finish();if(g===adminPanelGeneration)showAdminError(err)});
 }
+function skeletonCards(n,label){const card='<div class="skel-card" aria-hidden="true"><div class="skel-row"><span class="skel skel-avatar"></span><div class="skel-lines"><span class="skel skel-line" style="width:38%"></span><span class="skel skel-line skel-thin" style="width:24%"></span></div><span class="skel skel-pill"></span></div><div class="skel-grid"><span class="skel skel-line skel-thin" style="width:60%"></span><span class="skel skel-line skel-thin" style="width:45%"></span></div></div>';return '<div class="skel-wrap" aria-busy="true" role="status"><span class="visually-hidden">'+label+'</span>'+card.repeat(n)+'</div>'}
 function renderAdminPanel(tab,query){
  currentSettingsView="admin";if(tab&&tab!==adminTab){adminFilterOpen=null;if(tab==="usage")adminUsageView="summary"}if(tab)adminTab=tab;if(query!=null)adminQuery=query;
  const generation=++adminPanelGeneration;
@@ -3292,7 +3306,7 @@ function renderAdminPanel(tab,query){
  mbody.querySelectorAll("[data-admin-tab]").forEach(b=>b.onclick=()=>renderAdminPanel(b.dataset.adminTab));
  $("admin-refresh").onclick=()=>refreshAdmin();syncAdminBack();
  if(adminData){paintAdminTab();if(Date.now()-adminDataAt>60000)refreshAdmin();return}
- $("admin-content").innerHTML='<p class="sm"><span class="sync-spinner" aria-hidden="true"></span>Loading admin data…</p>';
+ $("admin-content").innerHTML=skeletonCards(3,"Loading admin data…");
  adminFetch().then(()=>{if(generation===adminPanelGeneration&&currentSettingsView==="admin")paintAdminTab()}).catch(err=>{if(generation===adminPanelGeneration)showAdminError(err)});
 }
 let adminFlagsData=null,adminFlagsLoading=null,disableSubject="account";
