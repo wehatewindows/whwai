@@ -1701,7 +1701,7 @@ async function downloadDisabledData(){
 }
 try{if(localStorage.getItem(ACCESS_OFF_KEY)==="1"){accessRequired=false;openApp()}else{document.body.classList.add("access-locked")}}catch(e){document.body.classList.add("access-locked")}
 accessForm.addEventListener("submit",async e=>{e.preventDefault();const code=accessInput.value.trim();if(!code)return;accessButton.disabled=true;accessError.hidden=true;accessError.textContent="";try{if(!API_URL)throw new Error("backend");const result=await post({action:"access_check",code,deviceId:getDeviceId()});if(result&&result.aiEnabled===false){showAIDisabled();return}
-   if(result&&result.error==="access_locked_temporarily"){accessError.textContent="Too many attempts. Wait 15 minutes and try again.";accessError.hidden=false;return}if(result&&result.ok&&result.token){unlockEarlyAccess(result.token,result.expiresAt)}else{accessError.textContent="Incorrect code";accessError.hidden=false;accessInput.select()}}catch(err){accessError.textContent="Unable to verify code";accessError.hidden=false}finally{accessButton.disabled=false}});
+   if(result&&result.error==="access_locked_temporarily"){accessError.hidden=true;window.fieldError(accessInput,"Too many attempts. Wait 15 minutes and try again.",true);return}if(result&&result.ok&&result.token){unlockEarlyAccess(result.token,result.expiresAt)}else{accessError.hidden=true;window.fieldError(accessInput,"Incorrect code",true);accessInput.select()}}catch(err){accessError.hidden=true;window.fieldError(accessInput,"Unable to verify code",true)}finally{accessButton.disabled=false}});
 (async function checkBackendStatus(){if(!API_URL){lockEarlyAccess(false);return}try{const status=await post({action:"status_check"});setTimeout(()=>{schoolStatusReady=true;updateSchoolLock()},0);applySiteStatus(status);if(status&&status.aiEnabled===false){showAIDisabled();return}
  if(status&&status.accessRequired===false){accessRequired=false;try{localStorage.setItem(ACCESS_OFF_KEY,"1")}catch(e){}openApp();return}
  accessRequired=true;try{localStorage.removeItem(ACCESS_OFF_KEY)}catch(e){}
@@ -2996,7 +2996,7 @@ function applyLoginChats(result){
  if(accountSession&&accountSession.user&&accountSession.user.mustChange)renderRequiredPasswordChange();
  else if(!modal.hidden&&currentSettingsView==="account-auth")renderAccount();
 }
-function showAccountAuthError(message){const el=mbody.querySelector("#account-auth-error");if(el){el.textContent=message||"The account action could not be completed.";el.hidden=false}else setMsg(message)}
+function showAccountAuthError(message,field){const text=message||"The account action could not be completed.";const el=mbody.querySelector("#account-auth-error");if(field&&window.fieldError){if(el)el.hidden=true;window.fieldError(field,text,true);return}if(el){el.textContent=text;el.hidden=false}else setMsg(text)}
 let buildIdCache="",buildIdLoading=null,buildIdShown=false;
 // Short ID of the latest commit on main (the version the app is built from). Public GitHub API, no user data sent.
 function loadBuildId(){
@@ -3206,8 +3206,8 @@ function renderAccountAuth(mode){
  mbody.querySelector("#account-auth-back").onclick=renderSettings;
  form.onsubmit=async e=>{
   e.preventDefault();const rawUser=mbody.querySelector("#account-username").value.trim(),username=signup?rawUser:rawUser.toLowerCase(),password=mbody.querySelector("#account-password").value;
-  if(signup?!/^[a-z0-9]{3,20}$/.test(rawUser):!/^[a-z0-9_]{3,20}$/.test(username)){showAccountAuthError(signup?"Use 3–20 characters: lowercase letters and numbers only.":"Use 3–20 characters: lowercase letters, numbers, or underscores.");return}
-  if(signup&&password!==mbody.querySelector("#account-password-confirm").value){showAccountAuthError("The passwords do not match.");return}
+  if(signup?!/^[a-z0-9]{3,20}$/.test(rawUser):!/^[a-z0-9_]{3,20}$/.test(username)){showAccountAuthError(signup?"Use 3–20 characters: lowercase letters and numbers only.":"Use 3–20 characters: lowercase letters, numbers, or underscores.",mbody.querySelector("#account-username"));return}
+  if(signup&&password!==mbody.querySelector("#account-password-confirm").value){showAccountAuthError("The passwords do not match.",mbody.querySelector("#account-password-confirm"));return}
   const submit=mbody.querySelector("#account-auth-submit");submit.disabled=true;submit.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>'+(signup?"Creating…":"Signing in…");
   try{
    const body={action:signup?"auth_signup":"auth_login",username,password,deviceId:getDeviceId()};
@@ -3220,7 +3220,7 @@ function renderAccountAuth(mode){
    accountMergePendingToast=!accountSession.user.mustChange&&S.chats.length>0;
    applyLoginChats(result);
    if(!accountSession.user.mustChange){syncAccountChatsNow();renderAccount()}
-  }catch(err){if(err&&err.payload&&err.payload.error==="breached_password_confirm")showBreachConfirm(mbody.querySelector("#account-auth-error"),err.payload.message);else showAccountAuthError(err&&err.payload&&err.payload.message||"Couldn't complete sign-in. Check your details and try again.");submit.disabled=false;submit.textContent=signup?"Create account":"Sign in"}
+  }catch(err){if(err&&err.payload&&err.payload.error==="breached_password_confirm")showBreachConfirm(mbody.querySelector("#account-auth-error"),err.payload.message);else{const msg=err&&err.payload&&err.payload.message||"Couldn't complete sign-in. Check your details and try again.";showAccountAuthError(msg,/user/i.test(msg)?mbody.querySelector("#account-username"):mbody.querySelector("#account-password"))}submit.disabled=false;submit.textContent=signup?"Create account":"Sign in"}
  };
 }
 function renderAccount(){
@@ -3240,10 +3240,10 @@ function renderPasswordChange(required){
  currentSettingsView=required?"password-required":"password-change";$("modal-title").textContent=required?"Set a new password":"Change password";
  mbody.innerHTML=`<p class="sm">${required?"Your account must have a new password before you can continue.":"Choose a new password with at least 8 characters."}</p><form id="password-change-form" class="account-form" autocomplete="off">${required?"":'<label for="current-password">Current password</label><input id="current-password" type="password" maxlength="200" autocomplete="current-password" required>'}<label for="new-password">New password</label><input id="new-password" type="password" minlength="8" maxlength="200" autocomplete="new-password" required><label for="new-password-confirm">Confirm new password</label><input id="new-password-confirm" type="password" minlength="8" maxlength="200" autocomplete="new-password" required><p class="access-error" id="password-change-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar">${required?"":'<button type="button" class="pbtn" id="password-cancel">Cancel</button>'}<button type="submit" class="pbtn" id="password-change-submit">Save password</button></div></form>`;
  enhanceAuthForm(true,{pw:"new-password",pc:"new-password-confirm"});const form=$("password-change-form");if(!required)$("password-cancel").onclick=renderAccount;
- form.onsubmit=async e=>{e.preventDefault();const next=$("new-password").value,confirmPassword=$("new-password-confirm").value;if(next.length<8){passwordError("Choose a password with at least 8 characters.");return}if(next!==confirmPassword){passwordError("The passwords do not match.");return}
+ form.onsubmit=async e=>{e.preventDefault();const next=$("new-password").value,confirmPassword=$("new-password-confirm").value;if(next.length<8){passwordError("Choose a password with at least 8 characters.",$("new-password"));return}if(next!==confirmPassword){passwordError("The passwords do not match.",$("new-password-confirm"));return}
   const b=$("password-change-submit");b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Saving…';
   try{const result=await post({action:"account_password_change",currentPassword:required?"":($("current-password")?$("current-password").value:""),newPassword:next,acknowledgeBreached:!!($("breach-ack")&&$("breach-ack").checked)});if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});accountSession.user=result.user||accountSession.user;accountReady=true;toast("Password updated.");if(required){accountInitialSyncPending=true;syncAccountChatsNow()}if(required&&accountSession.user&&accountSession.user.role==="admin")renderAdminPanel("site");else renderAccount()}
-  catch(err){if(err&&err.payload&&err.payload.error==="breached_password_confirm")showBreachConfirm($("password-change-error"),err.payload.message);else passwordError(err&&err.payload&&err.payload.message||"Couldn't change the password. Try again.");b.disabled=false;b.textContent="Save password"}
+  catch(err){if(err&&err.payload&&err.payload.error==="breached_password_confirm")showBreachConfirm($("password-change-error"),err.payload.message);else{const msg=err&&err.payload&&err.payload.message||"Couldn't change the password. Try again.";passwordError(msg,/current|incorrect|wrong/i.test(msg)&&$("current-password")?$("current-password"):$("new-password"))}b.disabled=false;b.textContent="Save password"}
  };
 }
 function showBreachConfirm(el,message){
@@ -3251,7 +3251,7 @@ function showBreachConfirm(el,message){
  el.textContent=message;el.hidden=false;
  if(!$("breach-ack")){const wrap=document.createElement("label");wrap.className="check-row breach-ack";wrap.innerHTML='<input type="checkbox" id="breach-ack"> I understand the risk, and I want to keep this password anyway.';el.insertAdjacentElement("afterend",wrap)}
 }
-function passwordError(message){const el=$("password-change-error");if(el){el.textContent=message;el.hidden=false}}
+function passwordError(message,field){const el=$("password-change-error");const target=field||$("new-password");if(target&&window.fieldError){if(el)el.hidden=true;window.fieldError(target,message,true);return}if(el){el.textContent=message;el.hidden=false}}
 function clearSignedInLocalCache(){clearAccountSession();try{localStorage.removeItem(ARIES_INTRO_KEY)}catch(e){}ariesIntroShownThisPage=false;S={chats:[],cur:null,dead:[],model:"aries-1",col:!!S.col};store.set(JSON.stringify(persistedState()));renderList();renderChat()}
 async function performSignoutCurrent(){
  if(!accountSession||!accountSession.token)return;
@@ -3722,7 +3722,7 @@ function renderCreateAccount(){
    if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});
    await adminFetch(true).catch(()=>{});
    renderOneTimePassword(result.role==="admin"?"New admin account created":"New account created",result.username,result.temporaryPassword,result.expiresAt,"accounts");
-  }catch(err){const error=$("create-account-error");if(!error)return;error.textContent=err&&err.payload&&err.payload.message||"Couldn't create the account.";error.hidden=false;b.disabled=false;b.textContent="Create account"}
+  }catch(err){const msg=err&&err.payload&&err.payload.message||"Couldn't create the account.";const input=$("create-account-username");if(input)window.fieldError(input,msg,true);else{const error=$("create-account-error");if(error){error.textContent=msg;error.hidden=false}}b.disabled=false;b.textContent="Create account"}
  };
 }
 const DISABLE_PRESETS=[
@@ -3905,7 +3905,7 @@ $("access-admin-form").onsubmit=async e=>{
  e.preventDefault();const username=$("access-admin-user").value.trim().toLowerCase(),password=$("access-admin-password").value,b=$("access-admin-submit"),error=$("access-admin-error");if(!username||!password)return;
  b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Signing in…';error.hidden=true;
  try{const result=await post({action:"auth_admin_login",username,password});if(!result||!result.ok||!result.token)throw Object.assign(new Error(result&&result.error||"invalid_admin_credentials"),{payload:result});setAccountFromResult(result);if(result.selfDisabled){selfDisabledInfo={account:result.selfDisabled,browser:result.selfBrowser||null,userId:result.selfId||""};leaveDisabledGate()}$("access-admin-password").value="";hideEl(accessGate);openApp(true);if(result.user&&result.user.mustChange){openSettings();renderRequiredPasswordChange()}else{openSettings(()=>renderAdminPanel("site"))}}
- catch(err){error.textContent=err&&err.payload&&err.payload.message||"Invalid admin username or password.";error.hidden=false}
+ catch(err){error.hidden=true;window.fieldError($("access-admin-password"),err&&err.payload&&err.payload.message||"Invalid admin username or password.",true)}
  finally{b.disabled=false;b.textContent="Sign in"}
 };
 $("gear").onclick=openSettings;$("mx").onclick=closeSettings;modal.onclick=e=>{if(e.target===modal)closeSettings()};
@@ -3971,14 +3971,16 @@ updateSchoolNotice();setInterval(updateSchoolNotice,10000);
 
 /* Custom required-field messages (replaces the browser bubble) */
 (function(){
- const hostOf=t=>t.closest(".pw-row,.cs")||t;
+ const hostOf=t=>t.closest(".pw-row,.cs,.access-form")||t;
  const msgOf=t=>{const v=t.validity;if(v.valueMissing)return "This field is required.";if(v.tooShort)return "Use at least "+t.minLength+" characters.";if(v.patternMismatch)return t.dataset.err||"Use only letters or numbers, "+(t.minLength||3)+" to "+(t.maxLength||20)+" characters.";if(v.tooLong)return "Use no more than "+t.maxLength+" characters.";return "Check this field."};
  const clear=t=>{const h=hostOf(t);const e=h.nextElementSibling;if(e&&e.classList.contains("field-err"))e.remove();t.classList.remove("has-err");t.removeAttribute("aria-invalid");const b=h.querySelector(".cs-btn");if(b)b.classList.remove("has-err")};
+ const attach=t=>{if(!t._fe){t._fe=1;const c=()=>clear(t);t.addEventListener("input",c);t.addEventListener("change",c)}};
+ window.fieldError=(t,msg,focus)=>{if(!t)return;const h=hostOf(t);let err=h.nextElementSibling;if(!(err&&err.classList.contains("field-err"))){err=document.createElement("div");err.className="field-err";err.setAttribute("role","alert");h.insertAdjacentElement("afterend",err)}
+  err.textContent=msg;t.setAttribute("aria-invalid","true");t.classList.add("has-err");const b=h.querySelector(".cs-btn");if(b)b.classList.add("has-err");attach(t);
+  if(focus){const f=(b&&!b.disabled)?b:t;if(f.focus)f.focus()}};
  document.addEventListener("invalid",e=>{const t=e.target;if(!(t instanceof HTMLElement))return;e.preventDefault();
-  const h=hostOf(t);let err=h.nextElementSibling;if(!(err&&err.classList.contains("field-err"))){err=document.createElement("div");err.className="field-err";err.setAttribute("role","alert");h.insertAdjacentElement("afterend",err)}
-  err.textContent=msgOf(t);t.setAttribute("aria-invalid","true");t.classList.add("has-err");const b=h.querySelector(".cs-btn");if(b)b.classList.add("has-err");
-  if(!t._fe){t._fe=1;const c=()=>clear(t);t.addEventListener("input",c);t.addEventListener("change",c)}
-  if(!document._fvFocused){document._fvFocused=1;setTimeout(()=>{document._fvFocused=0},0);const f=(b&&!b.disabled)?b:t;if(f.focus)f.focus()}
+  const first=!document._fvFocused;if(first){document._fvFocused=1;setTimeout(()=>{document._fvFocused=0},0)}
+  window.fieldError(t,msgOf(t),first);
  },true);
 })();
 </script>
