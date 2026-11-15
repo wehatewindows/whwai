@@ -3374,15 +3374,17 @@ function browserButtonsHtml(a){
  }
  return h+'<button type="button" class="pbtn" data-account-action="flag" data-target-id="'+id+'">Flag account</button>';
 }
+function backToAdminAccounts(){if(!modal.hidden)renderAdminPanel("accounts")}
+function refreshAdminAccounts(){if(!modal.hidden&&currentSettingsView==="admin"&&adminTab==="accounts")renderAdminPanel("accounts")}
 async function runAccountWork(payload,doneText){
- adminActionPending=true;$("modal-title").textContent="Working…";mbody.innerHTML='<div class="confirm-panel"><span class="choice-icon"><span class="sync-spinner" aria-hidden="true"></span></span><div><strong>Applying admin action…</strong><p>Please keep this window open while WHWai updates.</p></div></div>';animateMenuContent();
+ adminActionPending=true;backToAdminAccounts();toast("Applying…");
  try{
   const result=await post(payload);
   if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});
   await adminFetch(true).catch(()=>{});
   adminFlagsData=null;toast(doneText);
-  if(!modal.hidden)renderAdminPanel("accounts");
- }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't update that account.");if(!modal.hidden)renderAdminPanel("accounts")}
+  refreshAdminAccounts();
+ }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't update that account.");refreshAdminAccounts()}
  finally{adminActionPending=false}
 }
 async function runBrowserAction(action,targetId){
@@ -3806,14 +3808,14 @@ async function runDisableAction(action,targetId){
  const picked=document.querySelector('input[name="app-confirm-radio"]:checked');const dataMode=picked?picked.value:"keep";
  const form=readDisableForm();
  const alsoBrowsers=!!(document.getElementById("dis-browsers")&&document.getElementById("dis-browsers").checked);
- adminActionPending=true;$("modal-title").textContent="Working…";mbody.innerHTML='<div class="confirm-panel"><span class="choice-icon"><span class="sync-spinner" aria-hidden="true"></span></span><div><strong>Applying admin action…</strong><p>Please keep this window open while WHWai updates the account.</p></div></div>';animateMenuContent();
+ adminActionPending=true;backToAdminAccounts();toast("Applying…");
  try{
   const payload=edit?Object.assign({action:"admin_account_action",accountAction:"update_disabled_reason",targetId:targetId},form):Object.assign({action:"admin_account_action",accountAction:"disable",targetId:targetId,dataMode:dataMode,disableBrowsers:alsoBrowsers},form);
   const result=await post(payload);
   if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});
   await adminFetch(true).catch(()=>{});
-  toast(edit?"Reason updated.":"Account updated.");if(!modal.hidden)renderAdminPanel("accounts");
- }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't update that account.");if(!modal.hidden)renderAdminPanel("accounts")}
+  toast(edit?"Reason updated.":"Account updated.");refreshAdminAccounts();
+ }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't update that account.");refreshAdminAccounts()}
  finally{adminActionPending=false}
 }
 async function runAdminAccountAction(action,targetId){
@@ -3827,14 +3829,14 @@ async function runAdminAccountAction(action,targetId){
  const picked=choice.radios?document.querySelector('input[name="app-confirm-radio"]:checked'):null,dataMode=picked?picked.value:"keep";
  if(!accepted){if(!modal.hidden&&!closingModal)renderAdminPanel("accounts");return}
  if(modal.hidden||currentSettingsView!=="app-confirm")return;
- adminActionPending=true;$("modal-title").textContent="Working…";mbody.innerHTML='<div class="confirm-panel"><span class="choice-icon"><span class="sync-spinner" aria-hidden="true"></span></span><div><strong>Applying admin action…</strong><p>Please keep this window open while WHWai updates the account.</p></div></div>';animateMenuContent();
+ adminActionPending=true;backToAdminAccounts();toast("Applying…");
  try{
   const result=await post({action:"admin_account_action",accountAction:action,targetId:targetId,reason:reason,dataMode:dataMode});
   if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});
   await adminFetch(true).catch(()=>{});
   if(result.temporaryPassword){renderOneTimePassword("Temporary password",result.username,result.temporaryPassword,result.expiresAt,"accounts");return}
-  toast("Account updated.");if(!modal.hidden)renderAdminPanel("accounts");
- }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't update that account.");if(!modal.hidden)renderAdminPanel("accounts")}
+  toast("Account updated.");refreshAdminAccounts();
+ }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't update that account.");refreshAdminAccounts()}
  finally{adminActionPending=false}
 }
 async function appConfirm(options){
@@ -3894,7 +3896,7 @@ renderExportInfo=wrapViewTransition(renderExportInfo);
 renderPrivacyPolicy=wrapViewTransition(renderPrivacyPolicy);renderTerms=wrapViewTransition(renderTerms);
 renderLocalDeleteConfirm=wrapViewTransition(renderLocalDeleteConfirm);
 function finishModalClose(){if(!closingModal)return;if(closeModalTimer!==null){clearTimeout(closeModalTimer);closeModalTimer=null}modal.hidden=true;modal.classList.remove("closing");closingModal=false}
-function closeSettings(){if(currentSettingsView==="password-required"&&accountSession&&accountSession.user&&accountSession.user.mustChange){toast("Set a new password to continue.");return}if(adminActionPending){toast("Please wait for the admin action to finish.");return}resolvePendingConfirmation(false);if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}if(modal.hidden||closingModal)return;closingModal=true;modal.classList.add("closing");closeModalTimer=setTimeout(finishModalClose,190)}
+function closeSettings(){if(currentSettingsView==="password-required"&&accountSession&&accountSession.user&&accountSession.user.mustChange){toast("Set a new password to continue.");return}resolvePendingConfirmation(false);if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}if(modal.hidden||closingModal)return;closingModal=true;modal.classList.add("closing");closeModalTimer=setTimeout(finishModalClose,190)}
 function openSettings(initialRenderer){if(closeModalTimer!==null){clearTimeout(closeModalTimer);closeModalTimer=null}closingModal=false;modal.classList.remove("closing");modal.hidden=false;smsg="";if(typeof initialRenderer==="function")initialRenderer();else renderSettings()}
 function gateAdminMode(open){
  const form=$("access-admin-form"),link=$("access-admin-open");form.hidden=!open;link.hidden=!!open;accessForm.hidden=!!open||aiDisabled;accessError.hidden=true;$("access-admin-error").hidden=true;
