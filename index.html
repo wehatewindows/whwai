@@ -841,16 +841,23 @@ input.has-err:not([type=checkbox]):not([type=radio]):not([type=file]):focus,text
 .visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;padding:0;margin:-1px}
 .skel{display:block;border-radius:999px;background:linear-gradient(90deg,#ececec 0%,#f8f8f8 45%,#ececec 90%);background-size:220% 100%;animation:skelShimmer 1.3s ease-in-out infinite}
 .skel-wrap{display:grid;gap:10px;position:relative}
-.skel-card{border:1px solid #e3e3e3;border-radius:18px;padding:14px 16px;background:#fff;animation:fadeIn .25s ease both}
-.skel-row{display:flex;align-items:center;gap:12px}
-.skel-avatar{width:36px;height:36px;border-radius:50%;flex:none}
-.skel-lines{flex:1;display:grid;gap:8px;min-width:0}
-.skel-line{height:12px}
-.skel-thin{height:9px}
-.skel-pill{width:84px;height:24px;flex:none}
-.skel-grid{display:grid;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid #eee}
+.skel-wrap-chat{gap:7px}
+.skel-acct{border:1px solid #e4e4e4;border-radius:16px;background:#fafafa;padding:14px;animation:fadeIn .25s ease both}
+.skel-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.skel-id{display:flex;align-items:center;gap:10px;min-width:0}
+.skel-avatar{width:30px;height:30px;border-radius:50%;flex:none}
+.skel-name{width:104px;height:14px;border-radius:7px}
+.skel-role{width:86px;height:22px;border-radius:999px;flex:none}
+.skel-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px 16px;margin-top:12px;padding-top:12px;border-top:1px solid #ececec}
+.skel-facts>div{min-width:0}
+.skel-label{display:block;width:52px;height:8px;border-radius:4px}
+.skel-value{display:block;width:78%;height:10px;border-radius:5px;margin-top:6px}
+.skel-chat{background:var(--chip);border-radius:14px;padding:12px 36px 12px 13px;animation:fadeIn .25s ease both}
+.skel-chat .skel{background:linear-gradient(90deg,#c6c6c6 0%,#d6d6d6 45%,#c6c6c6 90%);background-size:220% 100%}
+.skel-ct{display:block;width:62%;height:13px;border-radius:6px}
+.skel-cm{display:block;width:34%;height:9px;border-radius:5px;margin-top:6px}
 @keyframes skelShimmer{0%{background-position:120% 0}100%{background-position:-120% 0}}
-@media (prefers-reduced-motion:reduce){.skel,.skel-card{animation:none!important}}
+@media (prefers-reduced-motion:reduce){.skel,.skel-acct,.skel-chat{animation:none!important}}
 </style>
 
 </head>
@@ -1325,7 +1332,7 @@ async function bulkDelete(){
 function renderList(){
  list.innerHTML="";closeMenu();list.classList.toggle("selecting",selecting);
  for(const id of [...selectedIds]){if(!S.chats.some(c=>c.id===id))selectedIds.delete(id)}
- if(accountInitialSyncPending&&accountSession&&accountSession.token&&!S.chats.length){list.innerHTML=skeletonCards(3,"Loading your chats…");renderBulkBar();return}
+ if(accountInitialSyncPending&&accountSession&&accountSession.token&&!S.chats.length){list.innerHTML=skeletonCards(3,"Loading your chats…","chat");renderBulkBar();return}
  renderBulkBar();
  const query=searchInput?searchInput.value.trim():"";
  if(searchClear)searchClear.hidden=!query;
@@ -3298,7 +3305,12 @@ function refreshAdmin(){
   if(g===adminPanelGeneration&&currentSettingsView==="admin"){paintAdminTab();toast("Admin data refreshed.")}
  }).catch(err=>{finish();if(g===adminPanelGeneration)showAdminError(err)});
 }
-function skeletonCards(n,label){const card='<div class="skel-card" aria-hidden="true"><div class="skel-row"><span class="skel skel-avatar"></span><div class="skel-lines"><span class="skel skel-line" style="width:38%"></span><span class="skel skel-line skel-thin" style="width:24%"></span></div><span class="skel skel-pill"></span></div><div class="skel-grid"><span class="skel skel-line skel-thin" style="width:60%"></span><span class="skel skel-line skel-thin" style="width:45%"></span></div></div>';return '<div class="skel-wrap" aria-busy="true" role="status"><span class="visually-hidden">'+label+'</span>'+card.repeat(n)+'</div>'}
+function skeletonCards(n,label,kind){
+ const acct='<div class="skel-acct" aria-hidden="true"><div class="skel-head"><span class="skel-id"><span class="skel skel-avatar"></span><span class="skel skel-name"></span></span><span class="skel skel-role"></span></div><div class="skel-facts"><div><span class="skel skel-label" style="width:64px"></span><span class="skel skel-value" style="width:70%"></span></div><div><span class="skel skel-label" style="width:70px"></span><span class="skel skel-value" style="width:56%"></span></div><div><span class="skel skel-label" style="width:44px"></span><span class="skel skel-value" style="width:36%"></span></div></div></div>';
+ const chat='<div class="skel-chat" aria-hidden="true"><span class="skel skel-ct"></span><span class="skel skel-cm"></span></div>';
+ const wrap=kind==="chat"?"skel-wrap skel-wrap-chat":"skel-wrap";
+ return '<div class="'+wrap+'" aria-busy="true" role="status"><span class="visually-hidden">'+label+'</span>'+(kind==="chat"?chat:acct).repeat(n)+'</div>';
+}
 function renderAdminPanel(tab,query){
  currentSettingsView="admin";if(tab&&tab!==adminTab){adminFilterOpen=null;if(tab==="usage")adminUsageView="summary"}if(tab)adminTab=tab;if(query!=null)adminQuery=query;
  const generation=++adminPanelGeneration;
