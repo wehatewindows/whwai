@@ -117,6 +117,7 @@ svg{display:block}
 .delete-choice .choice-copy{min-width:0}.delete-choice strong{display:block;font-size:13.5px;line-height:1.25}.delete-choice p{font-size:12px;line-height:1.35;color:#666;margin:3px 0 0}.delete-choice .pbtn{padding:7px 10px;font-size:12.5px;white-space:nowrap}
 .confirm-foot{position:sticky;bottom:-18px;z-index:2;background:#fff;margin:14px -20px -18px;padding:12px 20px 14px;border-top:1px solid #ececec;box-shadow:0 -8px 12px -10px rgba(0,0,0,.14)}
 @media (max-width:640px){.confirm-foot{bottom:-16px;margin:14px -16px -16px;padding:12px 16px 14px}}
+.site-group{margin:18px 0 0}.site-group-h{margin:0 0 4px;font-size:12px;font-weight:600;letter-spacing:.02em;color:#6b6b6b}.site-group .admin-advanced{margin-top:2px}.admin-account.is-working{opacity:.78;transition:opacity .2s ease}.row-spin{width:14px;height:14px;border-width:2px;margin-right:2px;flex:none}
 .confirm-panel{display:flex;gap:14px;align-items:center;padding:14px 16px;background:#f7f7f7;border:1px solid #e5e5e5;border-radius:14px;margin:12px 0}.confirm-panel>div{flex:1 1 auto;min-width:0}.confirm-panel .choice-icon{width:38px;height:38px;flex:none;display:grid;place-items:center;border-radius:12px;background:#fae7e7;color:#c33333}.confirm-panel p{margin:0;font-size:14px;line-height:1.45;color:#444;text-wrap:pretty;overflow-wrap:anywhere}.confirm-panel p:empty{display:none}.app-confirm-card .confirm-panel{align-items:center}
 .data-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.data-toolbar .pbtn{flex:1}.data-toolbar .pbtn.danger{background:#fbeaea}.data-toolbar .pbtn.danger:hover{background:#f4dada}
 .export-contents{padding:10px 12px;background:#f5f5f5;border-radius:12px;margin:10px 0}.export-contents ul{margin:6px 0;padding-left:20px}.export-contents li{font-size:13px;margin:3px 0}
@@ -3375,17 +3376,32 @@ function browserButtonsHtml(a){
  return h+'<button type="button" class="pbtn" data-account-action="flag" data-target-id="'+id+'">Flag account</button>';
 }
 function backToAdminAccounts(){if(!modal.hidden)renderAdminPanel("accounts")}
-function refreshAdminAccounts(){if(!modal.hidden&&currentSettingsView==="admin"&&adminTab==="accounts")renderAdminPanel("accounts")}
-async function runAccountWork(payload,doneText){
- adminActionPending=true;backToAdminAccounts();toast("Applying…");
+function refreshAdminAccounts(){if(!modal.hidden&&currentSettingsView==="admin"&&adminTab==="accounts"&&$("admin-account-results"))paintAccountList()}
+const accountsWorking=new Set();
+function patchAccountRow(id,change){const row=(adminData&&adminData.accounts||[]).find(a=>a.id===id);if(!row||!change)return null;const prev={};Object.keys(change).forEach(k=>{prev[k]=row[k]});Object.assign(row,change);return ()=>{Object.assign(row,prev)}}
+// Runs one admin account action in the background: the row shows a spinner and the new status right away,
+// the server result replaces the optimistic values, and a failure rolls the row back.
+async function runAccountOp(id,change,send,doneText,opts){
+ accountsWorking.add(id);const undo=patchAccountRow(id,change);refreshAdminAccounts();
  try{
-  const result=await post(payload);
+  const result=await send();
   if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});
+  if(opts&&opts.flagsChanged)adminFlagsData=null;
+  accountsWorking.delete(id);
   await adminFetch(true).catch(()=>{});
-  adminFlagsData=null;toast(doneText);
-  refreshAdminAccounts();
- }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't update that account.");refreshAdminAccounts()}
- finally{adminActionPending=false}
+  if(doneText)toast(doneText);
+  return result;
+ }catch(err){
+  if(undo)undo();
+  toast(err&&err.payload&&err.payload.message||"Couldn't update that account.");
+  return null;
+ }finally{
+  accountsWorking.delete(id);refreshAdminAccounts();
+ }
+}
+async function runAccountWork(payload,doneText){
+ backToAdminAccounts();
+ await runAccountOp(payload.targetId,null,()=>post(payload),doneText,{flagsChanged:true});
 }
 async function runBrowserAction(action,targetId){
  const edit=action==="edit_browser_reason";
@@ -3553,7 +3569,27 @@ async function demoteFromDisable(targetId){
 document.addEventListener("click",e=>{const d=e.target.closest&&e.target.closest("#dis-demote");if(d)demoteFromDisable(d.dataset.demoteTarget)});
 function paintAdminSite(box){
  const v=adminData.settings||{};
- box.innerHTML=`<form id="admin-settings-form" class="account-form" autocomplete="off"><label class="check-row"><input id="admin-ai-enabled" type="checkbox"> AI enabled</label><label class="check-row"><input id="admin-access-required" type="checkbox"> Require access code screen on page load</label><button type="button" class="pbtn data-manage-button" id="whatsnew-admin-open"><span>What's new screen</span></button><label for="admin-signup-mode">Sign-up mode</label><select id="admin-signup-mode"><option value="code">Access code required</option><option value="open">Open sign-up</option><option value="closed">Closed</option></select><label for="admin-site-notice">Site-wide notice (optional)</label><textarea id="admin-site-notice" class="reason-input" rows="3" maxlength="240" placeholder="Leave blank to clear the notice" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea><label class="check-row"><input id="admin-notice-dismissible" type="checkbox"> Let users dismiss the announcement</label><label class="check-row"><input id="admin-notice-gates" type="checkbox"> Show the announcement on sign-in, access code, and disabled screens</label><label for="admin-new-access-code">Change access code (leave blank to keep current)</label><input id="admin-new-access-code" type="text" class="masked-field" maxlength="80" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"><p class="access-error" id="admin-settings-error" role="status" aria-live="polite" hidden></p><details class="admin-advanced"><summary>Advanced</summary><label class="check-row"><input id="admin-stim-disabled" type="checkbox"> Disable Stimulation Mode for everyone</label><label class="check-row"><input id="admin-school-override" type="checkbox"> Turn off the account requirement for today (resets at midnight Hawaii time)</label></details><div class="data-toolbar"><button class="pbtn" id="admin-settings-save" type="submit">Save changes</button></div></form>`;
+ box.innerHTML=`<form id="admin-settings-form" class="account-form site-form" autocomplete="off">
+<section class="site-group"><h4 class="site-group-h">Access</h4>
+<label class="check-row"><input id="admin-ai-enabled" type="checkbox"> AI enabled</label>
+<label class="check-row"><input id="admin-access-required" type="checkbox"> Require access code screen on page load</label>
+<label for="admin-signup-mode">Sign-up mode</label><select id="admin-signup-mode"><option value="code">Access code required</option><option value="open">Open sign-up</option><option value="closed">Closed</option></select>
+<label for="admin-new-access-code">Change access code (leave blank to keep current)</label><input id="admin-new-access-code" type="text" class="masked-field" maxlength="80" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true">
+</section>
+<section class="site-group"><h4 class="site-group-h">Announcement</h4>
+<label for="admin-site-notice">Site-wide notice (optional)</label><textarea id="admin-site-notice" class="reason-input" rows="3" maxlength="240" placeholder="Leave blank to clear the notice" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea>
+<label class="check-row"><input id="admin-notice-dismissible" type="checkbox"> Let users dismiss the announcement</label>
+<label class="check-row"><input id="admin-notice-gates" type="checkbox"> Show the announcement on sign-in, access code, and disabled screens</label>
+<button type="button" class="pbtn data-manage-button" id="whatsnew-admin-open"><span>What's new screen</span></button>
+</section>
+<section class="site-group">
+<details class="admin-advanced"><summary>Advanced</summary>
+<label class="check-row"><input id="admin-stim-disabled" type="checkbox"> Disable Stimulation Mode for everyone</label>
+<label class="check-row"><input id="admin-school-override" type="checkbox"> Turn off the account requirement for today (resets at midnight Hawaii time)</label>
+</details>
+</section>
+<p class="access-error" id="admin-settings-error" role="status" aria-live="polite" hidden></p>
+<div class="data-toolbar"><button class="pbtn" id="admin-settings-save" type="submit">Save changes</button></div></form>`;
  $("whatsnew-admin-open").onclick=renderWhatsNewAdmin;$("admin-ai-enabled").checked=!!v.aiEnabled;$("admin-access-required").checked=!!v.accessCodeRequired;$("admin-signup-mode").value=v.signupMode||"code";$("admin-site-notice").value=v.siteNotice||"";$("admin-notice-dismissible").checked=!!v.siteNoticeDismissible;$("admin-notice-gates").checked=v.siteNoticeOnGates!==false;$("admin-stim-disabled").checked=!!v.stimulationDisabled;$("admin-school-override").checked=!!v.schoolOverrideActive;
  $("admin-settings-form").onsubmit=async e=>{
   e.preventDefault();const b=$("admin-settings-save"),error=$("admin-settings-error");error.hidden=true;b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Saving…';
@@ -3601,6 +3637,7 @@ function paintAccountList(){
  const byFilter=all.filter(accountMatchesFilter),list=q?byFilter.filter(a=>String(a.username).toLowerCase().indexOf(q)!==-1):byFilter;
  if(!list.length){target.innerHTML='<p class="sm">No accounts match these filters.</p>';return}
  target.innerHTML=list.map(a=>`<article class="admin-account"><div class="admin-account-head"><span class="admin-account-id"><span class="admin-avatar" style="background:${escapeAttr(a.profileColor||"#3f6ce0")}" aria-hidden="true">${esc(String(a.username||"?").charAt(0).toUpperCase())}</span><strong>${esc(a.username)}</strong></span><div class="account-head-end"><span class="account-role">${esc(a.role)} · ${esc(a.status)}</span>${acctMoreHtml(a)}</div></div><dl class="acct-facts"><div><dt>Created</dt><dd>${adminDayText(a.createdAt)}</dd></div><div><dt>Last sign-in</dt><dd>${adminDayText(a.lastLoginAt)}</dd></div><div><dt>Chats</dt><dd>${Number(a.chatCount)||0}</dd></div></dl>${a.status==="disabled"?adminReasonHtml(a.disabledInfo||{text:a.disabledReason||""}):""}${a.status==="disabled"&&a.dataMode&&a.dataMode!=="keep"?`<div class="admin-account-meta">Chats: ${esc({download:"user can download them",download_delete:"user can download, then they are deleted",delete:"deleted"}[a.dataMode]||a.dataMode)}</div>`:""}${browserLineHtml(a)}${flagsLineHtml(a)}</article>`).join("")+(adminData.truncated?'<p class="sm">Showing the first 500 accounts. Narrow your search for more specific results.</p>':"");
+ [...target.querySelectorAll("article.admin-account")].forEach((el,i)=>{if(list[i]&&accountsWorking.has(list[i].id)){el.classList.add("is-working");const end=el.querySelector(".account-head-end");if(end)end.insertAdjacentHTML("afterbegin",'<span class="sync-spinner row-spin" aria-label="Applying" role="status"></span>')}});
  target.querySelectorAll("[data-account-action]").forEach(button=>button.onclick=()=>runAdminAccountAction(button.dataset.accountAction,button.dataset.targetId));
  target.querySelectorAll("[data-flag-clear]").forEach(b=>b.onclick=()=>resolveFlag(b));
  target.querySelectorAll(".acct-more").forEach((b,i)=>b.onclick=e=>{e.stopPropagation();openAcctMenu(list[i],b)});
@@ -3808,15 +3845,9 @@ async function runDisableAction(action,targetId){
  const picked=document.querySelector('input[name="app-confirm-radio"]:checked');const dataMode=picked?picked.value:"keep";
  const form=readDisableForm();
  const alsoBrowsers=!!(document.getElementById("dis-browsers")&&document.getElementById("dis-browsers").checked);
- adminActionPending=true;backToAdminAccounts();toast("Applying…");
- try{
-  const payload=edit?Object.assign({action:"admin_account_action",accountAction:"update_disabled_reason",targetId:targetId},form):Object.assign({action:"admin_account_action",accountAction:"disable",targetId:targetId,dataMode:dataMode,disableBrowsers:alsoBrowsers},form);
-  const result=await post(payload);
-  if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});
-  await adminFetch(true).catch(()=>{});
-  toast(edit?"Reason updated.":"Account updated.");refreshAdminAccounts();
- }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't update that account.");refreshAdminAccounts()}
- finally{adminActionPending=false}
+ backToAdminAccounts();
+ const payload=edit?Object.assign({action:"admin_account_action",accountAction:"update_disabled_reason",targetId:targetId},form):Object.assign({action:"admin_account_action",accountAction:"disable",targetId:targetId,dataMode:dataMode,disableBrowsers:alsoBrowsers},form);
+ await runAccountOp(targetId,edit?null:{status:"disabled"},()=>post(payload),edit?"Reason updated.":"Account updated.");
 }
 async function runAdminAccountAction(action,targetId){
  if(action==="disable"||action==="edit_reason")return runDisableAction(action,targetId);
@@ -3829,15 +3860,10 @@ async function runAdminAccountAction(action,targetId){
  const picked=choice.radios?document.querySelector('input[name="app-confirm-radio"]:checked'):null,dataMode=picked?picked.value:"keep";
  if(!accepted){if(!modal.hidden&&!closingModal)renderAdminPanel("accounts");return}
  if(modal.hidden||currentSettingsView!=="app-confirm")return;
- adminActionPending=true;backToAdminAccounts();toast("Applying…");
- try{
-  const result=await post({action:"admin_account_action",accountAction:action,targetId:targetId,reason:reason,dataMode:dataMode});
-  if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});
-  await adminFetch(true).catch(()=>{});
-  if(result.temporaryPassword){renderOneTimePassword("Temporary password",result.username,result.temporaryPassword,result.expiresAt,"accounts");return}
-  toast("Account updated.");refreshAdminAccounts();
- }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't update that account.");refreshAdminAccounts()}
- finally{adminActionPending=false}
+ backToAdminAccounts();
+ const change={enable:{status:"active"},disable:{status:"disabled"},promote:{role:"admin"},demote:{role:"user"}}[action]||null;
+ const result=await runAccountOp(targetId,change,()=>post({action:"admin_account_action",accountAction:action,targetId:targetId,reason:reason,dataMode:dataMode}),"Account updated.");
+ if(result&&result.temporaryPassword)renderOneTimePassword("Temporary password",result.username,result.temporaryPassword,result.expiresAt,"accounts");
 }
 async function appConfirm(options){
  options=options||{};lastConfirmCheckbox=false;
