@@ -1325,6 +1325,7 @@ async function bulkDelete(){
 function renderList(){
  list.innerHTML="";closeMenu();list.classList.toggle("selecting",selecting);
  for(const id of [...selectedIds]){if(!S.chats.some(c=>c.id===id))selectedIds.delete(id)}
+ if(accountInitialSyncPending&&accountSession&&accountSession.token&&!S.chats.length){list.innerHTML=skeletonCards(3,"Loading your chats…");renderBulkBar();return}
  renderBulkBar();
  const query=searchInput?searchInput.value.trim():"";
  if(searchClear)searchClear.hidden=!query;
