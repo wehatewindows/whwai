@@ -810,7 +810,7 @@ button:disabled,select:disabled,textarea:disabled,input:disabled,.radio-row:has(
 .side>.new,.side>.gear,.side>.profile-btn{z-index:3}
 #admin-site-notice{display:block;width:100%;box-sizing:border-box;min-height:74px;padding:10px 12px;border:1px solid #dedede;border-radius:12px;background:#fafafa;color:#111;font:inherit;font-size:16px;line-height:1.4;resize:vertical;outline:none;-webkit-appearance:none;appearance:none}
 #admin-site-notice:focus-visible{border-color:#999}
-.main .site-notice>span{flex:1 1 auto;text-align:left}.main .site-notice>.notice-x{margin-left:auto}
+.main .site-notice>span{flex:1 1 auto;text-align:left;max-height:min(34vh,240px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.main .site-notice>.notice-x{margin-left:auto}
 .banner-stack>*{align-self:stretch!important}
 .field{transition:border-radius .2s ease}
 .field.multi{border-radius:18px}
@@ -1713,7 +1713,7 @@ function applySiteStatus(status){
  if(!status)return;
  if(Array.isArray(status.models))updateAvailableModels(status.models);
  siteStatusLoaded=true;applyWhatsNewCfg(status.whatsNew);siteSignupMode=status.signupMode||"code";
- siteNoticeText=String(status.siteNotice||"").slice(0,240);siteNoticeDismissible=!!status.siteNoticeDismissible;siteNoticeOnGates=status.siteNoticeOnGates!==false;
+ siteNoticeText=String(status.siteNotice||"").slice(0,600);siteNoticeDismissible=!!status.siteNoticeDismissible;siteNoticeOnGates=status.siteNoticeOnGates!==false;
  siteStimDisabled=!!status.stimulationDisabled;siteSchoolOverride=!!status.schoolOverride;
  if(siteStimDisabled&&stimOn)setStimulation(false);
  renderSiteNotice();
@@ -3578,7 +3578,7 @@ function paintAdminSite(box){
 <label for="admin-new-access-code">Change access code (leave blank to keep current)</label><input id="admin-new-access-code" type="text" class="masked-field" maxlength="80" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true">
 </section>
 <section class="account-form site-group"><h4 class="site-group-h">Announcement</h4>
-<label for="admin-site-notice">Site-wide notice (optional)</label><textarea id="admin-site-notice" class="reason-input" rows="3" maxlength="240" placeholder="Leave blank to clear the notice" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea>
+<label for="admin-site-notice">Site-wide notice (optional)</label><textarea id="admin-site-notice" class="reason-input" rows="5" maxlength="600" placeholder="Leave blank to clear the notice" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea>
 <label class="check-row"><input id="admin-notice-dismissible" type="checkbox"> Let users dismiss the announcement</label>
 <label class="check-row"><input id="admin-notice-gates" type="checkbox"> Show the announcement on sign-in, access code, and disabled screens</label>
 <button type="button" class="pbtn data-manage-button" id="whatsnew-admin-open"><span>What's new screen</span></button>
