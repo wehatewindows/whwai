@@ -856,8 +856,24 @@ input.has-err:not([type=checkbox]):not([type=radio]):not([type=file]):focus,text
 .skel-chat .skel{background:linear-gradient(90deg,#c6c6c6 0%,#d6d6d6 45%,#c6c6c6 90%);background-size:220% 100%}
 .skel-ct{display:block;width:62%;height:13px;border-radius:6px}
 .skel-cm{display:block;width:34%;height:9px;border-radius:5px;margin-top:6px}
+.skel-site{display:grid;gap:14px;margin-top:10px}
+.skel-toggle{display:flex;align-items:center;gap:10px}
+.skel-box{width:18px;height:18px;border-radius:5px;flex:none}
+.skel-btn{width:150px;height:34px;border-radius:999px;margin-top:2px}
+.skel-field{display:grid;gap:8px}
+.skel-label-f{width:118px;height:10px;border-radius:5px}
+.skel-input{height:44px;border-radius:12px}
+.skel-area{height:72px;border-radius:12px}
+.skel-actions{margin-top:12px}
+.skel-action{width:74px;height:30px;border-radius:999px}
+.skel-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0 16px}
+.skel-stat{padding:11px 12px;border:1px solid #e5e5e5;border-radius:13px;background:#f7f7f7;min-width:0;animation:fadeIn .25s ease both}
+.skel-num{display:block;height:22px;width:40%;border-radius:6px;margin-top:8px}
+.skel-audit{border:1px solid #e6e6e6;background:#fafafa;border-radius:11px;padding:10px 11px;margin:7px 0;animation:fadeIn .25s ease both}
+.skel-au-t{display:block;height:13px;width:45%;border-radius:6px}
+.skel-au-m{display:block;height:9px;border-radius:5px;margin-top:8px}
 @keyframes skelShimmer{0%{background-position:120% 0}100%{background-position:-120% 0}}
-@media (prefers-reduced-motion:reduce){.skel,.skel-acct,.skel-chat{animation:none!important}}
+@media (prefers-reduced-motion:reduce){.skel,.skel-acct,.skel-chat,.skel-stat,.skel-audit{animation:none!important}}
 </style>
 
 </head>
@@ -3311,15 +3327,24 @@ function skeletonCards(n,label,kind){
  const wrap=kind==="chat"?"skel-wrap skel-wrap-chat":"skel-wrap";
  return '<div class="'+wrap+'" aria-busy="true" role="status"><span class="visually-hidden">'+label+'</span>'+(kind==="chat"?chat:acct).repeat(n)+'</div>';
 }
+function adminSkeleton(tab){
+ const acct='<div class="skel-acct"><div class="skel-head"><span class="skel-id"><span class="skel skel-avatar"></span><span class="skel skel-name"></span></span><span class="skel skel-role"></span></div><div class="skel-facts">'+'<div><span class="skel skel-label" style="width:64px"></span><span class="skel skel-value" style="width:70%"></span></div><div><span class="skel skel-label" style="width:70px"></span><span class="skel skel-value" style="width:56%"></span></div><div><span class="skel skel-label" style="width:44px"></span><span class="skel skel-value" style="width:36%"></span></div>'+'</div></div>';
+ const flag='<div class="skel-acct"><div class="skel-head"><span class="skel-id"><span class="skel skel-name" style="width:150px"></span></span><span class="skel skel-role"></span></div><div style="margin-top:12px"><span class="skel skel-thin" style="width:70%;display:block"></span><span class="skel skel-thin" style="width:45%;display:block;margin-top:8px"></span></div><div class="skel-actions"><span class="skel skel-action"></span></div></div>';
+ const stat='<div class="skel-stat"><span class="skel skel-thin" style="width:60%;display:block"></span><span class="skel skel-num"></span></div>';
+ const audit='<div class="skel-audit"><span class="skel skel-au-t"></span><span class="skel skel-thin" style="width:28%;display:block;margin-top:6px"></span><span class="skel skel-au-m" style="width:70%"></span><span class="skel skel-au-m" style="width:50%;margin-top:6px"></span></div>';
+ const site='<div class="skel-site"><div class="skel-toggle"><span class="skel skel-box"></span><span class="skel skel-line" style="width:40%"></span></div><div class="skel-toggle"><span class="skel skel-box"></span><span class="skel skel-line" style="width:72%"></span></div><span class="skel skel-btn"></span><div class="skel-field"><span class="skel skel-label-f"></span><span class="skel skel-input"></span></div><div class="skel-field"><span class="skel skel-label-f"></span><span class="skel skel-input"></span></div><div class="skel-field"><span class="skel skel-label-f"></span><span class="skel skel-area"></span></div></div>';
+ const parts={site:[site,"Loading site controls…"],accounts:[acct.repeat(3),"Loading accounts…"],flags:[flag.repeat(2),"Loading flags…"],usage:['<div class="skel-stats">'+stat.repeat(4)+'</div>',"Loading usage…"],audit:[audit.repeat(3),"Loading audit log…"]}[tab]||[acct.repeat(3),"Loading admin data…"];
+ return '<div class="skel-wrap" aria-busy="true" role="status"><span class="visually-hidden">'+parts[1]+'</span>'+parts[0]+'</div>';
+}
 function renderAdminPanel(tab,query){
  currentSettingsView="admin";if(tab&&tab!==adminTab){adminFilterOpen=null;if(tab==="usage")adminUsageView="summary"}if(tab)adminTab=tab;if(query!=null)adminQuery=query;
  const generation=++adminPanelGeneration;
  $("modal-title").textContent="Admin panel";
- mbody.innerHTML=`<div class="admin-nav">${[["site","Site controls"],["accounts","Accounts"],["flags","Flags"],["usage","Usage"],["audit","Audit log"]].map(t=>`<button type="button" class="pbtn ${adminTab===t[0]?"active":""}" data-admin-tab="${t[0]}">${t[1]}</button>`).join("")}</div><div id="admin-content" aria-live="polite"></div><div class="data-toolbar"><button type="button" class="pbtn" id="admin-back">Back to Settings</button><button type="button" class="pbtn" id="admin-refresh">Refresh</button></div>`;
+ mbody.innerHTML=`<div class="admin-nav">${[["site","Site"],["accounts","Accounts"],["flags","Flags"],["usage","Usage"],["audit","Audit log"]].map(t=>`<button type="button" class="pbtn ${adminTab===t[0]?"active":""}" data-admin-tab="${t[0]}">${t[1]}</button>`).join("")}</div><div id="admin-content" aria-live="polite"></div><div class="data-toolbar"><button type="button" class="pbtn" id="admin-back">Back to Settings</button><button type="button" class="pbtn" id="admin-refresh">Refresh</button></div>`;
  mbody.querySelectorAll("[data-admin-tab]").forEach(b=>b.onclick=()=>renderAdminPanel(b.dataset.adminTab));
  $("admin-refresh").onclick=()=>refreshAdmin();syncAdminBack();
  if(adminData){paintAdminTab();if(Date.now()-adminDataAt>60000)refreshAdmin();return}
- $("admin-content").innerHTML=skeletonCards(3,"Loading admin data…");
+ $("admin-content").innerHTML=adminSkeleton(adminTab);
  adminFetch().then(()=>{if(generation===adminPanelGeneration&&currentSettingsView==="admin")paintAdminTab()}).catch(err=>{if(generation===adminPanelGeneration)showAdminError(err)});
 }
 let adminFlagsData=null,adminFlagsLoading=null,disableSubject="account";
@@ -3452,7 +3477,7 @@ function flagCardHtml(f,disables){
 }
 function paintAdminFlags(box){
  if(!adminFlagsData){
-  box.innerHTML='<p class="sm"><span class="sync-spinner" aria-hidden="true"></span>Loading flags…</p>';
+  box.innerHTML=adminSkeleton("flags");
   const g=adminPanelGeneration;
   loadAdminFlags().then(()=>{if(g===adminPanelGeneration&&adminTab==="flags"&&currentSettingsView==="admin")paintAdminTab()}).catch(err=>{if(g===adminPanelGeneration)showAdminError(err)});
   return;
