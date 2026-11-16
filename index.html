@@ -1065,7 +1065,10 @@ h1,h2,h3,h4,strong,b,label,summary{color:#f2f2f2}
 .set-pane .policy-takeaways{border-radius:24px;padding:16px 22px}
 .set-pane .confirm-panel{border-radius:24px}
 .set-pane .admin-audit-item{border-radius:24px}
-.set-pane input:not([type=checkbox]):not([type=radio]):not([type=range]),.set-pane select{border-radius:999px;padding-left:18px;padding-right:18px}
+.set-pane input:not([type=checkbox]):not([type=radio]):not([type=range]):not(.hst-part),.set-pane select{border-radius:999px;padding-left:18px;padding-right:18px}
+.set-pane .hst-seg{border-radius:999px;padding:0 18px}.set-pane .hst-cal-btn{border-radius:999px}.set-pane .hst-pop{border-radius:24px}
+.set-pane .hst-time select{border-radius:999px;padding:10px 26px 10px 18px}
+.set-pane .confirm-foot{position:static;margin:14px 0 0;padding:0;border:0;box-shadow:none;background:none}
 .set-pane textarea{border-radius:20px;padding:12px 18px}
 }
 @media (min-width:641px){
@@ -3809,7 +3812,7 @@ function mountHstPicker(hidden,host){
    if(!futureOk(p)){showMsg("Pick a time at least a minute from now.");return}
    writeValue(p);showMsg("");
   });
-  el.addEventListener("blur",e=>{if(e.relatedTarget&&group.contains(e.relatedTarget))return;commit()});
+  el.addEventListener("blur",e=>{if(e.relatedTarget&&host.contains(e.relatedTarget))return;commit()});
  });
  const paintPop=()=>{
   const first=new Date(Date.UTC(view.y,view.m,1)).getUTCDay(), days=new Date(Date.UTC(view.y,view.m+1,0)).getUTCDate();
@@ -4690,7 +4693,7 @@ updateSchoolNotice();setInterval(updateSchoolNotice,10000);
  let openApi=null;
  function place(menu){const a=menu._anchor;if(!a||!a.isConnected)return;const b=a.getBoundingClientRect();const w=Math.min(Math.max(b.width,220),innerWidth-16);menu.style.width=w+"px";const h=menu.offsetHeight;let left=b.left;if(left+w>innerWidth-8)left=Math.max(8,b.right-w);let top=b.bottom+6;if(top+h>innerHeight-8)top=Math.max(8,b.top-6-h);menu.style.left=left+"px";menu.style.top=top+"px"}
  function enhance(sel){
-  if(sel._cs||sel.multiple||sel.size>1)return;sel._cs=true;
+  if(sel._cs||sel.multiple||sel.size>1||sel.closest(".hst-pop"))return;sel._cs=true;
   const wrap=document.createElement("div");wrap.className="cs";
   const btn=document.createElement("button");btn.type="button";btn.className="cs-btn";btn.setAttribute("aria-haspopup","listbox");btn.setAttribute("aria-expanded","false");
   const menu=document.createElement("div");menu.className="cs-pop";menu.setAttribute("role","listbox");menu.hidden=true;
