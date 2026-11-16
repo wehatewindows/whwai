@@ -1410,6 +1410,21 @@ html:not(.keyboard-nav) .account-form select:focus{
 @media(prefers-color-scheme:dark){
  html:not(.keyboard-nav) .set-search:focus{border-color:#3a3a3c!important}
 }
+/* Unchecked checkboxes in confirmations should use the same dark surface as the dialog. */
+@media(prefers-color-scheme:dark){
+ .app-confirm-card input[type=checkbox]:not(.switch-row *),
+ #mbody input[type=checkbox]:not(.switch-row *){
+  background:#3a3a3c!important;border-color:#77777f!important;
+ }
+ .app-confirm-card input[type=checkbox]:checked:not(.switch-row *),
+ #mbody input[type=checkbox]:checked:not(.switch-row *){
+  background:#2f6bff!important;border-color:#5b8cff!important;
+ }
+ .app-confirm-card .confirm-skip{background:#2c2c2e;color:#e0e0e4}
+ .app-confirm-card .confirm-foot .pbtn{min-height:44px}
+ .app-confirm-card .confirm-foot .pbtn.danger{background:#43292b;color:#ffb4b4}
+ .app-confirm-card .confirm-foot .pbtn.danger:hover{background:#553235}
+}
 </style>
 
 </head>
