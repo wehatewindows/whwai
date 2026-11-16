@@ -1383,6 +1383,33 @@ textarea:focus-visible,select:focus-visible,
  .set-side-foot .privacy-row .privacy-link:hover,
  .set-side-foot .privacy-row .privacy-link:focus{background:#3a3a3c!important;color:#e6e6ea!important}
 }
+/* Pointer clicks should not leave keyboard focus rings on controls. */
+html:not(.keyboard-nav) button:focus-visible,
+html:not(.keyboard-nav) a:focus-visible,
+html:not(.keyboard-nav) input:focus-visible,
+html:not(.keyboard-nav) textarea:focus-visible,
+html:not(.keyboard-nav) select:focus-visible,
+html:not(.keyboard-nav) [role=button]:focus-visible,
+html:not(.keyboard-nav) [tabindex]:focus-visible,
+html:not(.keyboard-nav) .check-row:has(input:focus-visible),
+html:not(.keyboard-nav) .radio-row:has(input:focus-visible),
+html:not(.keyboard-nav) .switch-row:has(input:focus-visible){
+ outline:none!important;box-shadow:none!important;
+}
+html:not(.keyboard-nav) .set-search:focus,
+html:not(.keyboard-nav) .chat-search input:focus,
+html:not(.keyboard-nav) .access-form input:focus,
+html:not(.keyboard-nav) .account-form input:focus,
+html:not(.keyboard-nav) .account-form textarea:focus,
+html:not(.keyboard-nav) .account-form select:focus{
+ box-shadow:none!important;
+}
+@media(prefers-color-scheme:light){
+ html:not(.keyboard-nav) .set-search:focus{border-color:#e2e2e6!important}
+}
+@media(prefers-color-scheme:dark){
+ html:not(.keyboard-nav) .set-search:focus{border-color:#3a3a3c!important}
+}
 </style>
 
 </head>
@@ -4648,5 +4675,19 @@ updateSchoolNotice();setInterval(updateSchoolNotice,10000);
 })();
 </script>
 
+<script>
+/* Show focus rings for keyboard navigation and keyboard shortcuts, not pointer clicks. */
+(function(){
+ const root=document.documentElement;
+ document.addEventListener("keydown",function(e){
+  const navKey=e.key==="Tab"||e.key==="ArrowUp"||e.key==="ArrowDown"||e.key==="ArrowLeft"||e.key==="ArrowRight";
+  const shortcut=(e.ctrlKey||e.metaKey||e.altKey)&&!["Control","Meta","Alt","Shift"].includes(e.key);
+  if(navKey||shortcut)root.classList.add("keyboard-nav");
+ },true);
+ const pointer=()=>root.classList.remove("keyboard-nav");
+ document.addEventListener("pointerdown",pointer,true);
+ document.addEventListener("mousedown",pointer,true);
+})();
+</script>
 </body>
 </html>
