@@ -433,7 +433,7 @@ body.access-locked .frame{filter:blur(6px);pointer-events:none;user-select:none}
 .pm-head{padding:6px 10px 8px;font-size:12.5px;color:#555;line-height:1.35}.pm-head strong{display:block;color:#111;font-size:14px;margin-bottom:2px}
 .pm-item{display:block;width:100%;border:0;background:none;border-radius:999px;padding:9px 14px;text-align:left;cursor:pointer;font-size:14px;color:#111}
 .pm-item:hover{background:#f0f0f0}.pm-item:disabled{opacity:.6;cursor:wait}
-.pc-label{display:block;font-size:13px;color:#555}.pc-swatches{display:flex;flex-wrap:wrap;gap:10px}.pc-sw{width:30px;height:30px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #d0d0d8;cursor:pointer;padding:0}.pc-sw.on{box-shadow:0 0 0 2px #111}
+.pc-label{display:block;font-size:13px;color:#555}.pc-swatches{display:grid;grid-template-columns:repeat(4,38px);gap:12px}.pc-sw{width:38px;height:38px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #d0d0d8;cursor:pointer;padding:0}.pc-sw.on{box-shadow:0 0 0 2px #fff,0 0 0 4px #222}.pc-sw:focus-visible{outline:2px solid #3f6ce0;outline-offset:5px}.pc-sw:hover{transform:scale(1.07)}
 html,body{touch-action:manipulation}
 .gate-body{font-size:14px;line-height:1.5;color:#333;margin:0 0 12px}.gate-body[hidden]{display:none}
 .gate-notice{margin:14px 0 0;padding:10px 12px;border-radius:12px;background:#eef4ff;border:1px solid #d9e6ff;color:#24477e;font-size:13px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}.gate-notice[hidden]{display:none}
@@ -980,7 +980,7 @@ h1,h2,h3,h4,strong,b,label,summary{color:#f2f2f2}
 .mcard.settings-wide #mbody{display:flex;flex-direction:column}
 .set-wrap{display:grid;grid-template-columns:264px minmax(0,1fr);flex:1;min-height:0;align-items:stretch}
 .set-side{background:#f7f7f8;border-right:1px solid #ececec;display:flex;flex-direction:column;padding:14px 12px 12px;min-height:0}
-.set-search{width:100%;box-sizing:border-box;height:36px;border:1px solid #e2e2e6;border-radius:10px;background:#fff;padding:0 12px;font:14px var(--f);color:#111;margin-bottom:10px;outline:none}
+.set-search{width:100%;box-sizing:border-box;height:36px;border:1px solid #e2e2e6;border-radius:10px;background:#fff;padding:0 12px;font:14px var(--f);color:#111;margin-bottom:10px;outline:none}\n.set-search-results{display:grid;gap:6px;overflow:auto;max-height:100%;padding:2px 0}.set-search-results[hidden]{display:none}.set-search-result{display:grid;gap:3px;width:100%;border:0;border-radius:10px;background:#f1f1f3;padding:9px 11px;text-align:left;color:#222;cursor:pointer}.set-search-result:hover,.set-search-result:focus-visible{background:#e5e5e9;outline:none}.set-search-result strong{font-size:13px}.set-search-result small,.set-search-empty{font-size:12px;line-height:1.4;color:#666;margin:0}.set-search-empty{padding:10px 8px}
 .set-search:focus{border-color:#8fb3ff;box-shadow:0 0 0 3px rgba(111,160,255,.2)}
 .set-nav{display:flex;flex-direction:column;gap:2px;overflow:auto}
 .set-nav-btn{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;text-align:left;padding:9px 10px;border-radius:9px;font:500 14.5px var(--f);color:#2a2a2e;cursor:pointer}
@@ -1036,8 +1036,8 @@ h1,h2,h3,h4,strong,b,label,summary{color:#f2f2f2}
 .set-wrap.desk .set-nav{flex:1;min-height:0;overflow:auto;gap:4px}
 .set-wrap.desk .set-search{margin-bottom:12px}
 .set-cap{margin:16px 14px 6px;font-size:12.5px;font-weight:500;color:#6b6b6b}
-.set-group{display:flex;flex-direction:column;gap:2px;background:#ececee;border-radius:18px;padding:5px}
-.set-sub{display:flex;align-items:center;gap:8px;height:30px;border:0;background:transparent;border-radius:999px;padding:0 12px;font:500 13px var(--f);color:#4a4a4f;cursor:pointer;text-align:left}
+.set-group{display:flex;flex-direction:column;gap:3px;background:#ececee;border-radius:16px;padding:6px}
+.set-sub{display:flex;align-items:center;gap:8px;height:32px;border:0;background:transparent;border-radius:10px;padding:0 12px;font:500 13px var(--f);color:#4a4a4f;cursor:pointer;text-align:left}
 .set-sub:hover{background:#e2e2e5}
 .set-sub[aria-current="true"]{background:#fff;color:#111;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.06)}
 .set-sub-ico{display:inline-flex;width:14px;height:14px;flex:none}
@@ -1054,7 +1054,7 @@ h1,h2,h3,h4,strong,b,label,summary{color:#f2f2f2}
 .set-pane .data-manage-button{border-radius:999px;padding:12px 20px}
 .set-pane .acct-summary{border-radius:999px;padding:8px 20px 8px 8px;margin:0 0 12px}
 .set-pane .pc-block{display:flex;flex-direction:column;align-items:flex-start;text-align:left;margin:4px 0 14px}
-.set-pane .pc-avatar{width:44px;height:44px;font-size:17px}
+.set-pane .pc-avatar{width:64px;height:64px;font-size:24px}\n.set-pane .pc-swatches{grid-template-columns:repeat(4,38px);gap:12px}\n.set-pane .pc-options{align-items:flex-start;padding:2px 4px 4px}\n#acctmenu{z-index:31;max-height:calc(100dvh - 24px);overflow:auto;overscroll-behavior:contain}
 .set-pane .audit-top{display:none}
 .set-pane .admin-stat{border-radius:999px;padding:12px 22px}
 .set-pane .admin-stat-grid{gap:8px}
@@ -2812,7 +2812,7 @@ function accountAvatarHtml(){const u=accountSession&&accountSession.user||{};con
 function profileColorHtml(){const u=accountSession&&accountSession.user||{};const cur=u.profileColor||"#3f6ce0";const initial=String(u.username||"?").charAt(0).toUpperCase();return '<div class="pc-block"><button type="button" class="pc-avatar" id="pc-avatar" aria-expanded="false" aria-controls="pc-options" aria-label="Change profile color" style="background:'+esc(cur)+'"><span>'+esc(initial)+'</span><span class="pc-pencil" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span></button><div class="pc-options" id="pc-options" hidden><span class="pc-label">Profile color</span><div class="pc-swatches">'+PROFILE_COLORS.map(c=>'<button type="button" class="pc-sw'+(c===cur?' on':'')+'" data-color="'+c+'" style="background:'+c+'" aria-label="Color '+c+'" aria-pressed="'+(c===cur)+'"></button>').join("")+'</div></div></div>'}
 function wireProfileColors(){const av=$("pc-avatar"),opts=$("pc-options");if(av&&opts)av.onclick=()=>{const open=opts.hidden;opts.hidden=!open;av.setAttribute("aria-expanded",String(open))};document.querySelectorAll(".pc-sw").forEach(btn=>{btn.onclick=async()=>{const color=btn.dataset.color,previous=(accountSession&&accountSession.user&&accountSession.user.profileColor)||"#3f6ce0";document.querySelectorAll(".pc-sw").forEach(x=>{x.classList.toggle("on",x===btn);x.setAttribute("aria-pressed",String(x===btn))});if(av)av.style.background=color;try{const r=await post({action:"account_profile_color",sessionToken:accountSession.token,color});if(!r||!r.ok)throw new Error("failed");accountSession.user.profileColor=r.profileColor;if(adminData&&adminData.accounts){const me=adminData.accounts.find(x=>x.username===accountSession.user.username);if(me)me.profileColor=r.profileColor}renderSyncStatus();toast("Profile color updated")}catch(e){if(av)av.style.background=previous;toast("Couldn't save the color. Try again.")}}})}
 function profileStateText(){if(accountSyncing)return "Syncing chats…";if(navigator.onLine===false||accountSyncFailed)return "Offline · saved on this device";if(accountLastSync)return "Chats synced · "+new Date(accountLastSync).toLocaleTimeString();return "Not synced yet"}
-function renderProfileMenu(){const menu=$("profile-menu");if(!menu||!accountSession||!accountSession.user)return;menu.innerHTML='<div class="pm-head"><strong>'+esc(accountSession.user.username)+'</strong><span>'+esc(profileStateText())+'</span></div><button class="pm-item" id="pm-sync" type="button"'+(accountSyncing?' disabled':'')+'>'+(accountSyncing?'Syncing…':'Sync now')+'</button><button class="pm-item" id="pm-settings" type="button">Account settings</button>';$("pm-sync").onclick=async()=>{await syncAccountChatsNow();renderProfileMenu();toast(accountSyncFailed?"Couldn't sync right now. Your chats are saved on this device.":"Chats synced")};$("pm-settings").onclick=()=>{hideProfileMenu();openSettings(()=>renderAccount())}}
+function renderProfileMenu(){const menu=$("profile-menu");if(!menu||!accountSession||!accountSession.user)return;menu.innerHTML='<div class="pm-head"><strong>'+esc(accountSession.user.username)+'</strong><span>'+esc(profileStateText())+'</span></div><button class="pm-item" id="pm-sync" type="button"'+(accountSyncing?' disabled':'')+'>'+(accountSyncing?'Syncing…':'Sync now')+'</button><button class="pm-item" id="pm-settings" type="button">Account settings</button>';$("pm-sync").onclick=async()=>{await syncAccountChatsNow();renderProfileMenu();toast(accountSyncFailed?"Couldn't sync right now. Your chats are saved on this device.":"Chats synced")};$("pm-settings").onclick=()=>{hideProfileMenu();openSettings(()=>isDeskSettings()?renderDeskSettings("account"):renderAccount())}}
 function hideProfileMenu(){hideEl($("profile-menu"))}
 function wantsThinkingView(text){return /(show|see|display|reveal)\b.{0,20}\b(thinking|thought|reasoning)\b|\bthink (it |this )?through\b|\bstep[- ]by[- ]step\b/i.test(String(text||""))}
 function togglePanel(panel,btn,replay){const open=panel.hidden;open?showEl(panel):hideEl(panel);btn.setAttribute("aria-expanded",String(open));if(open&&replay){const ol=panel.querySelector(".steps");if(ol){ol.classList.remove("play");void ol.offsetWidth;ol.classList.add("play")}}}
@@ -3260,6 +3260,24 @@ function renderSettings(){
 const SET_ICONS={general:'<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="16" cy="18" r="2"/>',appearance:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',account:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/>',data:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',admin:'<path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z"/>',stim:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6"/>'};
 // Desktop Settings: a sidebar (Account, Data & privacy, and Administration's tabs in a grouped bar) and one content pane. Phones keep the single-column list.
 const DESK_ADMIN_TABS=[["site","Site"],["accounts","Accounts"],["flags","Flags"],["usage","Usage"],["audit","Audit log"]];
+const DESK_SEARCH_ITEMS=[
+ ["account","Account","Sign in, create account, profile color, change password, sign out, delete account","login signup profile color password sign out delete account sync"],
+ ["data","Data & privacy","Export, import, or delete chats and local data","export import backup delete chats data privacy"],
+ ["admin:site","Site settings","AI availability, access code, sign-up, announcement, school notice, and What's new","ai enabled access code sign-up announcement notice school lock whats new model"],
+ ["admin:accounts","Accounts","Create accounts, roles, passwords, sessions, browser access, flags, and deletion","create account administrator admin promote demote temporary password reset sign out disable enable browser flag delete"],
+ ["admin:flags","Flags","Review and resolve account or browser flags","review resolve flag abuse browser"],
+ ["admin:usage","Usage","View model and account usage totals","tokens model usage daily account"],
+ ["admin:audit","Audit log","Review administrative activity","audit log actions history"]
+];
+function deskSearch(query,results,nav,search,isAdmin){
+ const q=String(query||"").trim().toLowerCase();
+ if(!q){results.hidden=true;results.innerHTML="";nav.hidden=false;return}
+ nav.hidden=true;
+ const matches=DESK_SEARCH_ITEMS.filter(x=>(isAdmin||!x[0].startsWith("admin:"))&&(x[1]+" "+x[2]+" "+x[3]).toLowerCase().includes(q));
+ results.hidden=false;
+ results.innerHTML=matches.length?matches.map(x=>'<button type="button" class="set-search-result" data-search-key="'+escapeAttr(x[0])+'"><strong>'+esc(x[1])+'</strong><small>'+esc(x[2])+'</small></button>').join(""):'<p class="set-search-empty">No settings or admin options found for “'+esc(query.trim())+'”.</p>';
+ results.querySelectorAll("[data-search-key]").forEach(b=>b.onclick=()=>{const key=b.dataset.searchKey;search.value="";deskSearch("",results,nav,search,isAdmin);deskGo(key)});
+}
 function isDeskSettings(){return !!(window.matchMedia&&matchMedia("(min-width:641px)").matches)}
 function deskIcon(paths,size){return '<svg viewBox="0 0 24 24" width="'+(size||17)+'" height="'+(size||17)+'" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+paths+'</svg>'}
 function deskFooterHtml(){
@@ -3269,12 +3287,15 @@ function deskSetTitle(t){$("modal-title").textContent=t}
 function renderDeskSettings(active){
  const signed=!!(accountSession&&accountSession.token&&accountSession.user),isAdmin=signed&&accountSession.user.role==="admin";
  const adminBlock=isAdmin?'<div class="set-cap">Administration</div><div class="set-group">'+DESK_ADMIN_TABS.map(t=>'<button type="button" class="set-sub" data-desk="admin:'+t[0]+'"><span class="set-sub-ico">'+deskIcon(ADMIN_ICONS[t[0]]||"",14)+'</span><span>'+t[1]+'</span></button>').join("")+'</div>':"";
- mbodyOuter.innerHTML='<div class="set-wrap desk"><div class="set-side"><input type="search" class="set-search" placeholder="Search settings" aria-label="Search settings" autocomplete="off"><nav class="set-nav" aria-label="Settings sections"><button type="button" class="set-nav-btn" data-desk="account"><span class="set-ico" aria-hidden="true">'+deskIcon(SET_ICONS.account)+'</span><span>Account</span></button><button type="button" class="set-nav-btn" data-desk="data"><span class="set-ico" aria-hidden="true">'+deskIcon(SET_ICONS.data)+'</span><span>Data &amp; privacy</span></button>'+adminBlock+'</nav><div class="set-side-foot">'+deskFooterHtml()+'</div></div><div class="set-pane" id="set-pane"></div></div>';
+ mbodyOuter.innerHTML='<div class="set-wrap desk"><div class="set-side"><input type="search" class="set-search" placeholder="Search settings" aria-label="Search settings" autocomplete="off"><nav class="set-nav" aria-label="Settings sections"><button type="button" class="set-nav-btn" data-desk="account"><span class="set-ico" aria-hidden="true">'+deskIcon(SET_ICONS.account)+'</span><span>Account</span></button><button type="button" class="set-nav-btn" data-desk="data"><span class="set-ico" aria-hidden="true">'+deskIcon(SET_ICONS.data)+'</span><span>Data &amp; privacy</span></button>'+adminBlock+'</nav><div class="set-search-results" hidden aria-live="polite"></div><div class="set-side-foot">'+deskFooterHtml()+'</div></div><div class="set-pane" id="set-pane"></div></div>';
  mbody=$("set-pane");
  if(!window.__deskObs){window.__deskObs=new MutationObserver(()=>{const mc=document.querySelector("#modal .mcard");if(mc)mc.classList.toggle("settings-wide",!!mbodyOuter.querySelector(":scope > .set-wrap.desk"))});window.__deskObs.observe(mbodyOuter,{childList:true})}
  const mc0=document.querySelector("#modal .mcard");if(mc0)mc0.classList.add("settings-wide");
  const search=mbodyOuter.querySelector(".set-search");
- search.oninput=()=>{const q=search.value.trim().toLowerCase();mbodyOuter.querySelectorAll(".set-nav-btn,.set-sub").forEach(b=>{b.hidden=!!q&&!b.textContent.toLowerCase().includes(q)})};
+ const searchResults=mbodyOuter.querySelector(".set-search-results"),nav=mbodyOuter.querySelector(".set-nav");
+ const runSearch=()=>deskSearch(search.value,searchResults,nav,search,isAdmin);
+ search.oninput=runSearch;
+ search.onkeydown=e=>{if(e.key==="Enter"){const first=searchResults.querySelector("[data-search-key]");if(first){e.preventDefault();first.click()}}else if(e.key==="Escape"&&search.value){search.value="";runSearch()}};
  mbodyOuter.querySelectorAll("[data-desk]").forEach(b=>b.onclick=()=>deskGo(b.dataset.desk));
  mbodyOuter.querySelector("#privacy-open").onclick=e=>{e.preventDefault();renderPrivacyPolicy()};
  mbodyOuter.querySelector("#terms-open").onclick=e=>{e.preventDefault();renderTerms()};
@@ -4223,6 +4244,8 @@ renderAccount=wrapViewTransition(renderAccount);
 renderPasswordChange=wrapViewTransition(renderPasswordChange);
 renderDeleteAccountConfirm=wrapViewTransition(renderDeleteAccountConfirm);
 renderAdminPanel=wrapViewTransition(renderAdminPanel);
+renderAnnouncementAdmin=wrapViewTransition(renderAnnouncementAdmin);
+renderWhatsNewAdmin=wrapViewTransition(renderWhatsNewAdmin);
 renderCreateAccount=wrapViewTransition(renderCreateAccount);
 renderOneTimePassword=wrapViewTransition(renderOneTimePassword);
 renderDataManagement=wrapViewTransition(renderDataManagement);
