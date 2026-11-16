@@ -1037,7 +1037,7 @@ h1,h2,h3,h4,strong,b,label,summary{color:#f2f2f2}
 .set-wrap.desk .set-nav{flex:1;min-height:0;overflow:auto;gap:4px}
 .set-wrap.desk .set-search{margin-bottom:12px}
 .set-cap{margin:16px 14px 6px;font-size:12.5px;font-weight:500;color:#6b6b6b}
-.set-group{display:flex;flex-direction:column;gap:3px;background:#ececee;border-radius:16px;padding:6px}
+.set-group{display:flex;flex-direction:column;gap:3px;background:transparent;border-radius:0;padding:0 0 0 4px}
 .set-sub{display:flex;align-items:center;gap:8px;height:32px;border:0;background:transparent;border-radius:999px;padding:0 12px;font:500 13px var(--f);color:#4a4a4f;cursor:pointer;text-align:left}
 .set-sub:hover{background:#e2e2e5}
 .set-sub[aria-current="true"]{background:#fff;color:#111;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.06)}
@@ -1048,7 +1048,7 @@ h1,h2,h3,h4,strong,b,label,summary{color:#f2f2f2}
 .set-side-foot .wn-ver{margin:0;font-size:12px;color:#8e8e93}
 .set-pane{min-height:0;overflow:auto;padding:24px 40px 28px;display:flex;flex-direction:column}
 .set-pane>*{max-width:640px}
-.set-pane #account-back,.set-pane #data-back,.set-pane #admin-back,.set-pane .acct-who,.set-pane .acct-copy{display:none!important}
+.set-pane #account-back,.set-pane #data-back,.set-pane .acct-who,.set-pane .acct-copy{display:none!important}
 .set-pane .data-toolbar{margin-top:14px}
 .set-pane .data-tools-list{display:flex;flex-direction:column;gap:8px;border:0;background:transparent;border-radius:0;overflow:visible}
 .set-pane .data-tool{border:1px solid #e6e6e8;border-radius:999px;padding:12px 20px;background:#fff}
@@ -1208,6 +1208,35 @@ h1,h2,h3,h4,strong,b,label,summary{color:#f2f2f2}
 @media (prefers-color-scheme:dark){
  .more{color:#b8b8be}
 }
+@media (prefers-color-scheme:dark){
+ .set-group{background:transparent}
+ .set-nav-btn,.set-sub{color:#d6d6dc}
+ .set-nav-btn[aria-current="true"],.set-sub[aria-current="true"]{background:#303034;color:#e8e8ec;box-shadow:none}
+ .set-cap{color:#a1a1a6}
+ .set-side-foot{border-top-color:#303034}
+ .set-pane{color:#e6e6ea}
+ .set-pane h1,.set-pane h2,.set-pane h3,.set-pane h4,.set-pane strong,.set-pane b{color:#e8e8ec}
+ .set-pane label,.set-pane .sm,.set-pane .site-group-copy,.set-pane .site-field-hint{color:#b8b8be}
+ .account-form>label{color:#c6c6cc}
+ .account-form>.check-row,.set-pane .check-row{color:#d6d6dc;background:#262628}
+ .account-form>input,.account-form>select,.account-form>textarea,.admin-search input{background:#242426;color:#e6e6ea;border-color:#3a3a3c}
+ .site-group{background:#1c1c1e;border-color:#303034}
+ .site-group-h{color:#e8e8ec}
+ .site-group-copy,.site-field-hint{color:#aeb0b6}
+ .site-form .data-manage-button{background:#242426;color:#e6e6ea;border-color:#3a3a3c}
+ .usage-back{background:#2c2c2e;color:#d6d6dc}
+ .usage-back:hover{background:#3a3a3c}
+ .admin-disable-note .sm{color:#c6c6cc}
+}
+.site-group{padding:18px 18px 20px;margin:0 0 14px;background:#fafafa;border:1px solid #e8e8eb;border-radius:18px}
+.site-group-h{margin:0 0 6px;font-size:15px;font-weight:600;letter-spacing:0;color:#242428}
+.site-group-copy,.site-field-hint{font-size:13px;line-height:1.45;margin:0 0 12px;color:#6b6b72}
+.site-form>.site-group>label:not(.check-row){display:block;margin-top:14px}
+.site-form .check-row{min-height:42px;border-radius:999px;padding:9px 13px;margin:7px 0}
+.site-form .data-manage-button{width:100%;justify-content:space-between;border-radius:999px;padding:12px 16px}
+.usage-users-head{display:flex;align-items:center;gap:12px;margin:0 0 14px}
+.usage-users-head .usage-sub{margin:0}
+.usage-back{border-radius:999px;white-space:nowrap}
 </style>
 
 </head>
@@ -3987,7 +4016,7 @@ async function selfReenable(kind){
  }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't re-enable that.")}
 }
 function adminDisableNoteHtml(row){
- return '<div class="admin-disable-note"><p class="sm">Demote this admin first to disable them.</p><p class="sm">Disabling this admin now without demoting them allows them to sign back in easily for testing purposes.</p>'+(row.isBootstrap?'<p class="sm">The bootstrap admin can\'t be demoted.</p>':'<button type="button" class="pbtn" id="dis-demote" data-demote-target="'+escapeAttr(row.id)+'">Demote first</button>')+'</div>';
+ return '<div class="admin-disable-note"><p class="sm">Demote this admin before disabling the account.</p><p class="sm">For testing only, disabling without demotion still lets this admin sign in.</p>'+(row.isBootstrap?'<p class="sm">The bootstrap admin can\'t be demoted.</p>':'<button type="button" class="pbtn" id="dis-demote" data-demote-target="'+escapeAttr(row.id)+'">Demote admin first</button>')+'</div>';
 }
 async function demoteFromDisable(targetId){
  resolvePendingConfirmation(false);
@@ -4004,16 +4033,16 @@ document.addEventListener("click",e=>{const d=e.target.closest&&e.target.closest
 function paintAdminSite(box){
  const v=adminData.settings||{};
  box.innerHTML=`<form id="admin-settings-form" class="account-form site-form" autocomplete="off">
-<section class="account-form site-group"><h4 class="site-group-h">Access</h4>
+<section class="account-form site-group"><h4 class="site-group-h">Access</h4><p class="site-group-copy">Choose how people can use WHWai and create accounts.</p>
 <label class="check-row"><input id="admin-ai-enabled" type="checkbox"> AI enabled</label>
 <label class="check-row"><input id="admin-access-required" type="checkbox"> Require access code screen on page load</label>
-<label for="admin-signup-mode">Sign-up mode</label><select id="admin-signup-mode"><option value="code">Access code required</option><option value="open">Open sign-up</option><option value="closed">Closed</option></select>
-<label for="admin-new-access-code">Change access code (leave blank to keep current)</label><input id="admin-new-access-code" type="text" class="masked-field" maxlength="80" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true">
+<label for="admin-signup-mode">Account creation</label><select id="admin-signup-mode"><option value="code">Access code required</option><option value="open">Open sign-up</option><option value="closed">Closed</option></select>
+<label for="admin-new-access-code">New access code</label><p class="site-field-hint">Leave blank to keep the current code.</p><input id="admin-new-access-code" type="text" class="masked-field" maxlength="80" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true">
 </section>
-<section class="account-form site-group"><h4 class="site-group-h">Announcement</h4>
+<section class="account-form site-group"><h4 class="site-group-h">Announcement</h4><p class="site-group-copy">Share a message at the top of the chat screen.</p>
 <button type="button" class="pbtn data-manage-button" id="announcement-admin-open"><span>Site announcement</span></button>
 </section>
-<section class="account-form site-group"><h4 class="site-group-h">What's new</h4>
+<section class="account-form site-group"><h4 class="site-group-h">What's new</h4><p class="site-group-copy">Tell people what has changed in WHWai.</p>
 <button type="button" class="pbtn data-manage-button" id="whatsnew-admin-open"><span>What's new screen</span></button>
 </section>
 <section class="account-form site-group">
@@ -4134,7 +4163,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&acctMenuId!==null){
 window.addEventListener("scroll",()=>{if(acctMenuId!==null)closeAcctMenu()},{capture:true,passive:true});
 window.addEventListener("resize",()=>{if(acctMenuId!==null)closeAcctMenu()});
 let adminUsageView="summary",adminUsersUsage=null,adminUsersLoading=null,adminUsageQuery="";const debUsage=debounceFn(()=>fill(),350);
-function syncAdminBack(){const bk=$("admin-back");if(!bk)return;if(adminTab==="usage"&&adminUsageView==="users"){bk.textContent="Back";bk.onclick=()=>{adminUsageView="summary";paintAdminTab();animateAdminContent()}}else{bk.textContent="Back to Settings";bk.onclick=renderSettings}}
+function syncAdminBack(){const bk=$("admin-back");if(!bk)return;const nested=adminTab==="usage"&&adminUsageView==="users";bk.hidden=nested;if(!nested){bk.textContent="Back to Settings";bk.onclick=renderSettings}}
 function animateAdminContent(){const box=$("admin-content");if(!box)return;box.classList.remove("menu-content-enter");void box.offsetWidth;box.classList.add("menu-content-enter")}
 function fmtTok(n){return (Number(n)||0).toLocaleString("en-US")}
 function fmtTokShort(n){n=Number(n)||0;if(n>=1e6)return (n/1e6).toFixed(n>=1e7?0:1)+"M";if(n>=1e3)return (n/1e3).toFixed(n>=1e4?0:1)+"k";return String(n)}
@@ -4150,8 +4179,9 @@ function paintAdminUsage(box){
  syncAdminBack();
 }
 function paintAdminUsageUsers(box){
- box.innerHTML=`<h3 class="usage-sub">All-time usage</h3><div class="admin-search"><input id="usage-user-query" type="search" maxlength="20" placeholder="Search users" value="${escapeAttr(adminUsageQuery)}" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></div><p class="sm" id="usage-users-msg">Loading…</p><div id="usage-users-list"></div>`;
+ box.innerHTML=`<div class="usage-users-head"><button type="button" class="pbtn usage-back" id="usage-users-back" aria-label="Back to usage summary">← <span>Usage overview</span></button><h3 class="usage-sub">Per-user usage</h3></div><div class="admin-search"><input id="usage-user-query" type="search" maxlength="20" placeholder="Search users" value="${escapeAttr(adminUsageQuery)}" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></div><p class="sm" id="usage-users-msg">Loading…</p><div id="usage-users-list"></div>`;
  syncAdminBack();
+ const usageBack=box.querySelector("#usage-users-back");if(usageBack)usageBack.onclick=()=>{adminUsageView="summary";paintAdminTab();animateAdminContent()};
  const input=box.querySelector("#usage-user-query");
  input.oninput=e=>{adminUsageQuery=e.target.value.trim().toLowerCase();debUsage()};
  const fill=()=>{
@@ -4245,7 +4275,7 @@ const DISABLE_PRESETS=[
 {title:"Security check",subs:[
 {sub:"Required before use",text:"This account needs a security check before it can be used again. It has been disabled until the check is complete."}]}
 ];
-const DISABLE_DATA_RADIOS={label:"What happens to their chats?",items:[{value:"keep",label:"Keep their chats",hint:"The user is not offered a download. Chats stay on the account.",checked:true},{value:"download",label:"Let them download their chats",hint:"A download button appears on their disabled screen. Chats stay on the account."},{value:"download_delete",label:"Download, then delete",hint:"They can download their chats. Once they do, the chats are deleted from the account."},{value:"delete",label:"Delete their chats now",hint:"Chats are deleted from the account right away. This cannot be undone."}]};
+const DISABLE_DATA_RADIOS={label:"What should happen to their chats?",items:[{value:"keep",label:"Keep chats",hint:"No download is offered. Chats remain on the account.",checked:true},{value:"download",label:"Allow a chat download",hint:"They can download chats from the disabled screen. Chats remain on the account."},{value:"download_delete",label:"Download, then delete chats",hint:"Chats are deleted after they download them."},{value:"delete",label:"Delete chats now",hint:"Chats are deleted immediately and can’t be restored."}]};
 function reasonRadioHtml(v,label,sel){return '<label class="radio-row reason-option"><input type="radio" name="dis-preset" value="'+escapeAttr(v)+'"'+(sel===v?" checked":"")+'><span>'+esc(label)+'</span></label>'}
 function disableFormHtml(cur){
  let sel="custom";const c=cur||{};
@@ -4296,7 +4326,7 @@ function adminReasonHtml(i){
 async function runDisableAction(action,targetId){
  const edit=action==="edit_reason";
  const row=(adminData&&adminData.accounts||[]).find(a=>a.id===targetId),cur=row&&row.disabledInfo?row.disabledInfo:null;
- const accepted=await appConfirm({title:edit?"Edit the disable reason?":"Disable account?",message:edit?"The account stays disabled. The user sees the updated reason on their disabled screen.":"This account will no longer be able to use WHWai. The user sees the reason, sub-reason and any re-enable time you set.",confirmLabel:edit?"Save reason":"Disable",danger:!edit,extraHtml:(!edit&&row&&row.role==="admin"?adminDisableNoteHtml(row):"")+disableFormHtml(cur)+(edit?"":'<div class="reenable-card browsers-card"><label class="switch-row reenable-row"><span><strong>Disable browsers</strong><small>Blocks every browser this account is signed into. Those browsers unblock at the re-enable time, if you set one.</small></span><input type="checkbox" id="dis-browsers"><span class="switch-ui"></span></label></div>'),onRender:wireDisableForm,radios:edit?null:DISABLE_DATA_RADIOS});
+ const accepted=await appConfirm({title:edit?"Edit the disable reason?":"Disable account?",message:edit?"The account stays disabled. The updated reason appears on their sign-in screen.":"They won’t be able to use WHWai. The reason and any return date you set will appear on their sign-in screen.",confirmLabel:edit?"Save reason":"Disable",danger:!edit,extraHtml:(!edit&&row&&row.role==="admin"?adminDisableNoteHtml(row):"")+disableFormHtml(cur)+(edit?"":'<div class="reenable-card browsers-card"><label class="switch-row reenable-row"><span><strong>Disable browsers</strong><small>Blocks every browser this account is signed into. Those browsers unblock at the re-enable time, if you set one.</small></span><input type="checkbox" id="dis-browsers"><span class="switch-ui"></span></label></div>'),onRender:wireDisableForm,radios:edit?null:DISABLE_DATA_RADIOS});
  if(!accepted){if(!modal.hidden&&!closingModal)renderAdminPanel("accounts");return}
  if(modal.hidden||currentSettingsView!=="app-confirm")return;
  const picked=document.querySelector('input[name="app-confirm-radio"]:checked');const dataMode=picked?picked.value:"keep";
