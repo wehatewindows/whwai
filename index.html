@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.github.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>WHWai</title>
@@ -1325,6 +1325,47 @@ h1,h2,h3,h4,strong,b,label,summary{color:#f2f2f2}
  .bar .tool-chip,.bar .tool-chip em{color:#d6d6dc!important}
  .bar .src,.bar .src em,.bar .thk,.bar .thk em{color:#d6d6dc!important}
  .bar .src[aria-expanded="true"],.bar .thk[aria-expanded="true"]{background:#3a3a3c!important}
+}
+/* Keep confirmation actions in the document flow so they never cover choices. */
+.confirm-foot{
+ position:relative!important;bottom:auto!important;z-index:2;
+ margin:14px 0 0!important;padding:12px 0 4px!important;
+ border-top:1px solid #3a3a3c!important;
+ box-shadow:none!important;background:transparent!important;
+}
+@media(prefers-color-scheme:light){
+ .confirm-foot{border-top-color:#ececec!important}
+}
+/* Let the settings navigation fill the whole panel below its title bar. */
+@media(min-width:641px){
+ .mcard.settings-wide #mbody{min-height:0}
+ .set-wrap{align-items:stretch!important;height:100%}
+ .set-side{align-self:stretch;height:100%;min-height:0}
+ .set-pane{align-self:stretch;min-height:0}
+}
+/* Preserve an obvious keyboard focus indicator on every visible control. */
+button:focus-visible,a:focus-visible,
+input:not([type=checkbox]):not([type=radio]):focus-visible,
+textarea:focus-visible,select:focus-visible,
+[role=button]:focus-visible,[tabindex]:focus-visible{
+ outline:3px solid #6b9cff!important;outline-offset:3px!important;
+}
+.check-row:has(input:focus-visible),
+.radio-row:has(input:focus-visible),
+.switch-row:has(input:focus-visible){
+ outline:3px solid #6b9cff!important;outline-offset:3px!important;
+}
+@media(prefers-color-scheme:dark){
+ .confirm-foot{background:#1c1c1e!important;border-top-color:#3a3a3c!important}
+ button:focus-visible,a:focus-visible,
+ input:not([type=checkbox]):not([type=radio]):focus-visible,
+ textarea:focus-visible,select:focus-visible,
+ [role=button]:focus-visible,[tabindex]:focus-visible,
+ .check-row:has(input:focus-visible),
+ .radio-row:has(input:focus-visible),
+ .switch-row:has(input:focus-visible){
+  outline-color:#8ab0ff!important;
+ }
 }
 </style>
 
