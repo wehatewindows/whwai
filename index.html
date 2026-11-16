@@ -926,7 +926,7 @@ h1,h2,h3,h4,strong,b,label,summary{color:#f2f2f2}
 .acct-summary-av{width:44px;height:44px;border-radius:999px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:18px;flex:none}
 .acct-summary-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
 .acct-summary-txt strong{font-size:16px;overflow-wrap:anywhere}
-.acct-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 22px}
+.acct-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 22px}
 .acct-stat{border:1px solid #e6e6e8;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;background:#f7f7f8}
 .acct-stat span{font-size:13px;color:#6b6b6b}
 .acct-stat strong{font-size:18px;font-weight:600}
@@ -939,6 +939,7 @@ h1,h2,h3,h4,strong,b,label,summary{color:#f2f2f2}
 html[data-font="small"] .msg{font-size:14px}
 html[data-font="large"] .msg{font-size:17px}
 .desk-only{display:none}
+@media (max-width:640px){.appearance-sec,.desk-summary{display:none!important}}
 @media (min-width:641px){.desk-only{display:grid}}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .acct-summary,:root:not([data-theme="light"]) .set-row,:root:not([data-theme="light"]) .acct-stat{background:#1c1c1e;border-color:#2c2c2e}:root:not([data-theme="light"]) .acct-stat span{color:#a1a1a6}:root:not([data-theme="light"]) .set-row-label,:root:not([data-theme="light"]) .acct-summary-txt strong,:root:not([data-theme="light"]) .acct-stat strong{color:#f2f2f2}:root:not([data-theme="light"]) .set-select{background:#2c2c2e;border-color:#3a3a3c;color:#f2f2f2}}
 @media (max-width:640px){.set-search{display:block;width:100%;box-sizing:border-box;height:44px;border:1px solid #e2e2e6;border-radius:12px;background:#fff;padding:0 14px;font:16px var(--f);color:#111;margin:4px 0 16px;outline:none}.set-search:focus{border-color:#8fb3ff;box-shadow:0 0 0 3px rgba(111,160,255,.2)}}
@@ -3183,9 +3184,8 @@ function accountSummaryHtml(u){
  const init=String(u.username||"?").charAt(0).toUpperCase();
  const chats=S&&Array.isArray(S.chats)?S.chats:[];
  const last=chats.reduce((m,c)=>Math.max(m,Number(c.mu||c.u)||0),0);
- const role=u.role==="admin"?"Administrator":"Member";
- return '<div class="acct-summary"><span class="tool-avatar acct-summary-av" style="background:'+escapeAttr(u.profileColor||"#3f6ce0")+'" aria-hidden="true">'+esc(init)+'</span><div class="acct-summary-txt"><strong>'+esc(u.username||"")+'</strong><span class="sm">'+role+'</span></div></div>'
-  +'<div class="acct-stats desk-only"><div class="acct-stat"><span>Chats on this device</span><strong>'+chats.length+'</strong></div><div class="acct-stat"><span>Last chat</span><strong>'+(last?esc(dateLabel(last)):"None yet")+'</strong></div><div class="acct-stat"><span>Role</span><strong>'+role+'</strong></div></div>';
+  return '<div class="acct-summary desk-summary"><span class="tool-avatar acct-summary-av" style="background:'+escapeAttr(u.profileColor||"#3f6ce0")+'" aria-hidden="true">'+esc(init)+'</span><div class="acct-summary-txt"><strong>'+esc(u.username||"")+'</strong></div></div>'
+  +'<div class="acct-stats desk-only"><div class="acct-stat"><span>Chats on this device</span><strong>'+chats.length+'</strong></div><div class="acct-stat"><span>Last chat</span><strong>'+(last?esc(dateLabel(last)):"None yet")+'</strong></div></div>';
 }
 function renderSettings(){
  currentSettingsView="settings";if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}
@@ -3198,8 +3198,8 @@ function renderSettings(){
    ${signed?`<button class="data-tool" id="account-open" type="button">${accountAvatarHtml()}<span class="tool-copy"><strong>Account settings</strong></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>`:`<button class="data-tool" id="account-signin" type="button"><span class="tool-icon">${ic('<path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/>',19,1.8)}</span><span class="tool-copy"><strong>Sign in</strong></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>${siteSignupMode!=="closed"?`<button class="data-tool" id="account-signup" type="button"><span class="tool-icon">${ic('<path d="M12 5v14M5 12h14"/>',19,1.8)}</span><span class="tool-copy"><strong>Create account</strong></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>`:""}`}
   </div>
   <h3>General</h3><div class="set-row"><label class="set-row-label" for="chat-font-size">Chat text size</label><select id="chat-font-size" class="set-select" aria-label="Chat text size"><option value="small"${chatFontSize()==="small"?" selected":""}>Small</option><option value="medium"${chatFontSize()==="medium"?" selected":""}>Medium</option><option value="large"${chatFontSize()==="large"?" selected":""}>Large</option></select></div>
-  <h3>Appearance</h3><div class="set-row set-row-static"><span class="set-row-label">Theme</span><span class="set-row-value">Follows your device</span></div>
-  <p class="sm set-note">WHWai switches between light and dark to match your device's setting.</p>
+  <h3 class="appearance-sec">Appearance</h3><div class="set-row set-row-static appearance-sec"><span class="set-row-label">Theme</span><span class="set-row-value">Follows your device</span></div>
+  <p class="sm set-note appearance-sec">WHWai switches between light and dark to match your device's setting.</p>
   <h3>Data & privacy</h3><button class="pbtn data-manage-button" id="data-tools-open" type="button"><span class="manage-icon">${ic('<path d="M4 5h16v14H4z"/><path d="M8 9h8M8 12h8M8 15h5"/>',17)}</span><span>Manage your data</span></button>${confirmDeleteEnabled()?"":'<button type="button" class="subtle-link" id="restore-delete-confirm">Ask before deleting chats again</button>'}
   ${signed&&user.role==="admin"?`<h3>Administration</h3><button class="pbtn data-manage-button" id="admin-open" type="button"><span class="manage-icon">${ic('<path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z"/>',17)}</span><span>Admin panel</span></button>`:""}
   ${stimOn?stimSettingsHtml():""}
@@ -3243,10 +3243,14 @@ function layoutSettingsDesktop(){
   body.appendChild(sec);
   const b=document.createElement("button");b.type="button";b.className="set-nav-btn";b.dataset.target=sec.id;
   b.innerHTML='<span class="set-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+(SET_ICONS[key]||SET_ICONS.data)+'</svg></span><span>'+g.title.replace(/</g,"&lt;")+'</span>';
-  nav.appendChild(b);items.push({b,sec});
+  nav.appendChild(b);items.push({b,sec,key});
  });
  const show=id=>{items.forEach(x=>{const on=x.sec.id===id;x.sec.classList.toggle("on",on);x.b.setAttribute("aria-current",on?"true":"false")});body.scrollTop=0};
- items.forEach(x=>x.b.onclick=()=>show(x.sec.id));
+ items.forEach(x=>x.b.onclick=()=>{
+  if(x.key==="admin"){renderAdminPanel(adminTab||"site");return}
+  if(x.key==="data"){const d=x.sec.querySelector("#data-tools-open");if(d){d.click();return}}
+  show(x.sec.id);
+ });
  search.oninput=()=>{const q=search.value.trim().toLowerCase();items.forEach(x=>{x.b.hidden=!!q&&!x.sec.dataset.label.toLowerCase().includes(q)});const first=items.find(x=>!x.b.hidden);if(first&&q)show(first.sec.id)};
  footNodes.forEach(n=>foot.appendChild(n));
  side.append(search,nav);
