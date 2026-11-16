@@ -922,6 +922,23 @@ h1,h2,h3,h4,strong,b,label,summary{color:#f2f2f2}
 .set-sec{scroll-margin-top:8px}
 .mcard.settings-wide{width:min(780px,calc(100vw - 40px))}
 @media (max-width:640px){.set-wrap{display:block}.set-nav{display:none}.mcard.settings-wide{width:auto}}
+.acct-summary{display:flex;align-items:center;gap:14px;margin:0 0 16px;padding:14px 16px;border:1px solid #e6e6e8;border-radius:14px;background:#fff}
+.acct-summary-av{width:44px;height:44px;border-radius:999px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:18px;flex:none}
+.acct-summary-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.acct-summary-txt strong{font-size:16px;overflow-wrap:anywhere}
+.acct-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 22px}
+.acct-stat{border:1px solid #e6e6e8;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;background:#f7f7f8}
+.acct-stat span{font-size:13px;color:#6b6b6b}
+.acct-stat strong{font-size:18px;font-weight:600}
+.set-row{display:flex;align-items:center;justify-content:space-between;gap:16px;border:1px solid #e6e6e8;border-radius:14px;padding:12px 16px;margin:0 0 16px;background:#fff}
+.set-row-label{font-size:15px;font-weight:500;color:#111}
+.set-select{height:36px;border:1px solid #e2e2e6;border-radius:10px;background:#fff;padding:0 10px;font:14px var(--f);color:#111;min-width:130px}
+.set-select:focus{outline:none;border-color:#8fb3ff;box-shadow:0 0 0 3px rgba(111,160,255,.2)}
+html[data-font="small"] .msg{font-size:14px}
+html[data-font="large"] .msg{font-size:17px}
+.desk-only{display:none}
+@media (min-width:641px){.desk-only{display:grid}}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .acct-summary,:root:not([data-theme="light"]) .set-row,:root:not([data-theme="light"]) .acct-stat{background:#1c1c1e;border-color:#2c2c2e}:root:not([data-theme="light"]) .acct-stat span{color:#a1a1a6}:root:not([data-theme="light"]) .set-row-label,:root:not([data-theme="light"]) .acct-summary-txt strong,:root:not([data-theme="light"]) .acct-stat strong{color:#f2f2f2}:root:not([data-theme="light"]) .set-select{background:#2c2c2e;border-color:#3a3a3c;color:#f2f2f2}}
 @media (max-width:640px){.set-search{display:block;width:100%;box-sizing:border-box;height:44px;border:1px solid #e2e2e6;border-radius:12px;background:#fff;padding:0 14px;font:16px var(--f);color:#111;margin:4px 0 16px;outline:none}.set-search:focus{border-color:#8fb3ff;box-shadow:0 0 0 3px rgba(111,160,255,.2)}}
 @media (prefers-color-scheme:dark){.set-nav-btn{color:#f2f2f2}.set-nav-btn:hover,.set-nav-btn:focus-visible{background:#2c2c2e}}
 @media (min-width:641px){
@@ -3154,15 +3171,29 @@ async function toggleBuildId(){
  const now=document.getElementById("settings-ver");if(!now)return;
  buildIdShown=true;now.textContent=base+" ("+label+")";
 }
+const CHAT_FONT_KEY="whwai.chatFont.v1";
+function chatFontSize(){try{const v=localStorage.getItem(CHAT_FONT_KEY);return v==="small"||v==="large"?v:"medium"}catch(e){return"medium"}}
+function setChatFontSize(v){const val=v==="small"||v==="large"?v:"medium";try{if(val==="medium")localStorage.removeItem(CHAT_FONT_KEY);else localStorage.setItem(CHAT_FONT_KEY,val)}catch(e){}document.documentElement.dataset.font=val}
+document.documentElement.dataset.font=chatFontSize();
+function accountSummaryHtml(u){
+ const init=String(u.username||"?").charAt(0).toUpperCase();
+ const chats=S&&Array.isArray(S.chats)?S.chats:[];
+ const last=chats.reduce((m,c)=>Math.max(m,Number(c.mu||c.u)||0),0);
+ const role=u.role==="admin"?"Administrator":"Member";
+ return '<div class="acct-summary"><span class="tool-avatar acct-summary-av" style="background:'+escapeAttr(u.profileColor||"#3f6ce0")+'" aria-hidden="true">'+esc(init)+'</span><div class="acct-summary-txt"><strong>'+esc(u.username||"")+'</strong><span class="sm">'+role+'</span></div></div>'
+  +'<div class="acct-stats desk-only"><div class="acct-stat"><span>Chats on this device</span><strong>'+chats.length+'</strong></div><div class="acct-stat"><span>Last chat</span><strong>'+(last?esc(dateLabel(last)):"None yet")+'</strong></div><div class="acct-stat"><span>Role</span><strong>'+role+'</strong></div></div>';
+}
 function renderSettings(){
  currentSettingsView="settings";if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}
  $("modal-title").textContent="Settings";
  const signed=!!(accountSession&&accountSession.token&&accountSession.user),user=signed?accountSession.user:null;
  const accountCopy=signed?`Signed in as ${esc(user.username)}${user.role==="admin"?" · Administrator":""}.`:(accountSession&&accountSession.token?(accountReady?"Signed in. Your account will sync once the server is reachable and the access code is entered.":"Checking your account session…"):"");
  mbody.innerHTML=`<h3>Account</h3>${accountCopy?`<p class="sm">${accountCopy}</p>`:""}
+  ${signed?accountSummaryHtml(user):""}
   <div class="data-tools-list">
    ${signed?`<button class="data-tool" id="account-open" type="button">${accountAvatarHtml()}<span class="tool-copy"><strong>Account settings</strong></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>`:`<button class="data-tool" id="account-signin" type="button"><span class="tool-icon">${ic('<path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/>',19,1.8)}</span><span class="tool-copy"><strong>Sign in</strong></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>${siteSignupMode!=="closed"?`<button class="data-tool" id="account-signup" type="button"><span class="tool-icon">${ic('<path d="M12 5v14M5 12h14"/>',19,1.8)}</span><span class="tool-copy"><strong>Create account</strong></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>`:""}`}
   </div>
+  <h3>Appearance</h3><div class="set-row"><label class="set-row-label" for="chat-font-size">Chat text size</label><select id="chat-font-size" class="set-select" aria-label="Chat text size"><option value="small"${chatFontSize()==="small"?" selected":""}>Small</option><option value="medium"${chatFontSize()==="medium"?" selected":""}>Medium</option><option value="large"${chatFontSize()==="large"?" selected":""}>Large</option></select></div>
   <h3>Data & privacy</h3><button class="pbtn data-manage-button" id="data-tools-open" type="button"><span class="manage-icon">${ic('<path d="M4 5h16v14H4z"/><path d="M8 9h8M8 12h8M8 15h5"/>',17)}</span><span>Manage your data</span></button>${confirmDeleteEnabled()?"":'<button type="button" class="subtle-link" id="restore-delete-confirm">Ask before deleting chats again</button>'}
   ${signed&&user.role==="admin"?`<h3>Administration</h3><button class="pbtn data-manage-button" id="admin-open" type="button"><span class="manage-icon">${ic('<path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z"/>',17)}</span><span>Admin panel</span></button>`:""}
   ${stimOn?stimSettingsHtml():""}
@@ -3175,10 +3206,11 @@ function renderSettings(){
  if(q("admin-open"))q("admin-open").onclick=()=>renderAdminPanel("site");
  buildIdShown=false;{const sv=q("settings-ver");if(sv){sv.onclick=toggleBuildId;sv.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();toggleBuildId()}}}}
  if(q("lock-whwai-now"))q("lock-whwai-now").onclick=()=>{closeSettings();side(false);lockEarlyAccess(true)};
+  if(q("chat-font-size"))q("chat-font-size").onchange=e=>setChatFontSize(e.target.value);
   layoutSettingsDesktop();
 }
 // Desktop: a navigation list with a search box on the left, one page at a time on the right, legal links and version in the footer. Phones keep one column.
-const SET_ICONS={account:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/>',data:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',admin:'<path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z"/>',stim:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6"/>'};
+const SET_ICONS={appearance:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',account:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/>',data:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',admin:'<path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z"/>',stim:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6"/>'};
 function layoutSettingsDesktop(){
  if(currentSettingsView!=="settings"||!mbody)return;
  const groups=[];let cur=null;
@@ -3195,7 +3227,7 @@ function layoutSettingsDesktop(){
  const main=document.createElement("div");main.className="set-main";
  const body=document.createElement("div");body.className="set-body";
  const foot=document.createElement("div");foot.className="set-foot";
- const keyOf=t=>/account/i.test(t)?"account":/admin/i.test(t)?"admin":"data";
+ const keyOf=t=>/appearance/i.test(t)?"appearance":/account/i.test(t)?"account":/admin/i.test(t)?"admin":"data";
  const items=[];
  groups.forEach((g,i)=>{
   const key=keyOf(g.title);
