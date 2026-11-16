@@ -1425,6 +1425,15 @@ html:not(.keyboard-nav) .account-form select:focus{
  .app-confirm-card .confirm-foot .pbtn.danger{background:#43292b;color:#ffb4b4}
  .app-confirm-card .confirm-foot .pbtn.danger:hover{background:#553235}
 }
+/* Warning and destructive icons use muted dark red tiles in every layout. */
+@media(prefers-color-scheme:dark){
+ .confirm-panel .choice-icon{
+  background:#492a2c!important;color:#ffb4b4!important;
+ }
+ .data-tool.danger .tool-icon{
+  background:#492a2c!important;color:#ffb4b4!important;
+ }
+}
 </style>
 
 </head>
