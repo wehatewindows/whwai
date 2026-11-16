@@ -123,7 +123,7 @@ svg{display:block}
 .delete-choice .choice-copy{min-width:0}.delete-choice strong{display:block;font-size:13.5px;line-height:1.25}.delete-choice p{font-size:12px;line-height:1.35;color:#666;margin:3px 0 0}.delete-choice .pbtn{padding:7px 10px;font-size:12.5px;white-space:nowrap}
 .confirm-foot{position:sticky;bottom:-18px;z-index:2;background:#fff;margin:14px -20px -18px;padding:12px 20px 14px;border-top:1px solid #ececec;box-shadow:0 -8px 12px -10px rgba(0,0,0,.14)}
 @media (max-width:640px){.confirm-foot{bottom:-16px;margin:14px -16px -16px;padding:12px 16px 14px}}
-.tool-avatar{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:#fff;font:600 14px/1 var(--f)}.audit-top{margin:4px 0 16px}.audit-note{margin:0 0 14px}.site-group{margin:18px 0 0}.site-group-h{margin:0 0 4px;font-size:12px;font-weight:600;letter-spacing:.02em;color:#6b6b6b}.site-group .admin-advanced{margin-top:2px}.admin-account.is-working{opacity:.78;transition:opacity .2s ease}.row-spin{width:14px;height:14px;border-width:2px;margin-right:2px;flex:none}
+.tool-avatar{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:#fff;font:600 14px/1 var(--f)}.audit-top{margin:4px 0 16px}.audit-note{margin:0 0 14px}.site-group{margin:18px 0 0}.site-group-h{margin:0 0 8px;font-size:15px;font-weight:600;letter-spacing:0;color:#111}.site-group .admin-advanced{margin-top:2px}.admin-account.is-working{opacity:.78;transition:opacity .2s ease}.row-spin{width:14px;height:14px;border-width:2px;margin-right:2px;flex:none}
 .confirm-panel{display:flex;gap:14px;align-items:center;padding:14px 16px;background:#f7f7f7;border:1px solid #e5e5e5;border-radius:14px;margin:12px 0}.confirm-panel>div{flex:1 1 auto;min-width:0}.confirm-panel .choice-icon{width:38px;height:38px;flex:none;display:grid;place-items:center;border-radius:12px;background:#fae7e7;color:#c33333}.confirm-panel p{margin:0;font-size:14px;line-height:1.45;color:#444;text-wrap:pretty;overflow-wrap:anywhere}.confirm-panel p:empty{display:none}.app-confirm-card .confirm-panel{align-items:center}
 .data-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.data-toolbar .pbtn{flex:1}.data-toolbar .pbtn.danger{background:#fbeaea}.data-toolbar .pbtn.danger:hover{background:#f4dada}
 .export-contents{padding:10px 12px;background:#f5f5f5;border-radius:12px;margin:10px 0}.export-contents ul{margin:6px 0;padding-left:20px}.export-contents li{font-size:13px;margin:3px 0}
@@ -585,8 +585,8 @@ html.stim .stim-blob{pointer-events:auto;z-index:150;width:200px;height:200px;ma
 .stim-disco{position:fixed;right:14px;top:14px;width:46px;height:46px;border-radius:50%;border:2px solid #fff;z-index:212;cursor:pointer;padding:0;background:conic-gradient(#fff 0 10%,#bbb 10% 20%,#fff 20% 30%,#999 30% 40%,#fff 40% 50%,#bbb 50% 60%,#fff 60% 70%,#999 70% 80%,#fff 80% 90%,#bbb 90%);box-shadow:0 0 18px rgba(255,255,255,.8);animation:stimSpinPage 3s linear infinite}
 .stim-flood{position:fixed;inset:-20%;z-index:199;pointer-events:none;background:conic-gradient(#ff6ec7,#ffd166,#06d6a0,#4cc9f0,#b388ff,#ff6ec7);opacity:0;animation:stimFlood 2.4s ease-out forwards}
 @keyframes stimFlood{0%{opacity:0;transform:rotate(0)}20%{opacity:.3}100%{opacity:0;transform:rotate(200deg)}}
-.admin-advanced{margin:4px 0 10px;font-size:12.5px;color:#6b6b6b}
-.admin-advanced summary{cursor:pointer;list-style:none;display:inline-block;padding:4px 0;opacity:.6}
+.admin-advanced{margin:4px 0 10px;font-size:15px;color:#111}
+.admin-advanced summary{cursor:pointer;list-style:none;display:inline-block;padding:4px 0;font-weight:600}
 .admin-advanced summary::-webkit-details-marker{display:none}
 .admin-advanced[open] .check-row{margin-top:6px}
 @media (prefers-reduced-motion:reduce){.stim-flood{display:none}.stim-disco{animation:none}}
@@ -3584,7 +3584,7 @@ function paintAdminSite(box){
 <label for="admin-new-access-code">Change access code (leave blank to keep current)</label><input id="admin-new-access-code" type="text" class="masked-field" maxlength="80" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true">
 </section>
 <section class="account-form site-group"><h4 class="site-group-h">Announcement</h4>
-<button type="button" class="pbtn data-manage-button" id="announcement-admin-open"><span>Announcement screen</span></button>
+<button type="button" class="pbtn data-manage-button" id="announcement-admin-open"><span>Announcement only</span></button>
 </section>
 <section class="account-form site-group"><h4 class="site-group-h">What's new</h4>
 <button type="button" class="pbtn data-manage-button" id="whatsnew-admin-open"><span>What's new screen</span></button>
