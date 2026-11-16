@@ -1434,6 +1434,17 @@ html:not(.keyboard-nav) .account-form select:focus{
   background:#492a2c!important;color:#ffb4b4!important;
  }
 }
+/* Mirror only the main composer's text so newly entered characters can fade in. */
+.field{position:relative}
+.field #in{position:relative;z-index:2;color:transparent!important;-webkit-text-fill-color:transparent!important;caret-color:var(--ink)}
+.field #in::placeholder{color:transparent!important;-webkit-text-fill-color:transparent!important}
+.composer-visual{position:absolute;z-index:1;box-sizing:border-box;overflow:auto;scrollbar-width:none;pointer-events:none;white-space:pre-wrap;overflow-wrap:break-word;word-break:normal;color:var(--ink)}.composer-visual::-webkit-scrollbar{display:none}
+.composer-placeholder{color:var(--mute);opacity:.82}
+.composer-new-text{animation:composerTextAppear .12s ease-out both}
+@keyframes composerTextAppear{from{opacity:.35}to{opacity:1}}
+.field.composer-native-selection .composer-visual{visibility:hidden}
+.field.composer-native-selection #in{color:var(--ink)!important;-webkit-text-fill-color:currentColor!important}
+@media(prefers-reduced-motion:reduce){.composer-new-text{animation:none}}
 </style>
 
 </head>
@@ -1486,7 +1497,7 @@ html:not(.keyboard-nav) .account-form select:focus{
   <div class="input">
    <div class="orb" id="orb"><span class="wheatley-face" aria-hidden="true"><svg viewBox="-12 -12 124 124"><defs><radialGradient id="wh3-shell" cx="40%" cy="32%" r="78%"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#e2e5e8"/><stop offset="1" stop-color="#9aa1a8"/></radialGradient><radialGradient id="wh3-core" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffffff"/><stop offset=".35" stop-color="#8fe0ff"/><stop offset=".75" stop-color="#2a7bf0"/><stop offset="1" stop-color="#0d2f8a"/></radialGradient><linearGradient id="wh3-plate" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6f8f9"/><stop offset="1" stop-color="#a9b1b8"/></linearGradient><clipPath id="wh3-tunnel"><circle cx="50" cy="50" r="17"/></clipPath></defs><circle cx="50" cy="50" r="34" fill="url(#wh3-shell)" stroke="#5b626a" stroke-width="1.6"/><g fill="none" stroke-linecap="round"><path d="M24 14 L28 34 M76 14 L72 34 M24 86 L28 66 M76 86 L72 66" stroke="#3b4147" stroke-width="5"/><path d="M24 14 Q50 6 76 14" stroke="#3b4147" stroke-width="6"/><path d="M24 14 Q50 6 76 14" stroke="#d6dce1" stroke-width="2"/><path d="M24 14 Q50 6 76 14" pathLength="100" stroke="#2f353b" stroke-width="6.5" stroke-dasharray="30 70" stroke-dashoffset="-35"/><path d="M24 86 Q50 94 76 86" stroke="#3b4147" stroke-width="6"/><path d="M24 86 Q50 94 76 86" stroke="#d6dce1" stroke-width="2"/><path d="M24 86 Q50 94 76 86" pathLength="100" stroke="#2f353b" stroke-width="6.5" stroke-dasharray="30 70" stroke-dashoffset="-35"/></g><circle cx="50" cy="50" r="22" fill="#a9b1b8" stroke="#5b626a" stroke-width="2"/><circle cx="50" cy="50" r="17" fill="#1d232a"/><circle cx="50" cy="50" r="12.5" fill="url(#wh3-core)"/><g clip-path="url(#wh3-tunnel)"><rect x="30" y="28" width="40" height="11" fill="url(#wh3-plate)"/><rect x="30" y="61" width="40" height="11" fill="url(#wh3-plate)"/></g><path d="M33 39 L67 39 M33 61 L67 61" stroke="#6b737b" stroke-width="1" stroke-linecap="butt"/><ellipse cx="46" cy="45" rx="3.5" ry="2" fill="#fff" opacity=".85"/><ellipse cx="38" cy="30" rx="13" ry="6" fill="#fff" opacity=".4"/></svg></span></div>
    <div class="field">
-    <textarea id="in" rows="1" maxlength="10000" placeholder="Message WHWai" aria-label="Message" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea>
+    <textarea id="in" rows="1" maxlength="10000" placeholder="Message WHWai" aria-label="Message" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea><div id="composer-visual" class="composer-visual" aria-hidden="true"></div>
     <div class="mwrap">
      <button class="model" id="model" aria-haspopup="menu" aria-expanded="false"></button>
      <div class="info-pop" id="aries-info-pop" role="status" aria-live="polite" aria-label="About Aries" hidden>
@@ -2453,7 +2464,29 @@ function side(open){
  const logoButton=$("logo");
  if(mobile){logoButton.setAttribute("aria-label",open?"Close chats and settings":"Open chats and settings");logoButton.title=open?"Close chats and settings":"Open chats and settings";}
 }
-function fit(){ta.style.height="auto";const cs=getComputedStyle(ta);const pad=(parseFloat(cs.paddingTop)||0)+(parseFloat(cs.paddingBottom)||0);const lh=parseFloat(cs.lineHeight)||24;const lines=Math.round((ta.scrollHeight-pad)/lh);ta.style.height=Math.min(ta.scrollHeight,120)+"px";const f=ta.closest(".field");if(f)f.classList.toggle("multi",lines>=3)}
+let previousComposerValue=ta.value;
+function syncComposerVisual(animate=false){
+ const mirror=$("composer-visual"),field=ta.parentElement;if(!mirror||!field)return;
+ const value=ta.value,old=previousComposerValue;
+ const appendOnly=animate&&value.length>old.length&&value.startsWith(old);
+ mirror.replaceChildren();
+ if(!value){
+  const placeholder=document.createElement("span");placeholder.className="composer-placeholder";placeholder.textContent=ta.placeholder||"";mirror.appendChild(placeholder);
+ }else if(appendOnly){
+  mirror.appendChild(document.createTextNode(old));
+  const added=document.createElement("span");added.className="composer-new-text";added.textContent=value.slice(old.length);mirror.appendChild(added);
+ }else mirror.textContent=value;
+ const cs=getComputedStyle(ta),r=ta.getBoundingClientRect(),fr=field.getBoundingClientRect();
+ mirror.style.left=(r.left-fr.left)+"px";mirror.style.top=(r.top-fr.top)+"px";
+ mirror.style.width=r.width+"px";mirror.style.height=r.height+"px";
+ ["fontFamily","fontSize","fontWeight","fontStyle","lineHeight","letterSpacing","wordSpacing","textAlign","textIndent","textTransform","direction","paddingTop","paddingRight","paddingBottom","paddingLeft"].forEach(k=>mirror.style[k]=cs[k]);
+ mirror.scrollTop=ta.scrollTop;mirror.scrollLeft=ta.scrollLeft;
+ const hasSelection=ta.selectionStart!==ta.selectionEnd;
+ field.classList.toggle("composer-native-selection",hasSelection);
+ mirror.hidden=hasSelection;
+ previousComposerValue=value;
+}
+function fit(animate=false){ta.style.height="auto";const cs=getComputedStyle(ta);const pad=(parseFloat(cs.paddingTop)||0)+(parseFloat(cs.paddingBottom)||0);const lh=parseFloat(cs.lineHeight)||24;const lines=Math.round((ta.scrollHeight-pad)/lh);ta.style.height=Math.min(ta.scrollHeight,120)+"px";const f=ta.closest(".field");if(f)f.classList.toggle("multi",lines>=3);syncComposerVisual(animate)}
 function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(toast.h);toast.h=setTimeout(()=>e.classList.remove("show"),2200)}
 const ARIES_INTRO_KEY="whwai.ariesIntroShown.v1";
 let ariesIntroShownThisPage=false,ariesIntroTimer=null;
@@ -2482,7 +2515,7 @@ $("limit-signin").onclick=()=>openSettings(()=>renderAccountAuth("login"));
 $("limit-signup").onclick=()=>openSettings(()=>renderAccountAuth("signup"));
 refreshSendState();
 setInterval(refreshSendState,60000);
-ta.addEventListener("input",fit);
+ta.addEventListener("input",()=>fit(true));ta.addEventListener("scroll",()=>syncComposerVisual(false));ta.addEventListener("select",()=>syncComposerVisual(false));ta.addEventListener("keyup",()=>syncComposerVisual(false));ta.addEventListener("pointerup",()=>syncComposerVisual(false));window.addEventListener("resize",()=>syncComposerVisual(false));fit();
 ta.addEventListener("keydown",e=>{if(e.target&&e.target.classList&&e.target.classList.contains("rn"))return;if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();send()}});
 $("new").onclick=newChat;
 if(searchInput){searchInput.addEventListener("input",debounceFn(()=>renderList(),350));searchInput.addEventListener("keydown",e=>{if(e.key==="Escape"&&searchInput.value){searchInput.value="";renderList();searchInput.blur()}})}
