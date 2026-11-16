@@ -1434,10 +1434,6 @@ html:not(.keyboard-nav) .account-form select:focus{
   background:#492a2c!important;color:#ffb4b4!important;
  }
 }
-#in{caret-color:#7fa9ff}
-#in.typing-pulse{animation:composerCaretPulse .22s ease-out}
-@keyframes composerCaretPulse{from{caret-color:#c4d7ff}to{caret-color:#7fa9ff}}
-@media(prefers-reduced-motion:reduce){#in.typing-pulse{animation:none}}
 </style>
 
 </head>
@@ -2486,12 +2482,7 @@ $("limit-signin").onclick=()=>openSettings(()=>renderAccountAuth("login"));
 $("limit-signup").onclick=()=>openSettings(()=>renderAccountAuth("signup"));
 refreshSendState();
 setInterval(refreshSendState,60000);
-let composerCaretTimer=null;
-function pulseComposerCaret(){
- ta.classList.remove("typing-pulse");void ta.offsetWidth;ta.classList.add("typing-pulse");
- clearTimeout(composerCaretTimer);composerCaretTimer=setTimeout(()=>ta.classList.remove("typing-pulse"),220);
-}
-ta.addEventListener("input",()=>{fit();pulseComposerCaret()});
+ta.addEventListener("input",fit);
 ta.addEventListener("keydown",e=>{if(e.target&&e.target.classList&&e.target.classList.contains("rn"))return;if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();send()}});
 $("new").onclick=newChat;
 if(searchInput){searchInput.addEventListener("input",debounceFn(()=>renderList(),350));searchInput.addEventListener("keydown",e=>{if(e.key==="Escape"&&searchInput.value){searchInput.value="";renderList();searchInput.blur()}})}
