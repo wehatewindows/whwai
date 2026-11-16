@@ -915,6 +915,100 @@ h1,h2,h3,h4,strong,b,label,summary{color:#f2f2f2}
 .xi{background-color:transparent;color:#f2f2f2}
 .info-pop p,.info-pop span,.info-pop div{color:#e6e6e6}
 }
+.set-wrap{display:grid;grid-template-columns:180px minmax(0,1fr);gap:28px;align-items:start}
+.set-nav{position:sticky;top:0;display:flex;flex-direction:column;gap:2px}
+.set-nav-btn{background:none;border:0;text-align:left;padding:8px 10px;border-radius:10px;font:500 14px var(--f);color:#333;cursor:pointer}
+.set-nav-btn:hover,.set-nav-btn:focus-visible{background:#ececec;outline:none}
+.set-sec{scroll-margin-top:8px}
+.mcard.settings-wide{width:min(780px,calc(100vw - 40px))}
+@media (max-width:640px){.set-wrap{display:block}.set-nav{display:none}.mcard.settings-wide{width:auto}}
+@media (prefers-color-scheme:dark){.set-nav-btn{color:#f2f2f2}.set-nav-btn:hover,.set-nav-btn:focus-visible{background:#2c2c2e}}
+@media (min-width:641px){
+.mcard.settings-wide{width:min(960px,calc(100vw - 64px));height:min(660px,calc(100vh - 64px));max-height:none;padding:0;border-radius:20px;overflow:hidden;display:flex;flex-direction:column}
+.mcard.settings-wide .mh{padding:16px 22px 14px 26px;border-bottom:1px solid #ececec;flex:none}
+.mcard.settings-wide .mh b{font-size:18px}
+.mcard.settings-wide #mbody{flex:1;min-height:0;overflow:hidden;padding:0}
+.set-wrap{grid-template-columns:240px minmax(0,1fr);height:100%}
+.set-nav{background:#f7f7f8;border-right:1px solid #ececec;padding:16px 12px;overflow:auto;gap:4px}
+.set-nav-btn{padding:10px 12px;font-size:15px;color:#222;border-radius:10px}
+.set-nav-btn[aria-current="true"]{background:#e6e6ea;font-weight:600}
+.set-body{overflow:auto;padding:26px 36px 36px;height:100%;box-sizing:border-box}
+.set-sec{max-width:600px;margin-bottom:30px}
+.set-sec>h3{font-size:19px;font-weight:600;margin:0 0 14px;letter-spacing:0}
+.set-sec .data-tools-list{display:flex;flex-direction:column;gap:0;border:1px solid #e6e6e8;border-radius:14px;overflow:hidden}
+.set-sec .data-tool{border:0;border-bottom:1px solid #ececee;border-radius:0;padding:14px 16px;min-height:0;background:#fff}
+.set-sec .data-tool:last-child{border-bottom:0}
+.set-sec .data-tool:hover{background:#f7f7f8}
+.set-sec .data-manage-button{width:100%;justify-content:flex-start;border-radius:14px;min-height:0;padding:14px 16px;background:#fff;border:1px solid #e6e6e8}
+.set-sec .data-manage-button:hover{background:#f7f7f8}
+.set-sec .privacy-row{justify-content:flex-start;gap:10px;margin-top:6px}
+.set-sec .sm,.set-sec p.sm{font-size:14px;color:#6b6b6b}
+}
+@media (min-width:641px) and (prefers-color-scheme:dark){
+.mcard.settings-wide .mh{border-bottom-color:#2c2c2e}
+.set-nav{background:#161618;border-right-color:#2c2c2e}
+.set-nav-btn{color:#f2f2f2}.set-nav-btn[aria-current="true"]{background:#2c2c2e}
+.set-sec .data-tools-list,.set-sec .data-manage-button{border-color:#2c2c2e}
+.set-sec .data-tool,.set-sec .data-manage-button{background:#1c1c1e}
+.set-sec .data-tool{border-bottom-color:#2c2c2e}
+.set-sec .data-tool:hover,.set-sec .data-manage-button:hover{background:#2c2c2e}
+}
+@media (min-width:641px){
+.mcard.settings-wide{width:min(1000px,calc(100vw - 64px));height:min(700px,calc(100vh - 64px));border-radius:20px}
+.mcard.settings-wide .mh{padding:14px 18px 14px 20px;border-bottom:1px solid #ececec;background:#fff}
+.mcard.settings-wide #mbody{display:flex;flex-direction:column}
+.set-wrap{display:grid;grid-template-columns:264px minmax(0,1fr);flex:1;min-height:0;align-items:stretch}
+.set-side{background:#f7f7f8;border-right:1px solid #ececec;display:flex;flex-direction:column;padding:14px 12px 12px;min-height:0}
+.set-search{width:100%;box-sizing:border-box;height:36px;border:1px solid #e2e2e6;border-radius:10px;background:#fff;padding:0 12px;font:14px var(--f);color:#111;margin-bottom:10px;outline:none}
+.set-search:focus{border-color:#8fb3ff;box-shadow:0 0 0 3px rgba(111,160,255,.2)}
+.set-nav{display:flex;flex-direction:column;gap:2px;overflow:auto}
+.set-nav-btn{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;text-align:left;padding:9px 10px;border-radius:9px;font:500 14.5px var(--f);color:#2a2a2e;cursor:pointer}
+.set-nav-btn[hidden]{display:none}
+.set-nav-btn:hover{background:#ececef}
+.set-nav-btn[aria-current="true"]{background:#e3e3e8;color:#111}
+.set-ico{display:grid;place-items:center;width:24px;height:24px;border-radius:7px;background:#e6e6eb;color:#3a3a40;flex:none}
+.set-nav-btn[aria-current="true"] .set-ico,.set-nav-btn.active .set-ico{background:#d4d4dc}
+.set-nav-btn.active{background:#e3e3e8;color:#111;font-weight:600}
+.set-main{display:flex;flex-direction:column;min-width:0;min-height:0;background:#fff;height:100%;box-sizing:border-box}
+.set-body{flex:1;min-height:0;overflow:auto;padding:26px 40px 28px}
+.set-sec{display:none;max-width:640px}
+.set-sec.on{display:block}
+.set-sec>.set-title{font-size:22px;font-weight:600;letter-spacing:-.01em;margin:0 0 18px}
+.set-sec .data-tools-list{display:flex;flex-direction:column;border:1px solid #e6e6e8;border-radius:14px;overflow:hidden;margin-bottom:14px}
+.set-sec .data-tool{border:0;border-bottom:1px solid #ececee;border-radius:0;padding:14px 18px;min-height:0;background:#fff;font-size:15px}
+.set-sec .data-tool:last-child{border-bottom:0}
+.set-sec .data-tool:hover{background:#f7f7f8}
+.set-sec .data-manage-button{width:100%;justify-content:space-between;border:1px solid #e6e6e8;border-radius:14px;padding:14px 18px;min-height:0;background:#fff;font-size:15px;margin-bottom:14px}
+.set-sec .data-manage-button:hover{background:#f7f7f8}
+.set-sec .switch-row{display:flex;justify-content:space-between;align-items:center;border:1px solid #e6e6e8;border-radius:14px;padding:14px 18px;margin:0 0 14px}
+.set-sec .sm{font-size:14px;color:#6b6b6b;margin:0 0 14px}
+.set-sec .subtle-link{font-size:14px}
+.set-foot{flex:none;border-top:1px solid #ececec;padding:12px 40px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#fff}
+.set-foot .privacy-row{display:flex;gap:14px;flex-wrap:wrap;margin:0}
+.set-foot .privacy-link{background:none;padding:0;font-size:13px;color:#2559c9}
+.set-foot #settings-ver{font-size:12px;color:#8a8a8a}
+.set-foot .lock-link{font-size:13px}
+}
+@media (min-width:641px) and (prefers-color-scheme:dark){
+.mcard.settings-wide .mh{border-bottom-color:#2c2c2e;background:#1c1c1e}
+.set-side{background:#161618;border-right-color:#2c2c2e}
+.set-search{background:#2c2c2e;border-color:#3a3a3c;color:#f2f2f2}
+.set-nav-btn{color:#e6e6e6}.set-nav-btn:hover{background:#26262a}.set-nav-btn[aria-current="true"]{background:#2c2c2e;color:#fff}
+.set-ico{background:#2c2c2e;color:#d6d6d6}.set-nav-btn[aria-current="true"] .set-ico{background:#3a3a3c}
+.set-main,.set-foot{background:#1c1c1e}
+.set-sec .data-tools-list,.set-sec .data-manage-button,.set-sec .switch-row{border-color:#2c2c2e}
+.set-sec .data-tool,.set-sec .data-manage-button{background:#1c1c1e}
+.set-sec .data-tool{border-bottom-color:#2c2c2e}
+.set-sec .data-tool:hover,.set-sec .data-manage-button:hover{background:#2c2c2e}
+.set-foot{border-top-color:#2c2c2e}
+}
+@media (min-width:641px){
+.admin-wrap .set-body{padding:26px 40px 28px}
+.admin-wrap .set-foot{justify-content:flex-start}
+.admin-wrap .set-foot .data-toolbar{display:flex;gap:10px;margin:0;width:100%}
+.admin-wrap .audit-top{display:none}
+.admin-wrap #admin-content>*{max-width:720px}
+}
 </style>
 
 </head>
@@ -3080,8 +3174,52 @@ function renderSettings(){
  if(q("admin-open"))q("admin-open").onclick=()=>renderAdminPanel("site");
  buildIdShown=false;{const sv=q("settings-ver");if(sv){sv.onclick=toggleBuildId;sv.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();toggleBuildId()}}}}
  if(q("lock-whwai-now"))q("lock-whwai-now").onclick=()=>{closeSettings();side(false);lockEarlyAccess(true)};
+  layoutSettingsDesktop();
 }
-
+// Desktop: a navigation list with a search box on the left, one page at a time on the right, legal links and version in the footer. Phones keep one column.
+const SET_ICONS={account:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/>',data:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',admin:'<path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z"/>',stim:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6"/>'};
+function layoutSettingsDesktop(){
+ if(currentSettingsView!=="settings"||!mbody)return;
+ const groups=[];let cur=null;
+ [...mbody.children].forEach(n=>{
+  if(n.tagName==="H3"){cur={title:n.textContent.trim(),nodes:[n]};groups.push(cur)}
+  else if(cur)cur.nodes.push(n);
+ });
+ if(!groups.length)return;
+ const footNodes=[...mbody.querySelectorAll(".privacy-row,#settings-ver")];
+ const wrap=document.createElement("div");wrap.className="set-wrap";
+ const side=document.createElement("div");side.className="set-side";
+ const search=document.createElement("input");search.type="search";search.className="set-search";search.placeholder="Search settings";search.setAttribute("aria-label","Search settings");search.autocomplete="off";
+ const nav=document.createElement("nav");nav.className="set-nav";nav.setAttribute("aria-label","Settings sections");
+ const main=document.createElement("div");main.className="set-main";
+ const body=document.createElement("div");body.className="set-body";
+ const foot=document.createElement("div");foot.className="set-foot";
+ const keyOf=t=>/account/i.test(t)?"account":/admin/i.test(t)?"admin":"data";
+ const items=[];
+ groups.forEach((g,i)=>{
+  const key=keyOf(g.title);
+  const sec=document.createElement("section");sec.className="set-sec";sec.id="set-sec-"+i;sec.dataset.label=g.title;
+  const h=g.nodes[0];h.classList.add("set-title");
+  g.nodes.forEach(n=>{if(!footNodes.includes(n))sec.appendChild(n)});
+  body.appendChild(sec);
+  const b=document.createElement("button");b.type="button";b.className="set-nav-btn";b.dataset.target=sec.id;
+  b.innerHTML='<span class="set-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+(SET_ICONS[key]||SET_ICONS.data)+'</svg></span><span>'+g.title.replace(/</g,"&lt;")+'</span>';
+  nav.appendChild(b);items.push({b,sec});
+ });
+ const show=id=>{items.forEach(x=>{const on=x.sec.id===id;x.sec.classList.toggle("on",on);x.b.setAttribute("aria-current",on?"true":"false")});body.scrollTop=0};
+ items.forEach(x=>x.b.onclick=()=>show(x.sec.id));
+ search.oninput=()=>{const q=search.value.trim().toLowerCase();items.forEach(x=>{x.b.hidden=!!q&&!x.sec.dataset.label.toLowerCase().includes(q)});const first=items.find(x=>!x.b.hidden);if(first&&q)show(first.sec.id)};
+ footNodes.forEach(n=>foot.appendChild(n));
+ side.append(search,nav);
+ main.append(body,foot);
+ wrap.append(side,main);mbody.replaceChildren(wrap);
+ if(items[0])show(items[0].sec.id);
+ if(!window.__setObs){
+  window.__setObs=new MutationObserver(()=>{const mc=document.querySelector("#modal .mcard");if(mc)mc.classList.toggle("settings-wide",!!mbody.querySelector(".set-wrap"))});
+  window.__setObs.observe(mbody,{childList:true});
+ }
+ const mc=document.querySelector("#modal .mcard");if(mc)mc.classList.add("settings-wide");
+}
 // ---- Hawaii-time date and time picker (admin disable dialog) ----
 // Writes "YYYY-MM-DDTHH:MM" in HST into the hidden #dis-reenable input, the same format the server already reads.
 const HST_OFFSET_MS=10*3600000;
@@ -3378,6 +3516,33 @@ function adminSkeleton(tab){
  const parts={site:[site,"Loading site controls…"],accounts:[acct.repeat(3),"Loading accounts…"],flags:[flag.repeat(2),"Loading flags…"],usage:['<div class="skel-stats">'+stat.repeat(4)+'</div>',"Loading usage…"],audit:[audit.repeat(3),"Loading audit log…"]}[tab]||[acct.repeat(3),"Loading admin data…"];
  return '<div class="skel-wrap" aria-busy="true" role="status"><span class="visually-hidden">'+parts[1]+'</span>'+parts[0]+'</div>';
 }
+// Desktop admin panel: the same two-pane layout as Settings (tabs on the left, content on the right). Phones keep the original layout.
+const ADMIN_ICONS={site:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/>',accounts:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.5 0 4.5 1.8 4.5 4.5"/>',flags:'<path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/>',usage:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',audit:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>'};
+function layoutAdminDesktop(){
+ if(!window.matchMedia||!window.matchMedia("(min-width:641px)").matches)return;
+ const tabsEl=mbody.querySelector(".admin-nav"),content=$("admin-content"),tool=mbody.querySelector(".data-toolbar");
+ if(!tabsEl||!content)return;
+ const wrap=document.createElement("div");wrap.className="set-wrap admin-wrap";
+ const side=document.createElement("div");side.className="set-side";
+ const nav=document.createElement("nav");nav.className="set-nav admin-tabs";nav.setAttribute("aria-label","Admin sections");
+ [...tabsEl.querySelectorAll("[data-admin-tab]")].forEach(b=>{
+  const key=b.getAttribute("data-admin-tab");
+  const label=b.textContent.trim();
+  b.className="set-nav-btn"+(b.classList.contains("active")?" active":"");
+  b.innerHTML='<span class="set-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+(ADMIN_ICONS[key]||"")+'</svg></span><span>'+label.replace(/</g,"&lt;")+'</span>';
+  nav.appendChild(b);
+ });
+ side.appendChild(nav);
+ const main=document.createElement("div");main.className="set-main";
+ const body=document.createElement("div");body.className="set-body";
+ body.appendChild(content);
+ const foot=document.createElement("div");foot.className="set-foot";
+ if(tool)foot.appendChild(tool);
+ main.append(body,foot);
+ wrap.append(side,main);
+ mbody.replaceChildren(wrap);
+ const mc=document.querySelector("#modal .mcard");if(mc)mc.classList.add("settings-wide");
+}
 function renderAdminPanel(tab,query){
  currentSettingsView="admin";if(tab&&tab!==adminTab){adminFilterOpen=null;if(tab==="usage")adminUsageView="summary"}if(tab)adminTab=tab;if(query!=null)adminQuery=query;
  const generation=++adminPanelGeneration;
@@ -3385,6 +3550,7 @@ function renderAdminPanel(tab,query){
  mbody.innerHTML=`<div class="admin-nav">${[["site","Site"],["accounts","Accounts"],["flags","Flags"],["usage","Usage"],["audit","Audit log"]].map(t=>`<button type="button" class="pbtn ${adminTab===t[0]?"active":""}" data-admin-tab="${t[0]}">${t[1]}</button>`).join("")}</div><div id="admin-content" aria-live="polite"></div><div class="data-toolbar"><button type="button" class="pbtn" id="admin-back">Back to Settings</button><button type="button" class="pbtn" id="admin-refresh">Refresh</button></div>`;
  mbody.querySelectorAll("[data-admin-tab]").forEach(b=>b.onclick=()=>renderAdminPanel(b.dataset.adminTab));
  $("admin-refresh").onclick=()=>refreshAdmin();syncAdminBack();
+ layoutAdminDesktop();
  if(adminData){paintAdminTab();if(Date.now()-adminDataAt>60000)refreshAdmin();return}
  $("admin-content").innerHTML=adminSkeleton(adminTab);
  adminFetch().then(()=>{if(generation===adminPanelGeneration&&currentSettingsView==="admin")paintAdminTab()}).catch(err=>{if(generation===adminPanelGeneration)showAdminError(err)});
