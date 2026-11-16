@@ -1319,6 +1319,13 @@ h1,h2,h3,h4,strong,b,label,summary{color:#f2f2f2}
  .radio-row:has(input:checked){background:#eef4ff}
  .reenable-card{background:#f5f5f5}
 }
+/* Message timestamps and AI tool/source labels need clear contrast on the dark action bar. */
+@media (prefers-color-scheme:dark){
+ .bar>span[data-t]{color:#b8b8be!important}
+ .bar .tool-chip,.bar .tool-chip em{color:#d6d6dc!important}
+ .bar .src,.bar .src em,.bar .thk,.bar .thk em{color:#d6d6dc!important}
+ .bar .src[aria-expanded="true"],.bar .thk[aria-expanded="true"]{background:#3a3a3c!important}
+}
 </style>
 
 </head>
