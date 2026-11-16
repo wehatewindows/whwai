@@ -980,7 +980,8 @@ h1,h2,h3,h4,strong,b,label,summary{color:#f2f2f2}
 .mcard.settings-wide #mbody{display:flex;flex-direction:column}
 .set-wrap{display:grid;grid-template-columns:264px minmax(0,1fr);flex:1;min-height:0;align-items:stretch}
 .set-side{background:#f7f7f8;border-right:1px solid #ececec;display:flex;flex-direction:column;padding:14px 12px 12px;min-height:0}
-.set-search{width:100%;box-sizing:border-box;height:36px;border:1px solid #e2e2e6;border-radius:10px;background:#fff;padding:0 12px;font:14px var(--f);color:#111;margin-bottom:10px;outline:none}\n.set-search-results{display:grid;gap:6px;overflow:auto;max-height:100%;padding:2px 0}.set-search-results[hidden]{display:none}.set-search-result{display:grid;gap:3px;width:100%;border:0;border-radius:16px;background:#f1f1f3;padding:9px 14px;text-align:left;color:#222;cursor:pointer}.set-search-result:hover,.set-search-result:focus-visible{background:#e5e5e9;outline:none}.set-search-result strong{font-size:13px}.set-search-result small,.set-search-empty{font-size:12px;line-height:1.4;color:#666;margin:0}.set-search-empty{padding:10px 8px}
+.set-search{width:100%;box-sizing:border-box;height:36px;border:1px solid #e2e2e6;border-radius:10px;background:#fff;padding:0 12px;font:14px var(--f);color:#111;margin-bottom:10px;outline:none}
+.set-search-results{display:grid;gap:6px;overflow:auto;max-height:100%;padding:2px 0}.set-search-results[hidden]{display:none}.set-search-result{display:grid;gap:3px;width:100%;border:0;border-radius:16px;background:#f1f1f3;padding:9px 14px;text-align:left;color:#222;cursor:pointer}.set-search-result:hover,.set-search-result:focus-visible{background:#e5e5e9;outline:none}.set-search-result strong{font-size:13px}.set-search-result small,.set-search-empty{font-size:12px;line-height:1.4;color:#666;margin:0}.set-search-empty{padding:10px 8px}
 .set-search:focus{border-color:#8fb3ff;box-shadow:0 0 0 3px rgba(111,160,255,.2)}
 .set-nav{display:flex;flex-direction:column;gap:2px;overflow:auto}
 .set-nav-btn{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;text-align:left;padding:9px 10px;border-radius:999px;font:500 14.5px var(--f);color:#2a2a2e;cursor:pointer}
@@ -1054,7 +1055,10 @@ h1,h2,h3,h4,strong,b,label,summary{color:#f2f2f2}
 .set-pane .data-manage-button{border-radius:999px;padding:12px 20px}
 .set-pane .acct-summary{border-radius:999px;padding:8px 20px 8px 8px;margin:0 0 12px}
 .set-pane .pc-block{display:flex;flex-direction:column;align-items:flex-start;text-align:left;margin:4px 0 14px}
-.set-pane .pc-avatar{width:64px;height:64px;font-size:24px}\n.set-pane .pc-swatches{grid-template-columns:repeat(4,38px);gap:12px}\n.set-pane .pc-options{align-items:flex-start;padding:2px 4px 4px}\n#acctmenu{z-index:31;max-height:calc(100dvh - 24px);overflow:auto;overscroll-behavior:contain}
+.set-pane .pc-avatar{width:64px;height:64px;font-size:24px}
+.set-pane .pc-swatches{grid-template-columns:repeat(4,38px);gap:12px}
+.set-pane .pc-options{align-items:flex-start;padding:2px 4px 4px}
+#acctmenu{z-index:31;max-height:calc(100dvh - 24px);overflow:auto;overscroll-behavior:contain}
 .set-pane .audit-top{display:none}
 .set-pane .admin-stat{border-radius:999px;padding:12px 22px}
 .set-pane .admin-stat-grid{gap:8px}
@@ -1080,6 +1084,64 @@ h1,h2,h3,h4,strong,b,label,summary{color:#f2f2f2}
 }
 @media (max-width:640px){.set-search{border-radius:999px;padding:0 18px}.set-row{border-radius:999px;padding:8px 8px 8px 20px}.set-select{border-radius:999px}.set-sec .data-tool{border-radius:999px}.set-sec .data-tools-list{gap:8px}}
 .admin-wrap #admin-content>*{max-width:720px}
+}
+
+@media (prefers-color-scheme:dark){
+ :root{color-scheme:dark}
+ .set-side{background:#161618;border-right-color:#2c2c2e}
+ .set-search{background:#2c2c2e!important;border-color:#3a3a3c!important;color:#f2f2f2!important}
+ .set-group{background:#26262a}
+ .set-sub{color:#e6e6e6}
+ .set-sub:hover,.set-sub:focus-visible{background:#38383c}
+ .set-sub[aria-current="true"]{background:#3a3a3c;color:#fff;box-shadow:none}
+ .set-search-results{color:#f2f2f2}
+ .set-search-result{background:#2c2c2e;color:#f2f2f2}
+ .set-search-result:hover,.set-search-result:focus-visible{background:#3a3a3c}
+ .set-search-result small,.set-search-empty{color:#b8b8be}
+ .set-pane{color:#f2f2f2}
+ .set-pane .data-tools-list{background:transparent}
+ .set-pane .data-tool,.set-pane .data-manage-button{background:#1c1c1e;color:#f2f2f2;border-color:#3a3a3c}
+ .set-pane .data-tool:hover,.set-pane .data-manage-button:hover{background:#2c2c2e}
+ .set-pane .data-tool small{color:#b8b8be}
+ .set-pane .data-tool.danger .tool-icon{background:#4a2528;color:#ffb4b4}
+ .set-pane .pc-label{color:#c6c6cc}
+ .set-pane .acct-summary{background:#1c1c1e;border-color:#3a3a3c}
+ .set-pane .subtle-link{color:#b8caff}
+ .admin-search input{background:#2c2c2e;color:#f2f2f2;border-color:#3a3a3c}
+ .admin-account,.admin-stat,.admin-audit-item,.skel-acct,.skel-stat,.skel-audit{background:#1c1c1e;border-color:#343438;color:#f2f2f2}
+ .acct-facts{border-top-color:#343438}
+ .acct-facts dt,.admin-account-meta,.acct-lock,.acct-flag-meta{color:#a1a1a6}
+ .acct-facts dd,.acct-flag-summary{color:#e6e6e6}
+ .account-role{background:#2c2c2e;color:#d6d6dc}
+ .admin-stat span{color:#a1a1a6}
+ .acct-flags{background:#332b16;border-color:#655522}
+ .acct-flags-head,.acct-flag-meta{color:#e8cf7e}
+ .acct-flag{border-top-color:#655522}
+ .admin-filter-wrap .admin-filter-btn{background:#2c2c2e;color:#f2f2f2;border-color:#45454a}
+ .admin-filter-wrap .admin-filter-btn:hover{background:#3a3a3c;border-color:#647da8}
+ .admin-filter-wrap .admin-filter-btn.active{background:#20385c;color:#c6d9ff;border-color:#385b91}
+ .admin-filter-count{box-shadow:0 0 0 2px #1c1c1e}
+ .admin-filter-menu{background:#1c1c1e;border-color:#3a3a3c;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+ .admin-filter-menu .check-row{background:#2c2c2e;color:#e6e6e6}
+ .admin-nav .pbtn.active{background:#20385c;color:#c6d9ff;box-shadow:inset 0 0 0 1px #385b91}
+ .acct-more{color:#d6d6dc}
+ .acct-more:hover,.acct-more[aria-expanded="true"]{background:#3a3a3c}
+ .admin-disable-note{background:#242426;border-color:#3a3a3c}
+ .self-disabled-banner{background:#321f20;border-color:#684042}
+ .app-confirm-overlay{background:rgba(0,0,0,.56)}
+ .app-confirm-card,.wn-card{background:#1c1c1e;color:#f2f2f2;border-color:#3a3a3c}
+ .confirm-panel{background:#242426;border-color:#3a3a3c}
+ .confirm-panel p,.wn-intro,.wn-list span{color:#d6d6dc}
+ .wn-card h2,.wn-list strong{color:#f2f2f2}
+ .wn-ver{color:#a1a1a6}
+ .radio-row strong{color:#f2f2f2}
+ .radio-row small{color:#b8b8be}
+ .cmenu button:hover{background:#3a3a3c}
+ .access-admin-actions button{background:#2c2c2e;color:#f2f2f2}
+ .access-admin-actions button[type=submit]{background:#20385c;color:#c6d9ff}
+ .site-group-h,.whatsnew-admin-current summary{color:#f2f2f2}
+ .skel{background:#343438}
+ .skel-chat .skel{background:linear-gradient(90deg,#343438 0%,#45454a 45%,#343438 90%);background-size:220% 100%}
 }
 </style>
 
@@ -3283,7 +3345,7 @@ function deskIcon(paths,size){return '<svg viewBox="0 0 24 24" width="'+(size||1
 function deskFooterHtml(){
  return '<div class="privacy-row"><a href="#" class="privacy-link" id="privacy-open">Privacy Policy</a><a href="#" class="privacy-link" id="terms-open">Terms of Use</a><a href="#" class="privacy-link" id="whatsnew-open">What\'s new</a>'+(accessRequired?'<button type="button" class="lock-link" id="lock-whwai-now">Lock WHWai</button>':'')+'</div>'+(whatsNewCfg&&whatsNewCfg.version?'<p class="wn-ver wn-ver-btn" id="settings-ver" role="button" tabindex="0" aria-expanded="false" title="Tap to show the build ID">'+esc(String(whatsNewCfg.version))+'</p>':'');
 }
-function deskSetTitle(t){$("modal-title").textContent=t}
+function deskSetTitle(t){$("modal-title").textContent="Settings"}
 function renderDeskSettings(active){
  const signed=!!(accountSession&&accountSession.token&&accountSession.user),isAdmin=signed&&accountSession.user.role==="admin";
  const adminBlock=isAdmin?'<div class="set-cap">Administration</div><div class="set-group">'+DESK_ADMIN_TABS.map(t=>'<button type="button" class="set-sub" data-desk="admin:'+t[0]+'"><span class="set-sub-ico">'+deskIcon(ADMIN_ICONS[t[0]]||"",14)+'</span><span>'+t[1]+'</span></button>').join("")+'</div>':"";
@@ -3522,7 +3584,7 @@ function renderAccountAuth(mode){
    accountInitialSyncPending=!accountSession.user.mustChange;
    accountMergePendingToast=!accountSession.user.mustChange&&S.chats.length>0;
    applyLoginChats(result);
-   if(!accountSession.user.mustChange){syncAccountChatsNow();renderAccount()}
+   if(!accountSession.user.mustChange){syncAccountChatsNow();if(isDeskSettings()&&mbodyOuter.querySelector(":scope > .set-wrap.desk"))renderDeskSettings("account");else renderAccount()}
   }catch(err){if(err&&err.payload&&err.payload.error==="breached_password_confirm")showBreachConfirm(mbody.querySelector("#account-auth-error"),err.payload.message);else{const msg=err&&err.payload&&err.payload.message||"Couldn't complete sign-in. Check your details and try again.";showAccountAuthError(msg,/user/i.test(msg)?mbody.querySelector("#account-username"):mbody.querySelector("#account-password"))}submit.disabled=false;submit.textContent=signup?"Create account":"Sign in"}
  };
 }
@@ -4238,7 +4300,7 @@ function animateMenuContent(){mbody.classList.remove("menu-content-enter");void 
 // Every opened overlay starts at the top, not the bottom of the previous view.
 function resetScroll(){[modal,accessGate,$("wn")].forEach(root=>{if(!root)return;root.scrollTop=0;root.querySelectorAll("*").forEach(el=>{if(el.scrollTop>0)el.scrollTop=0})})}
 new MutationObserver(()=>animateMenuContent()).observe(mbody,{childList:true});
-function wrapViewTransition(fn){return function(){const result=fn.apply(this,arguments);if(!modal.hidden)animateMenuContent();return result}}
+function wrapViewTransition(fn){return function(){const result=fn.apply(this,arguments);if(!modal.hidden){animateMenuContent();if(isDeskSettings()&&mbodyOuter.querySelector(":scope > .set-wrap.desk"))$("modal-title").textContent="Settings"}return result}}
 renderSettings=wrapViewTransition(renderSettings);
 renderAccountAuth=wrapViewTransition(renderAccountAuth);
 renderAccount=wrapViewTransition(renderAccount);
