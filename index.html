@@ -938,8 +938,6 @@ h1,h2,h3,h4,strong,b,label,summary{color:#f2f2f2}
 .set-note{margin:-4px 0 14px}
 .set-select{height:36px;border:1px solid #e2e2e6;border-radius:10px;background:#fff;padding:0 10px;font:14px var(--f);color:#111;min-width:130px}
 .set-select:focus{outline:none;border-color:#8fb3ff;box-shadow:0 0 0 3px rgba(111,160,255,.2)}
-html[data-font="small"] .msg{font-size:14px}
-html[data-font="large"] .msg{font-size:17px}
 .desk-only{display:none}
 @media (max-width:640px){.appearance-sec,.desk-summary{display:none!important}}
 @media (min-width:641px){.desk-only{display:grid}}
@@ -1032,6 +1030,32 @@ html[data-font="large"] .msg{font-size:17px}
 .admin-wrap .set-foot{justify-content:flex-start}
 .admin-wrap .set-foot .data-toolbar{display:flex;gap:10px;margin:0;width:100%}
 .admin-wrap .audit-top{display:none}
+@media (min-width:641px){
+.set-wrap.desk{flex:1;min-height:0;grid-template-columns:264px minmax(0,1fr)}
+.set-wrap.desk .set-side{display:flex;flex-direction:column;min-height:0;padding:14px 12px 12px}
+.set-wrap.desk .set-nav{flex:1;min-height:0;overflow:auto;gap:4px}
+.set-wrap.desk .set-search{margin-bottom:12px}
+.set-cap{margin:18px 14px 6px;font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#8e8e93}
+.set-group{display:flex;flex-direction:column;gap:2px;background:#ececee;border-radius:18px;padding:5px}
+.set-sub{display:flex;align-items:center;gap:8px;height:30px;border:0;background:transparent;border-radius:999px;padding:0 12px;font:500 13px var(--f);color:#4a4a4f;cursor:pointer;text-align:left}
+.set-sub:hover{background:#e2e2e5}
+.set-sub[aria-current="true"]{background:#fff;color:#111;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.set-sub-ico{display:inline-flex;width:14px;height:14px;flex:none}
+.set-sub-ico svg{display:block}
+.set-side-foot{border-top:1px solid #ececec;margin:10px 4px 0;padding:12px 4px 0;display:flex;flex-direction:column;gap:8px}
+.set-side-foot .privacy-row{display:flex;flex-wrap:wrap;gap:6px}
+.set-side-foot .wn-ver{margin:0;font-size:12px;color:#8e8e93}
+.set-pane{min-height:0;overflow:auto;padding:24px 40px 28px;display:flex;flex-direction:column}
+.set-pane>*{max-width:640px}
+.set-pane #account-back,.set-pane #data-back,.set-pane #admin-back,.set-pane .acct-who,.set-pane .acct-copy{display:none!important}
+.set-pane .data-toolbar{margin-top:14px}
+.set-pane .data-tools-list{display:flex;flex-direction:column;gap:8px;border:0;background:transparent;border-radius:0;overflow:visible}
+.set-pane .data-tool{border:1px solid #e6e6e8;border-radius:999px;padding:12px 20px;background:#fff}
+.set-pane .data-manage-button{border-radius:999px;padding:12px 20px}
+.set-pane .acct-summary{border-radius:999px;padding:8px 20px 8px 8px;margin:0 0 12px}
+.set-pane .pc-block{display:flex;flex-direction:column;align-items:flex-start;text-align:left;margin:4px 0 14px}
+.set-pane .pc-avatar{width:44px;height:44px;font-size:17px}
+}
 @media (min-width:641px){
 .set-sec #account-back,.set-sec .acct-who,.set-sec .acct-copy{display:none}
 .set-sec .pc-block{display:flex;flex-direction:column;align-items:flex-start;text-align:left}
@@ -2131,7 +2155,7 @@ function getDeviceId(){
 const SLIDERS='<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>';
 $("gear").innerHTML=ic(SLIDERS,16,2.2);
 $("mnew").innerHTML=ic('<path d="M12 5v14M5 12h14"/>',18,2.4);$("mnew").onclick=newChat;$("profile-btn").onclick=e=>{e.stopPropagation();const m=$("profile-menu");if(!m)return;if(m.hidden){renderProfileMenu();showEl(m)}else hideEl(m)};document.addEventListener("click",e=>{const m=$("profile-menu");if(m&&!m.hidden&&!m.contains(e.target))m.hidden=true});
-const modal=$("modal"),mbody=$("mbody");
+const modal=$("modal"),mbodyOuter=$("mbody");let mbody=mbodyOuter;
 let siteStimDisabled=false,siteNoticeDismissible=false,siteNoticeOnGates=true,siteNoticeDismissedText=null;
 const COARSE=matchMedia("(pointer:coarse)").matches;const STIM_QUIET=COARSE?.45:1;
 let stimOn=false,stimTaps=[];
@@ -3193,19 +3217,16 @@ async function toggleBuildId(){
  const now=document.getElementById("settings-ver");if(!now)return;
  buildIdShown=true;now.textContent=base+" ("+label+")";
 }
-const CHAT_FONT_KEY="whwai.chatFont.v1";
-function chatFontSize(){try{const v=localStorage.getItem(CHAT_FONT_KEY);return v==="small"||v==="large"?v:"medium"}catch(e){return"medium"}}
-function setChatFontSize(v){const val=v==="small"||v==="large"?v:"medium";try{if(val==="medium")localStorage.removeItem(CHAT_FONT_KEY);else localStorage.setItem(CHAT_FONT_KEY,val)}catch(e){}document.documentElement.dataset.font=val}
-document.documentElement.dataset.font=chatFontSize();
 function accountSummaryHtml(u){
  const init=String(u.username||"?").charAt(0).toUpperCase();
  const chats=S&&Array.isArray(S.chats)?S.chats:[];
  const last=chats.reduce((m,c)=>Math.max(m,Number(c.mu||c.u)||0),0);
-  return '<div class="acct-summary desk-summary"><span class="tool-avatar acct-summary-av" style="background:'+escapeAttr(u.profileColor||"#3f6ce0")+'" aria-hidden="true">'+esc(init)+'</span><div class="acct-summary-txt"><strong>'+esc(u.username||"")+'</strong></div></div>'
-  +'<div class="acct-stats desk-only"><div class="acct-stat"><span>Your chats</span><strong>'+chats.length+'</strong></div><div class="acct-stat"><span>Last chat</span><strong>'+(last?esc(dateLabel(last)):"None yet")+'</strong></div></div>';
+  return '<div class="acct-summary desk-summary"><span class="tool-avatar acct-summary-av" style="background:'+escapeAttr(u.profileColor||"#3f6ce0")+'" aria-hidden="true">'+esc(init)+'</span><div class="acct-summary-txt"><strong>'+esc(u.username||"")+'</strong></div></div>';
 }
 function renderSettings(){
  currentSettingsView="settings";if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}
+ mbody=mbodyOuter;
+ if(isDeskSettings()){renderDeskSettings();return}
  $("modal-title").textContent="Settings";
  const signed=!!(accountSession&&accountSession.token&&accountSession.user),user=signed?accountSession.user:null;
  const accountCopy=signed?`Signed in as ${esc(user.username)}${user.role==="admin"?" · Administrator":""}.`:(accountSession&&accountSession.token?(accountReady?"Signed in. Your account will sync once the server is reachable and the access code is entered.":"Checking your account session…"):"");
@@ -3214,7 +3235,6 @@ function renderSettings(){
   <div class="data-tools-list">
    ${signed?`<button class="data-tool" id="account-open" type="button">${accountAvatarHtml()}<span class="tool-copy"><strong>Account settings</strong></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>`:`<button class="data-tool" id="account-signin" type="button"><span class="tool-icon">${ic('<path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/>',19,1.8)}</span><span class="tool-copy"><strong>Sign in</strong></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>${siteSignupMode!=="closed"?`<button class="data-tool" id="account-signup" type="button"><span class="tool-icon">${ic('<path d="M12 5v14M5 12h14"/>',19,1.8)}</span><span class="tool-copy"><strong>Create account</strong></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>`:""}`}
   </div>
-  <h3>General</h3><div class="set-row"><label class="set-row-label" for="chat-font-size">Chat text size</label><select id="chat-font-size" class="set-select" aria-label="Chat text size"><option value="small"${chatFontSize()==="small"?" selected":""}>Small</option><option value="medium"${chatFontSize()==="medium"?" selected":""}>Medium</option><option value="large"${chatFontSize()==="large"?" selected":""}>Large</option></select></div>
   <h3>Data & privacy</h3><button class="pbtn data-manage-button" id="data-tools-open" type="button"><span class="manage-icon">${ic('<path d="M4 5h16v14H4z"/><path d="M8 9h8M8 12h8M8 15h5"/>',17)}</span><span>Manage your data</span></button>${confirmDeleteEnabled()?"":'<button type="button" class="subtle-link" id="restore-delete-confirm">Ask before deleting chats again</button>'}
   ${signed&&user.role==="admin"?`<h3>Administration</h3><button class="pbtn data-manage-button" id="admin-open" type="button"><span class="manage-icon">${ic('<path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z"/>',17)}</span><span>Admin panel</span></button>`:""}
   ${stimOn?stimSettingsHtml():""}
@@ -3227,66 +3247,72 @@ function renderSettings(){
  if(q("admin-open"))q("admin-open").onclick=()=>renderAdminPanel("site");
  buildIdShown=false;{const sv=q("settings-ver");if(sv){sv.onclick=toggleBuildId;sv.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();toggleBuildId()}}}}
  if(q("lock-whwai-now"))q("lock-whwai-now").onclick=()=>{closeSettings();side(false);lockEarlyAccess(true)};
-  if(q("chat-font-size"))q("chat-font-size").onchange=e=>setChatFontSize(e.target.value);
-  layoutSettingsDesktop();
 }
 // Desktop: a navigation list with a search box on the left, one page at a time on the right, legal links and version in the footer. Phones keep one column.
 const SET_ICONS={general:'<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="16" cy="18" r="2"/>',appearance:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',account:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/>',data:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',admin:'<path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z"/>',stim:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6"/>'};
-function layoutSettingsDesktop(){
- if(currentSettingsView!=="settings"||!mbody)return;
- const groups=[];let cur=null;
- [...mbody.children].forEach(n=>{
-  if(n.tagName==="H3"){cur={title:n.textContent.trim(),nodes:[n]};groups.push(cur)}
-  else if(cur)cur.nodes.push(n);
- });
- if(!groups.length)return;
- const footNodes=[...mbody.querySelectorAll(".privacy-row,#settings-ver")];
- const wrap=document.createElement("div");wrap.className="set-wrap";
- const side=document.createElement("div");side.className="set-side";
- const search=document.createElement("input");search.type="search";search.className="set-search";search.placeholder="Search settings";search.setAttribute("aria-label","Search settings");search.autocomplete="off";
- const nav=document.createElement("nav");nav.className="set-nav";nav.setAttribute("aria-label","Settings sections");
- const main=document.createElement("div");main.className="set-main";
- const body=document.createElement("div");body.className="set-body";
- const foot=document.createElement("div");foot.className="set-foot";
- const keyOf=t=>/general/i.test(t)?"general":/appearance/i.test(t)?"appearance":/account/i.test(t)?"account":/admin/i.test(t)?"admin":"data";
- const items=[];
- groups.forEach((g,i)=>{
-  const key=keyOf(g.title);
-  const sec=document.createElement("section");sec.className="set-sec";sec.id="set-sec-"+i;sec.dataset.label=g.title;
-  const h=g.nodes[0];h.classList.add("set-title");
-  g.nodes.forEach(n=>{if(!footNodes.includes(n))sec.appendChild(n)});
-  body.appendChild(sec);
-  const b=document.createElement("button");b.type="button";b.className="set-nav-btn";b.dataset.target=sec.id;
-  b.innerHTML='<span class="set-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+(SET_ICONS[key]||SET_ICONS.data)+'</svg></span><span>'+g.title.replace(/</g,"&lt;")+'</span>';
-  nav.appendChild(b);items.push({b,sec,key});
- });
- const show=id=>{items.forEach(x=>{const on=x.sec.id===id;x.sec.classList.toggle("on",on);x.b.setAttribute("aria-current",on?"true":"false")});body.scrollTop=0};
- items.forEach(x=>x.b.onclick=()=>{
-  if(x.key==="admin"){renderAdminPanel(adminTab||"site");return}
-  if(x.key==="data"){const d=x.sec.querySelector("#data-tools-open");if(d){d.click();return}}
-  show(x.sec.id);
- });
- search.oninput=()=>{const q=search.value.trim().toLowerCase();items.forEach(x=>{x.b.hidden=!!q&&!x.sec.dataset.label.toLowerCase().includes(q)});const first=items.find(x=>!x.b.hidden);if(first&&q)show(first.sec.id)};
- if(accountSession&&accountSession.token&&accountSession.user&&window.matchMedia&&matchMedia("(min-width:641px)").matches){
-  const accItem=items.find(x=>x.key==="account");
-  if(accItem){
-   const row=accItem.sec.querySelector("#account-open");if(row)row.remove();
-   renderAccount();
-   [...mbody.childNodes].forEach(n=>accItem.sec.appendChild(n));
-   $("modal-title").textContent="Settings";currentSettingsView="settings";
-  }
- }
- footNodes.forEach(n=>foot.appendChild(n));
- side.append(search,nav);
- main.append(body,foot);
- wrap.append(side,main);mbody.replaceChildren(wrap);
- if(items[0])show(items[0].sec.id);
- if(!window.__setObs){
-  window.__setObs=new MutationObserver(()=>{const mc=document.querySelector("#modal .mcard");if(mc)mc.classList.toggle("settings-wide",!!mbody.querySelector(".set-wrap"))});
-  window.__setObs.observe(mbody,{childList:true});
- }
- const mc=document.querySelector("#modal .mcard");if(mc)mc.classList.add("settings-wide");
+// Desktop Settings: a sidebar (Account, Data & privacy, and Administration's tabs in a grouped bar) and one content pane. Phones keep the single-column list.
+const DESK_ADMIN_TABS=[["site","Site"],["accounts","Accounts"],["flags","Flags"],["usage","Usage"],["audit","Audit log"]];
+function isDeskSettings(){return !!(window.matchMedia&&matchMedia("(min-width:641px)").matches)}
+function deskIcon(paths,size){return '<svg viewBox="0 0 24 24" width="'+(size||17)+'" height="'+(size||17)+'" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+paths+'</svg>'}
+function deskFooterHtml(){
+ return '<div class="privacy-row"><a href="#" class="privacy-link" id="privacy-open">Privacy Policy</a><a href="#" class="privacy-link" id="terms-open">Terms of Use</a><a href="#" class="privacy-link" id="whatsnew-open">What\'s new</a>'+(accessRequired?'<button type="button" class="lock-link" id="lock-whwai-now">Lock WHWai</button>':'')+'</div>'+(whatsNewCfg&&whatsNewCfg.version?'<p class="wn-ver wn-ver-btn" id="settings-ver" role="button" tabindex="0" aria-expanded="false" title="Tap to show the build ID">'+esc(String(whatsNewCfg.version))+'</p>':'');
 }
+function deskSetTitle(t){$("modal-title").textContent=t}
+function renderDeskSettings(active){
+ const signed=!!(accountSession&&accountSession.token&&accountSession.user),isAdmin=signed&&accountSession.user.role==="admin";
+ const adminBlock=isAdmin?'<div class="set-cap">Administration</div><div class="set-group">'+DESK_ADMIN_TABS.map(t=>'<button type="button" class="set-sub" data-desk="admin:'+t[0]+'"><span class="set-sub-ico">'+deskIcon(ADMIN_ICONS[t[0]]||"",14)+'</span><span>'+t[1]+'</span></button>').join("")+'</div>':"";
+ mbodyOuter.innerHTML='<div class="set-wrap desk"><div class="set-side"><input type="search" class="set-search" placeholder="Search settings" aria-label="Search settings" autocomplete="off"><nav class="set-nav" aria-label="Settings sections"><button type="button" class="set-nav-btn" data-desk="account"><span class="set-ico" aria-hidden="true">'+deskIcon(SET_ICONS.account)+'</span><span>Account</span></button><button type="button" class="set-nav-btn" data-desk="data"><span class="set-ico" aria-hidden="true">'+deskIcon(SET_ICONS.data)+'</span><span>Data &amp; privacy</span></button>'+adminBlock+'</nav><div class="set-side-foot">'+deskFooterHtml()+'</div></div><div class="set-pane" id="set-pane"></div></div>';
+ mbody=$("set-pane");
+ if(!window.__deskObs){window.__deskObs=new MutationObserver(()=>{const mc=document.querySelector("#modal .mcard");if(mc)mc.classList.toggle("settings-wide",!!mbodyOuter.querySelector(":scope > .set-wrap.desk"))});window.__deskObs.observe(mbodyOuter,{childList:true})}
+ const mc0=document.querySelector("#modal .mcard");if(mc0)mc0.classList.add("settings-wide");
+ const search=mbodyOuter.querySelector(".set-search");
+ search.oninput=()=>{const q=search.value.trim().toLowerCase();mbodyOuter.querySelectorAll(".set-nav-btn,.set-sub").forEach(b=>{b.hidden=!!q&&!b.textContent.toLowerCase().includes(q)})};
+ mbodyOuter.querySelectorAll("[data-desk]").forEach(b=>b.onclick=()=>deskGo(b.dataset.desk));
+ mbodyOuter.querySelector("#privacy-open").onclick=e=>{e.preventDefault();renderPrivacyPolicy()};
+ mbodyOuter.querySelector("#terms-open").onclick=e=>{e.preventDefault();renderTerms()};
+ mbodyOuter.querySelector("#whatsnew-open").onclick=e=>{e.preventDefault();closeSettings();setTimeout(()=>showWhatsNewIfNeeded(true),320)};
+ if(mbodyOuter.querySelector("#lock-whwai-now"))mbodyOuter.querySelector("#lock-whwai-now").onclick=()=>{closeSettings();side(false);lockEarlyAccess(true)};
+ const sv=mbodyOuter.querySelector("#settings-ver");if(sv){sv.onclick=toggleBuildId;sv.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();toggleBuildId()}}}
+ deskGo(active||"account");
+}
+function deskMark(key){mbodyOuter.querySelectorAll(".set-nav-btn,.set-sub").forEach(b=>b.setAttribute("aria-current",b.dataset.desk===key?"true":"false"))}
+function deskGo(key){
+ deskMark(key);
+ if(key==="account")return deskAccount();
+ if(key==="data")return deskData();
+ if(key.startsWith("admin:")){const t=key.slice(6);adminTab=t;renderAdminPanel(t);deskSetTitle(DESK_ADMIN_TABS.find(x=>x[0]===t)[1]);return}
+}
+function deskAccount(){
+ const signed=!!(accountSession&&accountSession.token&&accountSession.user);
+ if(signed){
+  renderAccount();
+  mbody.insertAdjacentHTML("afterbegin",accountSummaryHtml(accountSession.user));
+  deskSetTitle("Account");
+  if(stimOn){mbody.insertAdjacentHTML("beforeend",stimSettingsHtml());bindStimControls()}
+  return;
+ }
+ currentSettingsView="settings";
+ const copy=accountSession&&accountSession.token?(accountReady?"Signed in. Your account will sync once the server is reachable and the access code is entered.":"Checking your account session…"):"Sign in to sync your chats across browsers, or create an account.";
+ mbody.innerHTML='<p class="sm">'+esc(copy)+'</p><div class="data-tools-list"><button class="data-tool" id="account-signin" type="button"><span class="tool-icon">'+ic('<path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/>',19,1.8)+'</span><span class="tool-copy"><strong>Sign in</strong></span><span class="tool-arrow">'+ic('<path d="M9 18l6-6-6-6"/>',16)+'</span></button>'+(siteSignupMode!=="closed"?'<button class="data-tool" id="account-signup" type="button"><span class="tool-icon">'+ic('<path d="M12 5v14M5 12h14"/>',19,1.8)+'</span><span class="tool-copy"><strong>Create account</strong></span><span class="tool-arrow">'+ic('<path d="M9 18l6-6-6-6"/>',16)+'</span></button>':"")+'</div><p class="sm" id="s-msg" role="status"></p>';
+ mbody.querySelector("#account-signin").onclick=()=>renderAccountAuth("login");
+ const su=mbody.querySelector("#account-signup");if(su)su.onclick=()=>renderAccountAuth("signup");
+ deskSetTitle("Account");
+}
+function deskData(){
+ renderDataManagement();
+ currentSettingsView="data";
+ deskSetTitle("Data & privacy");
+ if(!confirmDeleteEnabled()){
+  const rd=document.createElement("button");rd.type="button";rd.className="subtle-link";rd.id="restore-delete-confirm";rd.textContent="Ask before deleting chats again";
+  rd.onclick=()=>{setConfirmDelete(true);toast("Delete confirmation is back on.");deskData()};
+  mbody.appendChild(rd);
+ }
+}
+function bindStimControls(){
+ const st=mbody.querySelector("#stim-toggle");if(st)st.onchange=()=>{if(!st.checked){setStimulation(false);deskGo("account")}};
+ const ss=mbody.querySelector("#stim-sound");if(ss)ss.onchange=()=>{stimSound=ss.checked};
+}
+
 // ---- Hawaii-time date and time picker (admin disable dialog) ----
 // Writes "YYYY-MM-DDTHH:MM" in HST into the hidden #dis-reenable input, the same format the server already reads.
 const HST_OFFSET_MS=10*3600000;
@@ -3585,39 +3611,14 @@ function adminSkeleton(tab){
 }
 // Desktop admin panel: the same two-pane layout as Settings (tabs on the left, content on the right). Phones keep the original layout.
 const ADMIN_ICONS={site:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/>',accounts:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.5 0 4.5 1.8 4.5 4.5"/>',flags:'<path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/>',usage:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',audit:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>'};
-function layoutAdminDesktop(){
- if(!window.matchMedia||!window.matchMedia("(min-width:641px)").matches)return;
- const tabsEl=mbody.querySelector(".admin-nav"),content=$("admin-content"),tool=mbody.querySelector(".data-toolbar");
- if(!tabsEl||!content)return;
- const wrap=document.createElement("div");wrap.className="set-wrap admin-wrap";
- const side=document.createElement("div");side.className="set-side";
- const nav=document.createElement("nav");nav.className="set-nav admin-tabs";nav.setAttribute("aria-label","Admin sections");
- [...tabsEl.querySelectorAll("[data-admin-tab]")].forEach(b=>{
-  const key=b.getAttribute("data-admin-tab");
-  const label=b.textContent.trim();
-  b.className="set-nav-btn"+(b.classList.contains("active")?" active":"");
-  b.innerHTML='<span class="set-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+(ADMIN_ICONS[key]||"")+'</svg></span><span>'+label.replace(/</g,"&lt;")+'</span>';
-  nav.appendChild(b);
- });
- side.appendChild(nav);
- const main=document.createElement("div");main.className="set-main";
- const body=document.createElement("div");body.className="set-body";
- body.appendChild(content);
- const foot=document.createElement("div");foot.className="set-foot";
- if(tool)foot.appendChild(tool);
- main.append(body,foot);
- wrap.append(side,main);
- mbody.replaceChildren(wrap);
- const mc=document.querySelector("#modal .mcard");if(mc)mc.classList.add("settings-wide");
-}
 function renderAdminPanel(tab,query){
  currentSettingsView="admin";if(tab&&tab!==adminTab){adminFilterOpen=null;if(tab==="usage")adminUsageView="summary"}if(tab)adminTab=tab;if(query!=null)adminQuery=query;
  const generation=++adminPanelGeneration;
- $("modal-title").textContent="Admin panel";
- mbody.innerHTML=`<div class="admin-nav">${[["site","Site"],["accounts","Accounts"],["flags","Flags"],["usage","Usage"],["audit","Audit log"]].map(t=>`<button type="button" class="pbtn ${adminTab===t[0]?"active":""}" data-admin-tab="${t[0]}">${t[1]}</button>`).join("")}</div><div id="admin-content" aria-live="polite"></div><div class="data-toolbar"><button type="button" class="pbtn" id="admin-back">Back to Settings</button><button type="button" class="pbtn" id="admin-refresh">Refresh</button></div>`;
- mbody.querySelectorAll("[data-admin-tab]").forEach(b=>b.onclick=()=>renderAdminPanel(b.dataset.adminTab));
+ const inlineAdmin=mbody.classList.contains("set-pane");
+ if(!inlineAdmin)$("modal-title").textContent="Admin panel";
+ mbody.innerHTML=inlineAdmin?`<div id="admin-content" aria-live="polite"></div><div class="data-toolbar"><button type="button" class="pbtn" id="admin-refresh">Refresh</button></div>`:`<div class="admin-nav">${[["site","Site"],["accounts","Accounts"],["flags","Flags"],["usage","Usage"],["audit","Audit log"]].map(t=>`<button type="button" class="pbtn ${adminTab===t[0]?"active":""}" data-admin-tab="${t[0]}">${t[1]}</button>`).join("")}</div><div id="admin-content" aria-live="polite"></div><div class="data-toolbar"><button type="button" class="pbtn" id="admin-back">Back to Settings</button><button type="button" class="pbtn" id="admin-refresh">Refresh</button></div>`;
+ if(!inlineAdmin)mbody.querySelectorAll("[data-admin-tab]").forEach(b=>b.onclick=()=>renderAdminPanel(b.dataset.adminTab));
  $("admin-refresh").onclick=()=>refreshAdmin();syncAdminBack();
- layoutAdminDesktop();
  if(adminData){paintAdminTab();if(Date.now()-adminDataAt>60000)refreshAdmin();return}
  $("admin-content").innerHTML=adminSkeleton(adminTab);
  adminFetch().then(()=>{if(generation===adminPanelGeneration&&currentSettingsView==="admin")paintAdminTab()}).catch(err=>{if(generation===adminPanelGeneration)showAdminError(err)});
@@ -4220,9 +4221,9 @@ renderDataManagement=wrapViewTransition(renderDataManagement);
 renderExportInfo=wrapViewTransition(renderExportInfo);
 renderPrivacyPolicy=wrapViewTransition(renderPrivacyPolicy);renderTerms=wrapViewTransition(renderTerms);
 renderLocalDeleteConfirm=wrapViewTransition(renderLocalDeleteConfirm);
-function finishModalClose(){if(!closingModal)return;if(closeModalTimer!==null){clearTimeout(closeModalTimer);closeModalTimer=null}modal.hidden=true;modal.classList.remove("closing");closingModal=false}
+function finishModalClose(){if(!closingModal)return;mbody=mbodyOuter;if(closeModalTimer!==null){clearTimeout(closeModalTimer);closeModalTimer=null}modal.hidden=true;modal.classList.remove("closing");closingModal=false}
 function closeSettings(){if(currentSettingsView==="password-required"&&accountSession&&accountSession.user&&accountSession.user.mustChange){toast("Set a new password to continue.");return}resolvePendingConfirmation(false);if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}if(modal.hidden||closingModal)return;closingModal=true;modal.classList.add("closing");closeModalTimer=setTimeout(finishModalClose,190)}
-function openSettings(initialRenderer){if(closeModalTimer!==null){clearTimeout(closeModalTimer);closeModalTimer=null}closingModal=false;modal.classList.remove("closing");modal.hidden=false;smsg="";if(typeof initialRenderer==="function")initialRenderer();else renderSettings()}
+function openSettings(initialRenderer){if(closeModalTimer!==null){clearTimeout(closeModalTimer);closeModalTimer=null}closingModal=false;mbody=mbodyOuter;modal.classList.remove("closing");modal.hidden=false;smsg="";if(typeof initialRenderer==="function")initialRenderer();else renderSettings()}
 function gateAdminMode(open){
  const form=$("access-admin-form"),link=$("access-admin-open");form.hidden=!open;link.hidden=!!open;accessForm.hidden=!!open||aiDisabled;accessError.hidden=true;$("access-admin-error").hidden=true;
  if(open){$("access-admin-user").focus()}else if(!aiDisabled)accessInput.focus();
