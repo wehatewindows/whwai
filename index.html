@@ -3578,9 +3578,9 @@ function paintAdminSite(box){
 <label for="admin-new-access-code">Change access code (leave blank to keep current)</label><input id="admin-new-access-code" type="text" class="masked-field" maxlength="80" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true">
 </section>
 <section class="account-form site-group"><h4 class="site-group-h">Announcement</h4>
-<label for="admin-site-notice">Site-wide notice (optional)</label><textarea id="admin-site-notice" class="reason-input" rows="5" maxlength="600" placeholder="Leave blank to clear the notice" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea>
-<label class="check-row"><input id="admin-notice-dismissible" type="checkbox"> Let users dismiss the announcement</label>
-<label class="check-row"><input id="admin-notice-gates" type="checkbox"> Show the announcement on sign-in, access code, and disabled screens</label>
+<button type="button" class="pbtn data-manage-button" id="announcement-admin-open"><span>Announcement screen</span></button>
+</section>
+<section class="account-form site-group"><h4 class="site-group-h">What's new</h4>
 <button type="button" class="pbtn data-manage-button" id="whatsnew-admin-open"><span>What's new screen</span></button>
 </section>
 <section class="account-form site-group">
@@ -3591,10 +3591,10 @@ function paintAdminSite(box){
 </section>
 <p class="access-error" id="admin-settings-error" role="status" aria-live="polite" hidden></p>
 <div class="data-toolbar"><button class="pbtn" id="admin-settings-save" type="submit">Save changes</button></div></form>`;
- $("whatsnew-admin-open").onclick=renderWhatsNewAdmin;$("admin-ai-enabled").checked=!!v.aiEnabled;$("admin-access-required").checked=!!v.accessCodeRequired;$("admin-signup-mode").value=v.signupMode||"code";$("admin-site-notice").value=v.siteNotice||"";$("admin-notice-dismissible").checked=!!v.siteNoticeDismissible;$("admin-notice-gates").checked=v.siteNoticeOnGates!==false;$("admin-stim-disabled").checked=!!v.stimulationDisabled;$("admin-school-override").checked=!!v.schoolOverrideActive;
+ $("whatsnew-admin-open").onclick=renderWhatsNewAdmin;$("announcement-admin-open").onclick=renderAnnouncementAdmin;$("admin-ai-enabled").checked=!!v.aiEnabled;$("admin-access-required").checked=!!v.accessCodeRequired;$("admin-signup-mode").value=v.signupMode||"code";$("admin-stim-disabled").checked=!!v.stimulationDisabled;$("admin-school-override").checked=!!v.schoolOverrideActive;
  $("admin-settings-form").onsubmit=async e=>{
   e.preventDefault();const b=$("admin-settings-save"),error=$("admin-settings-error");error.hidden=true;b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Saving…';
-  const wn=(adminData.settings&&adminData.settings.whatsNew)||{};const settings={aiEnabled:$("admin-ai-enabled").checked,accessCodeRequired:$("admin-access-required").checked,signupMode:$("admin-signup-mode").value,siteNotice:$("admin-site-notice").value,siteNoticeDismissible:$("admin-notice-dismissible").checked,siteNoticeOnGates:$("admin-notice-gates").checked,stimulationDisabled:$("admin-stim-disabled").checked,schoolOverride:$("admin-school-override").checked,newAccessCode:$("admin-new-access-code").value,whatsNewEnabled:!!wn.enabled,whatsNewVersion:wn.version||"",whatsNewContent:{intro:wn.intro||"",items:wn.items||[]}};
+  const wn=(adminData.settings&&adminData.settings.whatsNew)||{};const settings={aiEnabled:$("admin-ai-enabled").checked,accessCodeRequired:$("admin-access-required").checked,signupMode:$("admin-signup-mode").value,siteNotice:(adminData.settings||{}).siteNotice||"",siteNoticeDismissible:!!(adminData.settings||{}).siteNoticeDismissible,siteNoticeOnGates:(adminData.settings||{}).siteNoticeOnGates!==false,stimulationDisabled:$("admin-stim-disabled").checked,schoolOverride:$("admin-school-override").checked,newAccessCode:$("admin-new-access-code").value,whatsNewEnabled:!!wn.enabled,whatsNewVersion:wn.version||"",whatsNewContent:{intro:wn.intro||"",items:wn.items||[]}};
   try{
    const saved=await post({action:"admin_update_settings",settings});
    if(!saved||!saved.ok)throw Object.assign(new Error(saved&&saved.error||"failed"),{payload:saved});
@@ -3602,6 +3602,27 @@ function paintAdminSite(box){
    if(saved.settings&&saved.settings.whatsNew)applyWhatsNewCfg(saved.settings.whatsNew);if(adminData)adminData.settings=saved.settings;toast("Site settings saved.");
    const current=$("admin-content");if(current&&adminTab==="site"&&currentSettingsView==="admin"&&adminData)paintAdminSite(current);
   }catch(err){const el=$("admin-settings-error"),cb=$("admin-settings-save");if(el){el.textContent=err&&err.payload&&err.payload.message||"Couldn't save settings.";el.hidden=false}if(cb){cb.disabled=false;cb.textContent="Save changes"}}
+ };
+}
+function renderAnnouncementAdmin(){
+ currentSettingsView="admin";
+ const cur=(adminData&&adminData.settings)||{};
+ $("modal-title").textContent="Announcement";
+ mbody.innerHTML=`<form id="announcement-admin-form" class="account-form" autocomplete="off"><p class="sm">Shown on the sign-in, access code and disabled screens. Leave it blank to clear it.</p><label for="admin-site-notice">Announcement text (optional)</label><textarea id="admin-site-notice" class="reason-input" rows="5" maxlength="600" placeholder="Leave blank to clear the announcement" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea><label class="check-row"><input id="admin-notice-dismissible" type="checkbox"> Let users dismiss the announcement</label><label class="check-row"><input id="admin-notice-gates" type="checkbox"> Show the announcement on sign-in, access code, and disabled screens</label><p class="access-error" id="ann-error" role="status" aria-live="polite" hidden></p><div class="data-toolbar"><button class="pbtn" id="ann-back" type="button">Back</button><button class="pbtn" id="ann-save" type="submit">Save changes</button></div></form>`;
+ $("admin-site-notice").value=cur.siteNotice||"";
+ $("admin-notice-dismissible").checked=!!cur.siteNoticeDismissible;
+ $("admin-notice-gates").checked=cur.siteNoticeOnGates!==false;
+ $("ann-back").onclick=()=>renderAdminPanel("site");
+ $("announcement-admin-form").onsubmit=async e=>{
+  e.preventDefault();const b=$("ann-save"),error=$("ann-error");error.hidden=true;b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Saving…';
+  const settings={siteNotice:$("admin-site-notice").value,siteNoticeDismissible:$("admin-notice-dismissible").checked,siteNoticeOnGates:$("admin-notice-gates").checked};
+  try{
+   const saved=await post({action:"admin_update_settings",settings});
+   if(!saved||!saved.ok)throw Object.assign(new Error(saved&&saved.error||"failed"),{payload:saved});
+   siteNoticeText=saved.settings.siteNotice||"";siteNoticeDismissible=!!saved.settings.siteNoticeDismissible;siteNoticeOnGates=saved.settings.siteNoticeOnGates!==false;renderSiteNotice();
+   if(adminData)adminData.settings=saved.settings;toast("Announcement saved.");
+   renderAdminPanel("site");
+  }catch(err){const el=$("ann-error");if(el){el.textContent=err&&err.payload&&err.payload.message||"Couldn't save the announcement.";el.hidden=false}b.disabled=false;b.textContent="Save changes"}
  };
 }
 function renderWhatsNewAdmin(){
@@ -3748,8 +3769,10 @@ function paintAdminAudit(box){
  [...adminAuditFilters].forEach(a=>{if(actions.indexOf(a)===-1)adminAuditFilters.delete(a)});
  const shown=adminAuditFilters.size?items.filter(i=>adminAuditFilters.has(i.action)):items;
  const options=actions.map(a=>[a,a.replace(/_/g," ")]);
- box.innerHTML=`<p class="sm">${items.length===1?"1 event":items.length+" events"}, admin and account-security only. Chat titles and messages are never recorded here.</p>${items.length?filterDropdown("audit",options,adminAuditFilters):""}${shown.length?shown.map(item=>`<article class="admin-audit-item"><strong>${esc(String(item.action||"").replace(/_/g," ").replace(/^./,c=>c.toUpperCase()))}</strong><span>${adminDate(item.timestamp)}</span><p>${esc(item.actor)} → ${esc(item.target||"—")}</p><small>${esc(item.detail||"")}</small></article>`).join(""):`<p class="sm">${items.length?"No entries for this filter.":"No audit entries yet."}</p>`}`;
+ box.innerHTML=`<div class="data-toolbar audit-top"><button class="pbtn" type="button" id="audit-top-back">Back to Settings</button><button class="pbtn" type="button" id="audit-top-refresh">Refresh</button></div><p class="sm">${items.length===1?"1 event":items.length+" events"}, admin and account-security only. Chat titles and messages are never recorded here.</p>${items.length?filterDropdown("audit",options,adminAuditFilters):""}${shown.length?shown.map(item=>`<article class="admin-audit-item"><strong>${esc(String(item.action||"").replace(/_/g," ").replace(/^./,c=>c.toUpperCase()))}</strong><span>${adminDate(item.timestamp)}</span><p>${esc(item.actor)} → ${esc(item.target||"—")}</p><small>${esc(item.detail||"")}</small></article>`).join(""):`<p class="sm">${items.length?"No entries for this filter.":"No audit entries yet."}</p>`}`;
  bindAdminFilters(box);
+ box.querySelector("#audit-top-back").onclick=()=>$("admin-back").click();
+ box.querySelector("#audit-top-refresh").onclick=()=>$("admin-refresh").click();
 }
 function renderCreateAccount(){
  currentSettingsView="admin-create";$("modal-title").textContent="Create account";
