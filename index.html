@@ -881,6 +881,38 @@ input.has-err:not([type=checkbox]):not([type=radio]):not([type=file]):focus,text
 .skel-au-m{display:block;height:9px;border-radius:5px;margin-top:8px}
 @keyframes skelShimmer{0%{background-position:120% 0}100%{background-position:-120% 0}}
 @media (prefers-reduced-motion:reduce){.skel,.skel-acct,.skel-chat,.skel-stat,.skel-audit{animation:none!important}}
+@media (prefers-color-scheme: dark){
+:root{--side:#1c1c1e;--chip:#2c2c2e;--sel:#3a3a3c;--bub:#2c2c2e;--ink:#f2f2f2;--mute:#a1a1a6;--frame:#3a3a3c}
+html,body{background:#121212;color:#f2f2f2}
+body .main,body .scroll,body .input,body .mbar,body .access-gate,body .school-lock,body .toast{background:transparent}
+.side,.side.open{background:#1c1c1e;color:#f2f2f2}
+.side .brand{border-bottom-color:#3a3a3c}
+.mcard,.policy-card,.access-card,.school-lock-card,.confirm-panel,.cmenu,.profile-menu,.pop,.info-pop{background:#1c1c1e;color:#f2f2f2;border-color:#3a3a3c}
+.field,.chat-search,.side .chat-search,.side .list .item,.check-row,.switch-row,.radio-row,.pc-card,.account-form input,.account-form select,.account-form textarea,input,select,textarea{background:#2c2c2e;color:#f2f2f2;border-color:#3a3a3c}
+.pbtn,.gear,.new,.profile-menu button,.cmenu button{background:#2c2c2e;color:#f2f2f2}
+.pbtn:hover{background:#3a3a3c}
+.privacy-link,.lock-link,.legal-links a,.access-admin-link{background:#2c2c2e}
+.home-icon{background:rgba(255,255,255,.1);color:#f2f2f2}
+.policy-takeaways{background:#1f2a3d;border-color:#2e3f5c}
+h1,h2,h3,h4,strong,b,label,summary{color:#f2f2f2}
+.sm,.mute,.muted,p,li{color:#d6d6d6}
+.school-notice{background:#2a2a1f;color:#f2f2f2}
+.data-tool{background:#2c2c2e;color:#f2f2f2;border-color:#3a3a3c}
+.data-tool .tool-icon{background:#3a3a3c;color:#f2f2f2}
+.data-tool .tool-arrow{color:#a1a1a6}
+.tool-chip{color:#f2f2f2}
+.info-pop,.pop,.hst-pop{background:#1c1c1e;border-color:#3a3a3c;color:#f2f2f2;box-shadow:0 8px 26px rgba(0,0,0,.5)}
+.info-pop .sm,.pop .sm{color:#d6d6d6}
+.access-card h2,.access-card p,.school-lock-head strong,.school-lock-body p{color:#f2f2f2}
+.access-card input,#access-code,.access-form input{background:#2c2c2e;color:#f2f2f2;border-color:#3a3a3c}
+.access-form button,#access-unlock{background:#3a3a3c;color:#f2f2f2}
+.side .gear,.side .new,.side button{background:#2c2c2e;color:#f2f2f2}
+.side .gear svg,.side .new svg,.side button svg{stroke:#f2f2f2}
+.gear,.new{background:#2c2c2e}
+.xi:before,.xi:after{background-color:#f2f2f2}
+.xi{background-color:transparent;color:#f2f2f2}
+.info-pop p,.info-pop span,.info-pop div{color:#e6e6e6}
+}
 </style>
 
 </head>
@@ -1932,7 +1964,7 @@ setInterval(refreshSendState,60000);
 ta.addEventListener("input",fit);
 ta.addEventListener("keydown",e=>{if(e.target&&e.target.classList&&e.target.classList.contains("rn"))return;if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();send()}});
 $("new").onclick=newChat;
-if(searchInput){searchInput.addEventListener("input",renderList);searchInput.addEventListener("keydown",e=>{if(e.key==="Escape"&&searchInput.value){searchInput.value="";renderList();searchInput.blur()}})}
+if(searchInput){searchInput.addEventListener("input",debounceFn(()=>renderList(),350));searchInput.addEventListener("keydown",e=>{if(e.key==="Escape"&&searchInput.value){searchInput.value="";renderList();searchInput.blur()}})}
 if(searchClear)searchClear.onclick=()=>{searchInput.value="";renderList();searchInput.focus()};
 const mob=()=>matchMedia("(max-width:640px)").matches;
 $("mopen").innerHTML=ic('<path d="M4 6h16M4 12h16M4 18h16"/>',20,2.1);
@@ -3283,7 +3315,7 @@ function renderDeleteAccountConfirm(){
  $("delete-account-form").onsubmit=async e=>{e.preventDefault();const b=$("delete-account-submit");b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Deleting…';try{const result=await post({action:"account_delete",password:$("delete-account-password").value});if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});clearSignedInLocalCache();smsg="Your account and active server-stored chats were deleted.";toast("Account deleted.");renderSettings()}catch(err){const el=$("delete-account-error");el.textContent=err&&err.payload&&err.payload.message||"Couldn't delete the account.";el.hidden=false;b.disabled=false;b.textContent="Delete account"}}
 }
 function escapeAttr(text){return String(text||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
-let adminPanelGeneration=0,adminActionPending=false,adminData=null,adminDataAt=0,adminLoading=null,adminTab="site",adminQuery="";
+let adminPanelGeneration=0,adminActionPending=false,adminData=null,adminDataAt=0,adminLoading=null,adminTab="site",adminQuery="";const debAccounts=debounceFn(()=>paintAccountList(),350);
 function adminDayText(value){const n=Number(value||0);return n?new Date(n).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}):"Never"}
 function adminDate(value){const n=Number(value||0);return n?new Date(n).toLocaleString():"Never"}
 function adminFetch(force){
@@ -3494,6 +3526,8 @@ async function disableBrowserByDevice(deviceId){
  await flagAction(Object.assign({flagAction:"disable_browser",deviceId:deviceId},form),"Browser disabled.");
 }
 let adminFlagQuery="";
+function debounceFn(fn,ms){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms)}}
+const debFlags=debounceFn(()=>paintFlagList(),350);
 function flagCardHtml(f,disables){
  const uname=f.username||accountNameById(f.accountId);
  const browserOff=!uname&&!!f.deviceId&&disables.some(x=>x.deviceId===f.deviceId);
@@ -3508,7 +3542,7 @@ function paintAdminFlags(box){
   return;
  }
  box.innerHTML='<div class="admin-search"><input id="admin-flag-query" type="search" maxlength="60" placeholder="Search flags" value="'+escapeAttr(adminFlagQuery)+'" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></div><div id="admin-flag-list"></div>';
- $("admin-flag-query").oninput=e=>{adminFlagQuery=e.target.value;paintFlagList()};
+ $("admin-flag-query").oninput=e=>{adminFlagQuery=e.target.value;debFlags()};
  paintFlagList();
 }
 function paintFlagList(){
@@ -3584,7 +3618,7 @@ function paintAdminSite(box){
 <label for="admin-new-access-code">Change access code (leave blank to keep current)</label><input id="admin-new-access-code" type="text" class="masked-field" maxlength="80" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true">
 </section>
 <section class="account-form site-group"><h4 class="site-group-h">Announcement</h4>
-<button type="button" class="pbtn data-manage-button" id="announcement-admin-open"><span>Announcement only</span></button>
+<button type="button" class="pbtn data-manage-button" id="announcement-admin-open"><span>Site announcement</span></button>
 </section>
 <section class="account-form site-group"><h4 class="site-group-h">What's new</h4>
 <button type="button" class="pbtn data-manage-button" id="whatsnew-admin-open"><span>What's new screen</span></button>
@@ -3651,7 +3685,7 @@ function renderWhatsNewAdmin(){
 }
 function paintAdminAccounts(box){
  box.innerHTML=`<div class="admin-search"><input id="admin-account-query" type="search" maxlength="20" placeholder="Search users" value="${escapeAttr(adminQuery)}" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true">${filterDropdown("accounts",ACCOUNT_FILTERS,adminAccountFilters)}<button type="button" class="pbtn" id="admin-create-account">Create account</button></div><div id="admin-account-results"></div>`;
- $("admin-account-query").oninput=e=>{adminQuery=e.target.value.trim();paintAccountList()};
+ $("admin-account-query").oninput=e=>{adminQuery=e.target.value.trim();debAccounts()};
  $("admin-create-account").onclick=renderCreateAccount;
  bindAdminFilters(box);
  paintAccountList();
@@ -3706,7 +3740,7 @@ document.addEventListener("click",e=>{if(acctMenuId!==null&&!e.target.closest("#
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&acctMenuId!==null){closeAcctMenu();e.stopPropagation()}},true);
 window.addEventListener("scroll",()=>{if(acctMenuId!==null)closeAcctMenu()},{capture:true,passive:true});
 window.addEventListener("resize",()=>{if(acctMenuId!==null)closeAcctMenu()});
-let adminUsageView="summary",adminUsersUsage=null,adminUsersLoading=null,adminUsageQuery="";
+let adminUsageView="summary",adminUsersUsage=null,adminUsersLoading=null,adminUsageQuery="";const debUsage=debounceFn(()=>fill(),350);
 function syncAdminBack(){const bk=$("admin-back");if(!bk)return;if(adminTab==="usage"&&adminUsageView==="users"){bk.textContent="Back";bk.onclick=()=>{adminUsageView="summary";paintAdminTab();animateAdminContent()}}else{bk.textContent="Back to Settings";bk.onclick=renderSettings}}
 function animateAdminContent(){const box=$("admin-content");if(!box)return;box.classList.remove("menu-content-enter");void box.offsetWidth;box.classList.add("menu-content-enter")}
 function fmtTok(n){return (Number(n)||0).toLocaleString("en-US")}
@@ -3726,7 +3760,7 @@ function paintAdminUsageUsers(box){
  box.innerHTML=`<h3 class="usage-sub">All-time usage</h3><div class="admin-search"><input id="usage-user-query" type="search" maxlength="20" placeholder="Search users" value="${escapeAttr(adminUsageQuery)}" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></div><p class="sm" id="usage-users-msg">Loading…</p><div id="usage-users-list"></div>`;
  syncAdminBack();
  const input=box.querySelector("#usage-user-query");
- input.oninput=e=>{adminUsageQuery=e.target.value.trim().toLowerCase();fill()};
+ input.oninput=e=>{adminUsageQuery=e.target.value.trim().toLowerCase();debUsage()};
  const fill=()=>{
   if(!box.isConnected||adminUsageView!=="users"||!adminUsersUsage)return;
   const msg=box.querySelector("#usage-users-msg"),list=box.querySelector("#usage-users-list");
