@@ -94,7 +94,7 @@ svg{display:block}
 .round{width:48px;height:48px;border-radius:50%;border:0;background:var(--bub);cursor:pointer;flex:none;display:grid;place-items:center;transition:background .15s,opacity .15s;margin-bottom:1px}
 .round:hover{background:#e2e2e2}.round:disabled{opacity:.45;cursor:default}.round.blocked{opacity:.45;cursor:not-allowed}.round.blocked:hover{background:var(--bub)}.limit-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 var(--edge,16px) 18px;padding:12px 14px 12px 18px;border-radius:20px;background:var(--bub);color:var(--ink);font-size:14px;line-height:1.4}.limit-bar[hidden]{display:none!important}.limit-retry-row{display:flex;justify-content:flex-start;margin:6px 0 14px}.limit-bar .lb-actions{display:flex;gap:8px;flex-wrap:wrap}.body-limit .orb{display:none}#gate-signout{position:relative;overflow:hidden}.btn-ripple{position:absolute;width:140px;height:140px;margin:-70px 0 0 -70px;border-radius:50%;background:rgba(17,17,17,.16);transform:scale(0);pointer-events:none;animation:btnRipple .55s ease-out forwards}@keyframes btnRipple{to{transform:scale(1);opacity:0}}@media (prefers-reduced-motion:reduce){.btn-ripple{animation:none;display:none}}
 .note{font-size:13px;margin:8px 0 0 4px}
-.toast{position:absolute;left:50%;bottom:64px;transform:translate(-50%,8px);background:#222;color:#fff;border-radius:14px;padding:7px 14px;font-size:13.5px;opacity:0;pointer-events:none;transition:.2s;white-space:normal;max-width:calc(100% - 24px);text-align:center;line-height:1.35;z-index:25}
+.toast{position:absolute;left:50%;bottom:64px;transform:translate(-50%,8px);background:#222;color:#fff;border:1px solid rgba(255,255,255,.12);box-shadow:0 6px 20px rgba(0,0,0,.22);border-radius:14px;padding:7px 14px;font-size:13.5px;opacity:0;pointer-events:none;transition:.2s;white-space:normal;max-width:calc(100% - 24px);text-align:center;line-height:1.35;z-index:25}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .scrim{display:none;position:absolute;inset:0;background:rgba(0,0,0,.25);z-index:5}
 .gear{position:absolute;left:12px;bottom:12px;width:30px;height:30px;border-radius:50%;border:0;background:#bbb;color:#fff;padding:0;display:grid;place-items:center;cursor:pointer;transition:background .15s}
@@ -431,7 +431,7 @@ body.access-locked .frame{filter:blur(6px);pointer-events:none;user-select:none}
 .profile-menu{position:absolute;left:14px;bottom:52px;width:min(240px,calc(100% - 28px));background:#fff;border:1px solid #ddd;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.16);padding:8px;z-index:9;animation:rise .15s ease-out}
 .profile-menu[hidden]{display:none}
 .pm-head{padding:6px 10px 8px;font-size:12.5px;color:#555;line-height:1.35}.pm-head strong{display:block;color:#111;font-size:14px;margin-bottom:2px}
-.pm-item{display:block;width:100%;border:0;background:none;border-radius:999px;padding:9px 14px;text-align:left;cursor:pointer;font-size:14px;color:#111}
+.pm-item{display:block;width:100%;border:0;background:none;border-radius:999px;padding:9px 14px;text-align:left;cursor:pointer;font-size:14px;color:#111}.pm-item+.pm-item{margin-top:4px}
 .pm-item:hover{background:#f0f0f0}.pm-item:disabled{opacity:.6;cursor:wait}
 .pc-label{display:block;font-size:13px;color:#555}.pc-swatches{display:grid;grid-template-columns:repeat(4,38px);gap:12px}.pc-sw{width:38px;height:38px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #d0d0d8;cursor:pointer;padding:0}.pc-sw.on{box-shadow:0 0 0 2px #fff,0 0 0 4px #222}.pc-sw:focus-visible{outline:2px solid #3f6ce0;outline-offset:5px}.pc-sw:hover{transform:scale(1.07)}
 html,body{touch-action:manipulation}
@@ -710,7 +710,7 @@ textarea{border-radius:16px}
 .usage-tok-grid{display:grid;gap:6px;margin:0 0 12px}
 .usage-tok-row{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:6px;align-items:center;padding:9px 12px;border:1px solid #e6e6e6;border-radius:12px;background:#f7f7f7;font-size:13.5px}
 .usage-tok-row span:not(:first-child){text-align:right;font-variant-numeric:tabular-nums}
-.usage-tok-head{background:transparent;border-color:transparent;font-size:12px;color:#6b6b6b;padding:0 12px}
+.usage-tok-head{display:none!important}
 .usage-user{padding:10px 12px;border:1px solid #e6e6e6;border-radius:14px;background:#f7f7f7;margin:0 0 8px}
 .usage-user-head strong{display:block;font-size:14px;color:#111}
 .usage-user-head small{display:block;color:#6b6b6b;font-size:12px;margin-top:2px}
@@ -1237,6 +1237,20 @@ h1,h2,h3,h4,strong,b,label,summary{color:#f2f2f2}
 .usage-users-head{display:flex;align-items:center;gap:12px;margin:0 0 14px}
 .usage-users-head .usage-sub{margin:0}
 .usage-back{border-radius:999px;white-space:nowrap}
+@media (prefers-color-scheme:dark){
+ .site-group{background:#1c1c1e!important;border-color:#343438!important;color:#e0e0e4}
+ .site-group .site-group-h,.site-group label:not(.check-row){color:#d6d6dc!important}
+ .site-group .check-row{background:#262628!important;color:#d6d6dc!important}
+ .site-group input:not([type=checkbox]),.site-group select,.site-group textarea{background:#242426!important;color:#e0e0e4!important;border-color:#3a3a3c!important}
+ .site-group .site-field-hint{color:#aeb0b6!important}
+ .site-form .data-manage-button{background:#262628!important;color:#e0e0e4!important;border-color:#3a3a3c!important}
+ .site-form .data-manage-button:hover{background:#303034!important}
+ .toast{background:#303034!important;color:#ededf0!important;border-color:#49494f!important;box-shadow:0 8px 26px rgba(0,0,0,.48)}
+ .model:hover,.model:focus-visible{background:#333337;color:#e6e6ea}
+ .model:focus-visible{outline:2px solid #668fe8;outline-offset:2px}
+ .pm-item+.pm-item{margin-top:4px}
+}
+@media (prefers-color-scheme:light){.toast{background:#222;color:#fff}}
 </style>
 
 </head>
@@ -4033,16 +4047,16 @@ document.addEventListener("click",e=>{const d=e.target.closest&&e.target.closest
 function paintAdminSite(box){
  const v=adminData.settings||{};
  box.innerHTML=`<form id="admin-settings-form" class="account-form site-form" autocomplete="off">
-<section class="account-form site-group"><h4 class="site-group-h">Access</h4><p class="site-group-copy">Choose how people can use WHWai and create accounts.</p>
+<section class="account-form site-group"><h4 class="site-group-h">Access</h4>
 <label class="check-row"><input id="admin-ai-enabled" type="checkbox"> AI enabled</label>
 <label class="check-row"><input id="admin-access-required" type="checkbox"> Require access code screen on page load</label>
 <label for="admin-signup-mode">Account creation</label><select id="admin-signup-mode"><option value="code">Access code required</option><option value="open">Open sign-up</option><option value="closed">Closed</option></select>
 <label for="admin-new-access-code">New access code</label><p class="site-field-hint">Leave blank to keep the current code.</p><input id="admin-new-access-code" type="text" class="masked-field" maxlength="80" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true">
 </section>
-<section class="account-form site-group"><h4 class="site-group-h">Announcement</h4><p class="site-group-copy">Share a message at the top of the chat screen.</p>
+<section class="account-form site-group"><h4 class="site-group-h">Announcement</h4>
 <button type="button" class="pbtn data-manage-button" id="announcement-admin-open"><span>Site announcement</span></button>
 </section>
-<section class="account-form site-group"><h4 class="site-group-h">What's new</h4><p class="site-group-copy">Tell people what has changed in WHWai.</p>
+<section class="account-form site-group"><h4 class="site-group-h">What's new</h4>
 <button type="button" class="pbtn data-manage-button" id="whatsnew-admin-open"><span>What's new screen</span></button>
 </section>
 <section class="account-form site-group">
@@ -4173,7 +4187,7 @@ function paintAdminUsage(box){
  if(adminUsageView==="users"){paintAdminUsageUsers(box);return}
  const r=(adminData&&adminData.usage)||{},t=r.today||{},w=r.week||{};
  box.innerHTML=`<div class="admin-stat-grid"><div class="admin-stat"><span>Requests today</span><strong>${Number(t.total)||0}</strong></div><div class="admin-stat"><span>Requests in 7 days</span><strong>${Number(w.total)||0}</strong></div><div class="admin-stat"><span>Accounts</span><strong>${Number(r.accountCount)||0}</strong></div><div class="admin-stat"><span>Failed sign-ins today</span><strong>${Number(t.failedSignins)||0}</strong></div><div class="admin-stat"><span>Guest requests today</span><strong>${Number(t.guests)||0}</strong></div><div class="admin-stat"><span>Account requests today</span><strong>${Number(t.accounts)||0}</strong></div></div>`
-  +`<h3 class="usage-sub">Groq tokens</h3><div class="usage-tok-grid"><div class="usage-tok-row usage-tok-head"><span></span><span>Input</span><span>Output</span><span>Total</span></div>${tokenRow("Today",t.inputTokens,t.outputTokens)}${tokenRow("Last 7 days",w.inputTokens,w.outputTokens)}</div>`
+  +`<h3 class="usage-sub">Groq tokens</h3><div class="usage-tok-grid">${tokenRow("Today",t.inputTokens,t.outputTokens)}${tokenRow("Last 7 days",w.inputTokens,w.outputTokens)}</div>`
   +`<div class="data-toolbar"><button type="button" class="pbtn" id="usage-by-user">Per user usage</button></div>`;
  box.querySelector("#usage-by-user").onclick=()=>{adminUsersUsage=null;adminUsageView="users";paintAdminUsage(box);animateAdminContent()};
  syncAdminBack();
