@@ -710,7 +710,7 @@ textarea{border-radius:16px}
 .usage-tok-grid{display:grid;gap:6px;margin:0 0 12px}
 .usage-tok-row{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:6px;align-items:center;padding:9px 12px;border:1px solid #e6e6e6;border-radius:12px;background:#f7f7f7;font-size:13.5px}
 .usage-tok-row span:not(:first-child){text-align:right;font-variant-numeric:tabular-nums}
-.usage-tok-head{display:none!important}
+.usage-tok-head{display:grid!important;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:6px;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;font-size:12px;color:#aeb0b6;padding:0 12px 2px}
 .usage-user{padding:10px 12px;border:1px solid #e6e6e6;border-radius:14px;background:#f7f7f7;margin:0 0 8px}
 .usage-user-head strong{display:block;font-size:14px;color:#111}
 .usage-user-head small{display:block;color:#6b6b6b;font-size:12px;margin-top:2px}
@@ -1251,6 +1251,41 @@ h1,h2,h3,h4,strong,b,label,summary{color:#f2f2f2}
  .pm-item+.pm-item{margin-top:4px}
 }
 @media (prefers-color-scheme:light){.toast{background:#222;color:#fff}}
+/* Keep menus and selected chats readable without merging adjacent pill controls. */
+.cmenu{display:flex;flex-direction:column;gap:4px}
+.cmenu[hidden]{display:none}
+.cmenu button{background:transparent}
+.bulk-done{border-radius:999px;min-height:32px;padding:5px 12px}
+@media(max-width:420px){
+ .bulk-actions{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .bulk-bar button:not(.bulk-done){min-width:0;padding-left:5px;padding-right:5px;font-size:12px;white-space:normal;line-height:1.2}
+}
+@media (prefers-color-scheme:dark){
+ .chat.on,.chat.on:hover{background:#343438!important;color:#e8e8ec!important;box-shadow:inset 0 0 0 1px #55555b!important}
+ .chat.on .ct,.chat.on .cm{color:#e0e0e4!important}
+ .chat.on .cm{color:#b8b8be!important}
+ .cmenu{gap:5px}
+ .cmenu button{color:#e0e0e4}
+ .cmenu button:hover,.cmenu button:focus-visible{background:#3a3a3e}
+ .cmenu .danger{color:#ff6961}
+ .bulk-bar .bulk-done{color:#9ab7ff;border-radius:999px;background:transparent}
+ .bulk-bar button:not(.bulk-done){background:#242426;border-color:#45454a;color:#e0e0e4}
+ .bulk-bar button:not(.bulk-done):hover{background:#343438}
+ .set-side{border-right:0!important}
+ .set-nav{border-right:0!important}
+ .set-side-foot{border-top:0!important;margin-top:12px;padding-top:4px}
+ .set-wrap{column-gap:24px}
+}
+@media (prefers-color-scheme:light){
+ .set-side{border-right:0}
+ .set-side-foot{border-top:0}
+}
+@media (min-width:641px){
+ .set-side{border-right:0!important}
+ .set-nav{border-right:0!important}
+}
+.set-side-foot{border-top:0!important}
+.usage-tok-head{background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;color:#888;font-size:12px;padding:0 12px 3px}
 </style>
 
 </head>
