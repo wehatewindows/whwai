@@ -1367,6 +1367,22 @@ textarea:focus-visible,select:focus-visible,
   outline-color:#8ab0ff!important;
  }
 }
+/* Keep pointer, active, and keyboard highlights within the dark palette. */
+@media (prefers-color-scheme:dark){
+ .privacy-link:hover,.privacy-link:focus,.lock-link:hover,.lock-link:focus{
+  background:#3a3a3c!important;color:#e6e6ea!important;
+ }
+ .home-icon:hover,.home-icon:focus-visible{background:rgba(255,255,255,.18)}
+ .more:hover,.more[aria-expanded="true"]{background:#3a3a3c;color:#e6e6ea}
+ .round:hover:not(.blocked){background:#3a3a3c}
+ .side .new:hover,.side .gear:hover,.new:hover,.gear:hover{background:#3a3a3c!important}
+ .access-form button:hover,#access-unlock:hover{background:#4a4a4f;color:#f2f2f2}
+ .access-admin-link:hover{background:#3a3a3c!important;color:#e6e6ea}
+ .code-copy:hover,.chart-act:hover{background:#3a3a3c;color:#e6e6ea}
+ .notice-x:hover,.notice-x:focus-visible{background:rgba(255,255,255,.12)}
+ .set-side-foot .privacy-row .privacy-link:hover,
+ .set-side-foot .privacy-row .privacy-link:focus{background:#3a3a3c!important;color:#e6e6ea!important}
+}
 </style>
 
 </head>
