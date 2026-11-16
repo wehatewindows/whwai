@@ -3326,6 +3326,7 @@ function deskAccount(){
  mbody.querySelector("#account-signin").onclick=()=>renderAccountAuth("login");
  const su=mbody.querySelector("#account-signup");if(su)su.onclick=()=>renderAccountAuth("signup");
  deskSetTitle("Account");
+ animateMenuContent();
 }
 function deskData(){
  renderDataManagement();
