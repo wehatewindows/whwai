@@ -588,7 +588,9 @@ html.stim .stim-blob{pointer-events:auto;z-index:150;width:200px;height:200px;ma
 .stim-flood{position:fixed;inset:-20%;z-index:199;pointer-events:none;background:conic-gradient(#ff6ec7,#ffd166,#06d6a0,#4cc9f0,#b388ff,#ff6ec7);opacity:0;animation:stimFlood 2.4s ease-out forwards}
 @keyframes stimFlood{0%{opacity:0;transform:rotate(0)}20%{opacity:.3}100%{opacity:0;transform:rotate(200deg)}}
 .admin-advanced{margin:4px 0 10px;font-size:15px;color:#111}
-.admin-advanced summary{cursor:pointer;list-style:none;display:inline-block;padding:4px 0;font-weight:600}
+.admin-advanced summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:10px;padding:8px 16px;border:1px solid #e6e6e8;border-radius:999px;background:#f2f2f2;font-weight:600}
+.admin-advanced summary::after{content:"";width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);margin-top:-4px;transition:transform .15s}
+.admin-advanced[open] summary::after{transform:rotate(-135deg);margin-top:4px}
 .admin-advanced summary::-webkit-details-marker{display:none}
 .admin-advanced[open] .check-row{margin-top:6px}
 @media (prefers-reduced-motion:reduce){.stim-flood{display:none}.stim-disco{animation:none}}
@@ -1030,6 +1032,21 @@ html[data-font="large"] .msg{font-size:17px}
 .admin-wrap .set-foot{justify-content:flex-start}
 .admin-wrap .set-foot .data-toolbar{display:flex;gap:10px;margin:0;width:100%}
 .admin-wrap .audit-top{display:none}
+@media (min-width:641px){
+.set-sec #account-back,.set-sec .acct-who,.set-sec .acct-copy{display:none}
+.set-sec .pc-block{display:flex;flex-direction:column;align-items:flex-start;text-align:left}
+.set-sec .pc-avatar{width:44px;height:44px;font-size:17px}
+.set-sec .data-tools-list{border:0;border-radius:0;background:transparent;display:flex;flex-direction:column;gap:8px;overflow:visible}
+.set-sec .data-tool{border:1px solid #e6e6e8;border-radius:999px;padding:12px 20px;background:#fff}
+.set-sec .data-tool:last-child{border-bottom:1px solid #e6e6e8}
+.set-sec .data-manage-button{border-radius:999px;padding:12px 20px}
+.set-sec .acct-summary{border-radius:999px;padding:8px 20px 8px 8px}
+.set-sec .acct-stat{border-radius:999px;padding:10px 22px;justify-content:center}
+.set-sec .set-select{border-radius:999px;padding:0 16px}
+.set-sec .set-row{border-radius:999px;padding:10px 12px 10px 22px}
+.set-search{border-radius:999px;padding:0 18px}
+}
+@media (max-width:640px){.set-search{border-radius:999px;padding:0 18px}.set-row{border-radius:999px;padding:8px 8px 8px 20px}.set-select{border-radius:999px}.set-sec .data-tool{border-radius:999px}.set-sec .data-tools-list{gap:8px}}
 .admin-wrap #admin-content>*{max-width:720px}
 }
 </style>
@@ -3185,21 +3202,19 @@ function accountSummaryHtml(u){
  const chats=S&&Array.isArray(S.chats)?S.chats:[];
  const last=chats.reduce((m,c)=>Math.max(m,Number(c.mu||c.u)||0),0);
   return '<div class="acct-summary desk-summary"><span class="tool-avatar acct-summary-av" style="background:'+escapeAttr(u.profileColor||"#3f6ce0")+'" aria-hidden="true">'+esc(init)+'</span><div class="acct-summary-txt"><strong>'+esc(u.username||"")+'</strong></div></div>'
-  +'<div class="acct-stats desk-only"><div class="acct-stat"><span>Chats on this device</span><strong>'+chats.length+'</strong></div><div class="acct-stat"><span>Last chat</span><strong>'+(last?esc(dateLabel(last)):"None yet")+'</strong></div></div>';
+  +'<div class="acct-stats desk-only"><div class="acct-stat"><span>Your chats</span><strong>'+chats.length+'</strong></div><div class="acct-stat"><span>Last chat</span><strong>'+(last?esc(dateLabel(last)):"None yet")+'</strong></div></div>';
 }
 function renderSettings(){
  currentSettingsView="settings";if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}
  $("modal-title").textContent="Settings";
  const signed=!!(accountSession&&accountSession.token&&accountSession.user),user=signed?accountSession.user:null;
  const accountCopy=signed?`Signed in as ${esc(user.username)}${user.role==="admin"?" · Administrator":""}.`:(accountSession&&accountSession.token?(accountReady?"Signed in. Your account will sync once the server is reachable and the access code is entered.":"Checking your account session…"):"");
- mbody.innerHTML=`<h3>Account</h3>${accountCopy?`<p class="sm">${accountCopy}</p>`:""}
+ mbody.innerHTML=`<h3>Account</h3>${accountCopy?`<p class="sm acct-copy">${accountCopy}</p>`:""}
   ${signed?accountSummaryHtml(user):""}
   <div class="data-tools-list">
    ${signed?`<button class="data-tool" id="account-open" type="button">${accountAvatarHtml()}<span class="tool-copy"><strong>Account settings</strong></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>`:`<button class="data-tool" id="account-signin" type="button"><span class="tool-icon">${ic('<path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/>',19,1.8)}</span><span class="tool-copy"><strong>Sign in</strong></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>${siteSignupMode!=="closed"?`<button class="data-tool" id="account-signup" type="button"><span class="tool-icon">${ic('<path d="M12 5v14M5 12h14"/>',19,1.8)}</span><span class="tool-copy"><strong>Create account</strong></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button>`:""}`}
   </div>
   <h3>General</h3><div class="set-row"><label class="set-row-label" for="chat-font-size">Chat text size</label><select id="chat-font-size" class="set-select" aria-label="Chat text size"><option value="small"${chatFontSize()==="small"?" selected":""}>Small</option><option value="medium"${chatFontSize()==="medium"?" selected":""}>Medium</option><option value="large"${chatFontSize()==="large"?" selected":""}>Large</option></select></div>
-  <h3 class="appearance-sec">Appearance</h3><div class="set-row set-row-static appearance-sec"><span class="set-row-label">Theme</span><span class="set-row-value">Follows your device</span></div>
-  <p class="sm set-note appearance-sec">WHWai switches between light and dark to match your device's setting.</p>
   <h3>Data & privacy</h3><button class="pbtn data-manage-button" id="data-tools-open" type="button"><span class="manage-icon">${ic('<path d="M4 5h16v14H4z"/><path d="M8 9h8M8 12h8M8 15h5"/>',17)}</span><span>Manage your data</span></button>${confirmDeleteEnabled()?"":'<button type="button" class="subtle-link" id="restore-delete-confirm">Ask before deleting chats again</button>'}
   ${signed&&user.role==="admin"?`<h3>Administration</h3><button class="pbtn data-manage-button" id="admin-open" type="button"><span class="manage-icon">${ic('<path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z"/>',17)}</span><span>Admin panel</span></button>`:""}
   ${stimOn?stimSettingsHtml():""}
@@ -3252,6 +3267,15 @@ function layoutSettingsDesktop(){
   show(x.sec.id);
  });
  search.oninput=()=>{const q=search.value.trim().toLowerCase();items.forEach(x=>{x.b.hidden=!!q&&!x.sec.dataset.label.toLowerCase().includes(q)});const first=items.find(x=>!x.b.hidden);if(first&&q)show(first.sec.id)};
+ if(accountSession&&accountSession.token&&accountSession.user&&window.matchMedia&&matchMedia("(min-width:641px)").matches){
+  const accItem=items.find(x=>x.key==="account");
+  if(accItem){
+   const row=accItem.sec.querySelector("#account-open");if(row)row.remove();
+   renderAccount();
+   [...mbody.childNodes].forEach(n=>accItem.sec.appendChild(n));
+   $("modal-title").textContent="Settings";currentSettingsView="settings";
+  }
+ }
  footNodes.forEach(n=>foot.appendChild(n));
  side.append(search,nav);
  main.append(body,foot);
@@ -3450,7 +3474,7 @@ function renderAccount(){
  currentSettingsView="account";$("modal-title").textContent="Account settings";
  if(!accountSession||!accountSession.token||!accountSession.user){renderSettings();return}
  const u=accountSession.user;
- mbody.innerHTML=`<p><strong>${esc(u.username)}</strong>${u.role==="admin"?" · Administrator":""}</p><p class="sm">Your account chats sync to the server when you make changes and when you return to WHWai. You can use the same account on multiple browsers.</p><p class="sm" id="account-sync-status" role="status">${accountSyncing?"Syncing account chats…":accountLastSync?"Last synced "+ago(accountLastSync):"Account chat sync runs automatically."}</p>
+ mbody.innerHTML=`<p class="acct-who"><strong>${esc(u.username)}</strong>${u.role==="admin"?" · Administrator":""}</p><p class="sm">Your account chats sync to the server when you make changes and when you return to WHWai. You can use the same account on multiple browsers.</p><p class="sm" id="account-sync-status" role="status">${accountSyncing?"Syncing account chats…":accountLastSync?"Last synced "+ago(accountLastSync):"Account chat sync runs automatically."}</p>
   ${profileColorHtml()}
   <div class="data-tools-list"><button class="data-tool" id="change-password-open" type="button"><span class="tool-icon">${ic('<rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 1 1 8 0v3"/>',19,1.8)}</span><span class="tool-copy"><strong>Change password</strong><small>Use a new password for future sign-ins.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button><button class="data-tool" id="signout-everywhere" type="button"><span class="tool-icon">${ic('<path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/>',19,1.8)}</span><span class="tool-copy"><strong>Sign out everywhere</strong><small>Revoke every session for this account and clear this browser's account cache.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button><button class="data-tool danger" id="delete-account-open" type="button"><span class="tool-icon">${ic('<path d="M4 7h16M10 11v6M14 11v6"/><path d="M5 7l1 13h12l1-13M9 7V4h6v3"/>',19,1.8)}</span><span class="tool-copy"><strong>Delete account</strong><small>Permanently remove this account and its server-stored chats.</small></span><span class="tool-arrow">${ic('<path d="M9 18l6-6-6-6"/>',16)}</span></button></div>
   <p class="sm" id="s-msg" role="status">${esc(smsg)}</p><div class="data-toolbar"><button class="pbtn" id="account-back">Back to Settings</button><button class="pbtn" id="signout-current">Sign out</button></div>`;
