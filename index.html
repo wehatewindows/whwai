@@ -20,6 +20,12 @@ svg{display:block}
 .side{width:var(--sw);flex:none;background:var(--side);border-radius:22px;padding:14px;display:flex;flex-direction:column;position:relative;transition:margin-left .32s cubic-bezier(.4,0,.2,1),opacity .22s ease}
 .brand{display:flex;align-items:center;justify-content:space-between;padding:0 4px 12px;border-bottom:3px solid #c4c4c4;margin-bottom:12px}
 .profile-btn{position:absolute;left:50px;bottom:12px;width:30px;height:30px;border-radius:50%;border:0;background:#3f6ce0;color:#fff;font:600 13px var(--f);cursor:pointer;padding:0;margin:0;z-index:2}.profile-btn .sync-dot{position:absolute;right:-2px;bottom:-2px;width:10px;height:10px;border-radius:50%;border:2px solid var(--side,#eeeef2);background:#9aa0a6}.profile-btn[data-sync="ok"] .sync-dot{background:#2fa35a}.profile-btn[data-sync="busy"] .sync-dot{background:#3b82f6}.profile-btn[data-sync="off"] .sync-dot{background:#d99a1e}.profile-btn:hover{filter:brightness(1.08)}.profile-btn[hidden]{display:none}.brand h1{font-size:26px;font-weight:400;margin:0}.brand b{font-weight:700}
+.home-icon{width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.07);color:#222;display:grid;place-items:center;flex:none;text-decoration:none;box-sizing:border-box;margin-right:10px}
+.brand h1{margin-right:auto}
+.home-icon svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.home-icon:hover,.home-icon:focus-visible{background:rgba(0,0,0,.13)}
+.home-icon:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.gate-home{position:absolute;top:16px;left:16px;z-index:2;margin:0}
 .logo,.expand{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#9cc0ff,#4a7df0);border:0;padding:0;cursor:pointer;flex:none;transition:transform .15s}
 .logo:hover,.expand:hover{transform:scale(1.07)}
 .expand{position:absolute;left:4px;top:2px;z-index:4;opacity:0;pointer-events:none;transition:opacity .15s ease,transform .15s}
@@ -245,7 +251,7 @@ html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(
  .side .new{bottom:64px}.side .gear{bottom:12px;padding-right:38px}
  .side .new::after{content:"New chat";font-size:16px;font-weight:500}
  .side .gear::after{content:"Settings";font-size:16px;font-weight:500}
- .side .new:hover,.side .gear:hover{background:#d4d4dc}.side .gear{right:var(--edge)}.side.has-profile .gear{right:calc(var(--edge) + 54px)}.side .profile-btn{left:auto;right:var(--edge);bottom:12px;width:44px;height:44px;font-size:16px;border-radius:14px}.side .profile-btn .sync-dot{right:-3px;bottom:-3px}
+ .side .new:hover,.side .gear:hover{background:#d4d4dc}.side .gear{right:var(--edge)}.side.has-profile .gear{right:calc(var(--edge) + 54px)}.side .profile-btn{left:auto;right:var(--edge);bottom:12px;width:44px;height:44px;font-size:16px;border-radius:14px}
  .modal{padding:calc(var(--gap-top) + 10px) 10px calc(var(--gap-bottom) + 10px)}.mcard{width:min(420px,100%);max-height:calc(100% - 20px);padding:16px}
 }
 @media (max-width:360px){
@@ -879,8 +885,8 @@ input.has-err:not([type=checkbox]):not([type=radio]):not([type=file]):focus,text
 
 </head>
 <body class="access-locked">
-<div class="school-lock" id="school-lock" hidden role="dialog" aria-modal="true" aria-labelledby="school-lock-title"><div class="legal-links"><a href="#" class="privacy-link" data-legal="privacy">Privacy Policy</a><a href="#" class="privacy-link" data-legal="terms">Terms of Use</a></div><div class="school-lock-card"><div class="school-lock-head"><strong id="school-lock-title">WHWai is locked for school hours</strong></div><div class="school-lock-body"><p>WHWai requires an account during school hours.</p><p>Sign in to your account to keep using WHWai.</p><p class="school-lock-note">New accounts can't be created during school hours. Create yours before school starts.</p></div><div class="data-toolbar"><button type="button" class="pbtn" id="school-lock-signin">Sign in</button></div></div></div>
-<div class="access-gate" id="access-gate" hidden role="dialog" aria-modal="true" aria-labelledby="access-title"><div class="legal-links"><a href="#" class="privacy-link" data-legal="privacy">Privacy Policy</a><a href="#" class="privacy-link" data-legal="terms">Terms of Use</a></div>
+<div class="school-lock" id="school-lock" hidden role="dialog" aria-modal="true" aria-labelledby="school-lock-title"><a href="https://wehatewindows.org" class="home-icon gate-home" title="Back to WHW" aria-label="Back to WHW"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/></svg></a><div class="legal-links"><a href="#" class="privacy-link" data-legal="privacy">Privacy Policy</a><a href="#" class="privacy-link" data-legal="terms">Terms of Use</a></div><div class="school-lock-card"><div class="school-lock-head"><strong id="school-lock-title">WHWai is locked for school hours</strong></div><div class="school-lock-body"><p>WHWai requires an account during school hours.</p><p>Sign in to your account to keep using WHWai.</p><p class="school-lock-note">New accounts can't be created during school hours. Create yours before school starts.</p></div><div class="data-toolbar"><button type="button" class="pbtn" id="school-lock-signin">Sign in</button></div></div></div>
+<div class="access-gate" id="access-gate" hidden role="dialog" aria-modal="true" aria-labelledby="access-title"><a href="https://wehatewindows.org" class="home-icon gate-home" title="Back to WHW" aria-label="Back to WHW"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/></svg></a><div class="legal-links"><a href="#" class="privacy-link" data-legal="privacy">Privacy Policy</a><a href="#" class="privacy-link" data-legal="terms">Terms of Use</a></div>
  <div class="access-card" id="access-card">
   <h2 id="access-title">Enter early access code</h2>
   <div class="gate-body" id="gate-body" hidden></div>
@@ -900,7 +906,7 @@ input.has-err:not([type=checkbox]):not([type=radio]):not([type=file]):focus,text
 </div>
 <div class="frame" id="app-frame">
  <aside class="side" id="side">
-  <div class="brand"><h1>WHW<b>ai</b><span class="beta-pill">Beta</span></h1><button class="logo" id="logo" title="Collapse sidebar" aria-label="Collapse sidebar"></button></div>
+  <div class="brand"><a class="home-icon" href="https://wehatewindows.org" title="Back to WHW" aria-label="Back to WHW"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/></svg></a><h1>WHW<b>ai</b><span class="beta-pill">Beta</span></h1><button class="logo" id="logo" title="Collapse sidebar" aria-label="Collapse sidebar"></button></div>
   <div class="chat-search" role="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4.5 4.5"></path></svg><input id="chat-search" type="search" placeholder="Search chats" aria-label="Search chats" autocomplete="off" spellcheck="false"><button id="chat-search-clear" type="button" aria-label="Clear search" title="Clear search" hidden><span class="xi" aria-hidden="true"></span></button></div>
   <div class="bulk-bar" id="bulk-bar"></div>
   <div class="list" id="list"></div>
