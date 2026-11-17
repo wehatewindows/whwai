@@ -2169,8 +2169,8 @@ function hstText(ms){try{return new Date(Number(ms)).toLocaleString("en-US",{tim
 function renderGateReason(message,info){
  const b=$("gate-body");if(!b)return;const i=info||{};
  const card=document.querySelector(".access-card.disabled-mode");if(card)card.scrollTop=0;
- const title=String(i.reasonTitle||""),sub=String(i.reasonSub||""),full=String(i.reason||"");
- let h="";
+ const title=String(i.reasonTitle||""),sub=String(i.reasonSub||""),full=String(i.reason||""),who=String(i.username||"");
+ let h=who?'<div class="policy-takeaways gate-box"><strong>Username</strong><p class="gate-box-text">'+esc(who)+'</p></div>':"";
  if(title||full){
   if(title){
    h+='<div class="policy-takeaways gate-box"><strong>Reason</strong><p class="gate-box-text">'+esc(title)+'</p>';
@@ -2184,7 +2184,7 @@ function renderGateReason(message,info){
   h+='<p class="gate-reason-row">Contact support at wehatewindows.help@gmail.com for help.</p>';
  }else{
   let text=String(message||"").replace(/^\s*(This|Your) (account|browser) (has been|is) disabled\.?\s*/i,"").trim();
-  h=esc(text||"Contact support at wehatewindows.help@gmail.com for help.");
+  h+=esc(text||"Contact support at wehatewindows.help@gmail.com for help.");
  }
  b.innerHTML=h;b.hidden=false;
 }
