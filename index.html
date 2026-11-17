@@ -2170,7 +2170,7 @@ function renderGateReason(message,info){
  const b=$("gate-body");if(!b)return;const i=info||{};
  const card=document.querySelector(".access-card.disabled-mode");if(card)card.scrollTop=0;
  const title=String(i.reasonTitle||""),sub=String(i.reasonSub||""),full=String(i.reason||""),who=String(i.username||"");
- let h=who?'<div class="policy-takeaways gate-box"><strong>Username</strong><p class="gate-box-text">'+esc(who)+'</p></div>':"";
+ let h=who?'<div class="policy-takeaways gate-box"><strong>User</strong><p class="gate-box-text">'+esc(who)+'</p></div>':"";
  if(title||full){
   if(title){
    h+='<div class="policy-takeaways gate-box"><strong>Reason</strong><p class="gate-box-text">'+esc(title)+'</p>';
