@@ -46,6 +46,8 @@ svg{display:block}
 .cmenu{position:absolute;right:12px;width:185px;background:#fff;border:1px solid #ddd;border-radius:20px;box-shadow:0 8px 30px rgba(0,0,0,.16);padding:6px;z-index:8;animation:rise .15s ease-out}
 .cmenu[hidden]{display:none}
 .cmenu button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;border-radius:999px;padding:9px 14px;cursor:pointer;text-align:left}
+.cmenu-icon{display:grid;place-items:center;flex:none;width:16px;height:16px}
+.cmenu-check{display:grid;place-items:center;margin-left:auto;flex:none}
 .cmenu button:hover{background:#f0f0f0}.cmenu .danger{color:#b52a2a}
 .cmenu button[hidden]{display:none}.cmenu-gap{display:inline-block;width:16px;flex:none}.cmenu-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .grp-tile{--gc:#4A7FE0;position:relative;margin:2px 4px;padding:4px;border-radius:19px;background:#fff;border:1px solid color-mix(in srgb,var(--gc) 28%,transparent)}
@@ -174,10 +176,14 @@ body{overflow:hidden}
 .input,.note{flex-shrink:0}
 /* Message bar glow lives on a layer behind the bar so it can fade in and out.
    Unfocused and idle: no glow. Focused: a very slight glow. Replying: the pulse. */
-.field{isolation:isolate;transition:background .2s ease,border-color .2s ease}
-.field::before{content:"";position:absolute;inset:0;border-radius:inherit;z-index:-1;pointer-events:none;opacity:0;box-shadow:none;transition:opacity .12s ease-out}
+.field{isolation:isolate;transition:background .3s ease,border-color .3s ease}
+/* Layer 1: focus glow. Slight when focused, a little stronger once there is text. */
+.field::before{content:"";position:absolute;inset:0;border-radius:inherit;z-index:-1;pointer-events:none;opacity:0;box-shadow:none;transition:opacity .4s cubic-bezier(.4,0,.2,1),box-shadow .4s cubic-bezier(.4,0,.2,1)}
 .field:focus-within::before{opacity:1;box-shadow:-4px 3px 12px rgba(106,160,255,.10),4px 3px 12px rgba(244,114,182,.07),0 -2px 12px rgba(167,139,250,.06)}
-.busy .field::before{opacity:1;animation:glow 2.4s ease-in-out infinite}
+.field:focus-within:has(#in:not(:placeholder-shown))::before{box-shadow:-5px 4px 16px rgba(106,160,255,.20),5px 4px 16px rgba(244,114,182,.13),0 -3px 16px rgba(167,139,250,.11)}
+/* Layer 2: reply pulse. Always animating; only its opacity fades in and out. */
+.field::after{content:"";position:absolute;inset:0;border-radius:inherit;z-index:-1;pointer-events:none;opacity:0;animation:glow 2.4s ease-in-out infinite;transition:opacity .5s cubic-bezier(.4,0,.2,1)}
+.busy .field::after{opacity:1}
 .msg.u{background:linear-gradient(180deg,#7fa9ff,#5b8df0);color:#fff}
 .empty p{margin:0;color:var(--mute)}
 .mbar,.menubtn{display:none}
@@ -2121,9 +2127,9 @@ function openListMenu(){
  closeMenu();menuMode="list";
  MENU_STATIC.forEach(id=>$(id).hidden=true);
  const m=$("cmenu");
- [{label:"New chat",run:()=>newChat()},{label:"New group",run:()=>newGroup()},{label:"Select chats",run:()=>setSelecting(true)}].forEach(item=>{
+ [{label:"New chat",icon:'<path d="M12 5v14M5 12h14"/>',run:()=>newChat()},{label:"New group",icon:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 11v5M9.5 13.5h5"/>',run:()=>newGroup()},{label:"Select chats",icon:'<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8.5 12.5l2.4 2.4 4.6-5"/>',run:()=>setSelecting(true)}].forEach(item=>{
   const b=document.createElement("button");b.type="button";b.className="cmenu-dyn";b.setAttribute("role","menuitem");
-  b.innerHTML='<span class="cmenu-gap" aria-hidden="true"></span><span class="cmenu-label"></span>';
+  b.innerHTML=ic(item.icon,16)+'<span class="cmenu-label"></span>';
   b.querySelector(".cmenu-label").textContent=item.label;b.onclick=()=>{closeMenu();item.run()};m.appendChild(b);
  });
  showEl(m);
@@ -2155,13 +2161,14 @@ function openPicker(ids,btn,done){
  closeMenu();menuMode="pick";pickIds=ids.slice();pickDone=done||null;menuAnchor=btn;
  MENU_STATIC.forEach(id=>$(id).hidden=true);
  const picked=S.chats.filter(c=>pickIds.includes(c.id));
- const items=[{label:"No group",on:picked.length>0&&picked.every(c=>!groupById(c.g)),run:()=>finishPick(null)}];
- liveGroups().forEach(g=>items.push({label:g.name,on:picked.length>0&&picked.every(c=>c.g===g.id),run:()=>finishPick(g.id)}));
- items.push({label:"New group…",on:false,run:()=>{const g=createGroup();if(g)finishPick(g.id,true)}});
+ const items=[{label:"No group",icon:'<circle cx="12" cy="12" r="8"/><path d="M6 6l12 12"/>',on:picked.length>0&&picked.every(c=>!groupById(c.g)),run:()=>finishPick(null)}];
+ liveGroups().forEach(g=>items.push({label:g.name,icon:GROUP_ICONS[groupIconKey(g)],colour:GROUP_COLOURS[groupColourKey(g)],on:picked.length>0&&picked.every(c=>c.g===g.id),run:()=>finishPick(g.id)}));
+ items.push({label:"New group…",icon:'<path d="M12 5v14M5 12h14"/>',on:false,run:()=>{const g=createGroup();if(g)finishPick(g.id,true)}});
  const m=$("cmenu");
  items.forEach(item=>{
   const b=document.createElement("button");b.type="button";b.className="cmenu-dyn";b.setAttribute("role","menuitem");
-  b.innerHTML=(item.on?ic('<path d="M5 12.5l4.5 4.5L19 7.5"/>',16,2.5):'<span class="cmenu-gap" aria-hidden="true"></span>')+'<span class="cmenu-label"></span>';
+  const iconStyle=item.colour?' style="color:'+item.colour+'"':'';
+  b.innerHTML='<span class="cmenu-icon"'+iconStyle+'>'+ic(item.icon,16,2)+'</span><span class="cmenu-label"></span>'+(item.on?'<span class="cmenu-check" aria-hidden="true">'+ic('<path d="M5 12.5l4.5 4.5L19 7.5"/>',16,2.5)+'</span>':'');
   b.querySelector(".cmenu-label").textContent=item.label;
   b.onclick=item.run;m.appendChild(b);
  });
