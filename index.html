@@ -3550,7 +3550,6 @@ function makeChatExport(source,fromServer,opts){
   messages:(Array.isArray(c.m)?c.m:[]).filter(m=>m&&!m.err).map(m=>{const item={role:m.r==="u"?"user":"assistant",content:String(m.x||""),timestamp:m.at||null};if(m.model)item.model=m.model;if(Array.isArray(m.sources)&&m.sources.length)item.sources=m.sources;if(Array.isArray(m.tools)&&m.tools.length)item.tools=m.tools;if(m.thinking)item.thinking=m.thinking;return item})
  }));
  const groupsOut=groupList.map(g=>({id:g.id,name:g.name,colour:groupColourKey(g),icon:groupIconKey(g),collapsed:closedGroups.has(g.id),createdAt:g.u||null,updatedAt:g.mu||g.u||null}));
- const endedCount=chats.filter(c=>c.ended).length;
  const data={format:"whwai-chat-export",version:2,exportedAt:new Date().toISOString(),chats:chats,groups:groupsOut};
  if(options.settings)data.settings=options.settings;
  const exportedAt=new Date();
@@ -3562,12 +3561,12 @@ function makeChatExport(source,fromServer,opts){
   text:"WHWai chat export\n"+
    "==================\n\n"+
    "Created: "+exportedAt.toLocaleString()+"\n"+
-   "Chats included: "+chats.length+"\n"+"Groups included: "+groupsOut.length+"\n"+"Chats ended by the AI: "+endedCount+"\n\n"+
+   "Chats included: "+chats.length+"\n"+"Groups included: "+groupsOut.length+"\n\n"+
    "WHAT IS IN THIS ZIP\n"+
    "- chats.json: everything needed to restore this data: chat titles, timestamps, pin state, group membership, AI-ended status, and message text with any saved sources, tools, models and thinking notes.\n"+"- chats.json groups: each group's name, colour, icon, collapsed state and dates.\n"+(options.settings?"- chats.json settings: default model, sidebar state, confirm-delete preference and onboarding notices.\n":"")+
    "- chats/: one readable text file for each chat, showing its group and whether the AI ended it.\n"+
    "- README.txt: this file, with export details and limitations.\n\n"+
-   "ENDED CHATS\n"+"A chat marked as ended was closed by the AI. It cannot receive new messages in WHWai, and it stays closed after you import this file.\n\n"+"NOT INCLUDED\n"+"The account session token, early-access tokens, the browser identifier, the export cooldown, the daily usage counter and deleted chats are not included.\n\n"+"SOURCE AND SCOPE\n"+
+   "NOT INCLUDED\n"+"The account session token, early-access tokens, the browser identifier, the export cooldown, the daily usage counter and deleted chats are not included.\n\n"+"SOURCE AND SCOPE\n"+
    (fromServer?"This ZIP was created in your browser from the chats saved on your WHWai account. Deleted-chat markers are not included.\n\n":"This ZIP is created locally in your browser and contains the chats currently stored on this device. It is not fetched directly from the WHWai server. When signed in, the local copy may differ from your account copy until account syncing completes. Return to WHWai and wait for account syncing before exporting if you need the latest account changes. Deleted-chat markers are not included.\n\n")+
    "KEEP THIS FILE PRIVATE\n"+
    "Anyone who obtains the ZIP or an extracted text file may be able to read the conversations. Store it in a private location.\n"
@@ -3715,7 +3714,7 @@ function renderExportInfo(){
  $("modal-title").textContent="Download your data";
  const chatOptions=S.chats.length?S.chats.map(c=>`<label class="export-pick"><input type="checkbox" name="export-chat" value="${escapeAttr(c.id)}" checked><span>${esc(String(c.t||"Untitled chat"))}</span></label>`).join(""):"<p class=\"sm\">No chats on this device yet.</p>";
  mbody.innerHTML=`<p>WHWai creates this ZIP in your browser from chats currently cached on this device. When you're signed in, that cache syncs with your account after changes and when you return to the page.</p>
-  <div class="export-contents"><strong>What's inside</strong><ul><li><strong>chats.json</strong> — chats, groups, AI-ended status and settings.</li><li><strong>chats/</strong> — a readable text file for each chat.</li><li><strong>Ended chats</strong> — chats the AI ended stay marked and locked, even after import.</li><li><strong>README.txt</strong> — export scope and general notes.</li></ul></div>
+  <div class="export-contents"><strong>What's inside</strong><ul><li><strong>chats.json</strong> — chats, groups, AI-ended status and settings.</li><li><strong>chats/</strong> — a readable text file for each chat.</li><li><strong>README.txt</strong> — export scope and general notes.</li></ul></div>
   <p><strong>Private data:</strong> the export contains conversation text. It does not include the account session token, early-access tokens, the browser identifier, or deleted chats.</p>
   <p><strong>Sync first:</strong> if signed in and you need the newest account changes, wait for account syncing to finish before exporting. Deleted-chat markers are not included.</p>
   <p><strong>Keep the ZIP private:</strong> anyone who gets the file can read the conversations. Deleting chats in WHWai does not erase downloaded copies.</p>
