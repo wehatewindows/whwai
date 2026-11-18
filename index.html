@@ -55,6 +55,10 @@ svg{display:block}
 .grp-inner{min-height:0;overflow:hidden}
 .grp-inner>.row{margin-top:6px;transition:opacity .2s ease,transform .26s cubic-bezier(.2,.7,.2,1)}
 .grp-tile.is-closed .grp-inner>.row{opacity:0;transform:translateY(-6px)}
+/* A newly created group eases in and its icon pops in. */
+.grp-tile.grp-enter{animation:groupIn .42s cubic-bezier(.2,.7,.2,1) both}
+.grp-tile.grp-enter .grp-badge{animation:badgeIn .45s cubic-bezier(.2,.7,.2,1) .12s both}
+@keyframes groupIn{from{opacity:0;transform:translateY(-8px) scale(.97)}to{opacity:1;transform:none}}
 .grp-tile{transition:border-color .3s ease}.grp-badge{transition:background-color .3s ease}
 .grp-badge.swap svg{animation:badgeIn .3s cubic-bezier(.2,.7,.2,1)}@keyframes badgeIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.grp-body,.grp-inner>.row,.grp-tile,.grp-badge,.grp-toggle>svg{transition:none!important}.grp-badge.swap svg{animation:none!important}}
@@ -1998,12 +2002,13 @@ function toggleGroup(id){
  const t=tile.querySelector(".grp-toggle");if(t)t.setAttribute("aria-expanded",String(!nowClosed));
  const body=tile.querySelector(".grp-body");if(body)body.inert=nowClosed;
 }
+let enteringGroupId=null;
 function createGroup(){
  if(liveGroups().length>=GROUP_LIMIT){toast("You can have up to "+GROUP_LIMIT+" groups.");return null}
  const now=Date.now(),used=new Set(liveGroups().map(groupColourKey));
  const colour=GROUP_COLOUR_KEYS.find(k=>!used.has(k))||GROUP_COLOUR_KEYS[liveGroups().length%GROUP_COLOUR_KEYS.length];
  const group={id:uid(),name:"New group",u:now,mu:now,c:colour,i:"folder"};
- S.groups.push(group);save();return group;
+ S.groups.push(group);enteringGroupId=group.id;save();return group;
 }
 function renameGroup(id,name){const g=groupById(id),v=String(name||"").replace(/\s+/g," ").trim().slice(0,GROUP_NAME_MAX);if(!g||!v)return;g.name=v;g.mu=Date.now();save()}
 function setGroupStyle(id,field,value){const g=groupById(id),map=field==="c"?GROUP_COLOURS:GROUP_ICONS;if(!g||!pickKey(map,value))return;g[field]=value;g.mu=Date.now();save();paintGroup(g)}
@@ -2098,7 +2103,8 @@ function renderList(){
  if(groups.length){
   const groupIds=new Set(groups.map(g=>g.id));
   groups.forEach(g=>{const members=entries.filter(e=>e.c.g===g.id),closed=closedGroups.has(g.id);
-   const tile=document.createElement("div");tile.className="grp-tile"+(closed?" is-closed":"");tile.dataset.gid=g.id;tile.style.setProperty("--gc",GROUP_COLOURS[groupColourKey(g)]);
+   const entering=g.id===enteringGroupId;if(entering)enteringGroupId=null;
+   const tile=document.createElement("div");tile.className="grp-tile"+(closed?" is-closed":"")+(entering?" grp-enter":"");tile.dataset.gid=g.id;tile.style.setProperty("--gc",GROUP_COLOURS[groupColourKey(g)]);
    tile.appendChild(groupHead(g,members.length,closed));
    const body=document.createElement("div");body.className="grp-body";body.inert=closed;const inner=document.createElement("div");inner.className="grp-inner";body.appendChild(inner);
    members.forEach(e=>drawEntry(e,inner));tile.appendChild(body);
