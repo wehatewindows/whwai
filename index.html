@@ -48,12 +48,25 @@ svg{display:block}
 .cmenu button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;border-radius:999px;padding:9px 14px;cursor:pointer;text-align:left}
 .cmenu button:hover{background:#f0f0f0}.cmenu .danger{color:#b52a2a}
 .cmenu button[hidden]{display:none}.cmenu-gap{display:inline-block;width:16px;flex:none}.cmenu-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.grp{position:relative;display:flex;align-items:center;gap:4px;margin:12px 4px 4px}.grp .rn{margin:0 4px}
+.grp-tile{--gc:#4A7FE0;position:relative;margin:10px 4px;padding:4px 4px 6px;border-radius:16px;background:color-mix(in srgb,var(--gc) 10%,transparent);border:1px solid color-mix(in srgb,var(--gc) 28%,transparent)}
+.grp-tile.is-closed{padding-bottom:4px}.grp-tile+.row{margin-top:10px}
+.grp{position:relative;display:flex;align-items:center;gap:4px}.grp .rn{margin:0 4px}
+.grp-badge{flex:none;width:24px;height:24px;border-radius:8px;display:grid;place-items:center;background:var(--gc);color:#fff;box-shadow:0 1px 2px rgba(0,0,0,.12)}
 .grp-toggle{flex:1;min-width:0;display:flex;align-items:center;gap:6px;border:0;background:none;border-radius:10px;padding:6px 36px 6px 8px;font:inherit;font-size:12.5px;font-weight:600;color:#6b6b6b;cursor:pointer;text-align:left}
 .grp-toggle:hover{background:#f0f0f0}.grp-toggle svg{flex:none;transition:transform .15s ease}.grp.is-closed .grp-toggle svg{transform:rotate(-90deg)}
 .grp-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.grp-count{flex:none;margin-left:auto;font-weight:500;color:#9a9a9a}
 .grp .more{opacity:1}
-.grp-label{margin:12px 8px 4px;padding:6px 8px;font-size:12.5px;font-weight:600;color:#9a9a9a}
+.cmenu.wide{width:228px}
+.cmenu-style{display:flex;flex-direction:column;gap:6px;padding:8px 10px 6px;margin-top:4px;border-top:1px solid #eee}
+.cmenu-style-label{font-size:11.5px;font-weight:600;color:#9a9a9a;padding:0 2px}
+.cmenu-swatches{display:grid;grid-template-columns:repeat(8,20px);gap:5px}
+.cmenu-icons{display:grid;grid-template-columns:repeat(8,1fr);gap:3px}
+.cmenu .sw-btn{width:20px;height:20px;min-width:0;padding:0;border-radius:50%;display:block;background:var(--sw);border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.14)}
+.cmenu .sw-btn:hover{background:var(--sw)}
+.cmenu .sw-btn[aria-pressed=true]{outline:2px solid var(--sw);outline-offset:2px}
+.cmenu .icon-opt{padding:5px 0;min-width:0;border-radius:8px;justify-content:center}
+.cmenu .icon-opt:hover{background:#f0f0f0}
+.cmenu .icon-opt[aria-pressed=true]{background:#e4e4e8;color:#111}
 .bulk-idle{display:flex;align-items:center;gap:6px}.bulk-idle #select-toggle:not(.bulk-done){margin-left:auto}
 .new{position:absolute;right:12px;bottom:12px;width:30px;height:30px;border-radius:50%;border:0;background:#bbb;color:#fff;padding:0;display:grid;place-items:center;cursor:pointer;transition:background .15s}
 .new:hover{background:#999}
@@ -1149,7 +1162,7 @@ html.keyboard-nav .set-select:focus{outline:none;border-color:#8fb3ff;box-shadow
  .radio-row strong{color:#f2f2f2}
  .radio-row small{color:#b8b8be}
  .cmenu button:hover{background:#3a3a3c}
- .grp-toggle{color:#a1a1a6}.grp-toggle:hover{background:#2c2c2e}.grp-count,.grp-label{color:#7a7a7e}
+ .grp-toggle{color:#a1a1a6}.grp-toggle:hover{background:#2c2c2e}.grp-count{color:#7a7a7e}.cmenu-style-label{color:#8e8e93}.cmenu-style{border-top-color:#3a3a3c}.cmenu .sw-btn{border-color:#1c1c1e;box-shadow:0 0 0 1px rgba(255,255,255,.2)}.cmenu .icon-opt:hover{background:#3a3a3e}.cmenu .icon-opt[aria-pressed=true]{background:#48484c;color:#fff}
  .access-admin-actions button{background:#2c2c2e;color:#f2f2f2}
  .access-admin-actions button[type=submit]{background:#20385c;color:#c6d9ff}
  .site-group-h,.whatsnew-admin-current summary{color:#f2f2f2}
@@ -1598,12 +1611,21 @@ function safeMessage(value){
 // Chat groups: each chat belongs to one group or none. Groups are stored with the chats and sync with the account.
 const GROUP_LIMIT=200,GROUP_NAME_MAX=40,GROUPS_CLOSED_KEY="whwai.groupsClosed.v1";
 let closedGroups=new Set();try{const raw=JSON.parse(localStorage.getItem(GROUPS_CLOSED_KEY)||"[]");if(Array.isArray(raw))closedGroups=new Set(raw.map(String))}catch(e){}
+const GROUP_COLOURS={rose:"#E0657A",amber:"#E09A2B",green:"#3FA66B",teal:"#2A9D9A",blue:"#4A7FE0",indigo:"#6C5CE7",pink:"#D65DB1",slate:"#6B7A8F"};
+const GROUP_COLOUR_KEYS=Object.keys(GROUP_COLOURS);
+const GROUP_ICONS={folder:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',star:'<path d="M12 3.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8L12 16.9l-5.3 2.7 1-5.8-4.2-4.1 5.9-.9z"/>',briefcase:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>',book:'<path d="M4 19.5V5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2z"/>',code:'<path d="M8 8l-4 4 4 4M16 8l4 4-4 4M14 5l-4 14"/>',heart:'<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',bulb:'<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/>',flag:'<path d="M5 21V4M5 4h12l-2 4 2 4H5"/>',music:'<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',camera:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/>',rocket:'<path d="M5 19l3-1 8-8a4 4 0 0 0-4-4l-8 8-1 3zM14 6l4 4M9 15l-3 3"/>',cart:'<path d="M3 4h2l2.5 11h10L20 8H7"/><circle cx="9.5" cy="19" r="1.2"/><circle cx="17" cy="19" r="1.2"/>',pen:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',chat:'<path d="M5 5h14v10H10l-5 4z"/>'};
+const GROUP_ICON_KEYS=Object.keys(GROUP_ICONS);
+function pickKey(map,key){return typeof key==="string"&&Object.prototype.hasOwnProperty.call(map,key)?key:""}
+function hashIndex(str,n){let h=0;for(const ch of String(str))h=(h*31+ch.charCodeAt(0))|0;return Math.abs(h)%n}
+function groupColourKey(g){return pickKey(GROUP_COLOURS,g.c)||GROUP_COLOUR_KEYS[hashIndex(g.id,GROUP_COLOUR_KEYS.length)]}
+function groupIconKey(g){return pickKey(GROUP_ICONS,g.i)||"folder"}
 function safeGroup(value){
  if(!value||typeof value!=="object")return null;
  const id=safeText(value.id,60).trim();if(!id)return null;
  const name=safeText(value.name,GROUP_NAME_MAX).replace(/\s+/g," ").trim()||"Group";
  const u=Number(value.u)||Date.now(),mu=Number(value.mu)||u;
- const group={id,name,u,mu};if(value.del)group.del=1;return group;
+ const colour=pickKey(GROUP_COLOURS,value.c),icon=pickKey(GROUP_ICONS,value.i);
+ const group={id,name,u,mu};if(colour)group.c=colour;if(icon)group.i=icon;if(value.del)group.del=1;return group;
 }
 function safeGroups(items){return (Array.isArray(items)?items:[]).slice(0,2000).map(safeGroup).filter(Boolean)}
 function safeChat(value){
@@ -1954,10 +1976,29 @@ function saveClosedGroups(){try{localStorage.setItem(GROUPS_CLOSED_KEY,JSON.stri
 function toggleGroup(id){if(closedGroups.has(id))closedGroups.delete(id);else closedGroups.add(id);saveClosedGroups();renderList()}
 function createGroup(){
  if(liveGroups().length>=GROUP_LIMIT){toast("You can have up to "+GROUP_LIMIT+" groups.");return null}
- const now=Date.now(),group={id:uid(),name:"New group",u:now,mu:now};
+ const now=Date.now(),used=new Set(liveGroups().map(groupColourKey));
+ const colour=GROUP_COLOUR_KEYS.find(k=>!used.has(k))||GROUP_COLOUR_KEYS[liveGroups().length%GROUP_COLOUR_KEYS.length];
+ const group={id:uid(),name:"New group",u:now,mu:now,c:colour,i:"folder"};
  S.groups.push(group);save();return group;
 }
 function renameGroup(id,name){const g=groupById(id),v=String(name||"").replace(/\s+/g," ").trim().slice(0,GROUP_NAME_MAX);if(!g||!v)return;g.name=v;g.mu=Date.now();save()}
+function setGroupStyle(id,field,value){const g=groupById(id),map=field==="c"?GROUP_COLOURS:GROUP_ICONS;if(!g||!pickKey(map,value))return;g[field]=value;g.mu=Date.now();save();paintGroup(g)}
+function paintGroup(g){
+ const tile=[...list.querySelectorAll(".grp-tile")].find(t=>t.dataset.gid===g.id);
+ if(tile){tile.style.setProperty("--gc",GROUP_COLOURS[groupColourKey(g)]);const badge=tile.querySelector(".grp-badge");if(badge)badge.innerHTML=ic(GROUP_ICONS[groupIconKey(g)],14,2)}
+ document.querySelectorAll("#cmenu .sw-btn").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.key===groupColourKey(g))));
+ document.querySelectorAll("#cmenu .icon-opt").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.key===groupIconKey(g))));
+}
+function groupStylePanel(g){
+ const wrap=document.createElement("div");wrap.className="cmenu-dyn cmenu-style";
+ const label=t=>{const d=document.createElement("div");d.className="cmenu-style-label";d.textContent=t;return d};
+ const colourRow=document.createElement("div");colourRow.className="cmenu-swatches";
+ const iconRow=document.createElement("div");iconRow.className="cmenu-icons";
+ const curC=groupColourKey(g),curI=groupIconKey(g);
+ GROUP_COLOUR_KEYS.forEach(k=>{const b=document.createElement("button");b.type="button";b.className="sw-btn";b.dataset.key=k;b.style.setProperty("--sw",GROUP_COLOURS[k]);b.title=k[0].toUpperCase()+k.slice(1);b.setAttribute("aria-label","Colour: "+k);b.setAttribute("aria-pressed",String(k===curC));b.onclick=()=>setGroupStyle(g.id,"c",k);colourRow.appendChild(b)});
+ GROUP_ICON_KEYS.forEach(k=>{const b=document.createElement("button");b.type="button";b.className="icon-opt";b.dataset.key=k;b.title=k;b.setAttribute("aria-label","Icon: "+k);b.setAttribute("aria-pressed",String(k===curI));b.innerHTML=ic(GROUP_ICONS[k],15,2);b.onclick=()=>setGroupStyle(g.id,"i",k);iconRow.appendChild(b)});
+ wrap.append(label("Colour"),colourRow,label("Icon"),iconRow);return wrap;
+}
 function moveChats(ids,gid){
  let n=0;
  S.chats.forEach(c=>{if(!ids.includes(c.id))return;if((c.g||null)===(gid||null))return;if(gid)c.g=gid;else delete c.g;touch(c);n++});
@@ -1986,7 +2027,7 @@ function groupHead(g,count,closed){
   h.appendChild(i);return h;
  }
  const t=document.createElement("button");t.type="button";t.className="grp-toggle";t.title=g.name;t.setAttribute("aria-expanded",String(!closed));
- t.innerHTML=ic('<path d="M6 9l6 6 6-6"/>',12,2.5)+'<span class="grp-name"></span><span class="grp-count">'+count+'</span>';
+ t.innerHTML=ic('<path d="M6 9l6 6 6-6"/>',12,2.5)+'<span class="grp-badge">'+ic(GROUP_ICONS[groupIconKey(g)],14,2)+'</span><span class="grp-name"></span><span class="grp-count">'+count+'</span>';
  t.querySelector(".grp-name").textContent=g.name;
  t.onclick=()=>toggleGroup(g.id);
  const m=document.createElement("button");m.type="button";m.className="more";m.innerHTML=ic(DOTS,18);m.title="Group options";m.setAttribute("aria-label","Group options");m.setAttribute("aria-haspopup","menu");m.setAttribute("aria-expanded","false");
@@ -2006,7 +2047,7 @@ function renderList(){
  if(query){entries=S.chats.map(c=>({c,score:scoreChat(c,query)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||(b.c.u||0)-(a.c.u||0));
   if(!entries.length){list.insertAdjacentHTML("beforeend",'<div class="search-empty">No chats match your search.</div>');if(!canSave)list.insertAdjacentHTML("beforeend",'<div class="hint warn">Chats can&#39;t be saved in this browser, so they will be lost when you leave this page.</div>');return}
  }else{entries=sorted().map(c=>({c,score:0}));if(!S.chats.length)list.insertAdjacentHTML("beforeend",'<div class="hint">Your chats will show up here.</div>')}
- const drawEntry=entry=>{const c=entry.c;
+ const drawEntry=(entry,target=list)=>{const c=entry.c;
   if(renamingId===c.id){
    const e=document.createElement("div");e.className="chat on edit";
    const i=document.createElement("input");i.className="rn";i.value=c.t;i.maxLength=60;i.setAttribute("aria-label","Chat name");
@@ -2014,7 +2055,7 @@ function renderList(){
    const fin=ok=>{if(done)return;done=1;const v=i.value.trim();if(ok&&v){c.t=v.slice(0,60);c.auto=0;touch(c);flashRow(c.id,"title");save()}renamingId=null;renderList()};
    i.onkeydown=ev=>{if(ev.isComposing)return;if(ev.key==="Enter"){ev.preventDefault();ev.stopPropagation();fin(true)}else if(ev.key==="Escape"){ev.preventDefault();ev.stopPropagation();fin(false)}};
    i.onblur=()=>fin(true);
-   e.appendChild(i);list.appendChild(e);return;
+   e.appendChild(i);target.appendChild(e);return;
   }
   const on=c.id===S.cur,r=document.createElement("div");r.className="row"+(on?" on":"");
   const b=document.createElement("button");b.className="chat"+(on?" on":"");b.title=c.t;
@@ -2027,14 +2068,15 @@ function renderList(){
   x.setAttribute("aria-label","Chat options");x.setAttribute("aria-haspopup","menu");x.setAttribute("aria-expanded","false");
   x.onclick=e=>{e.stopPropagation();if(mid===c.id)closeMenu();else openMenu(c.id,x)};
   r.dataset.id=c.id;const fx=rowFx.get(c.id);if(fx){r.classList.add("fx-"+fx);rowFx.delete(c.id)}
-  r.append(pick,b,x);list.appendChild(r);
+  r.append(pick,b,x);target.appendChild(r);
  };
  const groups=query?[]:liveGroups();
  if(groups.length){
   const groupIds=new Set(groups.map(g=>g.id));
-  groups.forEach(g=>{const members=entries.filter(e=>e.c.g===g.id),closed=closedGroups.has(g.id);list.appendChild(groupHead(g,members.length,closed));if(!closed)members.forEach(drawEntry)});
-  const loose=entries.filter(e=>!groupIds.has(e.c.g));
-  if(loose.length){const label=document.createElement("div");label.className="grp-label";label.textContent="Ungrouped";list.appendChild(label);loose.forEach(drawEntry)}
+  groups.forEach(g=>{const members=entries.filter(e=>e.c.g===g.id),closed=closedGroups.has(g.id);
+   const tile=document.createElement("div");tile.className="grp-tile"+(closed?" is-closed":"");tile.dataset.gid=g.id;tile.style.setProperty("--gc",GROUP_COLOURS[groupColourKey(g)]);
+   tile.appendChild(groupHead(g,members.length,closed));if(!closed)members.forEach(e=>drawEntry(e,tile));list.appendChild(tile)});
+  entries.filter(e=>!groupIds.has(e.c.g)).forEach(e=>drawEntry(e));
  }else entries.forEach(drawEntry);
  if(renamingGroupId)focusGroupRename();
  if(!canSave)list.insertAdjacentHTML("beforeend",'<div class="hint warn">Chats can\'t be saved in this browser, so they will be lost when you leave this page.</div>');
@@ -2051,6 +2093,7 @@ function openGroupMenu(gid,btn){
  closeMenu();menuMode="group";menuGroupId=gid;menuAnchor=btn;
  menuItem("cren",PEN,"Rename group");menuItem("cdel",TRASH,"Delete group");
  ["cgen","cpin","cgrp"].forEach(id=>$(id).hidden=true);
+ const gg=groupById(gid);if(gg){$("cmenu").classList.add("wide");$("cmenu").appendChild(groupStylePanel(gg))}
  showEl($("cmenu"));placeMenu(btn);
 }
 function finishPick(gid,startRename){
@@ -2079,7 +2122,7 @@ function openPicker(ids,btn,done){
  showEl(m);placeMenu(btn);
 }
 function closeMenu(){
- hideEl($("cmenu"));mid=null;menuGroupId=null;menuAnchor=null;
+ hideEl($("cmenu"));$("cmenu").classList.remove("wide");mid=null;menuGroupId=null;menuAnchor=null;
  if(menuMode==="pick"){pickIds=[];pickDone=null}
  menuMode="chat";
  document.querySelectorAll("#cmenu .cmenu-dyn").forEach(b=>b.remove());
@@ -2088,7 +2131,7 @@ function closeMenu(){
 }
 const rowFx=new Map();
 function flashRow(id,kind){rowFx.set(id,kind)}
-function fadeRowOut(ids){const rows=[...list.children].filter(r=>ids.includes(r.dataset.id));rows.forEach(r=>r.classList.add("fx-out"));return new Promise(res=>setTimeout(res,rows.length?170:0))}
+function fadeRowOut(ids){const rows=[...list.querySelectorAll(".row")].filter(r=>ids.includes(r.dataset.id));rows.forEach(r=>r.classList.add("fx-out"));return new Promise(res=>setTimeout(res,rows.length?170:0))}
 function hideEl(el,ms){if(!el||el.hidden||el._lt)return;el.classList.add("leaving");el._lt=setTimeout(()=>{el._lt=null;el.hidden=true;el.classList.remove("leaving")},ms||140)}
 function showEl(el){if(!el)return;if(el._lt){clearTimeout(el._lt);el._lt=null}el.classList.remove("leaving");el.hidden=false}
 function swapText(el,text){if(!el||el.textContent===text)return;el.textContent=text;el.classList.remove("swap");void el.offsetWidth;el.classList.add("swap")}
