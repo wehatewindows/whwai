@@ -2079,7 +2079,7 @@ function renderList(){
    tile.addEventListener("contextmenu",ev=>{if(renamingGroupId===g.id)return;contextMenu(ev,tile,()=>openGroupMenu(g.id,tile.querySelector(".grp .more")))});
    list.appendChild(tile)});
   entries.filter(e=>!groupIds.has(e.c.g)).forEach(e=>drawEntry(e));
- }else entries.forEach(drawEntry);
+ }else entries.forEach(e=>drawEntry(e));
  if(renamingGroupId)focusGroupRename();
  if(!canSave)list.insertAdjacentHTML("beforeend",'<div class="hint warn">Chats can\'t be saved in this browser, so they will be lost when you leave this page.</div>');
 }
