@@ -3572,7 +3572,7 @@ function makeChatExport(source,fromServer,opts){
    "Anyone who obtains the ZIP or an extracted text file may be able to read the conversations. Store it in a private location.\n"
  }];
  chats.forEach((c,index)=>{
-  const lines=["WHWai chat: "+c.title,"Created: "+dateLabel(c.createdAt),"Last updated: "+dateLabel(c.updatedAt),"Group: "+(c.group||"none"),c.ended?"Status: ended by the AI. This chat cannot receive new messages.":"Status: active","", "=".repeat(60),""];
+  const lines=["WHWai chat: "+c.title,"Created: "+dateLabel(c.createdAt),"Last updated: "+dateLabel(c.updatedAt),"Group: "+(c.group||"none"),c.ended?"Status: Ended by the AI. This chat cannot receive new messages.":"Status: active","", "=".repeat(60),""];
   c.messages.forEach(m=>{lines.push((m.role==="user"?"YOU":"ARIES")+"  — "+dateLabel(m.timestamp),m.content,"", "-".repeat(40),"")});
   const ordinal=String(index+1).padStart(3,"0");
   files.push({name:"chats/"+ordinal+"-"+safeFilePart(c.title)+".txt",text:lines.join("\n")});
