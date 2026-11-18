@@ -1476,8 +1476,7 @@ html:not(.keyboard-nav) .account-form select:focus{
 .composer-placeholder{color:var(--mute);opacity:.82}
 .composer-new-text{animation:composerTextAppear .12s ease-out both}
 @keyframes composerTextAppear{from{opacity:.35}to{opacity:1}}
-.field.composer-native-selection .composer-visual{visibility:hidden}
-.field.composer-native-selection #in{color:var(--ink)!important;-webkit-text-fill-color:currentColor!important}
+#in::selection{background:transparent;color:transparent;-webkit-text-fill-color:transparent}
 @media(prefers-reduced-motion:reduce){.composer-new-text{animation:none}}
 </style>
 
@@ -2122,7 +2121,7 @@ function openListMenu(){
  [{label:"New chat",run:()=>newChat()},{label:"New group",run:()=>newGroup()},{label:"Select chats",run:()=>setSelecting(true)}].forEach(item=>{
   const b=document.createElement("button");b.type="button";b.className="cmenu-dyn";b.setAttribute("role","menuitem");
   b.innerHTML='<span class="cmenu-gap" aria-hidden="true"></span><span class="cmenu-label"></span>';
-  b.querySelector(".cmenu-label").textContent=item.label;b.onclick=item.run;m.appendChild(b);
+  b.querySelector(".cmenu-label").textContent=item.label;b.onclick=()=>{closeMenu();item.run()};m.appendChild(b);
  });
  showEl(m);
 }
@@ -2689,9 +2688,6 @@ function syncComposerVisual(animate=false){
  mirror.style.width=r.width+"px";mirror.style.height=r.height+"px";
  ["fontFamily","fontSize","fontWeight","fontStyle","lineHeight","letterSpacing","wordSpacing","textAlign","textIndent","textTransform","direction","paddingTop","paddingRight","paddingBottom","paddingLeft"].forEach(k=>mirror.style[k]=cs[k]);
  mirror.scrollTop=ta.scrollTop;mirror.scrollLeft=ta.scrollLeft;
- const hasSelection=ta.selectionStart!==ta.selectionEnd;
- field.classList.toggle("composer-native-selection",hasSelection);
- mirror.hidden=hasSelection;
  previousComposerValue=value;
 }
 function fit(animate=false){ta.style.height="auto";const cs=getComputedStyle(ta);const pad=(parseFloat(cs.paddingTop)||0)+(parseFloat(cs.paddingBottom)||0);const lh=parseFloat(cs.lineHeight)||24;const lines=Math.round((ta.scrollHeight-pad)/lh);ta.style.height=Math.min(ta.scrollHeight,120)+"px";const f=ta.closest(".field");if(f)f.classList.toggle("multi",lines>=3);syncComposerVisual(animate)}
@@ -2734,7 +2730,7 @@ $("cren").onclick=()=>{
  if(menuMode==="group"){const gid=menuGroupId;closeMenu();renamingId=null;renamingGroupId=gid;renderList();return}
  const id=mid;closeMenu();renamingGroupId=null;renamingId=id;renderList();const i=list.querySelector(".rn");if(i){i.focus();i.select()}
 };
-$("cpin").onclick=()=>{const c=S.chats.find(x=>x.id===mid);if(c){c.p=!c.p;touch(c);flashRow(c.id,"pin");save();renderList()}else closeMenu()};
+$("cpin").onclick=()=>{const c=S.chats.find(x=>x.id===mid);closeMenu();if(c){c.p=!c.p;touch(c);flashRow(c.id,"pin");save();renderList()}};
 $("cdel").onclick=()=>{
  if(menuMode==="group"){const gid=menuGroupId;closeMenu();confirmDeleteGroup(gid);return}
  const id=mid;closeMenu();confirmDeleteChat(id)
