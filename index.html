@@ -48,8 +48,8 @@ svg{display:block}
 .cmenu button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;border-radius:999px;padding:9px 14px;cursor:pointer;text-align:left}
 .cmenu button:hover{background:#f0f0f0}.cmenu .danger{color:#b52a2a}
 .cmenu button[hidden]{display:none}.cmenu-gap{display:inline-block;width:16px;flex:none}.cmenu-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.grp-tile{--gc:#4A7FE0;position:relative;margin:10px 4px;padding:4px 4px 6px;border-radius:16px;background:color-mix(in srgb,var(--gc) 10%,transparent);border:1px solid color-mix(in srgb,var(--gc) 28%,transparent)}
-.grp-tile.is-closed{padding-bottom:4px}.grp-tile+.row{margin-top:10px}
+.grp-tile{--gc:#4A7FE0;position:relative;margin:2px 4px;padding:4px 4px 6px;border-radius:16px;background:color-mix(in srgb,var(--gc) 10%,transparent);border:1px solid color-mix(in srgb,var(--gc) 28%,transparent)}
+.grp-tile.is-closed{padding-bottom:4px}.grp-tile+.row{margin-top:2px}
 .grp{position:relative;display:flex;align-items:center;gap:4px}.grp .rn{margin:0 4px}
 .grp-badge{flex:none;width:24px;height:24px;border-radius:8px;display:grid;place-items:center;background:var(--gc);color:#fff;box-shadow:0 1px 2px rgba(0,0,0,.12)}
 .grp-toggle{flex:1;min-width:0;display:flex;align-items:center;gap:6px;border:0;background:none;border-radius:10px;padding:6px 36px 6px 8px;font:inherit;font-size:12.5px;font-weight:600;color:#6b6b6b;cursor:pointer;text-align:left}
@@ -1287,7 +1287,7 @@ html.keyboard-nav .set-select:focus{outline:none;border-color:#8fb3ff;box-shadow
  .bulk-bar button:not(.bulk-done){min-width:0;padding-left:5px;padding-right:5px;font-size:12px;white-space:normal;line-height:1.2}
 }
 @media (prefers-color-scheme:dark){
- .chat.on,.chat.on:hover{background:#343438!important;color:#e8e8ec!important;box-shadow:inset 0 0 0 1px #55555b!important}
+ .chat:hover{background:#2c2c2e}.chat.on,.chat.on:hover{background:#343438!important;color:#e8e8ec!important;box-shadow:inset 0 0 0 1px #55555b!important}
  .chat.on .ct,.chat.on .cm{color:#e0e0e4!important}
  .chat.on .cm{color:#b8b8be!important}
  .cmenu{gap:5px}
@@ -2068,21 +2068,47 @@ function renderList(){
   x.setAttribute("aria-label","Chat options");x.setAttribute("aria-haspopup","menu");x.setAttribute("aria-expanded","false");
   x.onclick=e=>{e.stopPropagation();if(mid===c.id)closeMenu();else openMenu(c.id,x)};
   r.dataset.id=c.id;const fx=rowFx.get(c.id);if(fx){r.classList.add("fx-"+fx);rowFx.delete(c.id)}
-  r.append(pick,b,x);target.appendChild(r);
+  r.append(pick,b,x);r.addEventListener("contextmenu",ev=>contextMenu(ev,r,()=>openMenu(c.id,x)));target.appendChild(r);
  };
  const groups=query?[]:liveGroups();
  if(groups.length){
   const groupIds=new Set(groups.map(g=>g.id));
   groups.forEach(g=>{const members=entries.filter(e=>e.c.g===g.id),closed=closedGroups.has(g.id);
    const tile=document.createElement("div");tile.className="grp-tile"+(closed?" is-closed":"");tile.dataset.gid=g.id;tile.style.setProperty("--gc",GROUP_COLOURS[groupColourKey(g)]);
-   tile.appendChild(groupHead(g,members.length,closed));if(!closed)members.forEach(e=>drawEntry(e,tile));list.appendChild(tile)});
+   tile.appendChild(groupHead(g,members.length,closed));if(!closed)members.forEach(e=>drawEntry(e,tile));
+   tile.addEventListener("contextmenu",ev=>{if(renamingGroupId===g.id)return;contextMenu(ev,tile,()=>openGroupMenu(g.id,tile.querySelector(".grp .more")))});
+   list.appendChild(tile)});
   entries.filter(e=>!groupIds.has(e.c.g)).forEach(e=>drawEntry(e));
  }else entries.forEach(drawEntry);
  if(renamingGroupId)focusGroupRename();
  if(!canSave)list.insertAdjacentHTML("beforeend",'<div class="hint warn">Chats can\'t be saved in this browser, so they will be lost when you leave this page.</div>');
 }
 function menuItem(id,icon,text){const b=$(id);b.innerHTML=ic(icon,16)+"<span>"+text+"</span>";return b}
-function placeMenu(btn){const m=$("cmenu"),sr=$("side").getBoundingClientRect(),br=btn.getBoundingClientRect();m.style.top=Math.max(8,Math.min(br.bottom-sr.top+4,sr.height-m.offsetHeight-8))+"px";btn.setAttribute("aria-expanded","true")}
+function placeMenu(btn){const m=$("cmenu"),sr=$("side").getBoundingClientRect(),br=btn.getBoundingClientRect();m.style.left="";m.style.right="";m.style.top=Math.max(8,Math.min(br.bottom-sr.top+4,sr.height-m.offsetHeight-8))+"px";btn.setAttribute("aria-expanded","true")}
+function fineMouse(){return !!(window.matchMedia&&matchMedia("(pointer:fine)").matches)}
+function contextMenu(ev,el,open){
+ if(!fineMouse()||selecting)return;
+ ev.preventDefault();ev.stopPropagation();
+ const pt=ev.clientX||ev.clientY?{x:ev.clientX,y:ev.clientY}:(()=>{const r=el.getBoundingClientRect();return{x:r.left+24,y:r.top+r.height/2}})();
+ open();placeMenuAt(pt);
+}
+function placeMenuAt(pt){
+ const m=$("cmenu"),sr=$("side").getBoundingClientRect();
+ const x=Math.max(8,Math.min(pt.x-sr.left,sr.width-m.offsetWidth-8)),y=Math.max(8,Math.min(pt.y-sr.top,sr.height-m.offsetHeight-8));
+ m.style.right="auto";m.style.left=x+"px";m.style.top=y+"px";
+}
+function openListMenu(){
+ closeMenu();menuMode="list";
+ MENU_STATIC.forEach(id=>$(id).hidden=true);
+ const m=$("cmenu");
+ [{label:"New chat",run:()=>newChat()},{label:"New group",run:()=>newGroup()},{label:"Select chats",run:()=>setSelecting(true)}].forEach(item=>{
+  const b=document.createElement("button");b.type="button";b.className="cmenu-dyn";b.setAttribute("role","menuitem");
+  b.innerHTML='<span class="cmenu-gap" aria-hidden="true"></span><span class="cmenu-label"></span>';
+  b.querySelector(".cmenu-label").textContent=item.label;b.onclick=item.run;m.appendChild(b);
+ });
+ showEl(m);
+}
+list.addEventListener("contextmenu",ev=>{if(ev.target.closest(".row,.grp-tile"))return;contextMenu(ev,list,openListMenu)});
 function openMenu(id,btn){
  const c=S.chats.find(x=>x.id===id);if(!c)return;
  closeMenu();mid=id;menuAnchor=btn;menuMode="chat";
