@@ -208,7 +208,7 @@ button:focus-visible,.chat:focus-visible,.model:focus-visible{outline:2px solid 
 html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(32px,env(safe-area-inset-bottom,0px))}
 
 @media (max-width:640px){
- body{height:100dvh;min-height:320px;padding:var(--gap-top) 0 var(--gap-bottom);background:radial-gradient(120% 50% at 50% 108%,rgba(120,150,255,.2),transparent 70%),#fff}
+ body{height:100dvh;min-height:320px;padding:var(--gap-top) 0 max(var(--gap-bottom),24px);background:radial-gradient(120% 50% at 50% 108%,rgba(120,150,255,.2),transparent 70%),#fff}
  .frame{width:100%;height:100%;min-height:0;border:0;border-radius:0;padding:0;gap:0;background:transparent}
  .main{width:100%;padding:0}
  .expand,.scrim{display:none!important}
@@ -221,7 +221,7 @@ html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(
  .menubtn:hover,.mnew:hover{background:rgba(0,0,0,.1)}
 
  
- .site-notice{width:calc(100% - var(--edge) - var(--edge));max-width:840px;margin:calc(var(--bar) + 6px) auto 0;align-self:center}.scroll{padding:calc(var(--bar) + 12px) var(--edge) 12px;gap:10px;overscroll-behavior:contain}
+ .site-notice{width:calc(100% - var(--edge) - var(--edge));max-width:840px;margin:calc(var(--bar) + 6px) auto 0;align-self:center}.scroll{padding:calc(var(--bar) + 12px) var(--edge) 88px;gap:16px;overscroll-behavior:contain}
  .msg{max-width:86%;min-width:0;background:#f0f0f3;border-radius:20px;padding:10px 15px}
  .msg.u{background:linear-gradient(180deg,#7fa9ff,#5b8df0);color:#fff;border-radius:20px;padding:10px 15px}
  .bar{background:none;padding:0 4px;margin-top:-6px;max-width:100%}.bar span{margin-left:12px;font-size:13px}
@@ -235,7 +235,7 @@ html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(
  .model{max-width:88px;overflow:hidden;font-size:14px;padding:6px 4px;gap:3px}.model .sep{display:none}.model span{overflow:hidden;text-overflow:ellipsis}
  .info-pop{width:min(270px,calc(100vw - 84px))}
  .round{width:44px;height:44px;margin-bottom:2px;background:rgba(255,255,255,.88);box-shadow:0 2px 12px rgba(106,160,255,.25)}
- .orb{width:46px;height:46px;right:0;bottom:calc(100% + 12px)}
+ .orb{width:46px;height:46px;right:0;bottom:calc(100% + 28px)}
  .pop{width:min(240px,calc(100vw - 2 * var(--edge)));right:0}
  .note{text-align:center;font-size:13px;margin:6px var(--edge) 8px}
 
