@@ -49,11 +49,17 @@ svg{display:block}
 .cmenu button:hover{background:#f0f0f0}.cmenu .danger{color:#b52a2a}
 .cmenu button[hidden]{display:none}.cmenu-gap{display:inline-block;width:16px;flex:none}.cmenu-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .grp-tile{--gc:#4A7FE0;position:relative;margin:2px 4px;padding:4px;border-radius:19px;background:#fff;border:1px solid color-mix(in srgb,var(--gc) 28%,transparent)}
-.grp-tile.is-closed{padding-bottom:4px}.grp-tile+.row{margin-top:2px}.grp-tile .grp+.row,.grp-tile .row+.row{margin-top:6px}
+.grp-tile.is-closed{padding-bottom:4px}.grp-tile+.row{margin-top:2px}.grp-body{display:grid;grid-template-rows:1fr;transition:grid-template-rows .26s cubic-bezier(.2,.7,.2,1)}.grp-tile.is-closed .grp-body{grid-template-rows:0fr}
+.grp-inner{min-height:0;overflow:hidden}
+.grp-inner>.row{margin-top:6px;transition:opacity .2s ease,transform .26s cubic-bezier(.2,.7,.2,1)}
+.grp-tile.is-closed .grp-inner>.row{opacity:0;transform:translateY(-6px)}
+.grp-tile{transition:border-color .3s ease}.grp-badge{transition:background-color .3s ease}
+.grp-badge.swap svg{animation:badgeIn .3s cubic-bezier(.2,.7,.2,1)}@keyframes badgeIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.grp-body,.grp-inner>.row,.grp-tile,.grp-badge,.grp-toggle>svg{transition:none!important}.grp-badge.swap svg{animation:none!important}}
 .grp{position:relative;display:flex;align-items:center;gap:4px}.grp .rn{margin:0 4px}
 .grp-badge{flex:none;width:24px;height:24px;border-radius:8px;display:grid;place-items:center;background:var(--gc);color:#fff;box-shadow:0 1px 2px rgba(0,0,0,.12)}
 .grp-toggle{flex:1;min-width:0;display:flex;align-items:center;gap:6px;border:0;background:transparent;border-radius:14px;padding:6px 36px 6px 8px;font:inherit;font-size:12.5px;font-weight:600;color:#6b6b6b;cursor:pointer;text-align:left}
-.grp-toggle:hover{background:#f0f0f0}.side .grp-toggle{background:transparent}.side .grp-toggle:hover{background:#f0f0f0}.grp-toggle svg{flex:none;transition:transform .15s ease}.grp.is-closed .grp-toggle svg{transform:rotate(-90deg)}
+.grp-toggle:hover{background:#f0f0f0}.side .grp-toggle{background:transparent}.side .grp-toggle:hover{background:#f0f0f0}.grp-toggle>svg{flex:none;transition:transform .26s cubic-bezier(.2,.7,.2,1)}.grp-tile.is-closed .grp-toggle>svg{transform:rotate(-90deg)}
 .grp-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.grp-count{flex:none;margin-left:auto;font-weight:500;color:#9a9a9a}
 .grp .more{opacity:1}
 .cmenu.wide{width:228px}
@@ -514,7 +520,9 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,textarea:foc
 .bulk-bar{display:grid;gap:6px;margin:0 0 8px}.bulk-bar:empty{display:none}.bulk-bar>*{animation:barIn .18s ease-out both}@keyframes barIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 .bulk-head{display:flex;align-items:center;justify-content:space-between;min-height:24px}.bulk-count{font-size:13px;color:#555}
 .bulk-done{border:0;background:none;padding:4px 2px;font:inherit;font-size:13px;color:#2559c9;cursor:pointer}
-.bulk-actions{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:6px}
+.bulk-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;justify-items:center}
+.bulk-bar button.bulk-icon{width:40px;height:40px;padding:0;display:grid;place-items:center;border-radius:999px}
+.bulk-bar .bulk-done{width:32px;height:32px;padding:0;display:grid;place-items:center;border-radius:999px}
 .bulk-bar button:not(.bulk-done){border:1px solid #d4d4d4;background:#fff;border-radius:999px;padding:7px 8px;font:inherit;font-size:13px;color:#222;cursor:pointer;white-space:nowrap}
 .bulk-bar button:not(.bulk-done):hover{background:#f4f4f4}.bulk-bar button:disabled{opacity:.45;cursor:default}.bulk-bar button.danger{color:#b52a2a}
 .bulk-bar #select-toggle:not(.bulk-done){margin-left:auto}
@@ -1283,7 +1291,7 @@ html.keyboard-nav .set-select:focus{outline:none;border-color:#8fb3ff;box-shadow
 .cmenu button{background:transparent}
 .bulk-done{border-radius:999px;min-height:32px;padding:5px 12px}
 @media(max-width:420px){
- .bulk-actions{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .bulk-actions{grid-template-columns:repeat(4,minmax(0,1fr))}
  .bulk-bar button:not(.bulk-done){min-width:0;padding-left:5px;padding-right:5px;font-size:12px;white-space:normal;line-height:1.2}
 }
 @media (prefers-color-scheme:dark){
@@ -1937,7 +1945,7 @@ function renderBulkBar(){
   bar.dataset.mode=mode;
   if(mode==="none")bar.innerHTML="";
   else if(mode==="idle")bar.innerHTML='<div class="bulk-idle"><button type="button" id="group-new">New group</button><button type="button" id="select-toggle">Select</button></div>';
-  else{bar.innerHTML='<div class="bulk-head"><span class="bulk-count"></span><button type="button" id="select-toggle" class="bulk-done">Done</button></div><div class="bulk-actions"><button type="button" id="bulk-pin">Pin</button><button type="button" id="bulk-title">New titles</button><button type="button" id="bulk-group">Move to group</button><button type="button" id="bulk-delete" class="danger">Delete</button></div>';
+  else{bar.innerHTML='<div class="bulk-head"><span class="bulk-count"></span><button type="button" id="select-toggle" class="bulk-done" title="Done" aria-label="Done selecting">'+ic('<path d="M5 12.5l4.5 4.5L19 7.5"/>',18,2.4)+'</button></div><div class="bulk-actions"><button type="button" id="bulk-pin" class="bulk-icon" title="Pin" aria-label="Pin">'+ic(PIN,17)+'</button><button type="button" id="bulk-title" class="bulk-icon" title="New titles" aria-label="New titles">'+ic(SPARK,17)+'</button><button type="button" id="bulk-group" class="bulk-icon" title="Move to group" aria-label="Move to group">'+ic(FOLDER_ICON,17)+'</button><button type="button" id="bulk-delete" class="danger bulk-icon" title="Delete" aria-label="Delete">'+ic(TRASH,17)+'</button></div>';
    $("bulk-pin").onclick=bulkPin;$("bulk-title").onclick=bulkTitle;$("bulk-group").onclick=e=>{e.stopPropagation();bulkGroup()};$("bulk-delete").onclick=bulkDelete;}
   const toggle=$("select-toggle");if(toggle)toggle.onclick=()=>setSelecting(!selecting);
   const gn=$("group-new");if(gn)gn.onclick=newGroup;
@@ -1946,7 +1954,7 @@ function renderBulkBar(){
   bar.querySelector(".bulk-count").textContent=n+" selected";
   ["bulk-pin","bulk-title","bulk-group","bulk-delete"].forEach(id=>$(id).disabled=!n);
   const picked=selectedChats(),allPinned=picked.length>0&&picked.every(c=>c.p);
-  const pinBtn=$("bulk-pin");if(pinBtn.textContent!==(allPinned?"Unpin":"Pin"))pinBtn.textContent=allPinned?"Unpin":"Pin";
+  const pinBtn=$("bulk-pin"),pinLabel=allPinned?"Unpin":"Pin";if(pinBtn.title!==pinLabel){pinBtn.title=pinLabel;pinBtn.setAttribute("aria-label",pinLabel)}
  }
 }
 function bulkPin(){
@@ -1973,7 +1981,15 @@ let renamingGroupId=null,menuMode="chat",menuGroupId=null,menuAnchor=null,pickId
 function liveGroups(){return S.groups.filter(g=>!g.del).sort((a,b)=>(a.u||0)-(b.u||0)||a.id.localeCompare(b.id))}
 function groupById(id){return liveGroups().find(g=>g.id===id)||null}
 function saveClosedGroups(){try{localStorage.setItem(GROUPS_CLOSED_KEY,JSON.stringify([...closedGroups]))}catch(e){}}
-function toggleGroup(id){if(closedGroups.has(id))closedGroups.delete(id);else closedGroups.add(id);saveClosedGroups();renderList()}
+function toggleGroup(id){
+ const tile=[...list.querySelectorAll(".grp-tile")].find(t=>t.dataset.gid===id);
+ let nowClosed;if(closedGroups.has(id)){closedGroups.delete(id);nowClosed=false}else{closedGroups.add(id);nowClosed=true}
+ saveClosedGroups();
+ if(!tile){renderList();return}
+ tile.classList.toggle("is-closed",nowClosed);
+ const t=tile.querySelector(".grp-toggle");if(t)t.setAttribute("aria-expanded",String(!nowClosed));
+ const body=tile.querySelector(".grp-body");if(body)body.inert=nowClosed;
+}
 function createGroup(){
  if(liveGroups().length>=GROUP_LIMIT){toast("You can have up to "+GROUP_LIMIT+" groups.");return null}
  const now=Date.now(),used=new Set(liveGroups().map(groupColourKey));
@@ -1985,7 +2001,7 @@ function renameGroup(id,name){const g=groupById(id),v=String(name||"").replace(/
 function setGroupStyle(id,field,value){const g=groupById(id),map=field==="c"?GROUP_COLOURS:GROUP_ICONS;if(!g||!pickKey(map,value))return;g[field]=value;g.mu=Date.now();save();paintGroup(g)}
 function paintGroup(g){
  const tile=[...list.querySelectorAll(".grp-tile")].find(t=>t.dataset.gid===g.id);
- if(tile){tile.style.setProperty("--gc",GROUP_COLOURS[groupColourKey(g)]);const badge=tile.querySelector(".grp-badge");if(badge)badge.innerHTML=ic(GROUP_ICONS[groupIconKey(g)],14,2)}
+ if(tile){tile.style.setProperty("--gc",GROUP_COLOURS[groupColourKey(g)]);const badge=tile.querySelector(".grp-badge");if(badge){badge.innerHTML=ic(GROUP_ICONS[groupIconKey(g)],14,2);badge.classList.remove("swap");void badge.offsetWidth;badge.classList.add("swap")}}
  document.querySelectorAll("#cmenu .sw-btn").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.key===groupColourKey(g))));
  document.querySelectorAll("#cmenu .icon-opt").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.key===groupIconKey(g))));
 }
@@ -2075,7 +2091,9 @@ function renderList(){
   const groupIds=new Set(groups.map(g=>g.id));
   groups.forEach(g=>{const members=entries.filter(e=>e.c.g===g.id),closed=closedGroups.has(g.id);
    const tile=document.createElement("div");tile.className="grp-tile"+(closed?" is-closed":"");tile.dataset.gid=g.id;tile.style.setProperty("--gc",GROUP_COLOURS[groupColourKey(g)]);
-   tile.appendChild(groupHead(g,members.length,closed));if(!closed)members.forEach(e=>drawEntry(e,tile));
+   tile.appendChild(groupHead(g,members.length,closed));
+   const body=document.createElement("div");body.className="grp-body";body.inert=closed;const inner=document.createElement("div");inner.className="grp-inner";body.appendChild(inner);
+   members.forEach(e=>drawEntry(e,inner));tile.appendChild(body);
    tile.addEventListener("contextmenu",ev=>{if(renamingGroupId===g.id)return;contextMenu(ev,tile,()=>openGroupMenu(g.id,tile.querySelector(".grp .more")))});
    list.appendChild(tile)});
   entries.filter(e=>!groupIds.has(e.c.g)).forEach(e=>drawEntry(e));
