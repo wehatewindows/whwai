@@ -172,9 +172,12 @@ body{overflow:hidden}
 .main{min-height:0;min-width:0;height:100%}
 .scroll{min-height:0;min-width:0}
 .input,.note{flex-shrink:0}
-.field{box-shadow:-6px 4px 20px rgba(106,160,255,.24),6px 4px 20px rgba(244,114,182,.16),0 -4px 20px rgba(167,139,250,.15);transition:box-shadow .25s ease,background .2s ease,border-color .2s ease}
-.field:focus-within{box-shadow:-6px 4px 24px rgba(0,0,0,.08),6px 4px 24px rgba(0,0,0,.06),0 -4px 24px rgba(0,0,0,.05)}
-.busy .field{animation:glow 2.4s ease-in-out infinite}
+/* Message bar glow lives on a layer behind the bar so it can fade in and out.
+   Unfocused and idle: no glow. Focused: a very slight glow. Replying: the pulse. */
+.field{isolation:isolate;transition:background .2s ease,border-color .2s ease}
+.field::before{content:"";position:absolute;inset:0;border-radius:inherit;z-index:-1;pointer-events:none;opacity:0;box-shadow:none;transition:opacity .12s ease-out}
+.field:focus-within::before{opacity:1;box-shadow:-4px 3px 12px rgba(106,160,255,.10),4px 3px 12px rgba(244,114,182,.07),0 -2px 12px rgba(167,139,250,.06)}
+.busy .field::before{opacity:1;animation:glow 2.4s ease-in-out infinite}
 .msg.u{background:linear-gradient(180deg,#7fa9ff,#5b8df0);color:#fff}
 .empty p{margin:0;color:var(--mute)}
 .mbar,.menubtn{display:none}
@@ -4981,9 +4984,9 @@ updateSchoolNotice();setInterval(updateSchoolNotice,10000);
 (function(){
  const root=document.documentElement;
  document.addEventListener("keydown",function(e){
-  const navKey=e.key==="Tab"||e.key==="ArrowUp"||e.key==="ArrowDown"||e.key==="ArrowLeft"||e.key==="ArrowRight";
-  const shortcut=(e.ctrlKey||e.metaKey||e.altKey)&&!["Control","Meta","Alt","Shift"].includes(e.key);
-  if(navKey||shortcut)root.classList.add("keyboard-nav");
+  const t=e.target,typing=!!(t&&(t.isContentEditable||t.tagName==="TEXTAREA"||(t.tagName==="INPUT"&&!/^(button|checkbox|radio|submit|reset|file|range|color)$/i.test(t.type))));
+  const navKey=e.key==="Tab"||((e.key.startsWith("Arrow"))&&!typing);
+  if(navKey)root.classList.add("keyboard-nav");
  },true);
  const pointer=()=>root.classList.remove("keyboard-nav");
  document.addEventListener("pointerdown",pointer,true);
