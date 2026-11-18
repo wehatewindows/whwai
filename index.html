@@ -3562,17 +3562,17 @@ function makeChatExport(source,fromServer,opts){
    "==================\n\n"+
    "Created: "+exportedAt.toLocaleString()+"\n"+
    "Chats included: "+chats.length+"\n\n"+
-   "WHAT IS IN THIS ZIP\n"+
+   "What is in this ZIP\n"+
    "- chats.json: everything needed to restore this data: chat titles, timestamps, pin state, group membership, AI-ended status, and message text with any saved sources, tools, models and thinking notes.\n"+"- chats.json groups: each group's name, colour, icon, collapsed state and dates.\n"+(options.settings?"- chats.json settings: default model, sidebar state, confirm-delete preference and onboarding notices.\n":"")+
    "- chats/: one readable text file for each chat, showing its group and whether the AI ended it.\n"+
    "- README.txt: this file, with export details and limitations.\n\n"+
-   "SOURCE AND SCOPE\n"+
+   "Source and scope\n"+
    (fromServer?"This ZIP was created in your browser from the chats saved on your WHWai account. Deleted-chat markers are not included.\n\n":"This ZIP is created locally in your browser and contains the chats currently stored on this device. It is not fetched directly from the WHWai server. When signed in, the local copy may differ from your account copy until account syncing completes. Return to WHWai and wait for account syncing before exporting if you need the latest account changes. Deleted-chat markers are not included.\n\n")+
-   "KEEP THIS FILE PRIVATE\n"+
+   "Keep this file private\n"+
    "Anyone who obtains the ZIP or an extracted text file may be able to read the conversations. Store it in a private location.\n"
  }];
  chats.forEach((c,index)=>{
-  const lines=["WHWai chat: "+c.title,"Created: "+dateLabel(c.createdAt),"Last updated: "+dateLabel(c.updatedAt),"Group: "+(c.group||"none"),c.ended?"Status: ENDED by the AI. This chat cannot receive new messages.":"Status: active","", "=".repeat(60),""];
+  const lines=["WHWai chat: "+c.title,"Created: "+dateLabel(c.createdAt),"Last updated: "+dateLabel(c.updatedAt),"Group: "+(c.group||"none"),c.ended?"Status: ended by the AI. This chat cannot receive new messages.":"Status: active","", "=".repeat(60),""];
   c.messages.forEach(m=>{lines.push((m.role==="user"?"YOU":"ARIES")+"  — "+dateLabel(m.timestamp),m.content,"", "-".repeat(40),"")});
   const ordinal=String(index+1).padStart(3,"0");
   files.push({name:"chats/"+ordinal+"-"+safeFilePart(c.title)+".txt",text:lines.join("\n")});
