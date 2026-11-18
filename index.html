@@ -587,7 +587,7 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,textarea:foc
 @keyframes fxTitle{from{background-color:#dbe6ff}to{background-color:var(--chip)}}
 @keyframes fxPin{0%{transform:scale(.985)}60%{transform:scale(1.006)}100%{transform:none}}
 @keyframes fxOut{to{opacity:0;transform:translateX(-6px)}}
-.main .site-notice{display:flex;align-items:center;justify-content:center;gap:8px;transition:none}.main .site-notice.entering{animation:noticeIn .22s cubic-bezier(.2,.7,.2,1) both}.main .site-notice.leaving{animation:noticeOut .2s ease-in both!important;pointer-events:none}.site-notice>span{min-width:0;text-align:center}
+.main .site-notice{display:flex;align-items:center;justify-content:center;gap:8px;transition:none}.main .site-notice.entering{animation:noticeIn .22s cubic-bezier(.2,.7,.2,1) both}.main .site-notice.changing{animation:noticeOut .17s ease-in both!important;pointer-events:none}.main .site-notice.leaving{animation:noticeOut .2s ease-in both!important;pointer-events:none}.site-notice>span{min-width:0;text-align:center}
 .notice-x{flex:none;width:24px;height:24px;border:0;border-radius:50%;background:transparent;color:inherit;opacity:.65;display:grid;place-items:center;padding:0;cursor:pointer;transition:background-color .16s ease,opacity .16s ease}.notice-x:hover,.notice-x:focus-visible{opacity:1;background:rgba(0,0,0,.06)}
 /* Stimulation Mode: slow, bright motion only. Nothing flashes faster than about once a second. */
 html.stim body{background:linear-gradient(120deg,#ff6ec7,#ffd166,#06d6a0,#4cc9f0,#b388ff,#ff6ec7)!important;background-size:300% 300%!important;animation:stimBg 6s ease infinite!important}
@@ -3817,10 +3817,7 @@ function renderSiteNotice(){
  const g=$("gate-notice");if(g){g.textContent=siteNoticeText;g.hidden=!(has&&siteNoticeOnGates)}
  const el=$("site-notice");if(!el)return;
  const visible=has&&siteNoticeDismissedText!==siteNoticeText;
- if(visible){
-  if(el._lt){clearTimeout(el._lt);el._lt=null}
-  el.classList.remove("leaving");
-  if(el.hidden){el.hidden=false;el.classList.add("entering");setTimeout(()=>el.classList.remove("entering"),240)}
+ const paint=()=>{
   el.innerHTML="";
   const t=document.createElement("span");t.textContent=siteNoticeText;el.appendChild(t);
   if(siteNoticeDismissible){
@@ -3828,7 +3825,26 @@ function renderSiteNotice(){
    x.innerHTML=ic('<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',14,2.2);
    x.onclick=()=>{siteNoticeDismissedText=siteNoticeText;renderSiteNotice()};el.appendChild(x);
   }
+  el._shown=siteNoticeText;
+ };
+ if(visible){
+  if(el._lt){clearTimeout(el._lt);el._lt=null}
+  el.classList.remove("leaving");
+  if(el.hidden){
+   el.hidden=false;paint();
+   el.classList.add("entering");setTimeout(()=>el.classList.remove("entering"),240);
+  }else if(el._shown!==siteNoticeText){
+   // Live change: fade the old text out, then fade the new text in.
+   if(!el._swap){
+    el.classList.add("changing");
+    el._swap=setTimeout(()=>{
+     el._swap=null;el.classList.remove("changing");paint();
+     el.classList.add("entering");setTimeout(()=>el.classList.remove("entering"),240);
+    },170);
+   }
+  }else paint();
  }else if(!el.hidden){
+  if(el._swap){clearTimeout(el._swap);el._swap=null;el.classList.remove("changing")}
   if(!el._lt){
    el.classList.add("leaving");
    el._lt=setTimeout(()=>{el._lt=null;el.hidden=true;el.classList.remove("leaving")},200);
