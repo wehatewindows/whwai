@@ -47,6 +47,14 @@ svg{display:block}
 .cmenu[hidden]{display:none}
 .cmenu button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;border-radius:999px;padding:9px 14px;cursor:pointer;text-align:left}
 .cmenu button:hover{background:#f0f0f0}.cmenu .danger{color:#b52a2a}
+.cmenu button[hidden]{display:none}.cmenu-gap{display:inline-block;width:16px;flex:none}.cmenu-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grp{position:relative;display:flex;align-items:center;gap:4px;margin:12px 4px 4px}.grp .rn{margin:0 4px}
+.grp-toggle{flex:1;min-width:0;display:flex;align-items:center;gap:6px;border:0;background:none;border-radius:10px;padding:6px 36px 6px 8px;font:inherit;font-size:12.5px;font-weight:600;color:#6b6b6b;cursor:pointer;text-align:left}
+.grp-toggle:hover{background:#f0f0f0}.grp-toggle svg{flex:none;transition:transform .15s ease}.grp.is-closed .grp-toggle svg{transform:rotate(-90deg)}
+.grp-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.grp-count{flex:none;margin-left:auto;font-weight:500;color:#9a9a9a}
+.grp .more{opacity:1}
+.grp-label{margin:12px 8px 4px;padding:6px 8px;font-size:12.5px;font-weight:600;color:#9a9a9a}
+.bulk-idle{display:flex;align-items:center;gap:6px}.bulk-idle #select-toggle:not(.bulk-done){margin-left:auto}
 .new{position:absolute;right:12px;bottom:12px;width:30px;height:30px;border-radius:50%;border:0;background:#bbb;color:#fff;padding:0;display:grid;place-items:center;cursor:pointer;transition:background .15s}
 .new:hover{background:#999}
 .main{flex:1;min-width:0;display:flex;flex-direction:column;position:relative}
@@ -1141,6 +1149,7 @@ html.keyboard-nav .set-select:focus{outline:none;border-color:#8fb3ff;box-shadow
  .radio-row strong{color:#f2f2f2}
  .radio-row small{color:#b8b8be}
  .cmenu button:hover{background:#3a3a3c}
+ .grp-toggle{color:#a1a1a6}.grp-toggle:hover{background:#2c2c2e}.grp-count,.grp-label{color:#7a7a7e}
  .access-admin-actions button{background:#2c2c2e;color:#f2f2f2}
  .access-admin-actions button[type=submit]{background:#20385c;color:#c6d9ff}
  .site-group-h,.whatsnew-admin-current summary{color:#f2f2f2}
@@ -1482,7 +1491,7 @@ html:not(.keyboard-nav) .account-form select:focus{
   <button class="gear" id="gear" title="Settings" aria-label="Settings"></button>
   <button class="profile-btn" id="profile-btn" title="Account" aria-label="Account menu" aria-haspopup="true" hidden></button>
   <div class="profile-menu" id="profile-menu" role="menu" hidden></div>
-  <div class="cmenu" id="cmenu" role="menu" hidden><button id="cren" role="menuitem"></button><button id="cgen" role="menuitem"></button><button id="cpin" role="menuitem"></button><button id="cdel" class="danger" role="menuitem"></button></div>
+  <div class="cmenu" id="cmenu" role="menu" hidden><button id="cren" role="menuitem"></button><button id="cgen" role="menuitem"></button><button id="cpin" role="menuitem"></button><button id="cgrp" role="menuitem"></button><button id="cdel" class="danger" role="menuitem"></button></div>
  </aside>
  <div class="scrim" id="scrim"></div>
  <div class="modal" id="modal" hidden><div class="mcard" role="dialog" aria-label="Settings"><div class="mh"><b id="modal-title">Settings</b><button id="mx" aria-label="Close"><span class="xi" aria-hidden="true"></span></button></div><div id="mbody"></div></div></div>
@@ -1586,6 +1595,17 @@ function safeMessage(value){
  }
  return item;
 }
+// Chat groups: each chat belongs to one group or none. Groups are stored with the chats and sync with the account.
+const GROUP_LIMIT=200,GROUP_NAME_MAX=40,GROUPS_CLOSED_KEY="whwai.groupsClosed.v1";
+let closedGroups=new Set();try{const raw=JSON.parse(localStorage.getItem(GROUPS_CLOSED_KEY)||"[]");if(Array.isArray(raw))closedGroups=new Set(raw.map(String))}catch(e){}
+function safeGroup(value){
+ if(!value||typeof value!=="object")return null;
+ const id=safeText(value.id,60).trim();if(!id)return null;
+ const name=safeText(value.name,GROUP_NAME_MAX).replace(/\s+/g," ").trim()||"Group";
+ const u=Number(value.u)||Date.now(),mu=Number(value.mu)||u;
+ const group={id,name,u,mu};if(value.del)group.del=1;return group;
+}
+function safeGroups(items){return (Array.isArray(items)?items:[]).slice(0,2000).map(safeGroup).filter(Boolean)}
 function safeChat(value){
  if(!value||typeof value!=="object")return null;
  const id=safeText(value.id,120);if(!id)return null;
@@ -1594,6 +1614,7 @@ function safeChat(value){
  const chat={id,t:title||"New chat",u:created,m:[]};
  const updated=Number(value.mu!=null?value.mu:value.updatedAt);if(Number.isFinite(updated)&&updated>0)chat.mu=updated;
  if(value.auto)chat.auto=1;if(value.ended)chat.ended=1;if(value.p||value.pinned)chat.p=1;
+ const group=safeText(value.g,60).trim();if(group)chat.g=group;
  const model=safeText(value.model,80);if(model)chat.model=model;
  const messages=Array.isArray(value.m)?value.m:(Array.isArray(value.messages)?value.messages:[]);
  chat.m=messages.map(safeMessage).filter(Boolean);
@@ -1611,6 +1632,7 @@ function safeState(value){
   chats,
   cur:raw.cur!=null&&chats.some(c=>c.id===String(raw.cur))?String(raw.cur):null,
   dead:safeDead(raw.dead),
+  groups:safeGroups(raw.groups),
   model:model||"aries-1",
   col:!!raw.col
  };
@@ -1621,11 +1643,12 @@ let S=null;
 try{S=safeState(JSON.parse(store.get()||"null"))}catch(e){S=safeState(null)}
 try{store.set(JSON.stringify(S))}catch(e){}
 let availableModels=[{id:"aries-1",name:"Aries",description:"Best for quick, straightforward reasoning and everyday questions."}];
-const clean=()=>({chats:S.chats.map(safeChat).filter(Boolean),dead:safeDead(S.dead)});
+const clean=()=>({chats:S.chats.map(safeChat).filter(Boolean),dead:safeDead(S.dead),groups:safeGroups(S.groups)});
 const persistedState=()=>({
  chats:clean().chats,
  cur:S.cur&&S.chats.some(c=>c.id===S.cur)?S.cur:null,
  dead:clean().dead,
+ groups:clean().groups,
  model:safeText(S.model||"aries-1",80),
  col:!!S.col
 });
@@ -1887,18 +1910,19 @@ function selectedChats(){return S.chats.filter(c=>selectedIds.has(c.id))}
 function renderBulkBar(){
  const bar=$("bulk-bar");if(!bar)return;
  const n=selectedIds.size;
- const mode=!S.chats.length?"none":selecting?"select":"idle";
+ const mode=!S.chats.length&&!liveGroups().length?"none":selecting?"select":"idle";
  if(bar.dataset.mode!==mode){
   bar.dataset.mode=mode;
   if(mode==="none")bar.innerHTML="";
-  else if(mode==="idle")bar.innerHTML='<button type="button" id="select-toggle">Select</button>';
-  else{bar.innerHTML='<div class="bulk-head"><span class="bulk-count"></span><button type="button" id="select-toggle" class="bulk-done">Done</button></div><div class="bulk-actions"><button type="button" id="bulk-pin">Pin</button><button type="button" id="bulk-title">New titles</button><button type="button" id="bulk-delete" class="danger">Delete</button></div>';
-   $("bulk-pin").onclick=bulkPin;$("bulk-title").onclick=bulkTitle;$("bulk-delete").onclick=bulkDelete;}
+  else if(mode==="idle")bar.innerHTML='<div class="bulk-idle"><button type="button" id="group-new">New group</button><button type="button" id="select-toggle">Select</button></div>';
+  else{bar.innerHTML='<div class="bulk-head"><span class="bulk-count"></span><button type="button" id="select-toggle" class="bulk-done">Done</button></div><div class="bulk-actions"><button type="button" id="bulk-pin">Pin</button><button type="button" id="bulk-title">New titles</button><button type="button" id="bulk-group">Move to group</button><button type="button" id="bulk-delete" class="danger">Delete</button></div>';
+   $("bulk-pin").onclick=bulkPin;$("bulk-title").onclick=bulkTitle;$("bulk-group").onclick=e=>{e.stopPropagation();bulkGroup()};$("bulk-delete").onclick=bulkDelete;}
   const toggle=$("select-toggle");if(toggle)toggle.onclick=()=>setSelecting(!selecting);
+  const gn=$("group-new");if(gn)gn.onclick=newGroup;
  }
  if(mode==="select"){
   bar.querySelector(".bulk-count").textContent=n+" selected";
-  ["bulk-pin","bulk-title","bulk-delete"].forEach(id=>$(id).disabled=!n);
+  ["bulk-pin","bulk-title","bulk-group","bulk-delete"].forEach(id=>$(id).disabled=!n);
   const picked=selectedChats(),allPinned=picked.length>0&&picked.every(c=>c.p);
   const pinBtn=$("bulk-pin");if(pinBtn.textContent!==(allPinned?"Unpin":"Pin"))pinBtn.textContent=allPinned?"Unpin":"Pin";
  }
@@ -1921,6 +1945,56 @@ async function bulkDelete(){
  await fadeRowOut(ids);ids.forEach(id=>{if(S.chats.some(c=>c.id===id))delChat(id)});
  setSelecting(false);toast(n===1?"Chat deleted.":n+" chats deleted.");
 }
+const FOLDER_ICON='<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>';
+const MENU_STATIC=["cren","cgen","cpin","cgrp","cdel"];
+let renamingGroupId=null,menuMode="chat",menuGroupId=null,menuAnchor=null,pickIds=[],pickDone=null;
+function liveGroups(){return S.groups.filter(g=>!g.del).sort((a,b)=>(a.u||0)-(b.u||0)||a.id.localeCompare(b.id))}
+function groupById(id){return liveGroups().find(g=>g.id===id)||null}
+function saveClosedGroups(){try{localStorage.setItem(GROUPS_CLOSED_KEY,JSON.stringify([...closedGroups]))}catch(e){}}
+function toggleGroup(id){if(closedGroups.has(id))closedGroups.delete(id);else closedGroups.add(id);saveClosedGroups();renderList()}
+function createGroup(){
+ if(liveGroups().length>=GROUP_LIMIT){toast("You can have up to "+GROUP_LIMIT+" groups.");return null}
+ const now=Date.now(),group={id:uid(),name:"New group",u:now,mu:now};
+ S.groups.push(group);save();return group;
+}
+function renameGroup(id,name){const g=groupById(id),v=String(name||"").replace(/\s+/g," ").trim().slice(0,GROUP_NAME_MAX);if(!g||!v)return;g.name=v;g.mu=Date.now();save()}
+function moveChats(ids,gid){
+ let n=0;
+ S.chats.forEach(c=>{if(!ids.includes(c.id))return;if((c.g||null)===(gid||null))return;if(gid)c.g=gid;else delete c.g;touch(c);n++});
+ if(n)save();return n;
+}
+function deleteGroup(id){
+ const g=groupById(id);if(!g)return;
+ S.chats.forEach(c=>{if(c.g===id){delete c.g;touch(c)}});
+ g.del=1;g.mu=Date.now();closedGroups.delete(id);saveClosedGroups();save();renderList();toast("Group deleted.");
+}
+async function confirmDeleteGroup(id){
+ const g=groupById(id);if(!g)return;
+ const count=S.chats.filter(c=>c.g===id).length;
+ const accepted=await appConfirm({title:"Delete group?",message:"“"+g.name+"” will be removed. "+(count?(count===1?"Its chat":"Its "+count+" chats")+" will stay in your list without a group.":"It has no chats, so nothing else changes.")+" This cannot be undone.",confirmLabel:"Delete group",standalone:true});
+ if(accepted&&groupById(id))deleteGroup(id);
+}
+function focusGroupRename(){const i=list.querySelector(".grp .rn");if(i){i.focus();i.select()}}
+function groupHead(g,count,closed){
+ const h=document.createElement("div");h.className="grp"+(closed?" is-closed":"");
+ if(renamingGroupId===g.id){
+  const i=document.createElement("input");i.className="rn";i.value=g.name;i.maxLength=GROUP_NAME_MAX;i.setAttribute("aria-label","Group name");
+  let done=0;
+  const fin=ok=>{if(done)return;done=1;const v=i.value.trim();if(ok&&v)renameGroup(g.id,v);renamingGroupId=null;renderList()};
+  i.onkeydown=ev=>{if(ev.isComposing)return;if(ev.key==="Enter"){ev.preventDefault();ev.stopPropagation();fin(true)}else if(ev.key==="Escape"){ev.preventDefault();ev.stopPropagation();fin(false)}};
+  i.onblur=()=>fin(true);
+  h.appendChild(i);return h;
+ }
+ const t=document.createElement("button");t.type="button";t.className="grp-toggle";t.title=g.name;t.setAttribute("aria-expanded",String(!closed));
+ t.innerHTML=ic('<path d="M6 9l6 6 6-6"/>',12,2.5)+'<span class="grp-name"></span><span class="grp-count">'+count+'</span>';
+ t.querySelector(".grp-name").textContent=g.name;
+ t.onclick=()=>toggleGroup(g.id);
+ const m=document.createElement("button");m.type="button";m.className="more";m.innerHTML=ic(DOTS,18);m.title="Group options";m.setAttribute("aria-label","Group options");m.setAttribute("aria-haspopup","menu");m.setAttribute("aria-expanded","false");
+ m.onclick=e=>{e.stopPropagation();if(menuGroupId===g.id)closeMenu();else openGroupMenu(g.id,m)};
+ h.append(t,m);return h;
+}
+function bulkGroup(){const ids=selectedChats().map(c=>c.id);if(!ids.length)return;openPicker(ids,$("bulk-group"),()=>setSelecting(false))}
+function newGroup(){const g=createGroup();if(g){renamingGroupId=g.id;renderList()}}
 function renderList(){
  list.innerHTML="";closeMenu();list.classList.toggle("selecting",selecting);
  for(const id of [...selectedIds]){if(!S.chats.some(c=>c.id===id))selectedIds.delete(id)}
@@ -1932,7 +2006,7 @@ function renderList(){
  if(query){entries=S.chats.map(c=>({c,score:scoreChat(c,query)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||(b.c.u||0)-(a.c.u||0));
   if(!entries.length){list.insertAdjacentHTML("beforeend",'<div class="search-empty">No chats match your search.</div>');if(!canSave)list.insertAdjacentHTML("beforeend",'<div class="hint warn">Chats can&#39;t be saved in this browser, so they will be lost when you leave this page.</div>');return}
  }else{entries=sorted().map(c=>({c,score:0}));if(!S.chats.length)list.insertAdjacentHTML("beforeend",'<div class="hint">Your chats will show up here.</div>')}
- entries.forEach(entry=>{const c=entry.c;
+ const drawEntry=entry=>{const c=entry.c;
   if(renamingId===c.id){
    const e=document.createElement("div");e.className="chat on edit";
    const i=document.createElement("input");i.className="rn";i.value=c.t;i.maxLength=60;i.setAttribute("aria-label","Chat name");
@@ -1954,21 +2028,63 @@ function renderList(){
   x.onclick=e=>{e.stopPropagation();if(mid===c.id)closeMenu();else openMenu(c.id,x)};
   r.dataset.id=c.id;const fx=rowFx.get(c.id);if(fx){r.classList.add("fx-"+fx);rowFx.delete(c.id)}
   r.append(pick,b,x);list.appendChild(r);
- });
+ };
+ const groups=query?[]:liveGroups();
+ if(groups.length){
+  const groupIds=new Set(groups.map(g=>g.id));
+  groups.forEach(g=>{const members=entries.filter(e=>e.c.g===g.id),closed=closedGroups.has(g.id);list.appendChild(groupHead(g,members.length,closed));if(!closed)members.forEach(drawEntry)});
+  const loose=entries.filter(e=>!groupIds.has(e.c.g));
+  if(loose.length){const label=document.createElement("div");label.className="grp-label";label.textContent="Ungrouped";list.appendChild(label);loose.forEach(drawEntry)}
+ }else entries.forEach(drawEntry);
+ if(renamingGroupId)focusGroupRename();
  if(!canSave)list.insertAdjacentHTML("beforeend",'<div class="hint warn">Chats can\'t be saved in this browser, so they will be lost when you leave this page.</div>');
 }
+function menuItem(id,icon,text){const b=$(id);b.innerHTML=ic(icon,16)+"<span>"+text+"</span>";return b}
+function placeMenu(btn){const m=$("cmenu"),sr=$("side").getBoundingClientRect(),br=btn.getBoundingClientRect();m.style.top=Math.max(8,Math.min(br.bottom-sr.top+4,sr.height-m.offsetHeight-8))+"px";btn.setAttribute("aria-expanded","true")}
 function openMenu(id,btn){
  const c=S.chats.find(x=>x.id===id);if(!c)return;
- closeMenu();mid=id;
+ closeMenu();mid=id;menuAnchor=btn;menuMode="chat";
+ menuItem("cren",PEN,"Rename");menuItem("cgen",SPARK,"Generate title");menuItem("cpin",PIN,c.p?"Unpin":"Pin");menuItem("cgrp",FOLDER_ICON,"Move to group");menuItem("cdel",TRASH,"Delete");
+ showEl($("cmenu"));placeMenu(btn);
+}
+function openGroupMenu(gid,btn){
+ closeMenu();menuMode="group";menuGroupId=gid;menuAnchor=btn;
+ menuItem("cren",PEN,"Rename group");menuItem("cdel",TRASH,"Delete group");
+ ["cgen","cpin","cgrp"].forEach(id=>$(id).hidden=true);
+ showEl($("cmenu"));placeMenu(btn);
+}
+function finishPick(gid,startRename){
+ const ids=pickIds.slice(),done=pickDone;
+ closeMenu();
+ const n=moveChats(ids,gid);
+ if(gid&&startRename)renamingGroupId=gid;
+ if(n)toast(gid?"Moved to "+groupById(gid).name+".":"Removed from its group.");
+ if(done)done();
+ renderList();
+}
+function openPicker(ids,btn,done){
+ closeMenu();menuMode="pick";pickIds=ids.slice();pickDone=done||null;menuAnchor=btn;
+ MENU_STATIC.forEach(id=>$(id).hidden=true);
+ const picked=S.chats.filter(c=>pickIds.includes(c.id));
+ const items=[{label:"No group",on:picked.length>0&&picked.every(c=>!groupById(c.g)),run:()=>finishPick(null)}];
+ liveGroups().forEach(g=>items.push({label:g.name,on:picked.length>0&&picked.every(c=>c.g===g.id),run:()=>finishPick(g.id)}));
+ items.push({label:"New group…",on:false,run:()=>{const g=createGroup();if(g)finishPick(g.id,true)}});
  const m=$("cmenu");
- $("cren").innerHTML=ic(PEN,16)+"<span>Rename</span>";
- $("cgen").innerHTML=ic(SPARK,16)+"<span>Generate title</span>";
- $("cpin").innerHTML=ic(PIN,16)+"<span>"+(c.p?"Unpin":"Pin")+"</span>";
- $("cdel").innerHTML=ic(TRASH,16)+"<span>Delete</span>";
- showEl(m);
- const sr=$("side").getBoundingClientRect(),br=btn.getBoundingClientRect();
- m.style.top=Math.max(8,Math.min(br.bottom-sr.top+4,sr.height-m.offsetHeight-8))+"px";
- btn.setAttribute("aria-expanded","true");
+ items.forEach(item=>{
+  const b=document.createElement("button");b.type="button";b.className="cmenu-dyn";b.setAttribute("role","menuitem");
+  b.innerHTML=(item.on?ic('<path d="M5 12.5l4.5 4.5L19 7.5"/>',16,2.5):'<span class="cmenu-gap" aria-hidden="true"></span>')+'<span class="cmenu-label"></span>';
+  b.querySelector(".cmenu-label").textContent=item.label;
+  b.onclick=item.run;m.appendChild(b);
+ });
+ showEl(m);placeMenu(btn);
+}
+function closeMenu(){
+ hideEl($("cmenu"));mid=null;menuGroupId=null;menuAnchor=null;
+ if(menuMode==="pick"){pickIds=[];pickDone=null}
+ menuMode="chat";
+ document.querySelectorAll("#cmenu .cmenu-dyn").forEach(b=>b.remove());
+ MENU_STATIC.forEach(id=>{const b=$(id);if(b)b.hidden=false});
+ document.querySelectorAll(".more").forEach(b=>b.setAttribute("aria-expanded","false"));
 }
 const rowFx=new Map();
 function flashRow(id,kind){rowFx.set(id,kind)}
@@ -1976,10 +2092,6 @@ function fadeRowOut(ids){const rows=[...list.children].filter(r=>ids.includes(r.
 function hideEl(el,ms){if(!el||el.hidden||el._lt)return;el.classList.add("leaving");el._lt=setTimeout(()=>{el._lt=null;el.hidden=true;el.classList.remove("leaving")},ms||140)}
 function showEl(el){if(!el)return;if(el._lt){clearTimeout(el._lt);el._lt=null}el.classList.remove("leaving");el.hidden=false}
 function swapText(el,text){if(!el||el.textContent===text)return;el.textContent=text;el.classList.remove("swap");void el.offsetWidth;el.classList.add("swap")}
-function closeMenu(){
- hideEl($("cmenu"));mid=null;
- document.querySelectorAll(".more").forEach(b=>b.setAttribute("aria-expanded","false"));
-}
 function selectedModelId(){
  const c=C();const id=(c&&c.model)||S.model||"aries-1";
  return availableModels.some(m=>m.id===id)?id:"aries-1";
@@ -2528,9 +2640,16 @@ $("mopen").onclick=()=>side(!$("side").classList.contains("open"));
 function collapse(c){S.col=c;document.querySelector(".frame").classList.toggle("collapsed",c);save()}
 $("logo").onclick=()=>mob()?side(false):collapse(true);
 $("expand").onclick=()=>mob()?side(true):collapse(false);
-$("cren").onclick=()=>{const id=mid;closeMenu();renamingId=id;renderList();const i=list.querySelector(".rn");if(i){i.focus();i.select()}};
+$("cren").onclick=()=>{
+ if(menuMode==="group"){const gid=menuGroupId;closeMenu();renamingId=null;renamingGroupId=gid;renderList();return}
+ const id=mid;closeMenu();renamingGroupId=null;renamingId=id;renderList();const i=list.querySelector(".rn");if(i){i.focus();i.select()}
+};
 $("cpin").onclick=()=>{const c=S.chats.find(x=>x.id===mid);if(c){c.p=!c.p;touch(c);flashRow(c.id,"pin");save();renderList()}else closeMenu()};
-$("cdel").onclick=()=>{const id=mid;closeMenu();confirmDeleteChat(id)};
+$("cdel").onclick=()=>{
+ if(menuMode==="group"){const gid=menuGroupId;closeMenu();confirmDeleteGroup(gid);return}
+ const id=mid;closeMenu();confirmDeleteChat(id)
+};
+$("cgrp").onclick=()=>{const ids=mid?[mid]:[],anchor=menuAnchor;if(anchor)openPicker(ids,anchor,null)};
 $("cgen").onclick=()=>{const id=mid;closeMenu();retitle(id)};
 list.addEventListener("scroll",closeMenu);
 document.addEventListener("click",e=>{if(!$("cmenu").contains(e.target))closeMenu()});
@@ -3164,19 +3283,19 @@ async function syncAccountChatsNow(){if(selfDisabledInfo)return;
  accountSyncing=true;accountSyncAgain=false;const revision=localRevision;renderSyncStatus();
  try{
   const syncToken=accountSession.token;const c=clean();
-  const result=await post({action:"account_chats_sync",sessionToken:syncToken,chats:c.chats,dead:c.dead,cur:S.cur});
+  const result=await post({action:"account_chats_sync",sessionToken:syncToken,chats:c.chats,dead:c.dead,groups:c.groups,cur:S.cur});
   if(!accountSession||accountSession.token!==syncToken){accountSyncing=false;renderSyncStatus();return}
   if(result&&Array.isArray(result.chats)){
    const wasInitialSync=accountInitialSyncPending;
    const localCur=S.cur;
-   const before=JSON.stringify({cur:S.cur,chats:S.chats.map(c=>[c.id,c.mu||c.u,c.t,c.p,c.model||"aries-1"]),dead:S.dead});
-   const merged=mergeLocalAndRemote({chats:S.chats,dead:S.dead,cur:S.cur},{chats:result.chats,dead:result.dead,cur:result.cur});
-   S.chats=merged.chats;S.dead=merged.dead;
+   const before=JSON.stringify({cur:S.cur,chats:S.chats.map(c=>[c.id,c.mu||c.u,c.t,c.p,c.model||"aries-1",c.g||""]),dead:S.dead,groups:S.groups.map(g=>[g.id,g.mu,g.name,g.del||0])});
+   const merged=mergeLocalAndRemote({chats:S.chats,dead:S.dead,cur:S.cur,groups:S.groups},{chats:result.chats,dead:result.dead,cur:result.cur,groups:result.groups});
+   S.chats=merged.chats;S.dead=merged.dead;S.groups=merged.groups;
    const fallbackCur=(S.chats[0]&&S.chats[0].id)||null;
    if(wasInitialSync)S.cur=merged.cur&&S.chats.some(c=>c.id===merged.cur)?merged.cur:fallbackCur;
    else S.cur=(localCur===null||S.chats.some(c=>c.id===localCur))?localCur:fallbackCur;
    store.set(JSON.stringify(persistedState()));
-   const after=JSON.stringify({cur:S.cur,chats:S.chats.map(c=>[c.id,c.mu||c.u,c.t,c.p,c.model||"aries-1"]),dead:S.dead});
+   const after=JSON.stringify({cur:S.cur,chats:S.chats.map(c=>[c.id,c.mu||c.u,c.t,c.p,c.model||"aries-1",c.g||""]),dead:S.dead,groups:S.groups.map(g=>[g.id,g.mu,g.name,g.del||0])});
    accountInitialSyncPending=false;
    if(before!==after||wasInitialSync){renderList();renderChat()}
    accountLastSync=Date.now();accountSyncFailed=false;syncRetryDelay=0;
@@ -3222,14 +3341,17 @@ function renderSyncStatus(){
  b.title=name+" · "+text;b.setAttribute("aria-label","Account menu, signed in as "+name+". "+text);const pm=$("profile-menu");if(pm&&!pm.hidden)renderProfileMenu();
 }
 function mergeLocalAndRemote(first,second){
- const map={},dead={};const t=c=>Number(c.mu||c.u||0);
+ const map={},dead={},groupMap={};const t=c=>Number(c.mu||c.u||0);
  [first||{},second||{}].forEach(state=>{
   (Array.isArray(state.dead)?state.dead:[]).forEach(d=>{if(d&&d.id!=null){const id=String(d.id),mu=Number(d.mu)||0;if(!(id in dead)||dead[id]<mu)dead[id]=mu}});
   (Array.isArray(state.chats)?state.chats:[]).forEach(c=>{if(!c||!c.id)return;const cand=safeChat(c);if(!cand)return;const cur=map[c.id];if(!cur||t(cand)>t(cur)||(t(cand)===t(cur)&&cand.m.length>cur.m.length))map[c.id]=cand});
+  safeGroups(state.groups).forEach(g=>{const cur=groupMap[g.id];if(!cur||g.mu>cur.mu)groupMap[g.id]=g});
  });
  const chats=Object.keys(map).map(id=>map[id]).filter(c=>!(c.id in dead)||dead[c.id]<t(c));
  const deadList=Object.keys(dead).map(id=>({id,mu:dead[id]}));let cur=String((second&&second.cur)||(first&&first.cur)||"");if(!chats.some(c=>c.id===cur))cur=chats.length?chats[0].id:null;
- return{chats,dead:deadList,cur};
+ const allGroups=Object.keys(groupMap).map(id=>groupMap[id]);
+ const live=allGroups.filter(g=>!g.del),tombs=allGroups.filter(g=>g.del).sort((x,y)=>y.mu-x.mu).slice(0,200);
+ return{chats,dead:deadList,cur,groups:live.concat(tombs).slice(0,2000)};
 }
 async function resumeAccountSession(){
  if(!accountSession||!accountSession.token)return;
@@ -3249,7 +3371,7 @@ async function resumeAccountSession(){
  }
 }
 function clearLocalWhwData(removeSession){
- S={chats:[],cur:null,dead:[],model:"aries-1",col:!!S.col};mem=null;
+ S={chats:[],cur:null,dead:[],groups:[],model:"aries-1",col:!!S.col};mem=null;
  try{localStorage.removeItem(KEY);localStorage.removeItem(ARIES_INTRO_KEY);localStorage.removeItem(EXPORT_COOLDOWN_KEY);localStorage.removeItem(DEVICE_STORAGE_KEY)}catch(e){mem=JSON.stringify({chats:[],cur:null,dead:[],model:"aries-1",col:!!S.col})}
  cachedDeviceId="";exportCooldownMemory=0;ariesIntroShownThisPage=false;hideAriesIntro(false);
  if(removeSession)clearAccountSession();
@@ -3583,8 +3705,8 @@ function setAccountFromResult(result){
 }
 function applyLoginChats(result){
  const hadLocalChats=S.chats.length>0;
- const merged=mergeLocalAndRemote({chats:S.chats,dead:S.dead,cur:S.cur},{chats:result.chats||[],dead:result.dead||[],cur:result.cur||null});
- S.chats=merged.chats;S.dead=merged.dead;S.cur=merged.cur&&S.chats.some(c=>c.id===merged.cur)?merged.cur:(S.chats[0]&&S.chats[0].id)||null;
+ const merged=mergeLocalAndRemote({chats:S.chats,dead:S.dead,cur:S.cur,groups:S.groups},{chats:result.chats||[],dead:result.dead||[],cur:result.cur||null,groups:result.groups||[]});
+ S.chats=merged.chats;S.dead=merged.dead;S.groups=merged.groups;S.cur=merged.cur&&S.chats.some(c=>c.id===merged.cur)?merged.cur:(S.chats[0]&&S.chats[0].id)||null;
  store.set(JSON.stringify(persistedState()));renderList();renderChat();
  if(hadLocalChats&&result.mergedLocalChats)toast("Your existing chats were merged into your account.");
  else if(accountInitialSyncPending)toast("Signed in. Loading your account chats…");
@@ -3943,7 +4065,7 @@ function showBreachConfirm(el,message){
  if(!$("breach-ack")){const wrap=document.createElement("label");wrap.className="check-row breach-ack";wrap.innerHTML='<input type="checkbox" id="breach-ack"> I understand the risk, and I want to keep this password anyway.';el.insertAdjacentElement("afterend",wrap)}
 }
 function passwordError(message,field){const el=$("password-change-error");const target=field||$("new-password");if(target&&window.fieldError){if(el)el.hidden=true;window.fieldError(target,message,true);return}if(el){el.textContent=message;el.hidden=false}}
-function clearSignedInLocalCache(){clearAccountSession();try{localStorage.removeItem(ARIES_INTRO_KEY)}catch(e){}ariesIntroShownThisPage=false;S={chats:[],cur:null,dead:[],model:"aries-1",col:!!S.col};store.set(JSON.stringify(persistedState()));renderList();renderChat()}
+function clearSignedInLocalCache(){clearAccountSession();try{localStorage.removeItem(ARIES_INTRO_KEY)}catch(e){}ariesIntroShownThisPage=false;S={chats:[],cur:null,dead:[],groups:[],model:"aries-1",col:!!S.col};store.set(JSON.stringify(persistedState()));renderList();renderChat()}
 async function performSignoutCurrent(){
  if(!accountSession||!accountSession.token)return;
  const buttons=mbody.querySelectorAll("button");buttons.forEach(b=>b.disabled=true);setMsg("Signing out…");
