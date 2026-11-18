@@ -3558,15 +3558,15 @@ function makeChatExport(source,fromServer,opts){
   text:JSON.stringify(data,null,2)
  },{
   name:"README.txt",
-  text:"WHWai chat export\n"+
+  text:"WHWai chat export\nai.wehatewindows.org\n"+
    "==================\n\n"+
    "Created: "+exportedAt.toLocaleString()+"\n"+
-   "Chats included: "+chats.length+"\n"+"Groups included: "+groupsOut.length+"\n\n"+
+   "Chats included: "+chats.length+"\n\n"+
    "WHAT IS IN THIS ZIP\n"+
    "- chats.json: everything needed to restore this data: chat titles, timestamps, pin state, group membership, AI-ended status, and message text with any saved sources, tools, models and thinking notes.\n"+"- chats.json groups: each group's name, colour, icon, collapsed state and dates.\n"+(options.settings?"- chats.json settings: default model, sidebar state, confirm-delete preference and onboarding notices.\n":"")+
    "- chats/: one readable text file for each chat, showing its group and whether the AI ended it.\n"+
    "- README.txt: this file, with export details and limitations.\n\n"+
-   "NOT INCLUDED\n"+"The account session token, early-access tokens, the browser identifier, the export cooldown, the daily usage counter and deleted chats are not included.\n\n"+"SOURCE AND SCOPE\n"+
+   "SOURCE AND SCOPE\n"+
    (fromServer?"This ZIP was created in your browser from the chats saved on your WHWai account. Deleted-chat markers are not included.\n\n":"This ZIP is created locally in your browser and contains the chats currently stored on this device. It is not fetched directly from the WHWai server. When signed in, the local copy may differ from your account copy until account syncing completes. Return to WHWai and wait for account syncing before exporting if you need the latest account changes. Deleted-chat markers are not included.\n\n")+
    "KEEP THIS FILE PRIVATE\n"+
    "Anyone who obtains the ZIP or an extracted text file may be able to read the conversations. Store it in a private location.\n"
