@@ -112,7 +112,7 @@ svg{display:block}
 .info-pop{position:absolute;right:0;bottom:calc(100% + 12px);width:min(286px,calc(100vw - 44px));background:#fff;border:1px solid #dcdce1;border-radius:17px;box-shadow:0 8px 26px rgba(0,0,0,.14);padding:12px 14px;z-index:12;animation:rise .15s ease-out}
 .info-pop::after{content:"";position:absolute;right:15px;bottom:-7px;width:12px;height:12px;background:#fff;border-right:1px solid #dcdce1;border-bottom:1px solid #dcdce1;transform:rotate(45deg)}
 .info-pop[hidden]{display:none!important}.info-pop p{margin:0 0 10px;font-size:12.5px;line-height:1.5;color:#333}.info-pop button{border:0;border-radius:999px;background:#e8efff;color:#2458b8;font:500 12px/1.2 var(--f);padding:7px 12px;cursor:pointer}.info-pop button:hover{background:#dce7ff}
-.site-notice{box-sizing:border-box;display:block;flex:0 0 auto;align-self:center;width:calc(100% - 24px);min-width:0;max-width:840px;margin:8px auto 0;padding:10px 13px;border-radius:13px;background:#eef4ff;border:1px solid #d9e6ff;color:#24477e;font-size:13px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal;animation:noticeIn .22s cubic-bezier(.2,.7,.2,1) both}.site-notice[hidden]{display:none!important}.main.has-site-notice .scroll{padding-top:12px}@keyframes noticeIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+.site-notice{box-sizing:border-box;display:block;flex:0 0 auto;align-self:center;width:calc(100% - 24px);min-width:0;max-width:840px;margin:8px auto 0;padding:10px 13px;border-radius:13px;background:#eef4ff;border:1px solid #d9e6ff;color:#24477e;font-size:13px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal;}.site-notice[hidden]{display:none!important}.main.has-site-notice .scroll{padding-top:12px}@keyframes noticeIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
 .pop{position:absolute;right:0;bottom:calc(100% + 14px);width:260px;background:#fff;border:1px solid #ddd;border-radius:24px;box-shadow:0 8px 30px rgba(0,0,0,.16);padding:9px;z-index:10;animation:rise .15s ease-out}
 .pop[hidden]{display:none}
 .pop .ph{font-size:12.5px;color:var(--mute);padding:7px 12px 9px}
@@ -546,7 +546,7 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,textarea:foc
 .privacy-link:hover,.privacy-link:focus,.lock-link:hover,.lock-link:focus{background:#e2e2e2;color:#111;text-decoration:none}
 
 /* Exit animation for menus and panels hidden through hideEl() */
-.leaving:not(.access-gate):not(.school-lock):not(.school-notice){animation:leaveFade .14s ease-in both!important;pointer-events:none}
+.leaving:not(.access-gate):not(.school-lock):not(.school-notice):not(.site-notice){animation:leaveFade .14s ease-in both!important;pointer-events:none}
 @keyframes leaveFade{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(6px) scale(.985)}}
 /* Inline error messages fade in when shown */
 .access-error:not([hidden]){animation:noticeIn .18s cubic-bezier(.2,.7,.2,1) both}
@@ -3832,14 +3832,14 @@ function renderSiteNotice(){
   el.classList.remove("leaving");
   if(el.hidden){
    el.hidden=false;paint();
-   el.classList.add("entering");setTimeout(()=>el.classList.remove("entering"),240);
+   el.classList.add("entering");setTimeout(()=>el.classList.remove("entering"),340);
   }else if(el._shown!==siteNoticeText){
    // Live change: fade the old text out, then fade the new text in.
    if(!el._swap){
     el.classList.add("changing");
     el._swap=setTimeout(()=>{
      el._swap=null;el.classList.remove("changing");paint();
-     el.classList.add("entering");setTimeout(()=>el.classList.remove("entering"),240);
+     el.classList.add("entering");setTimeout(()=>el.classList.remove("entering"),340);
     },180);
    }
   }else paint();
