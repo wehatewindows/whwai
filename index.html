@@ -352,6 +352,11 @@ body.access-locked .frame{filter:blur(6px);pointer-events:none;user-select:none}
 .code-copy{position:absolute;top:6px;right:6px;z-index:2;display:flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:1px solid #d4d4d4;border-radius:8px;background:#f7f7f7;color:#222;cursor:pointer}
 .code-copy:hover{background:#e8e8e8}
 .code-copy:disabled{opacity:.7;cursor:default}
+.cp svg,.code-copy svg,.chart-act svg{transition:opacity .15s ease,transform .15s ease}
+.ico-out svg{opacity:0;transform:scale(.7)}
+.ico-in svg{animation:icoIn .22s ease}
+@keyframes icoIn{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.ico-in svg{animation:none}.cp svg,.code-copy svg,.chart-act svg{transition:none}}
 @media (max-width:640px){
  .chat-search{margin-bottom:12px;height:42px}
  .chat-search input{font-size:19px}
@@ -480,7 +485,7 @@ html,body{touch-action:manipulation}
 .gate-notice{margin:14px 0 0;padding:10px 12px;border-radius:12px;background:#eef4ff;border:1px solid #d9e6ff;color:#24477e;font-size:13px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}.gate-notice[hidden]{display:none}
 .answer-sources,.bar{flex:none}
 .msg h4{margin:8px 0 6px;font-size:15px;font-weight:600}
-.msg h3{margin:10px 0 6px;font-size:16px;font-weight:600}.msg ol{margin:0 0 8px;padding-left:22px}.msg ul ul,.msg ul ol,.msg ol ul,.msg ol ol{margin:4px 0 0}.msg em{font-style:italic}.msg del{opacity:.7}.msg blockquote{margin:0 0 8px;padding:2px 0 2px 12px;border-left:3px solid rgba(128,128,128,.5);opacity:.85}.tm-inline{display:inline-block;vertical-align:baseline;white-space:nowrap;font-family:"Cambria Math","STIX Two Math",Georgia,serif;font-size:1.05em}.tm-block{margin:10px 0;overflow-x:auto;overflow-y:hidden;text-align:center;font-family:"Cambria Math","STIX Two Math",Georgia,serif;font-size:1.12em;padding:2px 0}.tm-frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 .12em;line-height:1.25}.tm-num{display:block;padding:0 .3em;border-bottom:1px solid currentColor;text-align:center}.tm-den{display:block;padding:0 .3em;text-align:center}.tm-sqrt{display:inline-flex;align-items:flex-start}.tm-rad{display:inline-block;border-top:1px solid currentColor;padding:0 .15em;margin-left:1px}.tm-root{font-size:.65em;margin-right:-.4em}.tm-sc sup,.tm-sc sub{font-size:.72em;line-height:0}.tm-over{border-top:1px solid currentColor}.tm-under{border-bottom:1px solid currentColor}.tm-box{border:1px solid currentColor;border-radius:4px;padding:0 .2em}.tm-stack{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle}.tm-stack>span{display:block;padding:0 .15em}.tm-paren{font-size:1.15em;vertical-align:middle}.tm-env{display:inline-flex;align-items:center;vertical-align:middle;margin:0 .15em}.tm-br{font-size:1.9em;line-height:1;display:inline-block;vertical-align:middle;padding:0 .08em}.tm-grid{display:inline-grid;column-gap:1em;row-gap:.25em;align-items:center;padding:0 .1em}.tm-cell{display:block;text-align:center}.tm-cases .tm-grid{text-align:left}.tm-cases .tm-cell{text-align:left}.tm-raw{opacity:.7;font-family:ui-monospace,Menlo,monospace;font-size:.9em}.tm-fn{font-style:normal}.msg hr{border:0;border-top:1px solid #d8d8de;margin:10px 0}
+.msg h3{margin:10px 0 6px;font-size:16px;font-weight:600}.msg ol{margin:0 0 8px;padding-left:22px}.msg ul ul,.msg ul ol,.msg ol ul,.msg ol ol{margin:4px 0 0}.msg em{font-style:italic}.msg del{opacity:.7}.msg blockquote{margin:0 0 8px;padding:2px 0 2px 12px;border-left:3px solid rgba(128,128,128,.5);opacity:.85}.tm-inline{display:inline-block;vertical-align:baseline;white-space:nowrap;font-family:"Cambria Math","STIX Two Math",Georgia,serif;font-size:1.05em}.tm-block{margin:10px 0;overflow-x:auto;overflow-y:hidden;text-align:center;font-family:"Cambria Math","STIX Two Math",Georgia,serif;font-size:1.12em;padding:2px 0}.tm-frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 .12em;line-height:1.25}.tm-num{display:block;padding:0 .3em;border-bottom:1px solid currentColor;text-align:center}.tm-den{display:block;padding:0 .3em;text-align:center}.tm-sqrt{display:inline-flex;align-items:flex-start}.tm-rad{display:inline-block;border-top:1px solid currentColor;padding:0 .15em;margin-left:1px}.tm-root{font-size:.65em;margin-right:-.4em}.tm-sc sup,.tm-sc sub{font-size:.72em;line-height:0}.tm-over{border-top:1px solid currentColor}.tm-under{border-bottom:1px solid currentColor}.tm-box{border:1px solid currentColor;border-radius:4px;padding:0 .2em}.tm-stack{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle}.tm-stack>span{display:block;padding:0 .15em}.tm-paren{font-size:1.15em;vertical-align:middle}.tm-env{display:inline-flex;align-items:center;vertical-align:middle;margin:0 .15em}.tm-br{font-size:1.9em;line-height:1;display:inline-block;vertical-align:middle;padding:0 .08em}.tm-grid{display:inline-table;vertical-align:middle;border-collapse:separate;border-spacing:1em .25em}.tm-cell{text-align:center;padding:0}.tm-cases .tm-grid{text-align:left}.tm-cases .tm-cell{text-align:left}.tm-raw{opacity:.7;font-family:ui-monospace,Menlo,monospace;font-size:.9em}.tm-fn{font-style:normal}.msg hr{border:0;border-top:1px solid #d8d8de;margin:10px 0}
 .pc-block{display:flex;flex-direction:column;align-items:center;margin:4px 0 14px}
 .pc-avatar{position:relative;width:88px;height:88px;border-radius:50%;border:0;color:#fff;font:600 32px/1 var(--f);cursor:pointer;padding:0;display:grid;place-items:center}
 .pc-avatar .pc-pencil{position:absolute;right:0;bottom:0;width:30px;height:30px;border-radius:50%;background:#fff;color:#222;display:grid;place-items:center;box-shadow:0 1px 4px rgba(0,0,0,.2);opacity:0;transition:opacity .15s}
@@ -1856,7 +1861,7 @@ function chartPng(fig){
 document.addEventListener("click",e=>{
  const b=e.target.closest&&e.target.closest(".chart-act");if(!b)return;
  const fig=b.closest(".chart");if(!fig)return;
- const flash=t=>{b.innerHTML=t;setTimeout(()=>{if(b.isConnected)b.innerHTML=I.copy},1200)};
+ const flash=t=>{setIcon(b,t);setTimeout(()=>{if(b.isConnected)setIcon(b,I.copy)},1200)};
  if(!navigator.clipboard||!window.ClipboardItem){flash(I.copy);return}
  try{navigator.clipboard.write([new ClipboardItem({"image/png":chartPng(fig)})]).then(()=>flash(I.check)).catch(()=>{})}catch(err){}
 });
@@ -1926,16 +1931,16 @@ function texCore(source){
   if(name==="overline")return '<span class="tm-over">'+argGroup()+'</span>';
   if(name==="underline")return '<span class="tm-under">'+argGroup()+'</span>';
   if(name==="boxed")return '<span class="tm-box">'+argGroup()+'</span>';
-  if(name==="binom"||name==="dbinom"||name==="tbinom"){const a=argGroup(),b=argGroup();return '<span class="tm-paren">(</span><span class="tm-stack"><span>'+a+'</span><span>'+b+'</span></span><span class="tm-paren">)</span>'}
+  if(name==="binom"||name==="dbinom"||name==="tbinom"){const a=argGroup(),b=argGroup();return '<span class="tm-paren">(</span><span class="tm-stack"><span class="tm-stk">'+a+'</span><span class="tm-stk">'+b+'</span></span><span class="tm-paren">)</span>'}
   if(name==="begin"){
    const env=argRaw();const end="\\end{"+env+"}";
    const stop=s.indexOf(end,i);const body=stop<0?s.slice(i):s.slice(i,stop);i=stop<0?s.length:stop+end.length;
    const rawRows=body.split("\\\\");if(rawRows.length&&!rawRows[rawRows.length-1].trim())rawRows.pop();
    const rows=rawRows.map(r=>r.split("&").map(c=>texToHtml(c.trim())));
    const cols=Math.max(1,...rows.map(r=>r.length));
-   const cells=rows.map(r=>{while(r.length<cols)r.push("");return r.map(c=>'<span class="tm-cell">'+c+'</span>').join("")}).join("");
+   const cells=rows.map(r=>{while(r.length<cols)r.push("");return "<tr>"+r.map(c=>'<td class="tm-cell">'+c+'</td>').join("")+"</tr>"}).join("");
    const br=hasOwn(TEX_ENV_BRACKETS,env)?TEX_ENV_BRACKETS[env]:["",""];
-   return '<span class="tm-env tm-'+esc(env)+'"><span class="tm-br">'+br[0]+'</span><span class="tm-grid" style="grid-template-columns:repeat('+cols+',auto)">'+cells+'</span><span class="tm-br">'+br[1]+'</span></span>';
+   return '<span class="tm-env tm-'+esc(env)+'"><span class="tm-br">'+br[0]+'</span><table class="tm-grid"><tbody>'+cells+'</tbody></table><span class="tm-br">'+br[1]+'</span></span>';
   }
   if(name==="end"){argRaw();return ""}
   return '<span class="tm-raw">\\'+esc(name)+'</span>';
@@ -1973,7 +1978,7 @@ function mdCore(s){
  const maths=[];
  // Pulls out maths first so its backslashes and symbols are not touched by the text rules below.
  const protectMath=t=>{
-  const put=(src,display)=>{maths.push({display,html:display?'<div class="tm-block">'+texToHtml(src)+'</div>':'<span class="tm-inline">'+texToHtml(src)+'</span>'});return "\u0002"+(maths.length-1)+"\u0002"};
+  const put=(src,display0)=>{const display=display0||/\\begin\{/.test(src);maths.push({display,html:display?'<div class="tm-block">'+texToHtml(src)+'</div>':'<span class="tm-inline">'+texToHtml(src)+'</span>'});return "\u0002"+(maths.length-1)+"\u0002"};
   return t
    .replace(/\$\$([\s\S]+?)\$\$/g,(_,m)=>put(m,true))
    .replace(/\\\[([\s\S]+?)\\\]/g,(_,m)=>put(m,true))
@@ -2467,21 +2472,80 @@ async function copyText_(text){
 }
 async function copyCode(text,button){
  const original=button.innerHTML;button.disabled=true;
+ let ok=false;
  try{
-  if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(String(text));button.innerHTML=I.check;}
+  if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(String(text));ok=true}
   else throw new Error("clipboard unavailable");
  }catch(e){
   const a=document.createElement("textarea");a.value=String(text);a.style.cssText="position:fixed;top:0;left:0;opacity:0";document.body.appendChild(a);a.focus();a.select();a.setSelectionRange(0,a.value.length);
-  try{if(document.execCommand("copy"))button.innerHTML=I.check;else toast("Couldn't copy code. Select it and copy manually.")}catch(err){toast("Couldn't copy code. Select it and copy manually.")}a.remove();
+  try{ok=document.execCommand("copy")}catch(err){ok=false}
+  a.remove();
+  if(!ok)toast("Couldn't copy code. Select it and copy manually.");
  }
- setTimeout(()=>{if(button.isConnected){button.innerHTML=original;button.disabled=false}},1300);
+ if(ok)setIcon(button,I.check);
+ setTimeout(()=>{if(button.isConnected){setIcon(button,original);button.disabled=false}},1300);
 }
+
 chatEl.addEventListener("click",e=>{const button=e.target.closest(".code-copy");if(!button)return;const block=button.closest(".codeblock"),code=block&&block.querySelector("code");if(code)copyCode(code.textContent,button)});
+// Fades the current icon out, swaps it, then fades the new one in.
+function setIcon(btn,html){
+ if(!btn||!btn.isConnected)return;
+ clearTimeout(btn._swap);clearTimeout(btn._swapIn);
+ btn.classList.remove("ico-in");btn.classList.add("ico-out");
+ btn._swap=setTimeout(()=>{btn.innerHTML=html;btn.classList.remove("ico-out");btn.classList.add("ico-in");btn._swapIn=setTimeout(()=>btn.classList.remove("ico-in"),240)},150);
+}
+// Classes from the app do not come with a copy, so their look is written out inline for pasting.
+const RICH_STYLE={
+ "tm-inline":"font-family:Cambria,Georgia,serif",
+ "tm-block":"margin:10px 0;text-align:center;font-family:Cambria,Georgia,serif;font-size:1.1em",
+ "tm-frac":"display:inline-block;vertical-align:middle;text-align:center;margin:0 .12em",
+ "tm-num":"display:block;padding:0 .3em;border-bottom:1px solid #222",
+ "tm-den":"display:block;padding:0 .3em",
+ "tm-sqrt":"display:inline",
+ "tm-rad":"display:inline-block;border-top:1px solid #222;padding:0 .15em",
+ "tm-root":"font-size:.65em;vertical-align:super",
+ "tm-over":"border-top:1px solid #222",
+ "tm-under":"border-bottom:1px solid #222",
+ "tm-box":"border:1px solid #222;padding:0 .2em",
+ "tm-stack":"display:inline-block;vertical-align:middle;text-align:center",
+ "tm-stk":"display:block;padding:0 .15em",
+ "tm-paren":"font-size:1.15em;vertical-align:middle",
+ "tm-env":"display:inline-block;vertical-align:middle;margin:0 .15em",
+ "tm-br":"font-size:1.9em;line-height:1;vertical-align:middle;padding:0 .08em",
+ "tm-grid":"display:inline-table;vertical-align:middle;border-collapse:separate;border-spacing:1em .25em",
+ "tm-cell":"text-align:center;padding:0",
+ "tm-fn":"font-style:normal",
+ "tm-raw":"color:#888;font-family:Menlo,Consolas,monospace",
+ "codeblock":"background:#f5f5f5;border-radius:10px;padding:10px 12px;margin:8px 0;overflow-x:auto",
+ "tbl-wrap":"margin:8px 0;overflow-x:auto"
+};
+function richCopyHtml(t){
+ let x=md(t).replace(/<button class="code-copy"[\s\S]*?<\/button>/g,"").replace(/<div class="chart-actions"[\s\S]*?<\/div>/g,"").replace(/<button class="chart-retry"[\s\S]*?<\/button>/g,"");
+ x=x.replace(/<(\w+)([^>]*?)class="([^"]*)"([^>]*)>/g,(all,tag,pre,cls,post)=>{
+  const st=cls.split(/\s+/).map(c=>RICH_STYLE[c]||"").filter(Boolean).join(";");
+  const rest=(pre+post).replace(/\s+/g," ").trim();
+  return "<"+tag+(rest?" "+rest:"")+(st?' style="'+st+'"':"")+">";
+ });
+ return x
+  .replace(/<pre>/g,'<pre style="margin:0;white-space:pre-wrap;font-family:Menlo,Consolas,monospace">')
+  .replace(/<code>/g,'<code style="font-family:Menlo,Consolas,monospace;background:#f0f0f0;padding:1px 4px;border-radius:4px">')
+  .replace(/<table>/g,'<table style="border-collapse:collapse;margin:8px 0">')
+  .replace(/<th>/g,'<th style="border:1px solid #ccc;padding:6px 10px;text-align:left;background:#f4f4f4">')
+  .replace(/<td>/g,'<td style="border:1px solid #ccc;padding:6px 10px">')
+  .replace(/<blockquote>/g,'<blockquote style="margin:8px 0;padding-left:12px;border-left:3px solid #bbb;color:#555">')
+  .replace(/<hr>/g,'<hr style="border:0;border-top:1px solid #ddd;margin:10px 0">')
+  .replace(/<ul>/g,'<ul style="margin:0 0 8px;padding-left:22px">')
+  .replace(/<ol>/g,'<ol style="margin:0 0 8px;padding-left:22px">')
+  .replace(/<p>/g,'<p style="margin:0 0 8px">')
+  .replace(/<h3>/g,'<h3 style="font-size:16px;font-weight:600;margin:10px 0 6px">')
+  .replace(/<h4>/g,'<h4 style="font-size:15px;font-weight:600;margin:8px 0 6px">')
+  .replace(/<a href/g,'<a style="color:#2559c9" href');
+}
 async function copy(t,btn){
- const ok=()=>{btn.innerHTML=I.check;setTimeout(()=>btn.innerHTML=I.copy,1200)};
+ const ok=()=>{setIcon(btn,I.check);setTimeout(()=>setIcon(btn,I.copy),1200)};
  try{
   if(window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write){
-   await navigator.clipboard.write([new ClipboardItem({"text/plain":new Blob([plain(t)],{type:"text/plain"}),"text/html":new Blob([md(t).replace(/<button class="code-copy"[^>]*>Copy code<\/button>/g,"")],{type:"text/html"})})]);
+   await navigator.clipboard.write([new ClipboardItem({"text/plain":new Blob([plain(t)],{type:"text/plain"}),"text/html":new Blob([richCopyHtml(t)],{type:"text/html"})})]);
    return ok();
   }
   await navigator.clipboard.writeText(plain(t));return ok();
