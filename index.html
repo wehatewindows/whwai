@@ -1215,7 +1215,7 @@ html.keyboard-nav .set-select:focus{outline:none;border-color:#8fb3ff;box-shadow
  .msg pre,.msg code{background:#3a3a3c;color:#f2f2f2}
  .msg table,.msg th,.msg td{border-color:#4a4a4f}
  .msg th{background:#333337;color:#f2f2f2}
- .code-copy{background:#2c2c2e;border-color:#4a4a4f;color:#f2f2f2}
+ .code-copy,.chart-act{background:#2c2c2e;border-color:#4a4a4f;color:#f2f2f2}
  .access-admin-form input,.reason-input,.pw-row input,.whatsnew-admin-body>input{background:#2c2c2e;color:#f2f2f2;border-color:#3a3a3c}
  .acct-flags-count{box-shadow:0 0 0 2px #332b16}
  .one-time-password{background:#2c2c2e;color:#f2f2f2}
@@ -1802,7 +1802,7 @@ function chartSvg(type,labels,series){
  for(let t=0;t<=5;t++){const y=top+ph*(1-t/5);g+='<line class="grid" x1="'+left+'" x2="'+(W-8)+'" y1="'+y+'" y2="'+y+'"/><text x="'+(left-6)+'" y="'+(y+3)+'" text-anchor="end">'+(useLog?"":fmtN(sc.step*t))+"</text>"}
  const step=Math.max(1,Math.ceil(Math.max(...labels.map(l=>String(l).length))*6/gw));
  labels.forEach((lab,i)=>{if(i%step)return;const lw=String(lab).length*6.2/2+2,lx=Math.min(Math.max(left+gw*i+gw/2,lw),W-lw);body+='<text x="'+lx+'" y="'+(H-bot+16)+'" text-anchor="middle">'+esc(lab)+"</text>"});
- if(type==="bar"){const bw=Math.min(30,gw*0.6/series.length);series.forEach((s,j)=>s.values.forEach((v,i)=>{const h=ph*frac(v),x=left+gw*i+gw/2-series.length*bw/2+j*bw;body+='<rect x="'+(x+1)+'" y="'+(top+ph-h)+'" width="'+(bw-2)+'" height="'+h+'" rx="2" fill="'+CHART_PALETTE[j]+'"/>'}))}
+ if(type==="bar"){const bw=Math.min(30,gw*0.6/series.length);series.forEach((s,j)=>s.values.forEach((v,i)=>{const h=ph*frac(v),x=left+gw*i+gw/2-series.length*bw/2+j*bw;body+='<rect x="'+(x+1)+'" y="'+(top+ph-h)+'" width="'+(bw-2)+'" height="'+h+'" rx="2" fill="'+CHART_PALETTE[j]+'"/>'+(useLog?'<text x="'+(x+bw/2)+'" y="'+(top+ph-h-5<8?top+ph-h+12:top+ph-h-5)+'" text-anchor="middle"'+(top+ph-h-5<8?' fill="#222"':"")+'>'+fmtN(v)+"</text>":"")}))}
  else{series.forEach((s,j)=>{const segs=[];let cur=[];s.values.forEach((v,i)=>{if(isNaN(v)){if(cur.length)segs.push(cur);cur=[];return}cur.push([left+gw*i+gw/2,top+ph-ph*frac(v)])});if(cur.length)segs.push(cur);segs.forEach(pts=>{if(pts.length>1)body+='<polyline fill="none" stroke="'+CHART_PALETTE[j]+'" stroke-width="2.5" points="'+pts.map(p=>p.join(",")).join(" ")+'"/>';body+=pts.map(p=>'<circle cx="'+p[0]+'" cy="'+p[1]+'" r="3.5" fill="'+CHART_PALETTE[j]+'"/>').join("")})})}
  return '<svg viewBox="0 0 '+W+" "+H+'" class="chart-svg" aria-hidden="true">'+g+body+"</svg>"+logNote;
 }
@@ -1830,9 +1830,9 @@ function chartPng(fig){
   const vb=(svg.getAttribute("viewBox")||"0 0 320 220").split(/\s+/).map(Number),sw=vb[2],sh=vb[3],k=3;
   const cap=fig.querySelector("figcaption"),title=cap?cap.textContent:"",legend=fig.querySelector(".chart-legend");
   const items=legend?[...legend.querySelectorAll("li")].map(li=>({t:li.textContent,c:(li.querySelector(".swatch")||{}).style?li.querySelector(".swatch").style.backgroundColor||"#888":"#888"})):[];
-  const ink=getComputedStyle(fig).color||"#222";
+  const ink="#222222";
   const clone=svg.cloneNode(true);clone.setAttribute("xmlns","http://www.w3.org/2000/svg");clone.setAttribute("width",sw*k);clone.setAttribute("height",sh*k);
-  clone.querySelectorAll("text").forEach(t=>{t.setAttribute("fill",ink);t.setAttribute("font-family","Arial,sans-serif");t.setAttribute("font-size","11")});
+  clone.querySelectorAll("text").forEach(t=>{if(!t.getAttribute("fill"))t.setAttribute("fill",ink);t.setAttribute("font-family","Arial,sans-serif");t.setAttribute("font-size","11")});
   clone.querySelectorAll(".grid").forEach(l=>{l.setAttribute("stroke","#888");l.setAttribute("stroke-opacity","0.35")});
   const pad=16*k,titleH=30*k,svgW=sw*k,svgH=sh*k,sq=10*k,gap=16*k;
   const mctx=document.createElement("canvas").getContext("2d");
@@ -1844,7 +1844,10 @@ function chartPng(fig){
   if(cur.length)lines.push(cur);
   const legH=lines.length?lines.length*18*k+8*k:0;
   const contentW=Math.max(svgW,titleW);
-  const canvas=document.createElement("canvas");canvas.width=Math.ceil(contentW+pad*2);canvas.height=Math.ceil(pad+titleH+svgH+legH+pad);
+  const noteEl=fig.querySelector(".chart-note"),noteText=noteEl?noteEl.textContent.trim():"",noteLines=[];
+  if(noteText){let line="";noteText.split(/\s+/).forEach(w=>{const t=line?line+" "+w:w;if(line&&mctx.measureText(t).width>contentW){noteLines.push(line);line=w}else line=t});if(line)noteLines.push(line)}
+  const noteH=noteLines.length?(noteLines.length*16+10)*k:0;
+  const canvas=document.createElement("canvas");canvas.width=Math.ceil(contentW+pad*2);canvas.height=Math.ceil(pad+titleH+svgH+legH+noteH+pad);
   const ctx=canvas.getContext("2d");ctx.fillStyle="#ffffff";ctx.fillRect(0,0,canvas.width,canvas.height);
   ctx.fillStyle="#222222";ctx.font="600 "+(13*k)+"px Arial,sans-serif";ctx.fillText(title,pad,pad+18*k);
   const xml=new XMLSerializer().serializeToString(clone),url=URL.createObjectURL(new Blob([xml],{type:"image/svg+xml"})),img=new Image();
@@ -1853,6 +1856,7 @@ function chartPng(fig){
    ctx.font=(12*k)+"px Arial,sans-serif";
    lines.forEach((line,li)=>{let x=pad;const y=pad+titleH+svgH+(18*li+18)*k;
     line.forEach((it,i)=>{if(i)x+=gap;ctx.fillStyle=it.c;ctx.fillRect(x,y-sq+2*k,sq,sq);ctx.fillStyle="#444444";ctx.fillText(it.t,x+sq+4*k,y);x+=sq+4*k+ctx.measureText(it.t).width}) });
+   ctx.fillStyle="#444444";noteLines.forEach((t,ni)=>ctx.fillText(t,pad,pad+titleH+svgH+legH+(16*ni+14)*k));
    URL.revokeObjectURL(url);canvas.toBlob(b=>b?resolve(b):reject(new Error("png")),"image/png")};
   img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("svg"))};
   img.src=url;
