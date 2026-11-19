@@ -479,7 +479,8 @@ html,body{touch-action:manipulation}
 .gate-body{font-size:14px;line-height:1.5;color:#333;margin:0 0 12px}.gate-body[hidden]{display:none}
 .gate-notice{margin:14px 0 0;padding:10px 12px;border-radius:12px;background:#eef4ff;border:1px solid #d9e6ff;color:#24477e;font-size:13px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}.gate-notice[hidden]{display:none}
 .answer-sources,.bar{flex:none}
-.msg h4{margin:8px 0 6px;font-size:15px;font-weight:600}.msg hr{border:0;border-top:1px solid #d8d8de;margin:10px 0}
+.msg h4{margin:8px 0 6px;font-size:15px;font-weight:600}
+.msg h3{margin:10px 0 6px;font-size:16px;font-weight:600}.msg ol{margin:0 0 8px;padding-left:22px}.msg ul ul,.msg ul ol,.msg ol ul,.msg ol ol{margin:4px 0 0}.msg em{font-style:italic}.msg del{opacity:.7}.msg blockquote{margin:0 0 8px;padding:2px 0 2px 12px;border-left:3px solid rgba(128,128,128,.5);opacity:.85}.tm-inline{display:inline-block;vertical-align:baseline;white-space:nowrap;font-family:"Cambria Math","STIX Two Math",Georgia,serif;font-size:1.05em}.tm-block{margin:10px 0;overflow-x:auto;overflow-y:hidden;text-align:center;font-family:"Cambria Math","STIX Two Math",Georgia,serif;font-size:1.12em;padding:2px 0}.tm-frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 .12em;line-height:1.25}.tm-num{display:block;padding:0 .3em;border-bottom:1px solid currentColor;text-align:center}.tm-den{display:block;padding:0 .3em;text-align:center}.tm-sqrt{display:inline-flex;align-items:flex-start}.tm-rad{display:inline-block;border-top:1px solid currentColor;padding:0 .15em;margin-left:1px}.tm-root{font-size:.65em;margin-right:-.4em}.tm-sc sup,.tm-sc sub{font-size:.72em;line-height:0}.tm-over{border-top:1px solid currentColor}.tm-under{border-bottom:1px solid currentColor}.tm-box{border:1px solid currentColor;border-radius:4px;padding:0 .2em}.tm-stack{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle}.tm-stack>span{display:block;padding:0 .15em}.tm-paren{font-size:1.15em;vertical-align:middle}.tm-env{display:inline-flex;align-items:center;vertical-align:middle;margin:0 .15em}.tm-br{font-size:1.9em;line-height:1;display:inline-block;vertical-align:middle;padding:0 .08em}.tm-grid{display:inline-grid;column-gap:1em;row-gap:.25em;align-items:center;padding:0 .1em}.tm-cell{display:block;text-align:center}.tm-cases .tm-grid{text-align:left}.tm-cases .tm-cell{text-align:left}.tm-raw{opacity:.7;font-family:ui-monospace,Menlo,monospace;font-size:.9em}.tm-fn{font-style:normal}.msg hr{border:0;border-top:1px solid #d8d8de;margin:10px 0}
 .pc-block{display:flex;flex-direction:column;align-items:center;margin:4px 0 14px}
 .pc-avatar{position:relative;width:88px;height:88px;border-radius:50%;border:0;color:#fff;font:600 32px/1 var(--f);cursor:pointer;padding:0;display:grid;place-items:center}
 .pc-avatar .pc-pencil{position:absolute;right:0;bottom:0;width:30px;height:30px;border-radius:50%;background:#fff;color:#222;display:grid;place-items:center;box-shadow:0 1px 4px rgba(0,0,0,.2);opacity:0;transition:opacity .15s}
@@ -1879,29 +1880,157 @@ function md(s){
  while((m=re.exec(text))){out+=mdCore(text.slice(last,m.index));const key=m[1].replace(/\s+/g,"");if(m[2]==="```"&&seenCharts.has(key)){last=re.lastIndex;continue}if(m[2]==="```")seenCharts.add(key);out+=chartBlockHtml(m[1],m[2]==="```");last=re.lastIndex}
  return out+mdCore(text.slice(last));
 }
+// Maths: a small built-in renderer for common LaTeX (no external scripts or fonts), so formulas show as formatted maths.
+const TEX_SYM={alpha:"α",beta:"β",gamma:"γ",delta:"δ",epsilon:"ε",varepsilon:"ε",zeta:"ζ",eta:"η",theta:"θ",vartheta:"ϑ",iota:"ι",kappa:"κ",lambda:"λ",mu:"μ",nu:"ν",xi:"ξ",pi:"π",varpi:"ϖ",rho:"ρ",sigma:"σ",tau:"τ",upsilon:"υ",phi:"φ",varphi:"φ",chi:"χ",psi:"ψ",omega:"ω",Gamma:"Γ",Delta:"Δ",Theta:"Θ",Lambda:"Λ",Xi:"Ξ",Pi:"Π",Sigma:"Σ",Upsilon:"Υ",Phi:"Φ",Psi:"Ψ",Omega:"Ω",cdot:"·",times:"×",div:"÷",pm:"±",mp:"∓",le:"≤",leq:"≤",ge:"≥",geq:"≥",ne:"≠",neq:"≠",approx:"≈",equiv:"≡",sim:"∼",propto:"∝",infty:"∞",to:"→",rightarrow:"→",leftarrow:"←",gets:"←",Rightarrow:"⇒",Leftarrow:"⇐",leftrightarrow:"↔",Leftrightarrow:"⇔",implies:"⇒",iff:"⇔",sum:"∑",prod:"∏",int:"∫",oint:"∮",partial:"∂",nabla:"∇",in:"∈",notin:"∉",subset:"⊂",subseteq:"⊆",supset:"⊃",cup:"∪",cap:"∩",emptyset:"∅",forall:"∀",exists:"∃",neg:"¬",lnot:"¬",land:"∧",lor:"∨",ldots:"…",dots:"…",cdots:"⋯",vdots:"⋮",ddots:"⋱",prime:"′",circ:"∘",degree:"°",angle:"∠",perp:"⊥",parallel:"∥",hbar:"ℏ",ell:"ℓ",mid:"∣",langle:"⟨",rangle:"⟩",lfloor:"⌊",rfloor:"⌋",lceil:"⌈",rceil:"⌉",aleph:"ℵ",Re:"ℜ",Im:"ℑ",star:"⋆",bullet:"•",ast:"∗",oplus:"⊕",otimes:"⊗"};
+const TEX_FUNCS=new Set(["sin","cos","tan","cot","sec","csc","arcsin","arccos","arctan","sinh","cosh","tanh","log","ln","lg","exp","min","max","lim","det","dim","ker","gcd","arg","sup","inf","deg","Pr"]);
+const TEX_TEXT=new Set(["text","textrm","mathrm","textnormal","mbox","mathsf","mathtt"]);
+const TEX_BOLD=new Set(["mathbf","textbf","bm","boldsymbol","mathbb"]);
+const TEX_ACCENT={hat:"̂",bar:"̄",vec:"⃗",tilde:"̃",dot:"̇",ddot:"̈"};
+const TEX_ENV_BRACKETS={pmatrix:["(",")"],bmatrix:["[","]"],Bmatrix:["{","}"],vmatrix:["|","|"],Vmatrix:["‖","‖"],cases:["{",""],matrix:["",""],array:["",""],aligned:["",""],align:["",""],gathered:["",""]};
+const hasOwn=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
+function texCore(source){
+ const s=String(source);
+ let i=0;
+ let seqFn,atomFn;
+ const skipSpace=()=>{while(i<s.length&&/\s/.test(s[i]))i++};
+ const readName=()=>{const m=/^[a-zA-Z]+|^[\s\S]/.exec(s.slice(i));if(!m)return"";i+=m[0].length;return m[0]};
+ const argRaw=()=>{
+  skipSpace();
+  if(s[i]!=="{"){const c=s[i]||"";i++;return c}
+  const start=i+1;let depth=0;
+  while(i<s.length){const c=s[i];if(c==="\\"){i+=2;continue}if(c==="{")depth++;else if(c==="}"){depth--;if(depth===0){const out=s.slice(start,i);i++;return out}}i++}
+  return s.slice(start);
+ };
+ const argGroup=()=>{skipSpace();if(s[i]==="{"){i++;return seqFn(true)}return atomFn()};
+ const command=()=>{
+  const name=readName();
+  if(hasOwn(TEX_SYM,name))return esc(TEX_SYM[name]);
+  if(TEX_FUNCS.has(name))return '<span class="tm-fn">'+esc(name)+'</span>';
+  if(name===","||name===";"||name===":"||name===" "||name==="quad"||name==="qquad")return " ";
+  if(name==="!")return "";
+  if(name==="\\")return "<br>";
+  if(name==="left"||name==="right"||name==="big"||name==="Big"||name==="bigg"||name==="Bigg"||name==="bigl"||name==="bigr"||name==="Bigl"||name==="Bigr"){if(s[i]==="."){i++}return ""}
+  if(name==="{"||name==="}"||name==="%"||name==="$"||name==="&"||name==="#"||name==="_")return esc(name);
+  if(name==="|")return "‖";
+  if(name==="frac"||name==="dfrac"||name==="tfrac"){const num=argGroup(),den=argGroup();return '<span class="tm-frac"><span class="tm-num">'+num+'</span><span class="tm-den">'+den+'</span></span>'}
+  if(name==="sqrt"){
+   skipSpace();let idx="";
+   if(s[i]==="["){const end=s.indexOf("]",i);if(end>i){idx=texToHtml(s.slice(i+1,end));i=end+1}}
+   const body=argGroup();
+   return '<span class="tm-sqrt">'+(idx?'<sup class="tm-root">'+idx+'</sup>':'')+'√<span class="tm-rad">'+body+'</span></span>';
+  }
+  if(TEX_TEXT.has(name))return esc(argRaw());
+  if(TEX_BOLD.has(name))return "<b>"+esc(argRaw())+"</b>";
+  if(name==="operatorname")return '<span class="tm-fn">'+esc(argRaw())+'</span>';
+  if(hasOwn(TEX_ACCENT,name)){const base=argGroup();return base+TEX_ACCENT[name]}
+  if(name==="overline")return '<span class="tm-over">'+argGroup()+'</span>';
+  if(name==="underline")return '<span class="tm-under">'+argGroup()+'</span>';
+  if(name==="boxed")return '<span class="tm-box">'+argGroup()+'</span>';
+  if(name==="binom"||name==="dbinom"||name==="tbinom"){const a=argGroup(),b=argGroup();return '<span class="tm-paren">(</span><span class="tm-stack"><span>'+a+'</span><span>'+b+'</span></span><span class="tm-paren">)</span>'}
+  if(name==="begin"){
+   const env=argRaw();const end="\\end{"+env+"}";
+   const stop=s.indexOf(end,i);const body=stop<0?s.slice(i):s.slice(i,stop);i=stop<0?s.length:stop+end.length;
+   const rawRows=body.split("\\\\");if(rawRows.length&&!rawRows[rawRows.length-1].trim())rawRows.pop();
+   const rows=rawRows.map(r=>r.split("&").map(c=>texToHtml(c.trim())));
+   const cols=Math.max(1,...rows.map(r=>r.length));
+   const cells=rows.map(r=>{while(r.length<cols)r.push("");return r.map(c=>'<span class="tm-cell">'+c+'</span>').join("")}).join("");
+   const br=hasOwn(TEX_ENV_BRACKETS,env)?TEX_ENV_BRACKETS[env]:["",""];
+   return '<span class="tm-env tm-'+esc(env)+'"><span class="tm-br">'+br[0]+'</span><span class="tm-grid" style="grid-template-columns:repeat('+cols+',auto)">'+cells+'</span><span class="tm-br">'+br[1]+'</span></span>';
+  }
+  if(name==="end"){argRaw();return ""}
+  return '<span class="tm-raw">\\'+esc(name)+'</span>';
+ };
+ atomFn=()=>{
+  const c=s[i];
+  if(c===undefined||c==="}")return "";
+  if(c==="{"){i++;return "<span>"+seqFn(true)+"</span>"}
+  if(c==="^"||c==="_"){i++;return ""}
+  if(c==="~"){i++;return " "}
+  if(c==="\\"){i++;return command()}
+  i++;return esc(c);
+ };
+ seqFn=closing=>{
+  let out="";
+  while(i<s.length){
+   if(s[i]==="}"){i++;if(closing)return out;continue}
+   let base=atomFn();
+   let sup="",sub="";
+   for(;;){
+    const save=i;skipSpace();
+    if(s[i]==="^"){i++;sup+=argGroup()}
+    else if(s[i]==="_"){i++;sub+=argGroup()}
+    else{i=save;break}
+   }
+   if(sup||sub)base='<span class="tm-sc">'+base+(sup?'<sup>'+sup+'</sup>':'')+(sub?'<sub>'+sub+'</sub>':'')+'</span>';
+   out+=base;
+  }
+  return out;
+ };
+ return seqFn(false);
+}
+function texToHtml(source){try{return texCore(source)}catch(e){return esc(source)}}
 function mdCore(s){
- const normalize=t=>String(t||"")
+ const maths=[];
+ // Pulls out maths first so its backslashes and symbols are not touched by the text rules below.
+ const protectMath=t=>{
+  const put=(src,display)=>{maths.push({display,html:display?'<div class="tm-block">'+texToHtml(src)+'</div>':'<span class="tm-inline">'+texToHtml(src)+'</span>'});return "\u0002"+(maths.length-1)+"\u0002"};
+  return t
+   .replace(/\$\$([\s\S]+?)\$\$/g,(_,m)=>put(m,true))
+   .replace(/\\\[([\s\S]+?)\\\]/g,(_,m)=>put(m,true))
+   .replace(/\\\(([\s\S]+?)\\\)/g,(_,m)=>put(m,false))
+   .replace(/(^|[^\\\w$])\$(?=\S)([^$\n]*?\S)\$(?!\d)/g,(_,pre,m)=>pre+put(m,false));
+ };
+ const normalize=t=>protectMath(String(t||"")
   .replace(/\r\n?/g,"\n")
   .replace(/&(?:#x0*20|#0*32|nbsp);/gi," ")
   .replace(/[ \t]*\\[ \t]*(?=\n|$)/g,"")
   .replace(/(^|\n)[ \t]*\\([*-])[ \t]+/g,"$1$2 ")
-  .replace(/\\([*_`-])/g,"$1")
-  .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g,"$1$2");
- const inl=t=>esc(t).replace(/`([^`\n]+)`/g,"<code>$1</code>").replace(/\*\*(.+?)\*\*/g,"<b>$1</b>");
+  .replace(/\\([*_`-])/g,"$1"));
+ const inl=t=>{
+  const codes=[];
+  let x=esc(t).replace(/`([^`\n]+)`/g,(_,c)=>{codes.push(c);return "\u0003"+(codes.length-1)+"\u0003"});
+  x=x.replace(/\*\*(.+?)\*\*/g,"<b>$1</b>")
+   .replace(/(^|[^*\w])\*([^*\n]+?)\*(?![*\w])/g,"$1<em>$2</em>")
+   .replace(/~~(.+?)~~/g,"<del>$1</del>")
+   .replace(/\[([^\]\n]+)\]\((https?:\/\/[^\s)"'<>]+)\)/g,(_,txt,url)=>'<a href="'+url+'" target="_blank" rel="noopener noreferrer">'+txt+'</a>');
+  return x.replace(/\u0003(\d+)\u0003/g,(_,k)=>"<code>"+codes[k]+"</code>");
+ };
+ const listHtml=items=>{
+  let out="";const stack=[];
+  const open=it=>{const tag=it.ord?"ol":"ul";stack.push({ind:it.ind,tag});return "<"+tag+"><li>"+inl(it.text)};
+  items.forEach(it=>{
+   const tag=it.ord?"ol":"ul";
+   if(!stack.length){out+=open(it);return}
+   if(it.ind>stack[stack.length-1].ind){out+=open(it);return}
+   while(stack.length&&it.ind<stack[stack.length-1].ind)out+="</li></"+stack.pop().tag+">";
+   if(!stack.length){out+=open(it);return}
+   if(stack[stack.length-1].tag!==tag){out+="</li></"+stack.pop().tag+">";out+=open(it);return}
+   out+="</li><li>"+inl(it.text)+"";
+  });
+  while(stack.length)out+="</li></"+stack.pop().tag+">";
+  return out;
+ };
  const tableHtml=lines=>{const cells=l=>l.trim().replace(/^\|/,"").replace(/\|$/,"").split("|").map(c=>c.trim());return '<div class="tbl-wrap"><table><thead><tr>'+cells(lines[0]).map(h=>"<th>"+inl(h)+"</th>").join("")+"</tr></thead><tbody>"+lines.slice(2).map(r=>"<tr>"+cells(r).map(c=>"<td>"+inl(c)+"</td>").join("")+"</tr>").join("")+"</tbody></table></div>"};
  const blocks=t=>{const tbls=[];t=t.replace(/(^|\n)((?:[ \t]*\|[^\n]*(?:\n|$))+)/g,(all,pre,body)=>{const lines=body.trim().split("\n");if(lines.length<2||!/^\s*\|?\s*:?-{2,}/.test(lines[1]))return all;tbls.push(tableHtml(lines));return pre+"\n\n\u0001"+(tbls.length-1)+"\n\n"});return t.split(/\n\n+/).filter(b=>b.trim()).map(b=>{
-  const html=[];let para=[],items=[];
+  const html=[];let para=[],items=[],quote=[];
   const flushPara=()=>{if(para.length){html.push("<p>"+para.map(inl).join("<br>")+"</p>");para=[]}};
-  const flushList=()=>{if(items.length){html.push("<ul>"+items.map(l=>"<li>"+inl(l.replace(/^[-*]\s+/,""))+"</li>").join("")+"</ul>");items=[]}};
+  const flushList=()=>{if(items.length){html.push(listHtml(items));items=[]}};
+  const flushQuote=()=>{if(quote.length){html.push("<blockquote>"+quote.map(inl).join("<br>")+"</blockquote>");quote=[]}};
+  const flushAll=()=>{flushPara();flushList();flushQuote()};
   b.split("\n").forEach(line=>{
-   if(/^\s*-{3,}\s*$/.test(line)){flushPara();flushList();html.push("<hr>")}
-   else if(/^\s*#{1,6}\s+/.test(line)){flushPara();flushList();html.push("<h4>"+inl(line.replace(/^\s*#{1,6}\s+/,"").trim())+"</h4>")}
-   else if(/^\s*[-*]\s+/.test(line)){flushPara();items.push(line.trim())}
-   else{flushList();para.push(line)}
+   const lm=/^([ \t]*)([-*+]|\d+[.)])[ \t]+(.*)$/.exec(line);
+   if(/^\s*(-{3,}|\*{3,}|_{3,})\s*$/.test(line)){flushAll();html.push("<hr>")}
+   else if(/^\s*#{1,6}\s+/.test(line)){flushAll();const lvl=line.match(/^\s*(#+)/)[1].length;const tag=lvl<=2?"h3":"h4";html.push("<"+tag+">"+inl(line.replace(/^\s*#{1,6}\s+/,"").trim())+"</"+tag+">")}
+   else if(/^\s*>/.test(line)){flushPara();flushList();quote.push(line.replace(/^\s*>\s?/,""))}
+   else if(/^\s*\u0002\d+\u0002\s*$/.test(line)&&maths[+line.trim().slice(1,-1)]&&maths[+line.trim().slice(1,-1)].display){flushAll();html.push(line.trim())}
+   else if(lm){flushPara();flushQuote();items.push({ind:lm[1].replace(/\t/g,"  ").length,ord:/\d/.test(lm[2]),text:lm[3]})}
+   else if(!line.trim()){}
+   else if(items.length&&/^\s+\S/.test(line)){items[items.length-1].text+=" "+line.trim()}
+   else{flushList();flushQuote();para.push(line)}
   });
-  flushList();flushPara();return html.join("");
+  flushAll();return html.join("");
  }).join("").replace(/<p>\u0001(\d+)<\/p>/g,(_,i)=>tbls[i]).replace(/\u0001(\d+)/g,(_,i)=>tbls[i])};
- return String(s||"").split(/```[\w+-]*\n?([\s\S]*?)(?:```|$)/).map((p,i)=>i%2?'<div class="codeblock"><button class="code-copy" type="button" aria-label="Copy code" title="Copy code">'+I.copy+'</button><pre><code>'+esc(p.replace(/\n+$/,""))+'</code></pre></div>':blocks(normalize(p))).join("");
+ return String(s||"").split(/```[\w+-]*\n?([\s\S]*?)(?:```|$)/).map((p,i)=>i%2?'<div class="codeblock"><button class="code-copy" type="button" aria-label="Copy code" title="Copy code">'+I.copy+'</button><pre><code>'+esc(p.replace(/\n+$/,""))+'</code></pre></div>':blocks(normalize(p))).join("").replace(/\u0002(\d+)\u0002/g,(_,k)=>maths[k]?maths[k].html:"");
 }
 function ago(t){
  const m=Math.floor((Date.now()-t)/MIN);
