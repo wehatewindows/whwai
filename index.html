@@ -64,8 +64,8 @@ svg{display:block}
 .grp-tile.grp-enter .grp-badge{animation:badgeFade .45s ease .12s both}
 @keyframes groupIn{from{opacity:0;transform:translateY(-8px) scale(.97)}to{opacity:1;transform:none}}
 .grp-tile{transition:border-color .3s ease}.grp-badge{transition:background-color .3s ease}
-.grp-badge.swap svg{animation:badgeFade .3s ease}@keyframes badgeFade{from{opacity:0}to{opacity:1}}
-@media (prefers-reduced-motion:reduce){.grp-body,.grp-inner>.row,.grp-tile,.grp-badge,.grp-toggle>svg{transition:none!important}.grp-badge.swap svg{animation:none!important}}
+.grp-badge.fade-swap svg{animation:badgeFade .3s ease}@keyframes badgeFade{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.grp-body,.grp-inner>.row,.grp-tile,.grp-badge,.grp-toggle>svg{transition:none!important}.grp-badge.fade-swap svg{animation:none!important}}
 .grp{position:relative;display:flex;align-items:center;gap:4px}.grp .rn{margin:0 4px}
 .grp-badge{flex:none;width:24px;height:24px;border-radius:8px;display:grid;place-items:center;background:var(--gc);color:#fff;box-shadow:0 1px 2px rgba(0,0,0,.12)}
 .grp-toggle{flex:1;min-width:0;display:flex;align-items:center;gap:6px;border:0;background:transparent;border-radius:14px;padding:6px 36px 6px 8px;font:inherit;font-size:12.5px;font-weight:600;color:#6b6b6b;cursor:pointer;text-align:left}
@@ -2035,7 +2035,7 @@ function renameGroup(id,name){const g=groupById(id),v=String(name||"").replace(/
 function setGroupStyle(id,field,value){const g=groupById(id),map=field==="c"?GROUP_COLOURS:GROUP_ICONS;if(!g||!pickKey(map,value))return;g[field]=value;g.mu=Date.now();save();paintGroup(g)}
 function paintGroup(g){
  const tile=[...list.querySelectorAll(".grp-tile")].find(t=>t.dataset.gid===g.id);
- if(tile){tile.style.setProperty("--gc",GROUP_COLOURS[groupColourKey(g)]);const badge=tile.querySelector(".grp-badge");if(badge){badge.innerHTML=ic(GROUP_ICONS[groupIconKey(g)],14,2);badge.classList.remove("swap");void badge.offsetWidth;badge.classList.add("swap")}}
+ if(tile){tile.style.setProperty("--gc",GROUP_COLOURS[groupColourKey(g)]);const badge=tile.querySelector(".grp-badge");if(badge){badge.innerHTML=ic(GROUP_ICONS[groupIconKey(g)],14,2);badge.classList.remove("fade-swap");void badge.offsetWidth;badge.classList.add("fade-swap")}}
  document.querySelectorAll("#cmenu .sw-btn").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.key===groupColourKey(g))));
  document.querySelectorAll("#cmenu .icon-opt").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.key===groupIconKey(g))));
 }
@@ -2118,7 +2118,7 @@ function renderList(){
   x.setAttribute("aria-label","Chat options");x.setAttribute("aria-haspopup","menu");x.setAttribute("aria-expanded","false");
   x.onclick=e=>{e.stopPropagation();if(mid===c.id)closeMenu();else openMenu(c.id,x)};
   r.dataset.id=c.id;const fx=rowFx.get(c.id);if(fx){r.classList.add("fx-"+fx);rowFx.delete(c.id)}
-  r.append(pick,b,x);r.addEventListener("contextmenu",ev=>contextMenu(ev,r,()=>openMenu(c.id,x)));target.appendChild(r);
+  r.append(pick,b,x);r.addEventListener("contextmenu",ev=>contextMenu(ev,r,()=>openMenu(c.id,x),true));target.appendChild(r);
  };
  const groups=query?[]:liveGroups();
  if(groups.length){
@@ -2129,7 +2129,7 @@ function renderList(){
    tile.appendChild(groupHead(g,members.length,closed));
    const body=document.createElement("div");body.className="grp-body";body.inert=closed;const inner=document.createElement("div");inner.className="grp-inner";body.appendChild(inner);
    members.forEach(e=>drawEntry(e,inner));tile.appendChild(body);
-   tile.addEventListener("contextmenu",ev=>{if(renamingGroupId===g.id)return;contextMenu(ev,tile,()=>openGroupMenu(g.id,tile.querySelector(".grp .more")))});
+   tile.addEventListener("contextmenu",ev=>{if(renamingGroupId===g.id)return;contextMenu(ev,tile,()=>openGroupMenu(g.id,tile.querySelector(".grp .more")),true)});
    list.appendChild(tile)});
   entries.filter(e=>!groupIds.has(e.c.g)).forEach(e=>drawEntry(e));
  }else entries.forEach(e=>drawEntry(e));
@@ -2139,11 +2139,13 @@ function renderList(){
 function menuItem(id,icon,text){const b=$(id);b.innerHTML=ic(icon,16)+"<span>"+text+"</span>";return b}
 function placeMenu(btn){const m=$("cmenu"),sr=$("side").getBoundingClientRect(),br=btn.getBoundingClientRect();m.style.left="";m.style.right="";m.style.top=Math.max(8,Math.min(br.bottom-sr.top+4,sr.height-m.offsetHeight-8))+"px";btn.setAttribute("aria-expanded","true")}
 function fineMouse(){return !!(window.matchMedia&&matchMedia("(pointer:fine)").matches)}
-function contextMenu(ev,el,open){
+function contextMenu(ev,el,open,anchored){
  if(!fineMouse()||selecting)return;
  ev.preventDefault();ev.stopPropagation();
  const pt=ev.clientX||ev.clientY?{x:ev.clientX,y:ev.clientY}:(()=>{const r=el.getBoundingClientRect();return{x:r.left+24,y:r.top+r.height/2}})();
- open();placeMenuAt(pt);
+ open();
+ // Chats and groups open exactly where their three dots open; only the list background uses the cursor.
+ if(!anchored)placeMenuAt(pt);
 }
 function placeMenuAt(pt){
  const m=$("cmenu"),sr=$("side").getBoundingClientRect();
