@@ -55,10 +55,10 @@ svg{display:block}
 .grp-inner{min-height:0;overflow:hidden}
 .grp-inner>.row{margin-top:6px;transition:opacity .2s ease,transform .26s cubic-bezier(.2,.7,.2,1)}
 .grp-tile.is-closed .grp-inner>.row{opacity:0;transform:translateY(-6px)}
-/* Chats inside a group take a slight tint of the group colour, a little greyer than the tile, and sit faintly lifted. */
-.grp-inner .chat{background:color-mix(in srgb,var(--gc) 9%,#ececef);box-shadow:0 1px 2px rgba(0,0,0,.06)}
-.grp-inner .chat:hover{background:color-mix(in srgb,var(--gc) 15%,#e2e2e6)}
-.grp-inner .chat.on,.grp-inner .chat.on:hover{background:color-mix(in srgb,var(--gc) 21%,#dadadf);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--gc) 45%,transparent),0 1px 2px rgba(0,0,0,.06)}
+/* Chats inside a group sit on a slightly greyer shade of the group background, faintly lifted. */
+.grp-inner .chat{background:#f4f4f6;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.grp-inner .chat:hover{background:#ebebee}
+.grp-inner .chat.on,.grp-inner .chat.on:hover{background:#e3e3e7;box-shadow:inset 0 0 0 1px #c9c9ce,0 1px 2px rgba(0,0,0,.06)}
 /* A newly created group eases in and its icon pops in. */
 .grp-tile.grp-enter{animation:groupIn .42s cubic-bezier(.2,.7,.2,1) both}
 .grp-tile.grp-enter .grp-badge{animation:badgeIn .45s cubic-bezier(.2,.7,.2,1) .12s both}
@@ -1187,7 +1187,7 @@ html.keyboard-nav .set-select:focus{outline:none;border-color:#8fb3ff;box-shadow
  .radio-row strong{color:#f2f2f2}
  .radio-row small{color:#b8b8be}
  .cmenu button:hover{background:#3a3a3c}
- .grp-toggle{color:#a1a1a6}.grp-toggle:hover{background:#2c2c2e}.grp-count{color:#7a7a7e}.grp-tile{background:#1c1c1e}.grp-inner .chat{background:color-mix(in srgb,var(--gc) 12%,#2a2a2d);box-shadow:0 1px 2px rgba(0,0,0,.3)}.grp-inner .chat:hover{background:color-mix(in srgb,var(--gc) 18%,#333337)}.grp-inner .chat.on,.grp-inner .chat.on:hover{background:color-mix(in srgb,var(--gc) 24%,#3a3a3f);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--gc) 50%,transparent),0 1px 2px rgba(0,0,0,.3)}.side .grp-toggle{background:transparent}.side .grp-toggle:hover{background:#2c2c2e}.cmenu-style-label{color:#8e8e93}.cmenu-style{border-top-color:#3a3a3c}.cmenu .sw-btn{border-color:#1c1c1e;box-shadow:0 0 0 1px rgba(255,255,255,.2)}.cmenu .icon-opt:hover{background:#3a3a3e}.cmenu .icon-opt[aria-pressed=true]{background:#48484c;color:#fff}
+ .grp-toggle{color:#a1a1a6}.grp-toggle:hover{background:#2c2c2e}.grp-count{color:#7a7a7e}.grp-tile{background:#1c1c1e}.grp-inner .chat{background:#2a2a2d;box-shadow:0 1px 2px rgba(0,0,0,.3)}.grp-inner .chat:hover{background:#333337}.grp-inner .chat.on,.grp-inner .chat.on:hover{background:#3a3a3f;box-shadow:inset 0 0 0 1px #55555b,0 1px 2px rgba(0,0,0,.3)}.side .grp-toggle{background:transparent}.side .grp-toggle:hover{background:#2c2c2e}.cmenu-style-label{color:#8e8e93}.cmenu-style{border-top-color:#3a3a3c}.cmenu .sw-btn{border-color:#1c1c1e;box-shadow:0 0 0 1px rgba(255,255,255,.2)}.cmenu .icon-opt:hover{background:#3a3a3e}.cmenu .icon-opt[aria-pressed=true]{background:#48484c;color:#fff}
  .access-admin-actions button{background:#2c2c2e;color:#f2f2f2}
  .access-admin-actions button[type=submit]{background:#20385c;color:#c6d9ff}
  .site-group-h,.whatsnew-admin-current summary{color:#f2f2f2}
