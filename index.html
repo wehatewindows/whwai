@@ -2154,7 +2154,7 @@ function placeMenuAt(pt){
  m.style.right="auto";m.style.left=x+"px";m.style.top=y+"px";
 }
 function openListMenu(){
- closeMenu();menuMode="list";
+ closeMenu();resetMenuDom();menuMode="list";
  MENU_STATIC.forEach(id=>$(id).hidden=true);
  const m=$("cmenu");
  [{label:"New chat",icon:'plus',run:()=>newChat()},{label:"New group",icon:'folder-plus',run:()=>newGroup()},{label:"Select chats",icon:'square-check',run:()=>setSelecting(true)}].forEach(item=>{
@@ -2167,12 +2167,12 @@ function openListMenu(){
 list.addEventListener("contextmenu",ev=>{if(ev.target.closest(".row,.grp-tile"))return;contextMenu(ev,list,openListMenu)});
 function openMenu(id,btn){
  const c=S.chats.find(x=>x.id===id);if(!c)return;
- closeMenu();mid=id;menuAnchor=btn;menuMode="chat";
+ closeMenu();resetMenuDom();mid=id;menuAnchor=btn;menuMode="chat";
  menuItem("cren",PEN,"Rename");menuItem("cgen",SPARK,"Generate title");menuItem("cpin",c.p?PIN_OFF:PIN,c.p?"Unpin":"Pin");menuItem("cgrp",FOLDER_ICON,"Move to group");menuItem("cdel",TRASH,"Delete");
  showEl($("cmenu"));placeMenu(btn);
 }
 function openGroupMenu(gid,btn){
- closeMenu();menuMode="group";menuGroupId=gid;menuAnchor=btn;
+ closeMenu();resetMenuDom();menuMode="group";menuGroupId=gid;menuAnchor=btn;
  menuItem("cren",PEN,"Rename group");menuItem("cdel",TRASH,"Delete group");
  ["cgen","cpin","cgrp"].forEach(id=>$(id).hidden=true);
  const gg=groupById(gid);if(gg){$("cmenu").classList.add("wide");$("cmenu").appendChild(groupStylePanel(gg))}
@@ -2188,7 +2188,7 @@ function finishPick(gid,startRename){
  renderList();
 }
 function openPicker(ids,btn,done){
- closeMenu();menuMode="pick";pickIds=ids.slice();pickDone=done||null;menuAnchor=btn;
+ closeMenu();resetMenuDom();menuMode="pick";pickIds=ids.slice();pickDone=done||null;menuAnchor=btn;
  MENU_STATIC.forEach(id=>$(id).hidden=true);
  const picked=S.chats.filter(c=>pickIds.includes(c.id));
  const items=[{label:"No group",icon:'ban',on:picked.length>0&&picked.every(c=>!groupById(c.g)),run:()=>finishPick(null)}];
@@ -2204,13 +2204,20 @@ function openPicker(ids,btn,done){
  });
  showEl(m);placeMenu(btn);
 }
-function closeMenu(){
- hideEl($("cmenu"));$("cmenu").classList.remove("wide");mid=null;menuGroupId=null;menuAnchor=null;
- if(menuMode==="pick"){pickIds=[];pickDone=null}
- menuMode="chat";
+// Resets the menu's contents to the chat layout. Openers call this before filling the menu.
+function resetMenuDom(){
+ $("cmenu").classList.remove("wide");
  document.querySelectorAll("#cmenu .cmenu-dyn").forEach(b=>b.remove());
  MENU_STATIC.forEach(id=>{const b=$(id);if(b)b.hidden=false});
  document.querySelectorAll(".more").forEach(b=>b.setAttribute("aria-expanded","false"));
+}
+function closeMenu(){
+ const m=$("cmenu");
+ hideEl(m);mid=null;menuGroupId=null;menuAnchor=null;
+ if(menuMode==="pick"){pickIds=[];pickDone=null}
+ menuMode="chat";
+ // Reset the contents only after the fade-out; resetting now made the chat items flash while a group menu closed.
+ if(m.hidden)resetMenuDom();else setTimeout(()=>{if(m.hidden)resetMenuDom()},160);
 }
 const rowFx=new Map();
 function flashRow(id,kind){rowFx.set(id,kind)}
