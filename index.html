@@ -1501,6 +1501,18 @@ html:not(.keyboard-nav) .account-form select:focus{
 .skel-hint{display:block;width:80%;height:8px;border-radius:4px;margin-top:2px}
 .skel-wide{display:block;height:44px;border-radius:999px}
 .skel-save{display:block;height:40px;border-radius:999px;margin-top:4px}
+.skel-site{display:block}
+.skel-site .skel-group{display:block;margin:0 0 14px}
+.skel-site .skel-group .skel-h{margin:0 0 12px}
+.skel-line{display:block;height:12px;border-radius:6px;margin-top:14px}
+.skel-lbl{margin-top:14px;height:10px}
+.skel-row{display:flex;align-items:center;gap:10px;min-height:42px;padding:9px 13px;margin:7px 0;border-radius:999px}
+.skel-row .skel-line{margin-top:0;height:12px;flex:none}
+.skel-site .skel-input{display:block;height:44px;border-radius:12px;margin-top:8px}
+.skel-site .skel-wide{margin-top:0}
+.skel-site .skel-hint{margin-top:8px}
+.skel-site .skel-save{margin-top:0;width:100%;height:40px;border-radius:999px}
+.skel-site .data-toolbar{justify-content:flex-end;margin-top:6px}
 /* Tables made by the assistant */
 .tbl-wrap table{width:100%;border-collapse:separate;border-spacing:0;font-size:14px;line-height:1.4}
 .tbl-wrap th,.tbl-wrap td{padding:9px 12px;text-align:left;vertical-align:top;border:0;border-bottom:1px solid #e6e6ea}
@@ -4325,7 +4337,14 @@ function adminSkeleton(tab){
  const flag='<div class="skel-acct"><div class="skel-head"><span class="skel-id"><span class="skel skel-name" style="width:150px"></span></span><span class="skel skel-role"></span></div><div style="margin-top:12px"><span class="skel skel-thin" style="width:70%;display:block"></span><span class="skel skel-thin" style="width:45%;display:block;margin-top:8px"></span></div><div class="skel-actions"><span class="skel skel-action"></span></div></div>';
  const stat='<div class="skel-stat"><span class="skel skel-thin" style="width:60%;display:block"></span><span class="skel skel-num"></span></div>';
  const audit='<div class="skel-audit"><span class="skel skel-au-t"></span><span class="skel skel-thin" style="width:28%;display:block;margin-top:6px"></span><span class="skel skel-au-m" style="width:70%"></span><span class="skel skel-au-m" style="width:50%;margin-top:6px"></span></div>';
- const site='<div class="skel-site"><span class="skel skel-h" style="width:64px"></span><div class="skel-toggle"><span class="skel skel-box"></span><span class="skel skel-line" style="width:58%"></span></div><div class="skel-toggle"><span class="skel skel-box"></span><span class="skel skel-line" style="width:76%"></span></div><div class="skel-field"><span class="skel skel-label-f"></span><span class="skel skel-input"></span></div><div class="skel-field"><span class="skel skel-label-f"></span><span class="skel skel-hint"></span><span class="skel skel-input"></span></div><span class="skel skel-h" style="width:96px"></span><span class="skel skel-wide"></span><span class="skel skel-h" style="width:88px"></span><span class="skel skel-wide"></span><span class="skel skel-line" style="width:90px;height:12px"></span><span class="skel skel-save"></span></div>';
+ const sec=(inner)=>'<section class="account-form site-group skel-group">'+inner+'</section>';
+ const srow='<div class="check-row skel-row"><span class="skel skel-box"></span><span class="skel skel-line" style="width:58%"></span></div>';
+ const site='<div class="skel-site">'+
+  sec('<span class="skel skel-h" style="width:72px"></span>'+srow+srow+'<span class="skel skel-line skel-lbl" style="width:118px"></span><span class="skel skel-input"></span><span class="skel skel-line skel-lbl" style="width:132px"></span><span class="skel skel-hint"></span><span class="skel skel-input"></span>')+
+  sec('<span class="skel skel-h" style="width:104px"></span><span class="skel skel-wide"></span>')+
+  sec('<span class="skel skel-h" style="width:86px"></span><span class="skel skel-wide"></span>')+
+  sec('<span class="skel skel-h" style="width:80px"></span><span class="skel skel-wide"></span>')+
+  '<div class="data-toolbar"><span class="skel skel-save"></span></div></div>';
  const parts={site:[site,"Loading site controls…"],accounts:[acct.repeat(3),"Loading accounts…"],flags:[flag.repeat(2),"Loading flags…"],usage:['<div class="skel-stats">'+stat.repeat(4)+'</div>',"Loading usage…"],audit:[audit.repeat(3),"Loading audit log…"]}[tab]||[acct.repeat(3),"Loading admin data…"];
  return '<div class="skel-wrap" aria-busy="true" role="status"><span class="visually-hidden">'+parts[1]+'</span>'+parts[0]+'</div>';
 }
