@@ -151,7 +151,7 @@ svg{display:block}
 .toast-msg,.toast-ico,.toast-action{transition:opacity .18s ease}
 .toast-card.swap .toast-msg,.toast-card.swap .toast-ico,.toast-card.swap .toast-action{opacity:0}
 .toast-bar{background:rgba(0,0,0,.42)}
-@media (prefers-color-scheme:dark){.toast-bar{background:rgba(255,255,255,.5)}.toast-card{background:#2c2c2e;border-color:#3a3a3c;color:#f2f2f7;box-shadow:0 4px 14px rgba(0,0,0,.35)}.toast-card.success .toast-ico{color:#4cd964}.toast-card.info .toast-ico{color:#64b5ff}.toast-card.warning .toast-ico{color:#ffb340}.toast-card.error .toast-ico{color:#ff6961}.toast-action{background:rgba(255,255,255,.1);color:#e5e5ea}.toast-action:hover{background:rgba(255,255,255,.18)}}
+@media (prefers-color-scheme:dark){.toast-bar{background:rgba(255,255,255,.5)}.toast-slot>.toast-card{background:#2c2c2e;border-color:#3a3a3c;color:#f2f2f7;box-shadow:0 4px 14px rgba(0,0,0,.35)}.toast-card.success .toast-ico{color:#4cd964}.toast-card.info .toast-ico{color:#64b5ff}.toast-card.warning .toast-ico{color:#ffb340}.toast-card.error .toast-ico{color:#ff6961}.toast-action{background:rgba(255,255,255,.1);color:#e5e5ea}.toast-action:hover{background:rgba(255,255,255,.18)}}
 @media (prefers-reduced-motion:reduce){.toast-ico svg,.toast-bar{animation:none!important}.toast-slot,.toast-slot>.toast-card{transition:none!important}}
 .scrim{display:none;position:absolute;inset:0;background:rgba(0,0,0,.25);z-index:5}
 .gear{position:absolute;left:12px;bottom:12px;width:30px;height:30px;border-radius:50%;border:0;background:#bbb;color:#fff;padding:0;display:grid;place-items:center;cursor:pointer;transition:background .15s}
@@ -367,7 +367,7 @@ body.access-locked .frame{filter:blur(6px);pointer-events:none;user-select:none}
 .chat-search input::placeholder{color:var(--mute);opacity:1}
 .chat-search button{width:23px;height:23px;flex:none;border:0;border-radius:50%;background:rgba(0,0,0,.06);color:var(--ink);font-size:19px;line-height:1;padding:0;cursor:pointer}
 .chat-search button[hidden]{display:none}
-.search-empty{padding:12px 8px;color:var(--mute);font-size:13px;line-height:1.45}
+.hl{background:rgba(255,204,0,.38);color:inherit;border-radius:3px;padding:0 1px;box-decoration-break:clone;-webkit-box-decoration-break:clone}@media (prefers-color-scheme:dark){.hl{background:rgba(255,204,0,.28);color:#fff}}.row[draggable="true"]{cursor:grab}.row.dragging{opacity:.45}.grp-tile.drop-target{outline:2px dashed var(--gc);outline-offset:3px;border-radius:14px}#list.drop-ungroup{outline:2px dashed rgba(10,132,255,.5);outline-offset:4px;border-radius:14px}.search-empty{padding:12px 8px;color:var(--mute);font-size:13px;line-height:1.45}
 .search-snippet{display:-webkit-box;margin-top:4px;color:var(--mute);font-size:11.5px;line-height:1.35;overflow:hidden;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere;font-weight:400}
 .msg .codeblock{position:relative;max-width:100%;min-width:0;margin:0 0 8px}
 .msg .codeblock:last-child{margin-bottom:0}
@@ -2265,6 +2265,27 @@ function groupHead(g,count,closed){
 }
 function bulkGroup(){const ids=selectedChats().map(c=>c.id);if(!ids.length)return;openPicker(ids,$("bulk-group"),()=>setSelecting(false))}
 function newGroup(){const g=createGroup();if(g){renamingGroupId=g.id;renderList()}}
+let dragChatId=null;
+function endChatDrag(){dragChatId=null;list.classList.remove("drop-ungroup");list.querySelectorAll(".drop-target").forEach(t=>t.classList.remove("drop-target"));list.querySelectorAll(".dragging").forEach(t=>t.classList.remove("dragging"))}
+function dropChatInGroup(id,gid){
+ const c=S.chats.find(x=>x.id===id);if(!c)return;
+ if((c.g||null)===(gid||null))return;
+ if(gid&&closedGroups.has(gid)){closedGroups.delete(gid);saveClosedGroups()}
+ moveChats([id],gid);renderList();
+}
+function highlightNodes(parent,text,query){
+ const terms=[...new Set(normalizeSearch(query).split(/\s+/).filter(Boolean))].sort((a,b)=>b.length-a.length);
+ parent.textContent="";
+ if(!terms.length||!text){parent.textContent=text;return}
+ const re=new RegExp("("+terms.map(t=>t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")+")","gi");
+ let last=0,m;
+ while((m=re.exec(text))){
+  if(m.index>last)parent.appendChild(document.createTextNode(text.slice(last,m.index)));
+  const mk=document.createElement("mark");mk.className="hl";mk.textContent=m[0];parent.appendChild(mk);
+  last=m.index+m[0].length;
+ }
+ if(last<text.length)parent.appendChild(document.createTextNode(text.slice(last)));
+}
 function renderList(){
  list.innerHTML="";closeMenu();list.classList.toggle("selecting",selecting);
  for(const id of [...selectedIds]){if(!S.chats.some(c=>c.id===id))selectedIds.delete(id)}
@@ -2288,8 +2309,13 @@ function renderList(){
   }
   const on=c.id===S.cur,r=document.createElement("div");r.className="row"+(on?" on":"");
   const b=document.createElement("button");b.className="chat"+(on?" on":"");b.title=c.t;
-  b.innerHTML='<span class="ct">'+(c.p?ic(PIN,12):"")+esc(c.t)+'</span>'+(query?'<span class="search-snippet"></span>':'<span class="cm" data-t="'+c.u+'">'+ago(c.u)+'</span>');
-  if(query){const snippet=b.querySelector(".search-snippet");snippet.textContent=searchSnippet(c,query);b.title=c.t+" — "+snippet.textContent;}
+  const ct=document.createElement("span");ct.className="ct";
+  if(c.p)ct.insertAdjacentHTML("beforeend",ic(PIN,12));
+  const ctText=document.createElement("span");ctText.className="ct-text";
+  if(query)highlightNodes(ctText,c.t,query);else ctText.textContent=c.t;
+  ct.appendChild(ctText);b.appendChild(ct);
+  if(query){const snippet=document.createElement("span");snippet.className="search-snippet";highlightNodes(snippet,searchSnippet(c,query),query);b.appendChild(snippet);b.title=c.t+" — "+snippet.textContent;}
+  else{const cm=document.createElement("span");cm.className="cm";cm.dataset.t=c.u;cm.textContent=ago(c.u);b.appendChild(cm);}
   const picked=selectedIds.has(c.id);
   const pick=document.createElement("span");pick.className="pick"+(picked?" on":"");pick.innerHTML=ic('check',12,2.5);pick.setAttribute("aria-hidden","true");
   b.onclick=()=>{if(selecting){if(selectedIds.has(c.id))selectedIds.delete(c.id);else selectedIds.add(c.id);pick.classList.toggle("on",selectedIds.has(c.id));renderBulkBar();return}openChat(c.id)};
@@ -2297,6 +2323,11 @@ function renderList(){
   x.setAttribute("aria-label","Chat options");x.setAttribute("aria-haspopup","menu");x.setAttribute("aria-expanded","false");
   x.onclick=e=>{e.stopPropagation();if(mid===c.id)closeMenu();else openMenu(c.id,x)};
   r.dataset.id=c.id;const fx=rowFx.get(c.id);if(fx){r.classList.add("fx-"+fx);rowFx.delete(c.id)}
+  if(fineMouse()&&!selecting&&!query){
+   r.draggable=true;
+   r.addEventListener("dragstart",ev=>{dragChatId=c.id;ev.dataTransfer.effectAllowed="move";try{ev.dataTransfer.setData("text/plain",c.t)}catch(e){}r.classList.add("dragging")});
+   r.addEventListener("dragend",endChatDrag);
+  }
   r.append(pick,b,x);r.addEventListener("contextmenu",ev=>contextMenu(ev,r,()=>openMenu(c.id,x),true));target.appendChild(r);
  };
  const groups=query?[]:liveGroups();
@@ -2308,6 +2339,9 @@ function renderList(){
    tile.appendChild(groupHead(g,members.length,closed));
    const body=document.createElement("div");body.className="grp-body";body.inert=closed;const inner=document.createElement("div");inner.className="grp-inner";body.appendChild(inner);
    members.forEach(e=>drawEntry(e,inner));tile.appendChild(body);
+   tile.addEventListener("dragover",ev=>{if(!dragChatId)return;ev.preventDefault();ev.stopPropagation();ev.dataTransfer.dropEffect="move";tile.classList.add("drop-target")});
+   tile.addEventListener("dragleave",ev=>{if(!tile.contains(ev.relatedTarget))tile.classList.remove("drop-target")});
+   tile.addEventListener("drop",ev=>{if(!dragChatId)return;ev.preventDefault();ev.stopPropagation();const id=dragChatId;endChatDrag();dropChatInGroup(id,g.id)});
    tile.addEventListener("contextmenu",ev=>{if(renamingGroupId===g.id)return;contextMenu(ev,tile,()=>openGroupMenu(g.id,tile.querySelector(".grp .more")),true)});
    list.appendChild(tile)});
   entries.filter(e=>!groupIds.has(e.c.g)).forEach(e=>drawEntry(e));
@@ -2343,6 +2377,9 @@ function openListMenu(){
  showEl(m);
 }
 list.addEventListener("contextmenu",ev=>{if(ev.target.closest(".row,.grp-tile"))return;contextMenu(ev,list,openListMenu)});
+list.addEventListener("dragover",ev=>{if(!dragChatId||ev.target.closest(".grp-tile"))return;const c=S.chats.find(x=>x.id===dragChatId);if(!c||!c.g)return;ev.preventDefault();ev.dataTransfer.dropEffect="move";list.classList.add("drop-ungroup")});
+list.addEventListener("dragleave",ev=>{if(!list.contains(ev.relatedTarget))list.classList.remove("drop-ungroup")});
+list.addEventListener("drop",ev=>{if(!dragChatId||ev.target.closest(".grp-tile"))return;ev.preventDefault();const id=dragChatId;endChatDrag();dropChatInGroup(id,null)});
 function openMenu(id,btn){
  const c=S.chats.find(x=>x.id===id);if(!c)return;
  closeMenu();resetMenuDom();mid=id;menuAnchor=btn;menuMode="chat";
@@ -3069,6 +3106,16 @@ ta.addEventListener("keydown",e=>{if(e.target&&e.target.classList&&e.target.clas
 $("new").onclick=newChat;
 if(searchInput){searchInput.addEventListener("input",debounceFn(()=>renderList(),350));searchInput.addEventListener("keydown",e=>{if(e.key==="Escape"&&searchInput.value){searchInput.value="";renderList();searchInput.blur()}})}
 if(searchClear)searchClear.onclick=()=>{searchInput.value="";renderList();searchInput.focus()};
+const isApple=/Mac|iPhone|iPad|iPod/.test(navigator.platform||navigator.userAgent||"");
+const KEY_SEARCH_HINT=isApple?"⌘K":"Ctrl+K",KEY_NEW_HINT=isApple?"⌘⇧O":"Ctrl+Shift+O";
+if($("new"))$("new").title="New chat ("+KEY_NEW_HINT+")";
+if(searchInput)searchInput.title="Search chats ("+KEY_SEARCH_HINT+")";
+document.addEventListener("keydown",e=>{
+ if(!(e.metaKey||e.ctrlKey)||e.altKey)return;
+ const k=e.key.toLowerCase();
+ if(k==="k"&&!e.shiftKey&&searchInput){e.preventDefault();if(mob())side(true);searchInput.focus();searchInput.select()}
+ else if(k==="o"&&e.shiftKey){e.preventDefault();newChat()}
+});
 const mob=()=>matchMedia("(max-width:640px)").matches;
 $("mopen").innerHTML=ic('menu',20,2.1);
 $("mopen").onclick=()=>side(!$("side").classList.contains("open"));
