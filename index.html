@@ -867,7 +867,7 @@ button:disabled,select:disabled,textarea:disabled,input:disabled,.radio-row:has(
 /* Banners sit below the top bar and never block controls underneath them */
 @media (max-width:640px){.banner-stack{padding-top:calc(var(--bar) + 8px)}}
 .banner-toggle{display:grid;place-items:center;width:32px;height:32px;margin:0;padding:0;border:0;border-radius:50%;background:rgba(128,128,128,.16);color:inherit;cursor:pointer;pointer-events:auto;transition:background-color .16s ease}.banner-toggle:hover{background:rgba(128,128,128,.26)}.banner-toggle svg{transition:transform .22s ease}.banner-stack.open .banner-toggle svg{transform:rotate(180deg)}.banner-stack>.banner-toggle{align-self:flex-end!important;width:32px!important;height:32px!important;padding:0!important}
-@media (max-width:640px){.banner-stack .fold-hide{display:none!important}.banner-stack .fold-first{margin-bottom:12px;box-shadow:0 5px 0 -3px rgba(120,134,158,.5),0 10px 0 -6px rgba(120,134,158,.3)}.banner-stack .fold-first>span{display:-webkit-box!important;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}}
+@media (max-width:640px){.banner-stack .fold-hide{display:none!important}.banner-stack .fold-first{margin-bottom:16px;box-shadow:0 6px 0 -2px var(--f1,#cfdcf5),0 12px 0 -4px var(--f2,#e2eafb)}.banner-stack .site-notice.fold-first{--f1:#cfdcf5;--f2:#e2eafb}.banner-stack .school-notice.fold-first{--f1:#ecd49a;--f2:#f6e8c4}.banner-stack .fold-first>span{display:-webkit-box!important;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}}
 .banner-stack,.banner-stack>*{pointer-events:none}
 .banner-stack button,.banner-stack a,.banner-stack input,.banner-stack select,.banner-stack textarea{pointer-events:auto}
 .side>.new,.side>.gear,.side>.profile-btn{z-index:3}
@@ -1241,7 +1241,7 @@ html.keyboard-nav .set-select:focus{outline:none;border-color:#8fb3ff;box-shadow
  .cs-pop .mi:hover{background:#3a3a3c}
  .jump-bottom{background:#2c2c2e;border-color:#45454a;color:#f2f2f2}
  .jump-bottom:hover{background:#3a3a3c}
- .main .site-notice{background:rgba(38,48,66,.9);border-color:#465773;color:#d8e4f7}
+ .main .site-notice{background:rgba(38,48,66,.9);border-color:#465773;color:#d8e4f7}.banner-stack .site-notice.fold-first{--f1:#465773;--f2:#33405a}.banner-stack .school-notice.fold-first{--f1:#6b5c2e;--f2:#4a4020}
  .data-tool small{color:#b8b8be}
  .admin-search input::placeholder,.set-search::placeholder{color:#a1a1a6}
  .access-error{color:#ffb4b4}
