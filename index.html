@@ -2900,7 +2900,7 @@ async function answer(c,q){
     const j=await post({action:"chat",model:modelId,chatId:c.id,messages:hist(c)},controller.signal);
     if(responseWasStopped||run!==answerRunId)return;
     if(j.quota&&typeof j.quota.remaining==="number")toast(j.quota.remaining+" messages left today on this model");
-    full=j.text||ERR_TEXT;sources=Array.isArray(j.sources)?j.sources:[];thinking=typeof j.thinking==="string"?j.thinking:"";if(j.ended)endedNow=true;if(Array.isArray(j.tools))usedTools=j.tools.filter(t=>typeof t==="string").slice(0,5);if(!j.text||j.disabled)err=1;
+    full=j.text||ERR_TEXT;sources=Array.isArray(j.sources)?j.sources:[];thinking=typeof j.thinking==="string"?j.thinking:"";if(j.ended)endedNow=true;if(Array.isArray(j.tools))usedTools=j.tools.filter(t=>typeof t==="string").slice(0,5);if(!(accountSession&&accountSession.token)&&j.text&&!j.ended&&!j.disabled&&bumpGuestCount()>=GUEST_LIMIT)setLimitHit();if(!j.text||j.disabled)err=1;
    }catch(e){
     if(responseWasStopped||run!==answerRunId||e&&e.name==="AbortError"&&controller.signal.aborted)return;
     if(e&&e.payload&&e.payload.error==="chat_ended"){endedNow=true;full=e.payload.message||"This chat was ended.";}else if(e&&e.payload&&e.payload.error==="vela_unavailable"){
@@ -2943,6 +2943,10 @@ const LIMIT_DAY_KEY="whwai_limit_day";
 function hiDay(){try{return new Intl.DateTimeFormat("en-CA",{timeZone:"Pacific/Honolulu",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date())}catch(e){return""}}
 function limitHit(){try{return localStorage.getItem(LIMIT_DAY_KEY)===hiDay()}catch(e){return false}}
 function setLimitHit(){try{localStorage.setItem(LIMIT_DAY_KEY,hiDay())}catch(e){}refreshSendState()}
+// Guests: replies counted in this browser only, reset each Hawaii day. Clearing browser data resets the count.
+const GUEST_LIMIT=10,GUEST_COUNT_KEY="whwai_guest_count";
+function guestCount(){try{const v=JSON.parse(localStorage.getItem(GUEST_COUNT_KEY)||"{}");return v&&v.day===hiDay()?Number(v.n)||0:0}catch(e){return 0}}
+function bumpGuestCount(){const n=guestCount()+1;try{localStorage.setItem(GUEST_COUNT_KEY,JSON.stringify({day:hiDay(),n:n}))}catch(e){}return n}
 function sendBlockReason(){
  if(aiDisabled)return"WHWai is turned off right now, so messages can't be sent.";
  if(browserDisabledGate)return"This browser is disabled, so messages can't be sent.";
