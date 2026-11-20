@@ -127,9 +127,11 @@ svg{display:block}
 .round{width:48px;height:48px;border-radius:50%;border:0;background:var(--bub);cursor:pointer;flex:none;display:grid;place-items:center;transition:background .15s,opacity .15s;margin-bottom:1px}
 .round:hover{background:#e2e2e2}.round:disabled{opacity:.45;cursor:default}.round.blocked{opacity:.45;cursor:not-allowed}.round.blocked:hover{background:var(--bub)}.limit-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 var(--edge,16px) 18px;padding:12px 14px 12px 18px;border-radius:20px;background:var(--bub);color:var(--ink);font-size:14px;line-height:1.4}.limit-bar[hidden]{display:none!important}.limit-retry-row{display:flex;justify-content:flex-start;margin:6px 0 14px}.limit-bar .lb-actions{display:flex;gap:8px;flex-wrap:wrap}.body-limit .orb{display:none}#gate-signout{position:relative;overflow:hidden}.btn-ripple{position:absolute;width:140px;height:140px;margin:-70px 0 0 -70px;border-radius:50%;background:rgba(17,17,17,.16);transform:scale(0);pointer-events:none;animation:btnRipple .55s ease-out forwards}@keyframes btnRipple{to{transform:scale(1);opacity:0}}@media (prefers-reduced-motion:reduce){.btn-ripple{animation:none;display:none}}
 .note{font-size:13px;margin:8px 0 0 4px}
-.toasts{position:absolute;left:0;right:0;bottom:64px;z-index:25;display:flex;flex-direction:column;align-items:center;gap:8px;padding:0 12px;pointer-events:none}
-.toast-card{position:relative;box-sizing:border-box;width:min(100%,380px);display:flex;align-items:center;gap:11px;padding:11px 12px 13px 11px;border-radius:16px;background:#ffffff;border:1px solid #e5e5ea;box-shadow:0 4px 14px rgba(0,0,0,.1);color:#1d1d1f;font-size:14px;font-weight:500;line-height:1.35;overflow:hidden;cursor:pointer;pointer-events:auto;user-select:none;-webkit-user-select:none;animation:toastIn .28s ease-out both;transition:opacity .22s ease,transform .26s cubic-bezier(.4,0,.2,1)}
-.toast-card.out{opacity:0;transform:translateY(10px) scale(.94);pointer-events:none}
+.toasts{position:absolute;left:0;right:0;top:14px;z-index:25;display:flex;flex-direction:column;align-items:center;gap:8px;padding:0 12px;pointer-events:none}
+@media (max-width:640px){.toasts{top:calc(var(--bar) + 8px)}}
+.toast-card{position:relative;box-sizing:border-box;width:min(100%,380px);display:flex;align-items:center;gap:11px;padding:11px 12px 13px 11px;border-radius:16px;background:#ffffff;border:1px solid #e5e5ea;box-shadow:0 4px 14px rgba(0,0,0,.1);color:#1d1d1f;font-size:14px;font-weight:500;line-height:1.35;overflow:hidden;cursor:default;pointer-events:none;user-select:none;-webkit-user-select:none;animation:toastIn .28s ease-out both;transition:opacity .22s ease,transform .26s cubic-bezier(.4,0,.2,1)}
+.toast-card.out{animation:toastOut .24s ease-in both;pointer-events:none}
+@keyframes toastOut{from{opacity:1;transform:none}to{opacity:0;transform:translateY(-8px) scale(.96)}}
 @keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .toast-ico{flex:0 0 auto;width:26px;height:26px;border-radius:50%;display:grid;place-items:center}
 .toast-ico svg{animation:toastPop .3s ease-out .08s both}
@@ -139,7 +141,7 @@ svg{display:block}
 .toast-card.warning .toast-ico{background:rgba(255,159,10,.18);color:#b86e00}
 .toast-card.error .toast-ico{background:rgba(255,59,48,.14);color:#d70015}
 .toast-msg{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
-.toast-action{flex:0 0 auto;width:30px;height:30px;display:grid;place-items:center;border:0;padding:0;border-radius:50%;background:rgba(0,0,0,.06);color:#3a3a3c;cursor:pointer}
+.toast-action{flex:0 0 auto;width:30px;height:30px;display:grid;place-items:center;border:0;padding:0;border-radius:50%;background:rgba(0,0,0,.06);color:#3a3a3c;cursor:pointer;pointer-events:auto}
 .toast-action:hover{background:rgba(0,0,0,.12)}
 .toast-bar{position:absolute;left:0;right:0;bottom:0;height:3px;transform-origin:left center;animation:toastDrain var(--dur,3200ms) linear both}
 @keyframes toastDrain{from{transform:scaleX(1)}to{transform:scaleX(0)}}
@@ -2980,15 +2982,15 @@ function toast(text,opts={}){
  const wrap=$("toasts");if(!wrap)return;
  const type=opts.type||toastType(text);
  const act=opts.act||(opts.undo?{icon:"rotate-ccw",label:"Undo",run:opts.undo}:(opts.retry?{icon:"rotate-cw",label:"Retry",run:opts.retry}:null));
- const dur=act?5200:3200;
+ const dur=act?3000:1800;
  wrap.querySelectorAll(".toast-card").forEach(el=>{if(el.dataset.text===text&&!el.classList.contains("out"))el._dismiss()});
  const el=document.createElement("div");
  el.className="toast-card "+type;el.dataset.text=text;el.style.setProperty("--dur",dur+"ms");
  el.innerHTML='<span class="toast-ico">'+ic(TOAST_ICON[type],17,2.2)+'</span><span class="toast-msg"></span>'+(act?'<button type="button" class="toast-action" aria-label="'+act.label+'" title="'+act.label+'">'+ic(act.icon,16,2.2)+'</button>':'')+'<span class="toast-bar"></span>';
  el.querySelector(".toast-msg").textContent=text;
- const dismiss=()=>{if(el.classList.contains("out"))return;clearTimeout(el._t);el.classList.add("out");setTimeout(()=>el.remove(),280)};
+ const dismiss=()=>{if(el.classList.contains("out"))return;clearTimeout(el._t);el.classList.add("out");setTimeout(()=>el.remove(),240)};
  el._dismiss=dismiss;
- el.addEventListener("click",e=>{if(e.target.closest(".toast-undo"))return;dismiss()});
+ 
  const u=el.querySelector(".toast-action");
  if(u)u.addEventListener("click",e=>{e.stopPropagation();dismiss();try{act.run()}catch(err){}});
  wrap.prepend(el);
