@@ -1555,6 +1555,26 @@ html:not(.keyboard-nav) .account-form select:focus{
 @media (prefers-color-scheme:dark){.msg .tbl-wrap{border-color:#3a3a3f}.msg .tbl-wrap th,.msg .tbl-wrap td{border-bottom-color:#3a3a3f}.msg .tbl-wrap th{background:#2a2a2d;color:#f2f2f2}}
 /* Danger icons keep the danger colour in dark mode */
 .side .cmenu .danger svg,.cmenu .danger svg{stroke:currentColor}
+/* Dark-mode blue accents: one set of values for text links, tinted pills and solid fills. */
+@media (prefers-color-scheme:dark){
+html{--acc-text:#8fb4ff;--acc-text-hi:#b9d0ff;--acc-tint:#2a3c5e;--acc-tint-hi:#33497a;--acc-solid:#3a6fe0;--acc-ring:#6b98ff}
+html :focus-visible{outline-color:var(--acc-ring)}
+html .msg a,html .mcard a,html .policy-body a,html .answer-sources a,html .forgot-link,html .bulk-done,html .access-admin-link,html .steps li.step-end,html .privacy-link,html .lock-link,html .set-foot .privacy-link,html .cs-pop .mi i,html .set-foot .privacy-link{color:var(--acc-text)}
+html .msg a:hover,html .mcard a:hover,html .policy-body a:hover,html .answer-sources a:hover,html .forgot-link:hover,html .bulk-done:hover,html .privacy-link:hover,html .privacy-link:focus,html .lock-link:hover,html .lock-link:focus,html .set-foot .privacy-link:hover,html .set-foot .privacy-link:focus{color:var(--acc-text-hi)}
+html .privacy-link,html .lock-link,html .set-foot .privacy-link{background:#2c2c2e}
+html .privacy-link:hover,html .privacy-link:focus,html .lock-link:hover,html .lock-link:focus{background:#3a3a3c}
+html .info-pop button{background:var(--acc-tint);color:var(--acc-text-hi)}
+html .info-pop button:hover{background:var(--acc-tint-hi)}
+html .site-notice,html .gate-notice,html .policy-takeaways{background:#1f2a3d;border-color:#2e3e5c;color:#c9dbff}
+html .access-admin-link:hover{background:#1f2a3d}
+html .admin-nav .pbtn.active,html .admin-filter-wrap .admin-filter-btn.active,html .admin-nav .pbtn.active{background:var(--acc-tint);color:var(--acc-text-hi);box-shadow:inset 0 0 0 1px #385b91}
+html .admin-filter-count{background:var(--acc-solid);box-shadow:0 0 0 2px #1c1c1e}
+html .beta-pill,html .switch-ui,html .pick.on{background:var(--acc-solid)}
+html .switch-ui{outline-color:var(--acc-solid)}
+html .pick.on{border-color:var(--acc-solid)}
+html .radio-row input,html .check-row input{accent-color:var(--acc-ring)}
+html .steps li.step-live::before{background:var(--acc-solid)}
+}
 </style>
 
 </head>
