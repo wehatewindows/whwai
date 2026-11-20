@@ -4840,7 +4840,7 @@ async function selfReenable(kind){
   toast(kind==="account"?"Account re-enabled.":"Browser re-enabled.");
   if(!s.account&&!s.browser){selfDisabledInfo=null;scheduleAccountSync()}
   if(!modal.hidden)renderAdminPanel(adminTab);
- }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't re-enable that.")}
+ }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't re-enable that.",{retry:()=>selfReenable(kind)})}
 }
 function adminDisableNoteHtml(row){
  return '<div class="admin-disable-note"><p class="sm">Demote this admin before disabling the account.</p><p class="sm">For testing only, disabling without demotion still lets this admin sign in.</p>'+(row.isBootstrap?'<p class="sm">The bootstrap admin can\'t be demoted.</p>':'<button type="button" class="pbtn" id="dis-demote" data-demote-target="'+escapeAttr(row.id)+'">Demote admin first</button>')+'</div>';
@@ -4853,7 +4853,7 @@ async function demoteFromDisable(targetId){
   if(!r||!r.ok)throw Object.assign(new Error(r&&r.error||"failed"),{payload:r});
   await adminFetch(true).catch(()=>{});
   toast("Demoted. You can disable them now.");
- }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't demote that account.");return}
+ }catch(err){toast(err&&err.payload&&err.payload.message||"Couldn't demote that account.",{retry:()=>demoteFromDisable(targetId)});return}
  runDisableAction("disable",targetId);
 }
 document.addEventListener("click",e=>{const d=e.target.closest&&e.target.closest("#dis-demote");if(d)demoteFromDisable(d.dataset.demoteTarget)});
