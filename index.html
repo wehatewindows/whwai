@@ -129,10 +129,12 @@ svg{display:block}
 .note{font-size:13px;margin:8px 0 0 4px}
 .toasts{position:absolute;left:0;right:0;top:14px;z-index:25;display:flex;flex-direction:column;align-items:center;gap:0;padding:0 12px;pointer-events:none}
 @media (max-width:640px){.toasts{top:calc(var(--bar) + 8px)}}
-.toast-card{position:relative;box-sizing:border-box;width:min(100%,380px);display:flex;align-items:center;gap:11px;padding:11px 12px 13px 11px;border-radius:16px;background:#ffffff;border:1px solid #e5e5ea;box-shadow:0 4px 14px rgba(0,0,0,.1);color:#1d1d1f;font-size:14px;font-weight:500;line-height:1.35;overflow:hidden;cursor:pointer;pointer-events:auto;margin-bottom:8px;animation:toastIn .32s cubic-bezier(.2,.8,.3,1) backwards}
-.toast-card.out{animation:toastOut .26s ease-in-out both;pointer-events:none}
-@keyframes toastOut{from{opacity:1;transform:none;max-height:var(--h,200px);margin-bottom:8px}to{opacity:0;transform:translateY(-8px);max-height:0;margin-bottom:0}}
-@keyframes toastIn{from{opacity:0;transform:translateY(-10px);max-height:0;margin-bottom:0}to{opacity:1;transform:none;max-height:400px;margin-bottom:8px}}
+.toast-slot{display:grid;grid-template-rows:1fr;width:min(100%,380px);padding-bottom:8px;pointer-events:none;transition:grid-template-rows .34s cubic-bezier(.2,.75,.25,1),padding-bottom .34s cubic-bezier(.2,.75,.25,1)}
+.toast-slot.enter,.toast-slot.closing{grid-template-rows:0fr;padding-bottom:0}
+.toast-slot>.toast-card{min-height:0;position:relative;box-sizing:border-box;width:100%;border-radius:16px;background:#ffffff;border:1px solid #e5e5ea;box-shadow:0 4px 14px rgba(0,0,0,.1);color:#1d1d1f;font-size:14px;font-weight:500;line-height:1.35;overflow:hidden;cursor:pointer;pointer-events:auto;transition:opacity .26s ease,transform .34s cubic-bezier(.2,.75,.25,1)}
+.toast-slot.enter>.toast-card{opacity:0;transform:translateY(-10px) scale(.97)}
+.toast-slot.closing>.toast-card{opacity:0;transform:translateY(-8px) scale(.97);pointer-events:none}
+.toast-row{display:flex;align-items:center;gap:11px;padding:11px 12px 13px 11px}
 .toast-ico{flex:0 0 auto;width:26px;height:26px;border-radius:50%;display:grid;place-items:center}
 .toast-ico svg{animation:toastPop .3s ease-out .08s both}
 @keyframes toastPop{from{transform:scale(.7);opacity:0}to{transform:none;opacity:1}}
@@ -150,7 +152,7 @@ svg{display:block}
 .toast-card.swap .toast-msg,.toast-card.swap .toast-ico,.toast-card.swap .toast-action{opacity:0}
 .toast-bar{background:rgba(0,0,0,.42)}
 @media (prefers-color-scheme:dark){.toast-bar{background:rgba(255,255,255,.5)}.toast-card{background:#2c2c2e;border-color:#3a3a3c;color:#f2f2f7;box-shadow:0 4px 14px rgba(0,0,0,.35)}.toast-card.success .toast-ico{color:#4cd964}.toast-card.info .toast-ico{color:#64b5ff}.toast-card.warning .toast-ico{color:#ffb340}.toast-card.error .toast-ico{color:#ff6961}.toast-action{background:rgba(255,255,255,.1);color:#e5e5ea}.toast-action:hover{background:rgba(255,255,255,.18)}}
-@media (prefers-reduced-motion:reduce){.toast-card,.toast-ico svg{animation:none!important}}
+@media (prefers-reduced-motion:reduce){.toast-ico svg,.toast-bar{animation:none!important}.toast-slot,.toast-slot>.toast-card{transition:none!important}}
 .scrim{display:none;position:absolute;inset:0;background:rgba(0,0,0,.25);z-index:5}
 .gear{position:absolute;left:12px;bottom:12px;width:30px;height:30px;border-radius:50%;border:0;background:#bbb;color:#fff;padding:0;display:grid;place-items:center;cursor:pointer;transition:background .15s}
 .gear:hover{background:#999}
@@ -1456,6 +1458,7 @@ textarea:focus-visible,select:focus-visible,
  }
  .home-icon:hover,.home-icon:focus-visible{background:rgba(255,255,255,.18)}
  .more:hover,.more[aria-expanded="true"]{background:#3a3a3c;color:#e6e6ea}
+ .round{background:var(--bub);box-shadow:none}
  .round:hover:not(.blocked){background:#3a3a3c}
  .side .new:hover,.side .gear:hover,.new:hover,.gear:hover{background:#3a3a3c!important}
  .access-form button:hover,#access-unlock:hover{background:#4a4a4f;color:#f2f2f2}
@@ -2981,10 +2984,10 @@ function toastType(t){
  if(/deleted|pinned|updated|saved|merged|synced|moved|removed|unlocked|generated|set to|milestone|restored|copied|changed|successfully|resolved|refreshed|enabled|back on|signed in\.|: done|done\./i.test(t))return"success";
  return"info";
 }
-function toastInner(el,type,text,act,timed,dur){
- el.className="toast-card "+type+(timed?"":" sticky");
+function toastBody(el,type,text,act,showBar,dur){
+ el.className="toast-card "+type+(showBar?"":" sticky");
  el.dataset.text=text;
- el.innerHTML='<span class="toast-ico">'+ic(TOAST_ICON[type],17,2.2)+'</span><span class="toast-msg"></span>'+(act?'<button type="button" class="toast-action" aria-label="'+act.label+'" title="'+act.label+'">'+ic(act.icon,16,2.2)+'</button>':'')+(timed?'<span class="toast-bar" style="--dur:'+dur+'ms"></span>':'');
+ el.innerHTML='<div class="toast-row"><span class="toast-ico">'+ic(TOAST_ICON[type],17,2.2)+'</span><span class="toast-msg"></span>'+(act?'<button type="button" class="toast-action" aria-label="'+act.label+'" title="'+act.label+'">'+ic(act.icon,16,2.2)+'</button>':'')+'</div>'+(showBar?'<span class="toast-bar" style="--dur:'+dur+'ms"></span>':'');
  el.querySelector(".toast-msg").textContent=text;
  const u=el.querySelector(".toast-action");
  if(u)u.addEventListener("click",e=>{e.stopPropagation();runToastAction(el,act)});
@@ -2996,41 +2999,46 @@ function runToastAction(el,act){
  Promise.resolve(r).catch(()=>{}).finally(()=>{
    el._busy=false;
    if(window._toastOrigin===el)window._toastOrigin=null;
-   if(!el._consumed&&el.isConnected&&!el.classList.contains("out"))el._dismiss();
+   if(!el._consumed&&el.isConnected&&!el._closing)el._dismiss();
  });
 }
-function replaceToast(el,text,type,act,timed,dur){
+function replaceToast(el,text,type,act,showBar,dur){
  clearTimeout(el._t);el._busy=false;
  el.classList.add("swap");
  setTimeout(()=>{
-   if(!el.isConnected||el.classList.contains("out"))return;
-   toastInner(el,type,text,act,timed,dur);
+   if(!el.isConnected||el._closing)return;
+   toastBody(el,type,text,act,showBar,dur);
    el.classList.add("swap");
    requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.remove("swap")));
-   if(timed)el._t=setTimeout(el._dismiss,dur);
+   el._t=setTimeout(el._dismiss,dur);
  },170);
 }
 function toast(text,opts={}){
  const wrap=$("toasts");if(!wrap)return;
  const type=opts.type||toastType(text);
  const act=opts.act||(opts.undo?{icon:"rotate-ccw",label:"Undo",run:opts.undo}:(opts.retry?{icon:"rotate-cw",label:"Retry",run:opts.retry}:null));
- const timed=type==="success"||type==="info"||!!opts.undo;
- const dur=opts.undo?4000:1800;
+ const showBar=!!opts.undo||type==="success"||type==="info";
+ const dur=opts.undo?4000:(showBar?1800:5000);
  const origin=window._toastOrigin;
- if(origin&&origin.isConnected&&!origin.classList.contains("out")&&!origin._consumed){
+ if(origin&&origin.isConnected&&!origin._closing&&!origin._consumed){
    origin._consumed=true;window._toastOrigin=null;
-   replaceToast(origin,text,type,act,timed,dur);
+   replaceToast(origin,text,type,act,showBar,dur);
    return;
  }
- wrap.querySelectorAll(".toast-card").forEach(el=>{if(el.dataset.text===text&&!el.classList.contains("out"))el._dismiss()});
+ wrap.querySelectorAll(".toast-card").forEach(c=>{if(c.dataset.text===text&&!c._closing)c._dismiss()});
+ const slot=document.createElement("div");slot.className="toast-slot enter";
  const el=document.createElement("div");
- const dismiss=()=>{if(el.classList.contains("out"))return;clearTimeout(el._t);el.style.setProperty("--h",el.offsetHeight+"px");el.classList.add("out");setTimeout(()=>el.remove(),280)};
+ el._closing=false;el._slot=slot;
+ const dismiss=()=>{if(el._closing)return;el._closing=true;clearTimeout(el._t);slot.classList.add("closing");setTimeout(()=>slot.remove(),360)};
  el._dismiss=dismiss;
- el.addEventListener("click",e=>{if(e.target.closest(".toast-action"))return;const sel=window.getSelection&&window.getSelection();if(sel&&sel.toString().trim()&&el.contains(sel.anchorNode))return;el._dismiss()});
- toastInner(el,type,text,act,timed,dur);
- wrap.prepend(el);
- if(timed)el._t=setTimeout(dismiss,dur);
- const live=[...wrap.querySelectorAll(".toast-card")].filter(c=>!c.classList.contains("out"));
+ el.addEventListener("click",e=>{if(e.target.closest(".toast-action"))return;const sel=window.getSelection&&window.getSelection();if(sel&&sel.toString().trim()&&el.contains(sel.anchorNode))return;dismiss()});
+ toastBody(el,type,text,act,showBar,dur);
+ slot.appendChild(el);
+ wrap.prepend(slot);
+ void slot.offsetHeight;
+ requestAnimationFrame(()=>requestAnimationFrame(()=>slot.classList.remove("enter")));
+ el._t=setTimeout(dismiss,dur);
+ const live=[...wrap.querySelectorAll(".toast-card")].filter(c=>!c._closing);
  if(live.length>3)live[live.length-1]._dismiss();
 }
 const ARIES_INTRO_KEY="whwai.ariesIntroShown.v1";
