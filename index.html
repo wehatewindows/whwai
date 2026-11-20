@@ -129,11 +129,11 @@ svg{display:block}
 .note{font-size:13px;margin:8px 0 0 4px}
 .toasts{position:absolute;left:0;right:0;top:14px;z-index:25;display:flex;flex-direction:column;align-items:center;gap:0;padding:0 12px;pointer-events:none}
 @media (max-width:640px){.toasts{top:calc(var(--bar) + 8px)}}
-.toast-slot{display:grid;grid-template-rows:1fr;width:min(100%,380px);padding-bottom:8px;pointer-events:none;transition:grid-template-rows .34s cubic-bezier(.2,.75,.25,1),padding-bottom .34s cubic-bezier(.2,.75,.25,1)}
-.toast-slot.enter,.toast-slot.closing{grid-template-rows:0fr;padding-bottom:0}
-.toast-slot>.toast-card{min-height:0;position:relative;box-sizing:border-box;width:100%;border-radius:16px;background:#ffffff;border:1px solid #e5e5ea;box-shadow:0 4px 14px rgba(0,0,0,.1);color:#1d1d1f;font-size:14px;font-weight:500;line-height:1.35;overflow:hidden;cursor:pointer;pointer-events:auto;transition:opacity .26s ease,transform .34s cubic-bezier(.2,.75,.25,1)}
-.toast-slot.enter>.toast-card{opacity:0;transform:translateY(-10px) scale(.97)}
-.toast-slot.closing>.toast-card{opacity:0;transform:translateY(-8px) scale(.97);pointer-events:none}
+.toast-slot{display:grid;grid-template-rows:1fr;width:min(100%,380px);padding-bottom:8px;pointer-events:none;transition:grid-template-rows .4s cubic-bezier(.22,.8,.24,1),padding-bottom .4s cubic-bezier(.22,.8,.24,1)}
+.toast-slot.enter,.toast-slot.closing{grid-template-rows:0fr;padding-bottom:0}.toast-slot.closing{transition-delay:.12s}
+.toast-slot>.toast-card{min-height:0;position:relative;box-sizing:border-box;width:100%;border-radius:16px;background:#ffffff;border:1px solid #e5e5ea;box-shadow:0 4px 14px rgba(0,0,0,.1);color:#1d1d1f;font-size:14px;font-weight:500;line-height:1.35;overflow:hidden;cursor:pointer;pointer-events:auto;will-change:opacity,transform;transition:opacity .34s cubic-bezier(.22,.8,.24,1),transform .42s cubic-bezier(.22,.8,.24,1)}
+.toast-slot.enter>.toast-card{opacity:0;transform:translate3d(0,-10px,0) scale(.97)}
+.toast-slot.closing>.toast-card{opacity:0;transform:translate3d(0,-6px,0) scale(.98);pointer-events:none;transition:opacity .18s cubic-bezier(.4,0,1,1),transform .22s cubic-bezier(.4,0,1,1)}
 .toast-row{display:flex;align-items:center;gap:11px;padding:11px 12px 13px 11px}
 .toast-ico{flex:0 0 auto;width:26px;height:26px;border-radius:50%;display:grid;place-items:center}
 .toast-ico svg{animation:toastPop .3s ease-out .08s both}
@@ -148,8 +148,11 @@ svg{display:block}
 .toast-bar{position:absolute;left:0;right:0;bottom:0;height:3px;transform-origin:left center;animation:toastDrain var(--dur,3200ms) linear both}
 @keyframes toastDrain{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 .toast-card.sticky .toast-bar{display:none}
-.toast-msg,.toast-ico,.toast-action{transition:opacity .18s ease}
-.toast-card.swap .toast-msg,.toast-card.swap .toast-ico,.toast-card.swap .toast-action{opacity:0}
+.toast-msg,.toast-ico,.toast-action{transition:opacity .16s ease-out,transform .2s cubic-bezier(.22,.8,.24,1)}
+.toast-card.out .toast-msg,.toast-card.out .toast-ico,.toast-card.out .toast-action{opacity:0;transform:translate3d(0,-4px,0);transition:opacity .13s ease-in,transform .13s ease-in}
+@keyframes toastIn{from{opacity:0;transform:translate3d(0,5px,0)}to{opacity:1;transform:none}}
+.toast-card.in .toast-msg,.toast-card.in .toast-action{animation:toastIn .26s cubic-bezier(.22,.8,.24,1) both}
+.toast-card.in .toast-ico{animation:toastIn .26s cubic-bezier(.22,.8,.24,1) both}
 .toast-bar{background:rgba(0,0,0,.42)}
 @media (prefers-color-scheme:dark){.toast-bar{background:rgba(255,255,255,.5)}.toast-slot>.toast-card{background:#2c2c2e;border-color:#3a3a3c;color:#f2f2f7;box-shadow:0 4px 14px rgba(0,0,0,.35)}.toast-card.success .toast-ico{color:#4cd964}.toast-card.info .toast-ico{color:#64b5ff}.toast-card.warning .toast-ico{color:#ffb340}.toast-card.error .toast-ico{color:#ff6961}.toast-action{background:rgba(255,255,255,.1);color:#e5e5ea}.toast-action:hover{background:rgba(255,255,255,.18)}}
 @media (prefers-reduced-motion:reduce){.toast-ico svg,.toast-bar{animation:none!important}.toast-slot,.toast-slot>.toast-card{transition:none!important}}
@@ -3059,16 +3062,26 @@ function runToastAction(el,act){
    if(!el._consumed&&el.isConnected&&!el._closing)el._dismiss();
  });
 }
+function glideHeight(el,fromH){
+ // Animates the card's height from its previous size to its current one, so a changed line count never jumps.
+ el.style.height="auto";const toH=el.offsetHeight;
+ if(Math.abs(toH-fromH)<1){el.style.height="";return}
+ el.style.height=fromH+"px";void el.offsetHeight;
+ el.style.transition="height .34s cubic-bezier(.22,.8,.24,1)";el.style.height=toH+"px";
+ clearTimeout(el._glide);el._glide=setTimeout(()=>{el.style.height="";el.style.transition=""},360);
+}
 function replaceToast(el,text,type,act,showBar,dur){
- clearTimeout(el._t);el._busy=false;
- el.classList.add("swap");
- setTimeout(()=>{
+ clearTimeout(el._t);el._busy=false;clearTimeout(el._swap);
+ const fromH=el.offsetHeight;
+ el.classList.add("out");
+ el._swap=setTimeout(()=>{
    if(!el.isConnected||el._closing)return;
    toastBody(el,type,text,act,showBar,dur);
-   el.classList.add("swap");
-   requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.remove("swap")));
+   el.classList.add("in");
+   glideHeight(el,fromH);
+   clearTimeout(el._inT);el._inT=setTimeout(()=>el.classList.remove("in"),320);
    el._t=setTimeout(el._dismiss,dur);
- },170);
+ },130);
 }
 function toast(text,opts={}){
  const wrap=$("toasts");if(!wrap)return;
@@ -3086,7 +3099,7 @@ function toast(text,opts={}){
  const slot=document.createElement("div");slot.className="toast-slot enter";
  const el=document.createElement("div");
  el._closing=false;el._slot=slot;
- const dismiss=()=>{if(el._closing)return;el._closing=true;clearTimeout(el._t);slot.classList.add("closing");setTimeout(()=>slot.remove(),360)};
+ const dismiss=()=>{if(el._closing)return;el._closing=true;clearTimeout(el._t);slot.classList.add("closing");setTimeout(()=>slot.remove(),540)};
  el._dismiss=dismiss;
  el.addEventListener("click",e=>{if(e.target.closest(".toast-action"))return;const sel=window.getSelection&&window.getSelection();if(sel&&sel.toString().trim()&&el.contains(sel.anchorNode))return;dismiss()});
  toastBody(el,type,text,act,showBar,dur);
