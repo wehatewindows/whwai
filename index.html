@@ -2836,7 +2836,7 @@ async function answer(c,q){
    }catch(e){
     if(responseWasStopped||run!==answerRunId||e&&e.name==="AbortError"&&controller.signal.aborted)return;
     if(e&&e.payload&&e.payload.error==="chat_ended"){endedNow=true;full=e.payload.message||"This chat was ended.";}else if(e&&e.payload&&e.payload.error==="vela_unavailable"){
-     try{const j2=await post({action:"chat",model:"aries-1",chatId:c.id,messages:hist(c)},controller.signal);if(responseWasStopped||run!==answerRunId)return;full=j2.text||ERR_TEXT;usedModel="aries-1";if(!j2.text)err=1;toast("Vela couldn't finish that answer, so Aries answered instead.")}
+     try{const j2=await post({action:"chat",model:"aries-1",chatId:c.id,messages:hist(c)},controller.signal);if(responseWasStopped||run!==answerRunId)return;full=j2.text||ERR_TEXT;usedModel="aries-1";if(!j2.text)err=1;toast("Vela couldn't finish that answer, so Aries answered instead.",{retry:()=>regen()})}
      catch(e2){if(responseWasStopped||run!==answerRunId||e2&&e2.name==="AbortError")return;full=ERR_TEXT;err=1}
     }
     else{    if(e&&e.payload&&e.payload.error==="guest_limit"){setLimitHit();limitNow=true}full=e&&e.message==="daily_limit"?(e.payload&&e.payload.message||"You've reached this model's daily limit. Please try again tomorrow."):e&&e.message==="model_unavailable"?"That model is not available right now.":e&&e.payload&&e.payload.message?e.payload.message:ERR_TEXT;err=1;}
@@ -2909,7 +2909,7 @@ function resendAfterLimit(i){
 function send(){
  const q=ta.value.trim();if(!q||busy)return;
  if(stimAdminCmd(q)){ta.value="";fit();return}
- if(sendBlockReason()){toast(sendBlockReason());return}
+ if(sendBlockReason()){blockToast(sendBlockReason());return}
  if(!accountReady){toast("Checking your account session. Please wait.");return}
  if(accountSession&&accountSession.user&&accountSession.user.mustChange){renderRequiredPasswordChange();return}
  ta.value="";fit();let c=C();
@@ -2922,6 +2922,7 @@ function regen(){
  const q=[...c.m].reverse().find(m=>m.r==="u");save();renderChat();if(q)answer(c,q.x);
 }
 function openChat(id){if(busy)return;S.cur=id;save();renderList();renderChat();refreshSendState();side(false)}
+function blockToast(r){toast(r,/chat was ended/i.test(r)?{act:{icon:"plus",label:"New chat",run:()=>newChat()}}:{})}
 function newChat(){if(busy)return;S.cur=null;save();renderList();renderChat();refreshSendState();side(false);ta.focus()}
 async function confirmDeleteChat(id){
  if(busy)return;const chat=S.chats.find(c=>c.id===id);if(!chat)return;
@@ -2978,7 +2979,7 @@ function toastType(t){
 function toast(text,opts={}){
  const wrap=$("toasts");if(!wrap)return;
  const type=opts.type||toastType(text);
- const act=opts.undo?{icon:"rotate-ccw",label:"Undo",run:opts.undo}:(opts.retry?{icon:"rotate-cw",label:"Retry",run:opts.retry}:null);
+ const act=opts.act||(opts.undo?{icon:"rotate-ccw",label:"Undo",run:opts.undo}:(opts.retry?{icon:"rotate-cw",label:"Retry",run:opts.retry}:null));
  const dur=act?5200:3200;
  wrap.querySelectorAll(".toast-card").forEach(el=>{if(el.dataset.text===text&&!el.classList.contains("out"))el._dismiss()});
  const el=document.createElement("div");
@@ -3013,7 +3014,7 @@ function showAriesIntroOnce(){
 function pop(open){open?showEl($("pop")):hideEl($("pop"));$("model").setAttribute("aria-expanded",open)}
 $("aries-info-got-it").onclick=()=>hideAriesIntro(true);
 
-sendBtn.onclick=()=>{if(busy){stopAnswer();return}const r=sendBlockReason();if(r){toast(r);return}send()};
+sendBtn.onclick=()=>{if(busy){stopAnswer();return}const r=sendBlockReason();if(r){blockToast(r);return}send()};
 $("limit-signin").onclick=()=>openSettings(()=>renderAccountAuth("login"));
 $("limit-signup").onclick=()=>openSettings(()=>renderAccountAuth("signup"));
 refreshSendState();
@@ -3694,7 +3695,7 @@ async function syncAccountChatsNow(){if(selfDisabledInfo)return;
  }catch(e){
   accountInitialSyncPending=false;
   if(e&&e.message==="invalid_session"){
-   clearAccountSession();accountMergePendingToast=false;renderList();renderChat();toast("Your sign-in expired. Your chats are still saved on this device. Sign in again to sync them.");
+   clearAccountSession();accountMergePendingToast=false;renderList();renderChat();toast("Your sign-in expired. Your chats are still saved on this device. Sign in again to sync them.",{act:{icon:"log-in",label:"Sign in",run:()=>openSettings(()=>renderAccountAuth("login"))}});
   }else if(e&&e.message==="password_change_required"){
    if(accountSession&&accountSession.user)accountSession.user.mustChange=true;renderRequiredPasswordChange();
   }else{accountSyncAgain=true;accountSyncFailed=true;scheduleSyncRetry();renderChat();if(!modal.hidden&&currentSettingsView==="account")updateAccountSyncStatus("Offline or unable to sync right now. Your local changes remain saved.")}
@@ -3713,7 +3714,7 @@ function hideProfileMenu(){hideEl($("profile-menu"))}
 function wantsThinkingView(text){return /(show|see|display|reveal)\b.{0,20}\b(thinking|thought|reasoning)\b|\bthink (it |this )?through\b|\bstep[- ]by[- ]step\b/i.test(String(text||""))}
 function togglePanel(panel,btn,replay){const open=panel.hidden;open?showEl(panel):hideEl(panel);btn.setAttribute("aria-expanded",String(open));if(open&&replay){const ol=panel.querySelector(".steps");if(ol){ol.classList.remove("play");void ol.offsetWidth;ol.classList.add("play")}}}
 function thinkingSteps(text){return String(text||"").replace(/([.!?])\s+(?=[A-Z])/g,"$1\n").split(/\n+/).map(s=>s.replace(/^[\s\-*•\d.)]+/,"").replace(/\s+/g," ").trim()).filter(s=>s.length>2).slice(0,14).map(s=>s.length>220?s.slice(0,217)+"…":s)}
-setInterval(()=>{if(!accountDisabledGate&&accountSession&&accountSession.token&&accountReady&&!(accountSession.user&&accountSession.user.mustChange))post({action:"account_me",sessionToken:accountSession.token}).catch(e=>{if(e&&e.message==="invalid_session"&&accountSession){clearAccountSession();renderList();renderChat();toast("Your sign-in expired. Your chats are still saved on this device. Sign in again to sync them.")}})},60000);
+setInterval(()=>{if(!accountDisabledGate&&accountSession&&accountSession.token&&accountReady&&!(accountSession.user&&accountSession.user.mustChange))post({action:"account_me",sessionToken:accountSession.token}).catch(e=>{if(e&&e.message==="invalid_session"&&accountSession){clearAccountSession();renderList();renderChat();toast("Your sign-in expired. Your chats are still saved on this device. Sign in again to sync them.",{act:{icon:"log-in",label:"Sign in",run:()=>openSettings(()=>renderAccountAuth("login"))}})}})},60000);
 function renderSyncStatus(){
  try{const md=$("modal");if(md&&!md.hidden&&currentSettingsView==="account")updateAccountSyncStatus()}catch(e){}
  const b=$("profile-btn");if(!b)return;
@@ -3755,7 +3756,7 @@ async function resumeAccountSession(){
  }catch(e){
   if(e&&e.message==="accesslocked"){accountReady=true;accountInitialSyncPending=false;renderSyncStatus();return}
   if(e&&e.message==="invalid_session"){
-   clearAccountSession();renderList();renderChat();toast("Your account session expired. Your chats are still saved on this device. Sign in again to sync them.");
+   clearAccountSession();renderList();renderChat();toast("Your account session expired. Your chats are still saved on this device. Sign in again to sync them.",{act:{icon:"log-in",label:"Sign in",run:()=>openSettings(()=>renderAccountAuth("login"))}});
   }else{accountReady=true;accountSyncAgain=true;scheduleSyncRetry();}
  }
 }
@@ -4309,7 +4310,7 @@ function deskData(){
  deskSetTitle("Data & privacy");
  if(!confirmDeleteEnabled()){
   const rd=document.createElement("button");rd.type="button";rd.className="subtle-link";rd.id="restore-delete-confirm";rd.textContent="Ask before deleting chats again";
-  rd.onclick=()=>{setConfirmDelete(true);toast("Delete confirmation is back on.");deskData()};
+  rd.onclick=()=>{setConfirmDelete(true);toast("Delete confirmation is back on.",{undo:()=>{setConfirmDelete(false);deskData();toast("Changes undone.")}});deskData()};
   mbody.appendChild(rd);
  }
 }
@@ -4680,7 +4681,7 @@ async function runAccountOp(id,change,send,doneText,opts){
   return result;
  }catch(err){
   if(undo)undo();
-  toast(err&&err.payload&&err.payload.message||"Couldn't update that account.");
+  toast(err&&err.payload&&err.payload.message||"Couldn't update that account.",{retry:()=>runAccountOp(id,change,send,doneText,opts)});
   return null;
  }finally{
   accountsWorking.delete(id);refreshAdminAccounts();
@@ -4733,7 +4734,7 @@ async function resolveFlag(b){
  if(!res.ok){
   b.disabled=false;b.classList.remove("is-busy");b.textContent=label;
   if(item){item.classList.remove("is-resolving");await setFlagCollapsed(item,false)}
-  toast(res.msg||"Couldn't update that flag.");return;
+  toast(res.msg||"Couldn't update that flag.",{retry:()=>b.click()});return;
  }
  if(adminFlagsData)adminFlagsData=Object.assign({},adminFlagsData,{flags:(adminFlagsData.flags||[]).filter(f=>f.id!==id)});
  if(item)item.remove();
