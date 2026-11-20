@@ -2165,7 +2165,7 @@ function bulkPin(){
  const picked=selectedChats();if(!picked.length)return;
  const allPinned=picked.every(c=>c.p);
  const prevP=picked.map(c=>({c,p:c.p}));picked.forEach(c=>{c.p=allPinned?0:1;touch(c);flashRow(c.id,"pin")});save();
- toast(allPinned?"Unpinned.":"Pinned.",{undo:()=>{prevP.forEach(x=>{x.c.p=x.p;touch(x.c)});save();renderList();toast("Changes undone.")}});setSelecting(false);renderList();
+ setSelecting(false);renderList();
 }
 async function bulkTitle(){
  const ids=selectedChats().map(c=>c.id);if(!ids.length)return;
@@ -2353,7 +2353,7 @@ function finishPick(gid,startRename){
  closeMenu();
  const prevG=ids.map(id=>({id,g:(S.chats.find(c=>c.id===id)||{}).g}));const n=moveChats(ids,gid);
  if(gid&&startRename)renamingGroupId=gid;
- if(n)toast(gid?"Moved to "+groupById(gid).name+".":"Removed from its group.",{undo:()=>restoreGroupsOf(prevG)});
+ 
  if(done)done();
  renderList();
 }
