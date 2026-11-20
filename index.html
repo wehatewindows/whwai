@@ -146,6 +146,8 @@ svg{display:block}
 .toast-bar{position:absolute;left:0;right:0;bottom:0;height:3px;transform-origin:left center;animation:toastDrain var(--dur,3200ms) linear both}
 @keyframes toastDrain{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 .toast-card.sticky .toast-bar{display:none}
+.toast-msg,.toast-ico,.toast-action{transition:opacity .18s ease}
+.toast-card.swap .toast-msg,.toast-card.swap .toast-ico,.toast-card.swap .toast-action{opacity:0}
 .toast-bar{background:rgba(0,0,0,.42)}
 @media (prefers-color-scheme:dark){.toast-bar{background:rgba(255,255,255,.5)}.toast-card{background:#2c2c2e;border-color:#3a3a3c;color:#f2f2f7;box-shadow:0 4px 14px rgba(0,0,0,.35)}.toast-card.success .toast-ico{color:#4cd964}.toast-card.info .toast-ico{color:#64b5ff}.toast-card.warning .toast-ico{color:#ffb340}.toast-card.error .toast-ico{color:#ff6961}.toast-action{background:rgba(255,255,255,.1);color:#e5e5ea}.toast-action:hover{background:rgba(255,255,255,.18)}}
 @media (prefers-reduced-motion:reduce){.toast-card,.toast-ico svg{animation:none!important}}
@@ -2979,24 +2981,54 @@ function toastType(t){
  if(/deleted|pinned|updated|saved|merged|synced|moved|removed|unlocked|generated|set to|milestone|restored|copied|changed|successfully|resolved|refreshed|enabled|back on|signed in\.|: done|done\./i.test(t))return"success";
  return"info";
 }
+function toastInner(el,type,text,act,timed,dur){
+ el.className="toast-card "+type+(timed?"":" sticky");
+ el.dataset.text=text;
+ el.innerHTML='<span class="toast-ico">'+ic(TOAST_ICON[type],17,2.2)+'</span><span class="toast-msg"></span>'+(act?'<button type="button" class="toast-action" aria-label="'+act.label+'" title="'+act.label+'">'+ic(act.icon,16,2.2)+'</button>':'')+(timed?'<span class="toast-bar" style="--dur:'+dur+'ms"></span>':'');
+ el.querySelector(".toast-msg").textContent=text;
+ const u=el.querySelector(".toast-action");
+ if(u)u.addEventListener("click",e=>{e.stopPropagation();runToastAction(el,act)});
+}
+function runToastAction(el,act){
+ if(el._busy)return;el._busy=true;el._consumed=false;
+ window._toastOrigin=el;
+ let r=null;try{r=act.run()}catch(err){}
+ Promise.resolve(r).catch(()=>{}).finally(()=>{
+   el._busy=false;
+   if(window._toastOrigin===el)window._toastOrigin=null;
+   if(!el._consumed&&el.isConnected&&!el.classList.contains("out"))el._dismiss();
+ });
+}
+function replaceToast(el,text,type,act,timed,dur){
+ clearTimeout(el._t);el._busy=false;
+ el.classList.add("swap");
+ setTimeout(()=>{
+   if(!el.isConnected||el.classList.contains("out"))return;
+   toastInner(el,type,text,act,timed,dur);
+   el.classList.add("swap");
+   requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.remove("swap")));
+   if(timed)el._t=setTimeout(el._dismiss,dur);
+ },170);
+}
 function toast(text,opts={}){
  const wrap=$("toasts");if(!wrap)return;
  const type=opts.type||toastType(text);
  const act=opts.act||(opts.undo?{icon:"rotate-ccw",label:"Undo",run:opts.undo}:(opts.retry?{icon:"rotate-cw",label:"Retry",run:opts.retry}:null));
  const timed=type==="success"||type==="info"||!!opts.undo;
  const dur=opts.undo?4000:1800;
+ const origin=window._toastOrigin;
+ if(origin&&origin.isConnected&&!origin.classList.contains("out")&&!origin._consumed){
+   origin._consumed=true;window._toastOrigin=null;
+   replaceToast(origin,text,type,act,timed,dur);
+   return;
+ }
  wrap.querySelectorAll(".toast-card").forEach(el=>{if(el.dataset.text===text&&!el.classList.contains("out"))el._dismiss()});
  const el=document.createElement("div");
- el.className="toast-card "+type+(timed?"":" sticky");el.dataset.text=text;
- el.innerHTML='<span class="toast-ico">'+ic(TOAST_ICON[type],17,2.2)+'</span><span class="toast-msg"></span>'+(act?'<button type="button" class="toast-action" aria-label="'+act.label+'" title="'+act.label+'">'+ic(act.icon,16,2.2)+'</button>':'')+(timed?'<span class="toast-bar" style="--dur:'+dur+'ms"></span>':'');
- el.querySelector(".toast-msg").textContent=text;
  const dismiss=()=>{if(el.classList.contains("out"))return;clearTimeout(el._t);el.style.setProperty("--h",el.offsetHeight+"px");el.classList.add("out");setTimeout(()=>el.remove(),280)};
  el._dismiss=dismiss;
- el.addEventListener("click",e=>{if(e.target.closest(".toast-action"))return;dismiss()});
- const u=el.querySelector(".toast-action");
- if(u)u.addEventListener("click",e=>{e.stopPropagation();dismiss();try{act.run()}catch(err){}});
+ el.addEventListener("click",e=>{if(e.target.closest(".toast-action"))return;el._dismiss()});
+ toastInner(el,type,text,act,timed,dur);
  wrap.prepend(el);
- el.style.setProperty("--h",el.scrollHeight+"px");
  if(timed)el._t=setTimeout(dismiss,dur);
  const live=[...wrap.querySelectorAll(".toast-card")].filter(c=>!c.classList.contains("out"));
  if(live.length>3)live[live.length-1]._dismiss();
