@@ -2676,7 +2676,7 @@ const ERR_TEXT="WHWai is busy or can't be reached right now. Wait a moment, then
 const hist=c=>c.m.filter(m=>!m.err).slice(-14).map(m=>({r:m.r,x:m.x}));
 async function post(body,externalSignal){
  const action=body.action;
- if(!body.deviceId){try{const d=localStorage.getItem("whwai.device.v1")||"";if(/^[A-Za-z0-9_-]{8,80}$/.test(d))body={...body,deviceId:d}}catch(e){}}
+ if(!body.deviceId){const d=getDeviceId();if(d)body={...body,deviceId:d}}
  if(action!=="access_check"&&action!=="status_check"){try{const token=localStorage.getItem(ACCESS_TOKEN_KEY);if(token)body={...body,accessToken:token}}catch(e){}}
  if(accountSession&&accountSession.token&&!body.sessionToken&&["auth_login","auth_signup","auth_admin_login","status_check","access_check"].indexOf(action)===-1)body={...body,sessionToken:accountSession.token};
  const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),45000);
@@ -2922,6 +2922,7 @@ async function answer(c,q){
   const target=S.chats.find(x=>x.id===c.id);
   if(!target)return;
   if(limitNow)full="You've hit your usage limit.";target.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1,limit:limitNow?1:0}:{r:"a",x:full,at:Date.now(),sources:sources,thinking:thinking,tools:usedTools,model:usedModel||target.model||S.model||"aries-1",_l:1});if(endedNow)target.ended=1;target.u=Date.now();touch(target);save();renderList();renderChat();
+  if(err&&!limitNow&&!endedNow)toast("Couldn't get an answer.",{retry:()=>regen()});
   if(API_URL&&!err&&target.auto)genTitle(target);
 
  }finally{
