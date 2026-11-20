@@ -129,7 +129,7 @@ svg{display:block}
 .note{font-size:13px;margin:8px 0 0 4px}
 .toasts{position:absolute;left:0;right:0;top:14px;z-index:25;display:flex;flex-direction:column;align-items:center;gap:0;padding:0 12px;pointer-events:none}
 @media (max-width:640px){.toasts{top:calc(var(--bar) + 8px)}}
-.toast-card{position:relative;box-sizing:border-box;width:min(100%,380px);display:flex;align-items:center;gap:11px;padding:11px 12px 13px 11px;border-radius:16px;background:#ffffff;border:1px solid #e5e5ea;box-shadow:0 4px 14px rgba(0,0,0,.1);color:#1d1d1f;font-size:14px;font-weight:500;line-height:1.35;overflow:hidden;cursor:pointer;pointer-events:auto;user-select:none;margin-bottom:8px;-webkit-user-select:none;animation:toastIn .32s cubic-bezier(.2,.8,.3,1) backwards}
+.toast-card{position:relative;box-sizing:border-box;width:min(100%,380px);display:flex;align-items:center;gap:11px;padding:11px 12px 13px 11px;border-radius:16px;background:#ffffff;border:1px solid #e5e5ea;box-shadow:0 4px 14px rgba(0,0,0,.1);color:#1d1d1f;font-size:14px;font-weight:500;line-height:1.35;overflow:hidden;cursor:pointer;pointer-events:auto;margin-bottom:8px;animation:toastIn .32s cubic-bezier(.2,.8,.3,1) backwards}
 .toast-card.out{animation:toastOut .26s ease-in-out both;pointer-events:none}
 @keyframes toastOut{from{opacity:1;transform:none;max-height:var(--h,200px);margin-bottom:8px}to{opacity:0;transform:translateY(-8px);max-height:0;margin-bottom:0}}
 @keyframes toastIn{from{opacity:0;transform:translateY(-10px);max-height:0;margin-bottom:0}to{opacity:1;transform:none;max-height:400px;margin-bottom:8px}}
@@ -140,7 +140,7 @@ svg{display:block}
 .toast-card.info .toast-ico{background:rgba(10,132,255,.14);color:#0a6fd6}
 .toast-card.warning .toast-ico{background:rgba(255,159,10,.18);color:#b86e00}
 .toast-card.error .toast-ico{background:rgba(255,59,48,.14);color:#d70015}
-.toast-msg{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
+.toast-msg{flex:1 1 auto;min-width:0;overflow-wrap:anywhere;user-select:text;-webkit-user-select:text;cursor:text}
 .toast-action{flex:0 0 auto;width:30px;height:30px;display:grid;place-items:center;border:0;padding:0;border-radius:50%;background:rgba(0,0,0,.06);color:#3a3a3c;cursor:pointer;pointer-events:auto}
 .toast-action:hover{background:rgba(0,0,0,.12)}
 .toast-bar{position:absolute;left:0;right:0;bottom:0;height:3px;transform-origin:left center;animation:toastDrain var(--dur,3200ms) linear both}
@@ -3026,7 +3026,7 @@ function toast(text,opts={}){
  const el=document.createElement("div");
  const dismiss=()=>{if(el.classList.contains("out"))return;clearTimeout(el._t);el.style.setProperty("--h",el.offsetHeight+"px");el.classList.add("out");setTimeout(()=>el.remove(),280)};
  el._dismiss=dismiss;
- el.addEventListener("click",e=>{if(e.target.closest(".toast-action"))return;el._dismiss()});
+ el.addEventListener("click",e=>{if(e.target.closest(".toast-action"))return;const sel=window.getSelection&&window.getSelection();if(sel&&sel.toString().trim()&&el.contains(sel.anchorNode))return;el._dismiss()});
  toastInner(el,type,text,act,timed,dur);
  wrap.prepend(el);
  if(timed)el._t=setTimeout(dismiss,dur);
@@ -3248,7 +3248,7 @@ function stimSplat(x,y){const d=document.createElement("div");d.className="stim-
 function stimShakeMain(){const m=document.querySelector(".main");if(m){m.classList.remove("stim-shake");void m.offsetWidth;m.classList.add("stim-shake")}}
 document.addEventListener("mousedown",e=>{
  if(!stimOn)return;const t=e.target;
- if(t&&t.closest&&t.closest("input,textarea,select"))return;
+ if(t&&t.closest&&t.closest("input,textarea,select,.toast-card"))return;
  if(e.detail>1||stimIsBackground(t)||(t&&t.closest&&t.closest(".stim-hud,.stim-pet,.stim-float,.stim-rock,.stim-splat,.stim-pong")))e.preventDefault();
  if(e.detail>1&&window.getSelection)window.getSelection().removeAllRanges();
 });
