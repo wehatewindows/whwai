@@ -143,11 +143,8 @@ svg{display:block}
 .toast-undo:hover{background:rgba(10,132,255,.1)}
 .toast-bar{position:absolute;left:0;right:0;bottom:0;height:3px;transform-origin:left center;animation:toastDrain var(--dur,3200ms) linear both}
 @keyframes toastDrain{from{transform:scaleX(1)}to{transform:scaleX(0)}}
-.toast-card.success .toast-bar{background:#34c759}
-.toast-card.info .toast-bar{background:#0a84ff}
-.toast-card.warning .toast-bar{background:#ff9f0a}
-.toast-card.error .toast-bar{background:#ff3b30}
-@media (prefers-color-scheme:dark){.toast-card{background:#2c2c2e;border-color:#3a3a3c;color:#f2f2f7;box-shadow:0 4px 14px rgba(0,0,0,.35)}.toast-card.success .toast-ico{color:#4cd964}.toast-card.info .toast-ico{color:#64b5ff}.toast-card.warning .toast-ico{color:#ffb340}.toast-card.error .toast-ico{color:#ff6961}.toast-undo{color:#64b5ff}.toast-undo:hover{background:rgba(100,181,255,.14)}}
+.toast-bar{background:rgba(0,0,0,.42)}
+@media (prefers-color-scheme:dark){.toast-bar{background:rgba(255,255,255,.5)}.toast-card{background:#2c2c2e;border-color:#3a3a3c;color:#f2f2f7;box-shadow:0 4px 14px rgba(0,0,0,.35)}.toast-card.success .toast-ico{color:#4cd964}.toast-card.info .toast-ico{color:#64b5ff}.toast-card.warning .toast-ico{color:#ffb340}.toast-card.error .toast-ico{color:#ff6961}.toast-undo{color:#64b5ff}.toast-undo:hover{background:rgba(100,181,255,.14)}}
 @media (prefers-reduced-motion:reduce){.toast-card,.toast-ico svg{animation:none!important}}
 .scrim{display:none;position:absolute;inset:0;background:rgba(0,0,0,.25);z-index:5}
 .gear{position:absolute;left:12px;bottom:12px;width:30px;height:30px;border-radius:50%;border:0;background:#bbb;color:#fff;padding:0;display:grid;place-items:center;cursor:pointer;transition:background .15s}
@@ -2972,8 +2969,8 @@ function fit(animate=false){ta.style.height="auto";const cs=getComputedStyle(ta)
 const TOAST_ICON={success:"circle-check",info:"info",warning:"triangle-alert",error:"circle-x"};
 function toastType(t){
  if(/couldn.?t|can.?t|cannot|unable|failed|expired|error/i.test(t))return"error";
- if(/\bup to\b|maximum|must|use a whole|turn on|nothing to|not enough|checking|please wait|needs the live/i.test(t))return"warning";
- if(/deleted|pinned|updated|saved|merged|synced|moved|removed|unlocked|generated|set to|milestone|restored|copied|changed/i.test(t))return"success";
+ if(/\bup to\b|maximum|must|use a whole|turn on|turned off|nothing to|not enough|checking|please wait|needs the live|limit|reached/i.test(t))return"warning";
+ if(/deleted|pinned|updated|saved|merged|synced|moved|removed|unlocked|generated|set to|milestone|restored|copied|changed|successfully|resolved|refreshed|enabled|back on|signed in\.|: done|done\./i.test(t))return"success";
  return"info";
 }
 function toast(text,opts={}){
