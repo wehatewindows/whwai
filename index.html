@@ -1586,6 +1586,11 @@ html .steps li.step-live::before{background:var(--acc-solid)}
 .main>.note{position:absolute;left:0;right:0;bottom:0;margin:0;z-index:3;pointer-events:none}
 .main>.scroll#chat::after{content:"";display:block;flex:0 0 auto;height:calc(var(--note-space) + 104px)}
 .main>.scroll#chat{margin-bottom:calc(-1 * var(--note-space));padding-bottom:0!important}
+/* Chat below the composer is darkened and softly blurred, so the box stands out. Only a small strip is blurred, to keep scrolling smooth. */
+.main{--fade-rgb:255,255,255}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .main{--fade-rgb:18,18,18}}
+:root[data-theme="dark"] .main{--fade-rgb:18,18,18}
+.main::after{content:"";position:absolute;left:0;right:0;bottom:0;height:calc(var(--note-space) + 40px);pointer-events:none;z-index:2;background:linear-gradient(to bottom,rgba(var(--fade-rgb),0),rgba(var(--fade-rgb),.78) 45%,rgba(var(--fade-rgb),.92));-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);-webkit-mask-image:linear-gradient(to bottom,transparent,#000 55%);mask-image:linear-gradient(to bottom,transparent,#000 55%)}
 </style>
 
 </head>
