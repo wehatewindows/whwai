@@ -1594,7 +1594,7 @@ html .steps li.step-live::before{background:var(--acc-solid)}
 .main{--fade-rgb:255,255,255}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .main{--fade-rgb:18,18,18}}
 :root[data-theme="dark"] .main{--fade-rgb:18,18,18}
-.main::after{content:"";position:absolute;left:0;right:0;bottom:0;height:calc(var(--zone,200px) + 40px);pointer-events:none;z-index:2;background:linear-gradient(to bottom,rgba(var(--fade-rgb),0),rgba(var(--fade-rgb),.78) 45%,rgba(var(--fade-rgb),.92));-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);-webkit-mask-image:linear-gradient(to bottom,transparent,#000 55%);mask-image:linear-gradient(to bottom,transparent,#000 55%)}
+.main::after{content:"";position:absolute;left:0;right:0;bottom:0;height:calc(var(--zone,200px) + 60px);pointer-events:none;z-index:2;background:linear-gradient(to bottom,rgba(var(--fade-rgb),0) 0,rgba(var(--fade-rgb),.92) 60px,rgba(var(--fade-rgb),.92) 100%);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
 
 .typing{white-space:pre-wrap}
 @media (max-width:640px){body{background-image:none;padding-bottom:var(--gap-bottom)}}
@@ -1603,6 +1603,10 @@ html .steps li.step-live::before{background:var(--acc-solid)}
 #send svg{width:20px;height:20px}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #send{background:#f2f2f2;color:#111}:root:not([data-theme="light"]) #send:hover:not(.blocked){background:#fff}}
 :root[data-theme="dark"] #send{background:#f2f2f2;color:#111}
+
+body .mbar{background:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body .mbar{background:#121212}}
+:root[data-theme="dark"] body .mbar{background:#121212}
 </style>
 
 </head>
