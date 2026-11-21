@@ -1609,9 +1609,9 @@ body .mbar{background:#fff}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body .mbar{background:#121212}}
 :root[data-theme="dark"] body .mbar{background:#121212}
 
-body .mbar{background:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(16px) saturate(1.5);backdrop-filter:blur(16px) saturate(1.5)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body .mbar{background:rgba(18,18,18,.72)}}
-:root[data-theme="dark"] body .mbar{background:rgba(18,18,18,.72)}
+body .mbar{background:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body .mbar{background:#121212}}
+:root[data-theme="dark"] body .mbar{background:#121212}
 </style>
 
 </head>
@@ -2176,25 +2176,22 @@ chatEl.parentElement.appendChild(jumpBtn);
 chatEl.addEventListener("scroll",updateJump,{passive:true});
 // Draws a reply a little at a time, one frame at a time, so it stays smooth and never rebuilds the whole message on a timer.
 async function typeOut(el,full,signal,isStale){
- const len=full.length,dur=Math.min(3200,Math.max(600,len*10));
- const start=performance.now();let shown=0;
- const textNode=document.createTextNode("");
- el.replaceChildren(textNode);
+ const len=full.length,BASE=.06,FINISH_MS=2600;
+ let shown=0,last=performance.now(),carry=0;
  el.classList.add("typing");
  try{
-  while(true){
+  if(!len)el.innerHTML=md(full);
+  while(shown<len){
    if(isStale()||(signal&&signal.aborted))return false;
-   const t=Math.min(1,(performance.now()-start)/dur);
-   const nextShown=Math.min(len,Math.max(shown+1,Math.round(t*len)));
-   textNode.appendData(full.slice(shown,nextShown));
-   shown=nextShown;
-   // A large scrollTop is clamped to the current maximum without reading scrollHeight.
+   const now=performance.now(),dt=Math.min(64,now-last);last=now;
+   const rate=Math.max(BASE,len/FINISH_MS);
+   carry+=rate*dt;const step=Math.max(1,Math.floor(carry));carry-=step;
+   shown=Math.min(len,shown+step);
+   el.innerHTML=md(full.slice(0,shown));
    if(followOn)chatEl.scrollTop=1e9;
-   if(shown>=len)break;
-   await nextFrame();
+   if(shown<len)await nextFrame();
   }
  }finally{el.classList.remove("typing")}
- el.innerHTML=md(full);
  updateJump();
  if(followOn){toBottom();setTimeout(()=>{if(followOn)toBottom()},260)}
  return !isStale();
