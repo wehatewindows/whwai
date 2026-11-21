@@ -2153,7 +2153,7 @@ function flickToBottom(){
 ["wheel","touchstart","pointerdown"].forEach(ev=>chatEl.addEventListener(ev,()=>cancelAnimationFrame(jumpAnim),{passive:true}));
 chatEl.addEventListener("wheel",()=>{followOn=false},{passive:true});
 chatEl.addEventListener("touchmove",()=>{followOn=false},{passive:true});
-chatEl.addEventListener("scroll",()=>{if(near())followOn=true},{passive:true});
+chatEl.addEventListener("scroll",()=>{if(!followOn&&near())followOn=true},{passive:true});
 jumpBtn.onclick=()=>flickToBottom();
 // Centres the jump button above the blue orb, wherever the orb sits on this screen size.
 function alignJump(){
@@ -2161,7 +2161,7 @@ function alignJump(){
  const o=orb.getBoundingClientRect(),h=host.getBoundingClientRect(),w=jumpBtn.offsetWidth||40;
  jumpBtn.style.right=Math.max(0,h.right-(o.left+o.width/2)-w/2)+"px";
 }
-function updateJump(){const hide=near(),wasHidden=jumpBtn.classList.contains("is-hidden");jumpBtn.classList.toggle("is-hidden",hide);if(!hide&&wasHidden)alignJump()}
+function updateJump(){if(followOn){jumpBtn.classList.add("is-hidden");return}const hide=near(),wasHidden=jumpBtn.classList.contains("is-hidden");jumpBtn.classList.toggle("is-hidden",hide);if(!hide&&wasHidden)alignJump()}
 window.addEventListener("resize",alignJump);
 chatEl.parentElement.appendChild(jumpBtn);
 chatEl.addEventListener("scroll",updateJump,{passive:true});
@@ -2169,14 +2169,18 @@ chatEl.addEventListener("scroll",updateJump,{passive:true});
 async function typeOut(el,full,signal,isStale){
  const len=full.length,dur=Math.min(3200,Math.max(600,len*10));
  const start=performance.now();let shown=0;
+ const textNode=document.createTextNode("");
+ el.replaceChildren(textNode);
  el.classList.add("typing");
  try{
   while(true){
    if(isStale()||(signal&&signal.aborted))return false;
    const t=Math.min(1,(performance.now()-start)/dur);
-   shown=Math.min(len,Math.max(shown+1,Math.round(t*len)));
-   el.textContent=full.slice(0,shown);
-   if(followOn||near())toBottom();
+   const nextShown=Math.min(len,Math.max(shown+1,Math.round(t*len)));
+   textNode.appendData(full.slice(shown,nextShown));
+   shown=nextShown;
+   // A large scrollTop is clamped to the current maximum without reading scrollHeight.
+   if(followOn)chatEl.scrollTop=1e9;
    if(shown>=len)break;
    await nextFrame();
   }
@@ -3031,7 +3035,7 @@ function send(){
  const w=document.querySelector(".support-wrap"), q=ta.value.trim();
  if(w&&q&&!busy&&!w.dataset.fading&&!/^\/(sm|test)/i.test(q)){
   w.dataset.fading="1";
-  w.animate([{opacity:1,height:w.offsetHeight+"px"},{opacity:0,height:"0px"}],{duration:300,easing:"cubic-bezier(.2,.7,.2,1)"}).onfinish=()=>{w.remove();sendNow()};
+  collapseSupport(w,sendNow);
   return;
  }
  sendNow();
@@ -3411,11 +3415,22 @@ document.addEventListener("click",e=>{
 new MutationObserver(m=>{if(stimOn&&m.some(x=>x.addedNodes.length)){stimChime();stimConfetti(innerWidth-110,innerHeight-120,40)}}).observe(chatEl,{childList:true});
 window.addEventListener("resize",()=>{if(stimOn)stimPlaceDodge()});
 /* Admin debug: /sm <number> sets the stimulation counter (0 to 3000) */
-// Closes a support card: its height and fade animate to zero, so the replies below glide up into place.
-function collapseSupport(wrap){
- if(wrap.dataset.closing)return;wrap.dataset.closing="1";
- if(reduceMotion()){wrap.remove();return}
- wrap.animate([{opacity:1,transform:"none"},{opacity:0,transform:"translateY(6px)"}],{duration:200,easing:"ease-in"}).onfinish=()=>wrap.remove();
+// Closes a support card with opacity and transform only; its layout space remains until removal.
+function collapseSupport(wrap,onfinish){
+ if(!wrap)return;
+ if(wrap.dataset.closing){
+  if(onfinish){const previous=wrap._afterClose;wrap._afterClose=()=>{if(previous)previous();onfinish()}}
+  return;
+ }
+ wrap.dataset.closing="1";
+ const finish=()=>{
+  wrap.remove();
+  for(const [key,el] of supportCardEls){if(el===wrap){supportCardEls.delete(key);break}}
+  if(wrap._afterClose)wrap._afterClose();
+  if(onfinish)onfinish();
+ };
+ if(reduceMotion()){finish();return}
+ wrap.animate([{opacity:1,transform:"none"},{opacity:0,transform:"translateY(6px)"}],{duration:200,easing:"ease-in"}).onfinish=finish;
 }
 function reduceMotion(){return !!(window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches)}
 // Admins can type "/test support_card" to see the support card under a local test reply. Nothing is sent to the AI.
