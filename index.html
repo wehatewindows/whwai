@@ -96,7 +96,7 @@ svg{display:block}
 .msg p{margin:0 0 8px}.msg p:last-child{margin:0}.msg ul{margin:0 0 8px;padding-left:18px}.msg li{margin-bottom:4px}
 .msg pre{margin:0 0 8px;padding:10px 12px;background:#e4e4e4;border-radius:12px;overflow:auto;white-space:pre;font-size:13.5px;line-height:1.5}.msg pre:last-child{margin:0}
 .msg code{background:#e4e4e4;border-radius:6px;padding:1px 5px;font-size:.92em}
-.fresh{animation:rise .52s cubic-bezier(.22,.8,.24,1) both;will-change:transform,opacity}
+.fresh{animation:rise .4s cubic-bezier(.2,.7,.2,1) both;will-change:transform,opacity}
 @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 .bar{align-self:flex-start;display:flex;align-items:center;gap:2px;background:var(--bub);border-radius:18px;padding:3px 12px 3px 6px;margin-top:-8px;flex:none}
 .bar button{border:0;background:none;padding:5px;cursor:pointer;border-radius:8px;display:grid;place-items:center}
@@ -1586,6 +1586,9 @@ html .steps li.step-live::before{background:var(--acc-solid)}
 .main>.note{position:absolute;left:0;right:0;bottom:0;margin:0;z-index:3;pointer-events:none}
 .main>.scroll#chat::after{content:"";display:block;flex:0 0 auto;height:calc(var(--note-space) + 104px)}
 .main>.scroll#chat{margin-bottom:calc(-1 * var(--note-space));padding-bottom:0!important}
+/* Composer edge and shadow, so the box stands out from the chat behind it. */
+.field{box-shadow:0 0 0 1px rgba(0,0,0,.1),0 8px 24px rgba(20,28,44,.14)}
+:root:not([data-theme="light"]) .field{box-shadow:0 0 0 1px rgba(255,255,255,.14),0 8px 24px rgba(0,0,0,.55)}
 /* Chat below the composer is darkened and softly blurred, so the box stands out. Only a small strip is blurred, to keep scrolling smooth. */
 .main{--fade-rgb:255,255,255}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .main{--fade-rgb:18,18,18}}
@@ -2155,19 +2158,19 @@ chatEl.parentElement.appendChild(jumpBtn);
 chatEl.addEventListener("scroll",updateJump,{passive:true});
 // Draws a reply a little at a time, one frame at a time, so it stays smooth and never rebuilds the whole message on a timer.
 async function typeOut(el,full,signal,isStale){
- const tokens=full.split(/(\s+)/),dur=Math.min(1500,Math.max(400,tokens.length*6)),step=Math.max(4,Math.ceil(tokens.length/100));
+ const len=full.length,dur=Math.min(2400,Math.max(500,len*14));
  const start=performance.now();let shown=0;
- while(shown<tokens.length){
+ el.style.height="";el.style.overflow="";el.style.transition="";
+ while(true){
   if(isStale()||(signal&&signal.aborted))return false;
-  const target=Math.floor((performance.now()-start)/dur*tokens.length);shown=Math.min(tokens.length,Math.max(shown+1,Math.min(target,shown+step)));
-  const h0=el.offsetHeight;
-  el.innerHTML=md(tokens.slice(0,shown).join(""));
-  const h1=el.scrollHeight;
-  if(Math.abs(h1-h0)>1){el.style.overflow="hidden";el.style.height=h0+"px";void el.offsetHeight;el.style.transition="height .22s cubic-bezier(.2,.7,.2,1)";el.style.height=h1+"px";clearTimeout(el._hT);el._hT=setTimeout(()=>{el.style.transition="";el.style.height="";el.style.overflow=""},240)}
+  const t=Math.min(1,(performance.now()-start)/dur);
+  shown=Math.min(len,Math.max(shown+1,Math.round(t*len)));
+  el.innerHTML=md(full.slice(0,shown));
   if(followOn||near())toBottom();
-  updateJump();
+  if(shown>=len)break;
   await nextFrame();
  }
+ updateJump();
  if(followOn){toBottom();setTimeout(()=>{if(followOn)toBottom()},260)}
  return !isStale();
 }
@@ -2529,16 +2532,16 @@ function updateAvailableModels(models){
 }
 // Support card: shown under the latest AI reply while the chat's card flag is on. Closing it clears the flag.
 // One card element per reply, so later re-renders reuse it instead of rebuilding (and re-hiding) it.
-const supportCardEls=new WeakMap();
-function appendSupportCard(parent,c,fadeIn,owner){
- const existing=owner&&supportCardEls.get(owner);
+const supportCardEls=new Map();
+function appendSupportCard(parent,c,fadeIn,key){
+ const existing=supportCardEls.get(key);
  if(existing){parent.appendChild(existing);return}
  const wrap=document.createElement("div");wrap.className="support-wrap";
- if(owner)supportCardEls.set(owner,wrap);
+ supportCardEls.set(key,wrap);
  wrap.innerHTML='<div class="support-card" role="note"><strong>You\'re not alone</strong><p>It sounds like you\'re going through something heavy. You don\'t have to handle it by yourself.</p><p>If you\'re in the US, you can call or text <a href="tel:988">988</a> (Suicide &amp; Crisis Lifeline) any time, or text HOME to <a href="sms:741741?body=HOME">741741</a> (Crisis Text Line).</p><button type="button" class="support-close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>';
  wrap.querySelector(".support-close").onclick=()=>{c.sup=0;touch(c);save();collapseSupport(wrap)};
  parent.appendChild(wrap);
- if(fadeIn){const h1=wrap.offsetHeight;wrap.animate([{height:"0px",opacity:0},{height:h1+"px",opacity:1}],{duration:420,easing:"cubic-bezier(.2,.7,.2,1)"}).onfinish=()=>{wrap.style.overflow="visible"}}
+ if(fadeIn){const h1=wrap.offsetHeight;wrap.animate([{height:"0px",opacity:0},{height:h1+"px",opacity:1}],{duration:400,easing:"cubic-bezier(.2,.7,.2,1)"}).onfinish=()=>{wrap.style.overflow="visible"}}
 }
 function renderChat(fresh){
  const c=C();const wasNear=near(),prevTop=chatEl.scrollTop,switching=lastChatRenderId!==(c&&c.id);lastChatRenderId=c&&c.id;jumpBtn.classList.add("is-hidden");updateModelUI();chatEl.innerHTML="";
@@ -2573,7 +2576,7 @@ function renderChat(fresh){
     if(sb){const panel=document.createElement("div");panel.className="answer-sources";panel.hidden=true;const ol=document.createElement("ul");srcs.forEach(source=>{const li=document.createElement("li"),a=document.createElement("a");a.textContent=source.title;a.href=source.url;a.target="_blank";a.rel="noopener noreferrer";li.appendChild(a);ol.appendChild(li)});panel.appendChild(ol);chatEl.appendChild(panel);sb.onclick=()=>togglePanel(panel,sb,false)}
    }
  });
- {const last=c.m[c.m.length-1];if(c.sup&&last&&last.r==="a"&&!last.err&&!last.limit){const fadeIn=!!last._fade;delete last._fade;appendSupportCard(chatEl,c,fadeIn,last)}}
+ {const last=c.m[c.m.length-1];if(c.sup&&last&&last.r==="a"&&!last.err&&!last.limit){const fadeIn=!!last._fade;delete last._fade;appendSupportCard(chatEl,c,fadeIn,c.id+"|"+last.at)}}
  if(c.ended){const note=document.createElement("p");note.className="sm chat-ended-note";note.setAttribute("role","status");note.textContent="This chat was ended and can't be continued. Start a new chat to keep talking.";chatEl.appendChild(note)}
  if(fresh){const ms=chatEl.querySelectorAll(".msg");ms[ms.length-1].classList.add("fresh")}
  const newest=[...chatEl.querySelectorAll(".msg")].pop();[...chatEl.querySelectorAll(".chart-retry")].forEach(x=>{if(newest&&x.closest(".msg")===newest)x.onclick=regen;else x.remove()});
@@ -3397,7 +3400,7 @@ window.addEventListener("resize",()=>{if(stimOn)stimPlaceDodge()});
 function collapseSupport(wrap){
  if(wrap.dataset.closing)return;wrap.dataset.closing="1";
  const h0=wrap.offsetHeight;
- wrap.animate([{height:h0+"px",opacity:1},{height:"0px",opacity:0}],{duration:320,easing:"cubic-bezier(.2,.7,.2,1)"}).onfinish=()=>wrap.remove();
+ wrap.animate([{height:h0+"px",opacity:1},{height:"0px",opacity:0}],{duration:260,easing:"ease-in"}).onfinish=()=>wrap.remove();
 }
 // Admins can type "/test support_card" to see the support card under a local test reply. Nothing is sent to the AI.
 function supportTestCmd(q){
