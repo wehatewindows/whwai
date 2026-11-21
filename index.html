@@ -1580,6 +1580,11 @@ html .pick.on{border-color:var(--acc-solid)}
 html .radio-row input,html .check-row input{accent-color:var(--acc-ring)}
 html .steps li.step-live::before{background:var(--acc-solid)}
 }
+/* Composer floats over the chat, so messages scroll behind it and fade out at its edge instead of being cut off. */
+.main{--note-space:40px}
+.main>.input{position:absolute;left:0;right:0;bottom:var(--note-space);z-index:3}
+.main>.note{position:absolute;left:0;right:0;bottom:0;margin:0;z-index:3;pointer-events:none}
+.main>.scroll#chat{margin-bottom:calc(-1 * var(--note-space));padding-bottom:calc(var(--note-space) + 84px)!important;-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 150px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 150px),transparent)}
 </style>
 
 </head>
