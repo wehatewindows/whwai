@@ -96,7 +96,7 @@ svg{display:block}
 .msg p{margin:0 0 8px}.msg p:last-child{margin:0}.msg ul{margin:0 0 8px;padding-left:18px}.msg li{margin-bottom:4px}
 .msg pre{margin:0 0 8px;padding:10px 12px;background:#e4e4e4;border-radius:12px;overflow:auto;white-space:pre;font-size:13.5px;line-height:1.5}.msg pre:last-child{margin:0}
 .msg code{background:#e4e4e4;border-radius:6px;padding:1px 5px;font-size:.92em}
-.fresh{animation:rise .4s cubic-bezier(.2,.7,.2,1) both;will-change:transform,opacity}
+.fresh{animation:rise .3s cubic-bezier(.2,.7,.2,1) both;will-change:transform,opacity}
 @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 .bar{align-self:flex-start;display:flex;align-items:center;gap:2px;background:var(--bub);border-radius:18px;padding:3px 12px 3px 6px;margin-top:-8px;flex:none}
 .bar button{border:0;background:none;padding:5px;cursor:pointer;border-radius:8px;display:grid;place-items:center}
@@ -296,12 +296,12 @@ html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(
 
  
  .input{margin:0 var(--edge);gap:8px;padding-top:6px;min-width:0}
- .field{min-width:0;min-height:48px;padding:0 6px 0 16px;border-radius:24px;background:rgba(255,255,255,.88);-webkit-backdrop-filter:blur(20px) saturate(1.6);backdrop-filter:blur(20px) saturate(1.6);border:1px solid rgba(255,255,255,.95)}
+ .field{min-width:0;min-height:48px;padding:0 6px 0 16px;border-radius:24px;background:#fff;border:1px solid rgba(0,0,0,.06)}
  .field textarea{min-width:0;width:0;flex:1;line-height:24px;padding:12px 0;max-height:112px;height:48px}
  .mwrap{flex:none;margin-left:4px;gap:2px}
  .model{max-width:88px;overflow:hidden;font-size:14px;padding:6px 4px;gap:3px}.model .sep{display:none}.model span{overflow:hidden;text-overflow:ellipsis}
  .info-pop{width:min(270px,calc(100vw - 84px))}
- .round{width:44px;height:44px;margin-bottom:2px;background:rgba(255,255,255,.88);box-shadow:0 2px 12px rgba(106,160,255,.25)}
+ .round{width:44px;height:44px;margin-bottom:2px;background:var(--bub);box-shadow:none}
  .orb{width:46px;height:46px;right:0;bottom:calc(100% + 28px)}
  .pop{width:min(240px,calc(100vw - 2 * var(--edge)));right:0}
  .note{text-align:center;font-size:13px;margin:6px var(--edge) 8px}
@@ -1587,13 +1587,21 @@ html .steps li.step-live::before{background:var(--acc-solid)}
 .main>.scroll#chat::after{content:"";display:block;flex:0 0 auto;height:calc(var(--note-space) + 104px)}
 .main>.scroll#chat{margin-bottom:calc(-1 * var(--note-space));padding-bottom:0!important}
 /* Composer edge and shadow, so the box stands out from the chat behind it. */
-.field{box-shadow:0 0 0 1px rgba(0,0,0,.1),0 8px 24px rgba(20,28,44,.14)}
-:root:not([data-theme="light"]) .field{box-shadow:0 0 0 1px rgba(255,255,255,.14),0 8px 24px rgba(0,0,0,.55)}
+.field{box-shadow:0 0 0 1px rgba(0,0,0,.05),0 2px 10px rgba(20,28,44,.07)}
+:root:not([data-theme="light"]) .field{box-shadow:0 0 0 1px rgba(255,255,255,.08),0 2px 10px rgba(0,0,0,.3)}
 /* Chat below the composer is darkened and softly blurred, so the box stands out. Only a small strip is blurred, to keep scrolling smooth. */
 .main{--fade-rgb:255,255,255}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .main{--fade-rgb:18,18,18}}
 :root[data-theme="dark"] .main{--fade-rgb:18,18,18}
 .main::after{content:"";position:absolute;left:0;right:0;bottom:0;height:calc(var(--note-space) + 40px);pointer-events:none;z-index:2;background:linear-gradient(to bottom,rgba(var(--fade-rgb),0),rgba(var(--fade-rgb),.78) 45%,rgba(var(--fade-rgb),.92));-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);-webkit-mask-image:linear-gradient(to bottom,transparent,#000 55%);mask-image:linear-gradient(to bottom,transparent,#000 55%)}
+
+.typing{white-space:pre-wrap}
+@media (max-width:640px){body{background-image:none;padding-bottom:var(--gap-bottom)}}
+#send{background:#111;color:#fff}
+#send:hover:not(.blocked){background:#333}
+#send svg{width:20px;height:20px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #send{background:#f2f2f2;color:#111}:root:not([data-theme="light"]) #send:hover:not(.blocked){background:#fff}}
+:root[data-theme="dark"] #send{background:#f2f2f2;color:#111}
 </style>
 
 </head>
@@ -2158,18 +2166,21 @@ chatEl.parentElement.appendChild(jumpBtn);
 chatEl.addEventListener("scroll",updateJump,{passive:true});
 // Draws a reply a little at a time, one frame at a time, so it stays smooth and never rebuilds the whole message on a timer.
 async function typeOut(el,full,signal,isStale){
- const len=full.length,dur=Math.min(2400,Math.max(500,len*14));
+ const len=full.length,dur=Math.min(3200,Math.max(600,len*10));
  const start=performance.now();let shown=0;
- el.style.height="";el.style.overflow="";el.style.transition="";
- while(true){
-  if(isStale()||(signal&&signal.aborted))return false;
-  const t=Math.min(1,(performance.now()-start)/dur);
-  shown=Math.min(len,Math.max(shown+1,Math.round(t*len)));
-  el.innerHTML=md(full.slice(0,shown));
-  if(followOn||near())toBottom();
-  if(shown>=len)break;
-  await nextFrame();
- }
+ el.classList.add("typing");
+ try{
+  while(true){
+   if(isStale()||(signal&&signal.aborted))return false;
+   const t=Math.min(1,(performance.now()-start)/dur);
+   shown=Math.min(len,Math.max(shown+1,Math.round(t*len)));
+   el.textContent=full.slice(0,shown);
+   if(followOn||near())toBottom();
+   if(shown>=len)break;
+   await nextFrame();
+  }
+ }finally{el.classList.remove("typing")}
+ el.innerHTML=md(full);
  updateJump();
  if(followOn){toBottom();setTimeout(()=>{if(followOn)toBottom()},260)}
  return !isStale();
@@ -2541,7 +2552,7 @@ function appendSupportCard(parent,c,fadeIn,key){
  wrap.innerHTML='<div class="support-card" role="note"><strong>You\'re not alone</strong><p>It sounds like you\'re going through something heavy. You don\'t have to handle it by yourself.</p><p>If you\'re in the US, you can call or text <a href="tel:988">988</a> (Suicide &amp; Crisis Lifeline) any time, or text HOME to <a href="sms:741741?body=HOME">741741</a> (Crisis Text Line).</p><button type="button" class="support-close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>';
  wrap.querySelector(".support-close").onclick=()=>{c.sup=0;touch(c);save();collapseSupport(wrap)};
  parent.appendChild(wrap);
- if(fadeIn){const h1=wrap.offsetHeight;wrap.animate([{height:"0px",opacity:0},{height:h1+"px",opacity:1}],{duration:400,easing:"cubic-bezier(.2,.7,.2,1)"}).onfinish=()=>{wrap.style.overflow="visible"}}
+ if(fadeIn){const h1=wrap.offsetHeight;wrap.animate([{height:"0px",opacity:0},{height:h1+"px",opacity:1}],{duration:300,easing:"cubic-bezier(.2,.7,.2,1)"}).onfinish=()=>{wrap.style.overflow="visible"}}
 }
 function renderChat(fresh){
  const c=C();const wasNear=near(),prevTop=chatEl.scrollTop,switching=lastChatRenderId!==(c&&c.id);lastChatRenderId=c&&c.id;jumpBtn.classList.add("is-hidden");updateModelUI();chatEl.innerHTML="";
