@@ -1754,7 +1754,7 @@ function safeChat(value){
  const created=Number(value.u!=null?value.u:value.createdAt)||Date.now();
  const chat={id,t:title||"New chat",u:created,m:[]};
  const updated=Number(value.mu!=null?value.mu:value.updatedAt);if(Number.isFinite(updated)&&updated>0)chat.mu=updated;
- if(value.auto)chat.auto=1;if(value.ended)chat.ended=1;if(value.p||value.pinned)chat.p=1;
+ if(value.auto)chat.auto=1;if(value.ended)chat.ended=1;if(value.sup)chat.sup=1;if(value.p||value.pinned)chat.p=1;
  const group=safeText(value.g,60).trim();if(group)chat.g=group;
  const model=safeText(value.model,80);if(model)chat.model=model;
  const messages=Array.isArray(value.m)?value.m:(Array.isArray(value.messages)?value.messages:[]);
@@ -2522,6 +2522,14 @@ function updateAvailableModels(models){
  if(repaired)save(true);
  updateModelUI();
 }
+// Support card: shown under the latest AI reply while the chat's card flag is on. Closing it clears the flag.
+function appendSupportCard(parent,c,fadeIn){
+ const wrap=document.createElement("div");wrap.className="support-wrap";
+ wrap.innerHTML='<div class="support-card" role="note"><strong>You\'re not alone</strong><p>It sounds like you\'re going through something heavy. You don\'t have to handle it by yourself.</p><p>If you\'re in the US, you can call or text <a href="tel:988">988</a> (Suicide &amp; Crisis Lifeline) any time, or text HOME to <a href="sms:741741?body=HOME">741741</a> (Crisis Text Line).</p><button type="button" class="support-close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>';
+ wrap.querySelector(".support-close").onclick=()=>{c.sup=0;touch(c);save();collapseSupport(wrap)};
+ parent.appendChild(wrap);
+ if(fadeIn){const h1=wrap.offsetHeight;wrap.animate([{height:"0px",opacity:0},{height:h1+"px",opacity:1}],{duration:420,easing:"cubic-bezier(.2,.7,.2,1)"}).onfinish=()=>{wrap.style.overflow="visible"}}
+}
 function renderChat(fresh){
  const c=C();const wasNear=near(),prevTop=chatEl.scrollTop,switching=lastChatRenderId!==(c&&c.id);lastChatRenderId=c&&c.id;jumpBtn.classList.add("is-hidden");updateModelUI();chatEl.innerHTML="";
  if(!c||!c.m.length){
@@ -2551,11 +2559,11 @@ function renderChat(fresh){
     const cp=b.querySelector(".cp"),rg=b.querySelector(".rg"),tk=b.querySelector(".thk"),sb=b.querySelector(".src");
     cp.onclick=()=>copy(m.x,cp);if(rg)rg.onclick=regen;
     chatEl.appendChild(b);
-    if(m.support){const fadeIn=!!m._fade;delete m._fade;const wrap=document.createElement("div");wrap.className="support-wrap";wrap.innerHTML='<div class="support-card" role="note"><strong>You\'re not alone</strong><p>It sounds like you\'re going through something heavy. You don\'t have to handle it by yourself.</p><p>If you\'re in the US, you can call or text <a href="tel:988">988</a> (Suicide &amp; Crisis Lifeline) any time, or text HOME to <a href="sms:741741?body=HOME">741741</a> (Crisis Text Line).</p><button type="button" class="support-close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>';wrap.querySelector(".support-close").onclick=()=>collapseSupport(wrap);chatEl.appendChild(wrap);if(fadeIn){const h1=wrap.offsetHeight;wrap.animate([{height:"0px",opacity:0},{height:h1+"px",opacity:1}],{duration:420,easing:"cubic-bezier(.2,.7,.2,1)"}).onfinish=()=>{wrap.style.overflow="visible"}}}
     if(tk){const tp=document.createElement("div");tp.className="answer-sources thought-panel";tp.hidden=true;tp.innerHTML='<ol class="steps">'+steps.map((x,k)=>'<li style="--d:'+(k*140)+'ms">'+esc(x)+'</li>').join("")+'<li class="step-end" style="--d:'+(steps.length*140)+'ms">Answer</li></ol>';chatEl.appendChild(tp);tk.onclick=()=>togglePanel(tp,tk,true)}
     if(sb){const panel=document.createElement("div");panel.className="answer-sources";panel.hidden=true;const ol=document.createElement("ul");srcs.forEach(source=>{const li=document.createElement("li"),a=document.createElement("a");a.textContent=source.title;a.href=source.url;a.target="_blank";a.rel="noopener noreferrer";li.appendChild(a);ol.appendChild(li)});panel.appendChild(ol);chatEl.appendChild(panel);sb.onclick=()=>togglePanel(panel,sb,false)}
    }
  });
+ {const last=c.m[c.m.length-1];if(c.sup&&last&&last.r==="a"&&!last.err&&!last.limit){const fadeIn=!!last._fade;delete last._fade;appendSupportCard(chatEl,c,fadeIn)}}
  if(c.ended){const note=document.createElement("p");note.className="sm chat-ended-note";note.setAttribute("role","status");note.textContent="This chat was ended and can't be continued. Start a new chat to keep talking.";chatEl.appendChild(note)}
  if(fresh){const ms=chatEl.querySelectorAll(".msg");ms[ms.length-1].classList.add("fresh")}
  const newest=[...chatEl.querySelectorAll(".msg")].pop();[...chatEl.querySelectorAll(".chart-retry")].forEach(x=>{if(newest&&x.closest(".msg")===newest)x.onclick=regen;else x.remove()});
@@ -2932,7 +2940,7 @@ async function answer(c,q){
   if(responseWasStopped||run!==answerRunId)return;
   const target=S.chats.find(x=>x.id===c.id);
   if(!target)return;
-  if(limitNow)full="You've hit your usage limit.";target.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1,limit:limitNow?1:0}:{r:"a",x:full,at:Date.now(),sources:sources,thinking:thinking,tools:usedTools,support:supportNow,_fade:supportNow,model:usedModel||target.model||S.model||"aries-1",_l:1});if(endedNow)target.ended=1;target.u=Date.now();touch(target);save();renderList();renderChat();
+  if(limitNow)full="You've hit your usage limit.";if(supportNow)target.sup=1;target.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1,limit:limitNow?1:0}:{r:"a",x:full,at:Date.now(),sources:sources,thinking:thinking,tools:usedTools,_fade:(supportNow||target.sup)?1:0,model:usedModel||target.model||S.model||"aries-1",_l:1});if(endedNow)target.ended=1;target.u=Date.now();touch(target);save();renderList();renderChat();
   if(err&&!limitNow&&!endedNow)toast("Couldn't get an answer.",{retry:()=>regen()});
   if(API_URL&&!err&&target.auto)genTitle(target);
 
@@ -2990,7 +2998,17 @@ function resendAfterLimit(i){
  try{store.set(JSON.stringify(persistedState()))}catch(e){}
  renderChat();ta.value=q;fit();send();
 }
+// Sending fades out a visible support card first; the card then comes back under the next AI reply.
 function send(){
+ const w=document.querySelector(".support-wrap"), q=ta.value.trim();
+ if(w&&q&&!busy&&!w.dataset.fading&&!/^\/(sm|test)/i.test(q)){
+  w.dataset.fading="1";
+  w.animate([{opacity:1,height:w.offsetHeight+"px"},{opacity:0,height:"0px"}],{duration:300,easing:"cubic-bezier(.2,.7,.2,1)"}).onfinish=()=>{w.remove();sendNow()};
+  return;
+ }
+ sendNow();
+}
+function sendNow(){
  const q=ta.value.trim();if(!q||busy)return;
  if(stimAdminCmd(q)||supportTestCmd(q)){ta.value="";fit();return}
  if(sendBlockReason()){blockToast(sendBlockReason());return}
@@ -3376,7 +3394,7 @@ function supportTestCmd(q){
  if(!/^\/test support_card$/i.test(q.trim()))return false;
  const u=accountSession&&accountSession.user;if(!u||u.role!=="admin"){toast("Admins only.");return true}
  let c=C();if(!c){c={id:uid(),t:"Support card test",auto:0,u:Date.now(),model:S.model||"aries-1",m:[]};S.chats.push(c);S.cur=c.id}
- c.m.push({r:"a",x:"This is a test of the support card. Nothing was sent to the AI.",at:Date.now(),support:1,test:1,_fade:1,model:c.model||S.model||"aries-1",_l:1});
+ c.sup=1;c.m.push({r:"a",x:"This is a test of the support card. Nothing was sent to the AI.",at:Date.now(),test:1,_fade:1,model:c.model||S.model||"aries-1",_l:1});
  c.u=Date.now();touch(c);save();renderList();renderChat(true);return true;
 }
 function stimAdminCmd(q){
