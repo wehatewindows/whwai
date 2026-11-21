@@ -1608,6 +1608,10 @@ html .steps li.step-live::before{background:var(--acc-solid)}
 body .mbar{background:#fff}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body .mbar{background:#121212}}
 :root[data-theme="dark"] body .mbar{background:#121212}
+
+body .mbar{background:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(16px) saturate(1.5);backdrop-filter:blur(16px) saturate(1.5)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body .mbar{background:rgba(18,18,18,.72)}}
+:root[data-theme="dark"] body .mbar{background:rgba(18,18,18,.72)}
 </style>
 
 </head>
@@ -2753,7 +2757,7 @@ function syncAppInert(){
  Array.from(frame.children).forEach(ch=>{ch.inert=!blocked&&modalOpen&&!ch.contains(modal)});
 }
 setInterval(syncAppInert,250);
-function openApp(force){if(accountDisabledGate)return;if(aiDisabled&&!force)return;document.body.classList.remove("access-locked");hideEl(accessGate,250);updateSchoolLock();$("app-frame").removeAttribute("aria-hidden");setTimeout(()=>{if(!showWhatsNewIfNeeded())showAriesIntroOnce()},650)}
+function openApp(force){if(accountDisabledGate)return;if(aiDisabled&&!force)return;document.body.classList.remove("access-locked");hideEl(accessGate,250);updateSchoolLock();$("app-frame").removeAttribute("aria-hidden");flushAccountResume();setTimeout(()=>{if(!showWhatsNewIfNeeded())showAriesIntroOnce()},650)}
 function unlockEarlyAccess(token,expiresAt){if(aiDisabled)return;accessUnlocked=true;try{const until=Number(expiresAt)||Date.now()+ACCESS_TTL;localStorage.setItem(ACCESS_STORAGE_KEY,String(until));localStorage.setItem(ACCESS_TOKEN_KEY,String(token||""))}catch(e){}openApp();if(accountSession&&accountSession.token&&!(accountSession.user&&accountSession.user.username)&&typeof resumeAccountSession==="function")resumeAccountSession()}
 function lockEarlyAccess(showGate){if(accountDisabledGate||browserDisabledGate)return;try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");(showEl(accessGate),setTimeout(updateSchoolLock,0));$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.remove("disabled-mode");swapText(accessTitle,"Enter early access code");$("gate-body").hidden=true;$("gate-actions").hidden=true;accessForm.hidden=false;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false;$("access-admin-form").hidden=true;if(showGate){accessInput.value="";setTimeout(()=>accessInput.focus(),50)}}
 function showAIDisabled(){aiDisabled=true;refreshSendState();try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}document.body.classList.add("access-locked");(showEl(accessGate),setTimeout(updateSchoolLock,0));$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");swapText(accessTitle,"WHWai is currently disabled");$("gate-actions").hidden=true;accessForm.hidden=true;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=false;setGateBody("Please check back later.")}
@@ -2803,7 +2807,7 @@ function showWhatsNewIfNeeded(force){
  return true;
 }
 let selfDisabledInfo=null;
-function leaveDisabledGate(){accountDisabledGate=false;browserDisabledGate=false;accountReady=true;accessCard.classList.remove("disabled-mode");document.body.classList.remove("access-locked");$("app-frame").removeAttribute("aria-hidden");refreshSendState()}
+function leaveDisabledGate(){accountDisabledGate=false;browserDisabledGate=false;accountReady=true;setTimeout(flushAccountResume,0);accessCard.classList.remove("disabled-mode");document.body.classList.remove("access-locked");$("app-frame").removeAttribute("aria-hidden");refreshSendState()}
 function showAccountDisabled(message,info){
  if(selfDisabledInfo)return;
  if(accountDisabledGate)return;
@@ -3881,7 +3885,7 @@ function scheduleAccountSync(){if(selfDisabledInfo)return;
  if(accountSyncTimer!==null)clearTimeout(accountSyncTimer);
  accountSyncTimer=setTimeout(()=>{accountSyncTimer=null;syncAccountChatsNow()},1200);
 }
-async function syncAccountChatsNow(){if(selfDisabledInfo)return;
+async function syncAccountChatsNow(){if(selfDisabledInfo||!gatesPassed())return;
  if(accountDisabledGate||!accountSession||!accountSession.token||!accountReady||accountSession.user&&accountSession.user.mustChange)return;
  if(accountSyncing){accountSyncAgain=true;return}
  if(navigator.onLine===false){accountSyncAgain=true;if(accountInitialSyncPending){accountInitialSyncPending=false;renderChat()}return}
@@ -3929,7 +3933,7 @@ function hideProfileMenu(){hideEl($("profile-menu"))}
 function wantsThinkingView(text){return /(show|see|display|reveal)\b.{0,20}\b(thinking|thought|reasoning)\b|\bthink (it |this )?through\b|\bstep[- ]by[- ]step\b/i.test(String(text||""))}
 function togglePanel(panel,btn,replay){const open=panel.hidden;open?showEl(panel):hideEl(panel);btn.setAttribute("aria-expanded",String(open));if(open&&replay){const ol=panel.querySelector(".steps");if(ol){ol.classList.remove("play");void ol.offsetWidth;ol.classList.add("play")}}}
 function thinkingSteps(text){return String(text||"").replace(/([.!?])\s+(?=[A-Z])/g,"$1\n").split(/\n+/).map(s=>s.replace(/^[\s\-*•\d.)]+/,"").replace(/\s+/g," ").trim()).filter(s=>s.length>2).slice(0,14).map(s=>s.length>220?s.slice(0,217)+"…":s)}
-setInterval(()=>{if(!accountDisabledGate&&accountSession&&accountSession.token&&accountReady&&!(accountSession.user&&accountSession.user.mustChange))post({action:"account_me",sessionToken:accountSession.token}).catch(e=>{if(e&&e.message==="invalid_session"&&accountSession){clearAccountSession();renderList();renderChat();toast("Your sign-in expired. Your chats are still saved on this device. Sign in again to sync them.",{act:{icon:"log-in",label:"Sign in",run:()=>openSettings(()=>renderAccountAuth("login"))}})}})},60000);
+setInterval(()=>{if(gatesPassed()&&accountSession&&accountSession.token&&accountReady&&!(accountSession.user&&accountSession.user.mustChange))post({action:"account_me",sessionToken:accountSession.token}).catch(e=>{if(e&&e.message==="invalid_session"&&accountSession){clearAccountSession();renderList();renderChat();toast("Your sign-in expired. Your chats are still saved on this device. Sign in again to sync them.",{act:{icon:"log-in",label:"Sign in",run:()=>openSettings(()=>renderAccountAuth("login"))}})}})},60000);
 function renderSyncStatus(){
  try{const md=$("modal");if(md&&!md.hidden&&currentSettingsView==="account")updateAccountSyncStatus()}catch(e){}
  const b=$("profile-btn");if(!b)return;
@@ -3958,6 +3962,10 @@ function mergeLocalAndRemote(first,second){
  const live=allGroups.filter(g=>!g.del),tombs=allGroups.filter(g=>g.del).sort((x,y)=>y.mu-x.mu).slice(0,200);
  return{chats,dead:deadList,cur,groups:live.concat(tombs).slice(0,2000)};
 }
+// Account and session data load only after the AI-disabled, access-code, account-disabled and browser-disabled screens are passed.
+function gatesPassed(){return !aiDisabled&&!accountDisabledGate&&!browserDisabledGate&&!document.body.classList.contains("access-locked")}
+let pendingAccountResume=false;
+function flushAccountResume(){if(pendingAccountResume&&gatesPassed()){pendingAccountResume=false;resumeAccountSession()}}
 async function resumeAccountSession(){
  if(!accountSession||!accountSession.token)return;
  accountReady=false;
@@ -5472,7 +5480,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden&&accountSe
 window.addEventListener("online",()=>{renderSyncStatus();if(accountSession&&accountSession.token)scheduleAccountSync()});window.addEventListener("offline",renderSyncStatus);
 setInterval(()=>document.querySelectorAll(".bar span[data-t],.cm").forEach(el=>el.textContent=ago(+el.dataset.t)),1000);
 renderList();renderChat();renderSiteNotice();
-if(accountSession&&accountSession.token){accountReady=false;resumeAccountSession()}
+if(accountSession&&accountSession.token){accountReady=false;if(gatesPassed())resumeAccountSession();else pendingAccountResume=true}
 const fr=document.querySelector(".frame");fr.classList.add("no-anim");fr.classList.toggle("collapsed",!!S.col);requestAnimationFrame(()=>requestAnimationFrame(()=>fr.classList.remove("no-anim")));
 
 
