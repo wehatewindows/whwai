@@ -753,6 +753,7 @@ textarea{border-radius:16px}
 .beta-pill{top:0!important;display:inline-flex!important;align-items:center;justify-content:center;line-height:1!important;padding:calc(.3em + .5px) .7em calc(.3em - .5px)!important;vertical-align:middle}
 .flag-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .chat-ended-note{text-align:center;margin:16px 0}
+.support-card{margin:10px 0 4px;padding:14px 16px;border:1px solid #e6e6e8;border-radius:14px;background:#fff;font-size:14px;line-height:1.5;color:#222}.support-card strong{display:block;font-size:15px;margin-bottom:4px}.support-card p{margin:0 0 8px}.support-card a{color:inherit;text-decoration:underline}.support-close{margin-top:2px;padding:6px 12px;border:1px solid #d0d0d4;border-radius:999px;background:transparent;color:inherit;font:inherit;font-size:13px;cursor:pointer}
 
 .hst-seg{flex:1;min-width:0;box-sizing:border-box;display:flex;align-items:center;gap:1px;height:44px;padding:0 10px;border:1px solid #dedede;border-radius:12px;background:#fafafa;color:#111;font-family:var(--f);font-size:16px;font-variant-numeric:normal;transition:border-color .15s,box-shadow .15s}
 html.keyboard-nav .hst-seg:focus-within{border-color:#3f6ce0;box-shadow:0 0 0 3px rgba(79,124,240,.15)}
@@ -984,6 +985,7 @@ body .main,body .scroll,body .input,body .mbar,body .access-gate,body .school-lo
 h1,h2,h3,h4,strong,b,label,summary{color:#f2f2f2}
 .sm,.mute,.muted,p,li{color:#d6d6d6}
 .school-notice{background:#2a2a1f;color:#f2f2f2}
+.support-card{background:#1c1c1e;border-color:#3a3a3c;color:#f2f2f2}.support-close{border-color:#4a4a4e}
 .gate-school{background:#2a2a1f;border-color:#4a4426;color:#f2f2f2}
 .gate-notice{background:rgba(38,48,66,.9);border-color:#465773;color:#d8e4f7}
 .data-tool{background:#2c2c2e;color:#f2f2f2;border-color:#3a3a3c}
@@ -1715,7 +1717,7 @@ function safeMessage(value){
  if(r==="a"){
   const sources=safeSources(value.sources);if(sources.length)item.sources=sources;
   const model=safeText(value.model,80);if(model)item.model=model;
-  const thinking=safeText(value.thinking,6000);if(thinking)item.thinking=thinking;const toolList=Array.isArray(value.tools)?value.tools.filter(t=>typeof t==="string"&&/^[a-z_]{1,40}$/.test(t)).slice(0,5):[];if(toolList.length)item.tools=toolList;
+  const thinking=safeText(value.thinking,6000);if(thinking)item.thinking=thinking;const toolList=Array.isArray(value.tools)?value.tools.filter(t=>typeof t==="string"&&/^[a-z_]{1,40}$/.test(t)).slice(0,5):[];if(toolList.length)item.tools=toolList;if(value.support)item.support=1;
  }
  return item;
 }
@@ -2543,6 +2545,7 @@ function renderChat(fresh){
     const cp=b.querySelector(".cp"),rg=b.querySelector(".rg"),tk=b.querySelector(".thk"),sb=b.querySelector(".src");
     cp.onclick=()=>copy(m.x,cp);if(rg)rg.onclick=regen;
     chatEl.appendChild(b);
+    if(m.support){const sc=document.createElement("div");sc.className="support-card";sc.setAttribute("role","note");sc.innerHTML='<strong>You\'re not alone</strong><p>It sounds like you\'re going through something heavy. You don\'t have to handle it by yourself.</p><p>If you\'re in the US, you can call or text <a href="tel:988">988</a> (Suicide &amp; Crisis Lifeline) any time, or text HOME to <a href="sms:741741?body=HOME">741741</a> (Crisis Text Line).</p><button type="button" class="support-close">Close</button>';sc.querySelector(".support-close").onclick=()=>sc.remove();chatEl.appendChild(sc)}
     if(tk){const tp=document.createElement("div");tp.className="answer-sources thought-panel";tp.hidden=true;tp.innerHTML='<ol class="steps">'+steps.map((x,k)=>'<li style="--d:'+(k*140)+'ms">'+esc(x)+'</li>').join("")+'<li class="step-end" style="--d:'+(steps.length*140)+'ms">Answer</li></ol>';chatEl.appendChild(tp);tk.onclick=()=>togglePanel(tp,tk,true)}
     if(sb){const panel=document.createElement("div");panel.className="answer-sources";panel.hidden=true;const ol=document.createElement("ul");srcs.forEach(source=>{const li=document.createElement("li"),a=document.createElement("a");a.textContent=source.title;a.href=source.url;a.target="_blank";a.rel="noopener noreferrer";li.appendChild(a);ol.appendChild(li)});panel.appendChild(ol);chatEl.appendChild(panel);sb.onclick=()=>togglePanel(panel,sb,false)}
    }
@@ -2894,7 +2897,7 @@ async function answer(c,q){
   tick();timer=setInterval(tick,1800);
  }
  try{
-  let full,err=0,sources=[],thinking="",usedModel=null,limitNow=false,endedNow=false,usedTools=[];
+  let full,err=0,sources=[],thinking="",usedModel=null,limitNow=false,endedNow=false,usedTools=[],supportNow=false;
   if(API_URL){
    try{
     const modelId=availableModels.some(m=>m.id===c.model)?c.model:(S.model||"aries-1");
@@ -2902,7 +2905,7 @@ async function answer(c,q){
     const j=await post({action:"chat",model:modelId,chatId:c.id,messages:hist(c)},controller.signal);
     if(responseWasStopped||run!==answerRunId)return;
     if(j.quota&&typeof j.quota.remaining==="number")toast(j.quota.remaining+" messages left today on this model");
-    full=j.text||ERR_TEXT;sources=Array.isArray(j.sources)?j.sources:[];thinking=typeof j.thinking==="string"?j.thinking:"";if(j.ended)endedNow=true;if(Array.isArray(j.tools))usedTools=j.tools.filter(t=>typeof t==="string").slice(0,5);if(!(accountSession&&accountSession.token)&&j.text&&!j.ended&&!j.disabled&&bumpGuestCount()>=GUEST_LIMIT)setLimitHit();if(!j.text||j.disabled)err=1;
+    full=j.text||ERR_TEXT;sources=Array.isArray(j.sources)?j.sources:[];thinking=typeof j.thinking==="string"?j.thinking:"";if(j.ended)endedNow=true;if(j.support)supportNow=true;if(Array.isArray(j.tools))usedTools=j.tools.filter(t=>typeof t==="string").slice(0,5);if(!(accountSession&&accountSession.token)&&j.text&&!j.ended&&!j.disabled&&bumpGuestCount()>=GUEST_LIMIT)setLimitHit();if(!j.text||j.disabled)err=1;
    }catch(e){
     if(responseWasStopped||run!==answerRunId||e&&e.name==="AbortError"&&controller.signal.aborted)return;
     if(e&&e.payload&&e.payload.error==="chat_ended"){endedNow=true;full=e.payload.message||"This chat was ended.";}else if(e&&e.payload&&e.payload.error==="vela_unavailable"){
@@ -2923,7 +2926,7 @@ async function answer(c,q){
   if(responseWasStopped||run!==answerRunId)return;
   const target=S.chats.find(x=>x.id===c.id);
   if(!target)return;
-  if(limitNow)full="You've hit your usage limit.";target.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1,limit:limitNow?1:0}:{r:"a",x:full,at:Date.now(),sources:sources,thinking:thinking,tools:usedTools,model:usedModel||target.model||S.model||"aries-1",_l:1});if(endedNow)target.ended=1;target.u=Date.now();touch(target);save();renderList();renderChat();
+  if(limitNow)full="You've hit your usage limit.";target.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1,limit:limitNow?1:0}:{r:"a",x:full,at:Date.now(),sources:sources,thinking:thinking,tools:usedTools,support:supportNow,model:usedModel||target.model||S.model||"aries-1",_l:1});if(endedNow)target.ended=1;target.u=Date.now();touch(target);save();renderList();renderChat();
   if(err&&!limitNow&&!endedNow)toast("Couldn't get an answer.",{retry:()=>regen()});
   if(API_URL&&!err&&target.auto)genTitle(target);
 
