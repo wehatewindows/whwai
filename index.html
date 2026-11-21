@@ -2523,8 +2523,13 @@ function updateAvailableModels(models){
  updateModelUI();
 }
 // Support card: shown under the latest AI reply while the chat's card flag is on. Closing it clears the flag.
-function appendSupportCard(parent,c,fadeIn){
+// One card element per reply, so later re-renders reuse it instead of rebuilding (and re-hiding) it.
+const supportCardEls=new WeakMap();
+function appendSupportCard(parent,c,fadeIn,owner){
+ const existing=owner&&supportCardEls.get(owner);
+ if(existing){parent.appendChild(existing);return}
  const wrap=document.createElement("div");wrap.className="support-wrap";
+ if(owner)supportCardEls.set(owner,wrap);
  wrap.innerHTML='<div class="support-card" role="note"><strong>You\'re not alone</strong><p>It sounds like you\'re going through something heavy. You don\'t have to handle it by yourself.</p><p>If you\'re in the US, you can call or text <a href="tel:988">988</a> (Suicide &amp; Crisis Lifeline) any time, or text HOME to <a href="sms:741741?body=HOME">741741</a> (Crisis Text Line).</p><button type="button" class="support-close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>';
  wrap.querySelector(".support-close").onclick=()=>{c.sup=0;touch(c);save();collapseSupport(wrap)};
  parent.appendChild(wrap);
@@ -2563,7 +2568,7 @@ function renderChat(fresh){
     if(sb){const panel=document.createElement("div");panel.className="answer-sources";panel.hidden=true;const ol=document.createElement("ul");srcs.forEach(source=>{const li=document.createElement("li"),a=document.createElement("a");a.textContent=source.title;a.href=source.url;a.target="_blank";a.rel="noopener noreferrer";li.appendChild(a);ol.appendChild(li)});panel.appendChild(ol);chatEl.appendChild(panel);sb.onclick=()=>togglePanel(panel,sb,false)}
    }
  });
- {const last=c.m[c.m.length-1];if(c.sup&&last&&last.r==="a"&&!last.err&&!last.limit){const fadeIn=!!last._fade;delete last._fade;appendSupportCard(chatEl,c,fadeIn)}}
+ {const last=c.m[c.m.length-1];if(c.sup&&last&&last.r==="a"&&!last.err&&!last.limit){const fadeIn=!!last._fade;delete last._fade;appendSupportCard(chatEl,c,fadeIn,last)}}
  if(c.ended){const note=document.createElement("p");note.className="sm chat-ended-note";note.setAttribute("role","status");note.textContent="This chat was ended and can't be continued. Start a new chat to keep talking.";chatEl.appendChild(note)}
  if(fresh){const ms=chatEl.querySelectorAll(".msg");ms[ms.length-1].classList.add("fresh")}
  const newest=[...chatEl.querySelectorAll(".msg")].pop();[...chatEl.querySelectorAll(".chart-retry")].forEach(x=>{if(newest&&x.closest(".msg")===newest)x.onclick=regen;else x.remove()});
@@ -2949,7 +2954,7 @@ async function answer(c,q){
    if(responseWasStopped&&tmp.isConnected)tmp.remove();
    if(activeAnswerController===controller)activeAnswerController=null;
    setBusy(false);
-   if(responseWasStopped)renderChat();
+   renderChat();
   }
  }
 }
