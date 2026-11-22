@@ -1593,7 +1593,7 @@ html .steps li.step-live::before{background:var(--acc-solid)}
 .main{--fade-rgb:255,255,255}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .main{--fade-rgb:18,18,18}}
 :root[data-theme="dark"] .main{--fade-rgb:18,18,18}
-.main::after{content:"";position:absolute;left:0;right:0;bottom:0;height:calc(var(--note-space) + 40px + var(--bottom-inset));pointer-events:none;z-index:1;background:linear-gradient(to bottom,rgba(var(--fade-rgb),0),rgba(var(--fade-rgb),.78) 45%,rgba(var(--fade-rgb),.92));-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);-webkit-mask-image:linear-gradient(to bottom,transparent,#000 55%);mask-image:linear-gradient(to bottom,transparent,#000 55%)}
+.main::after{content:"";position:absolute;left:0;right:0;bottom:calc(-1 * var(--frame-pad));height:calc(var(--note-space) + 40px + var(--bottom-inset) + var(--frame-pad));pointer-events:none;z-index:1;background:linear-gradient(to bottom,rgba(var(--fade-rgb),0),rgba(var(--fade-rgb),.78) 45%,rgba(var(--fade-rgb),.92));-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);-webkit-mask-image:linear-gradient(to bottom,transparent,#000 55%);mask-image:linear-gradient(to bottom,transparent,#000 55%)}
 
 .typing{white-space:pre-wrap}
 @media (max-width:640px){body{background-image:none;padding-bottom:var(--gap-bottom)}}
@@ -1608,12 +1608,15 @@ body .mbar{background:linear-gradient(to bottom,#fff 0,#fff 50%,rgba(255,255,255
 :root[data-theme="dark"] body .mbar{background:linear-gradient(to bottom,#121212 0,#121212 50%,rgba(18,18,18,.7) 100%)}
 
 
-/* Bottom band: the blur and the busy glow reach the bottom of the screen */
-:root{--bottom-inset:max(var(--gap-bottom),24px)}
+/* Bottom band: the blur and the busy glow reach the bottom of the screen.
+   --frame-pad is the frame's bottom padding on desktop (the band runs into it, up to the frame border).
+   --bottom-inset is where the composer and disclaimer sit above the main column's bottom. */
+:root{--frame-pad:12px;--bottom-inset:12px}
 body{padding-bottom:0!important}
-.main::before{content:"";position:absolute;left:-10%;right:-10%;bottom:var(--bottom-inset);height:calc(var(--note-space) + 90px);pointer-events:none;z-index:2;opacity:0;background:radial-gradient(34% 90% at 22% 100%,rgba(106,160,255,.42),transparent 70%),radial-gradient(34% 90% at 78% 100%,rgba(244,114,182,.3),transparent 70%),radial-gradient(30% 80% at 50% 100%,rgba(167,139,250,.22),transparent 70%);filter:blur(14px);transition:opacity .5s cubic-bezier(.4,0,.2,1)}
+.main::before{content:"";position:absolute;left:-10%;right:-10%;bottom:calc(-1 * var(--frame-pad));height:calc(var(--note-space) + 90px + var(--frame-pad));pointer-events:none;z-index:2;opacity:0;background:radial-gradient(34% 90% at 22% 100%,rgba(106,160,255,.42),transparent 70%),radial-gradient(34% 90% at 78% 100%,rgba(244,114,182,.3),transparent 70%),radial-gradient(30% 80% at 50% 100%,rgba(167,139,250,.22),transparent 70%);filter:blur(14px);transition:opacity .5s cubic-bezier(.4,0,.2,1)}
 .busy .main::before{opacity:1;animation:glow 2.4s ease-in-out infinite}
 @media (max-width:640px){
+ :root{--frame-pad:0px;--bottom-inset:max(var(--gap-bottom),24px)}
  .main{overflow:hidden}
 }
 </style>
@@ -2604,7 +2607,7 @@ function renderChat(fresh){
  if(c.ended){const note=document.createElement("p");note.className="sm chat-ended-note";note.setAttribute("role","status");note.textContent="This chat was ended and can't be continued. Start a new chat to keep talking.";chatEl.appendChild(note)}
  if(fresh){const ms=chatEl.querySelectorAll(".msg");ms[ms.length-1].classList.add("fresh")}
  const newest=[...chatEl.querySelectorAll(".msg")].pop();[...chatEl.querySelectorAll(".chart-retry")].forEach(x=>{if(newest&&x.closest(".msg")===newest)x.onclick=regen;else x.remove()});
- if(fresh||switching)flickToBottom();else if(wasNear)toBottom();else chatEl.scrollTop=prevTop;
+ if(fresh)flickToBottom();else if(switching||(wasNear&&busy))toBottom();else chatEl.scrollTop=prevTop;
  updateJump();
 }
 const plain=t=>t.replace(/\*\*(.+?)\*\*/g,"$1").replace(/^[-*] /gm,"\u2022 ");
@@ -2933,12 +2936,12 @@ async function retitle(id){
  finally{titleRequests.delete(c.id)}
 }
 async function answer(c,q){
- const run=++answerRunId,controller=new AbortController();
+ const run=++answerRunId,controller=new AbortController(),startedAt=performance.now();let fastReply=false;
  followOn=true;responseWasStopped=false;activeAnswerController=controller;setBusy(true);
  const tmp=document.createElement("div");tmp.className="msg dim fresh";tmp.setAttribute("role","status");
  const activeModelName=(availableModels.find(m=>m.id===selectedModelId())||availableModels[0]||{name:"WHWai"}).name;const thinkingLines=[activeModelName+" is thinking…",activeModelName+" is working on it…",activeModelName+" is putting it together…",activeModelName+" is checking that…",activeModelName+" is almost there…",activeModelName+" is working…"];
  const rareThinkingLines=["idk ask chatgpt","The tiny calculators are meeting…","Consulting the office plant…","My last two neurons are syncing…","The pixels are negotiating…"];
- const thinkingLine=Math.random()<0.08?rareThinkingLines[Math.floor(Math.random()*rareThinkingLines.length)]:thinkingLines[Math.floor(Math.random()*thinkingLines.length)];tmp.setAttribute("aria-label",thinkingLine);tmp.innerHTML='<span class="typing-indicator" aria-hidden="true"><span></span><span></span><span></span></span><span class="thinking-label"></span>';tmp.querySelector(".thinking-label").textContent=thinkingLine;chatEl.appendChild(tmp);toBottom();
+ const thinkingLine=Math.random()<0.08?rareThinkingLines[Math.floor(Math.random()*rareThinkingLines.length)]:thinkingLines[Math.floor(Math.random()*thinkingLines.length)];tmp.setAttribute("aria-label",thinkingLine);tmp.innerHTML='<span class="typing-indicator" aria-hidden="true"><span></span><span></span><span></span></span><span class="thinking-label"></span>';tmp.querySelector(".thinking-label").textContent=thinkingLine;chatEl.appendChild(tmp);flickToBottom();
  if(selectedModelId()!=="aries-1"&&wantsThinkingView(q)){
   tmp.classList.remove("dim");tmp.innerHTML='<ol class="steps play live-steps" aria-hidden="true"></ol>';
   const ol=tmp.querySelector(".steps"),seq=["Searching the web","Reading the results",activeModelName+" is thinking…"];let si=-1,timer=null;
@@ -2970,12 +2973,17 @@ async function answer(c,q){
   }
   if(limitNow){full="You've hit your usage limit.";await sleepUntilAbort(1100+Math.random()*500,controller.signal);if(responseWasStopped||run!==answerRunId)return}
   tmp.classList.remove("dim");
-  const drawn=await typeOut(tmp,full,controller.signal,()=>responseWasStopped||run!==answerRunId);
+  let drawn;
+  // A reply that arrives within a second is not typed out: it fades in as a new message, the same way a send does.
+  if(performance.now()-startedAt<1000&&!reduceMotion()){
+   if(responseWasStopped||run!==answerRunId)return;
+   fastReply=true;drawn=true;
+  }else drawn=await typeOut(tmp,full,controller.signal,()=>responseWasStopped||run!==answerRunId);
   if(!drawn)return;
   if(responseWasStopped||run!==answerRunId)return;
   const target=S.chats.find(x=>x.id===c.id);
   if(!target)return;
-  if(limitNow)full="You've hit your usage limit.";if(supportNow)target.sup=1;target.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1,limit:limitNow?1:0}:{r:"a",x:full,at:Date.now(),sources:sources,thinking:thinking,tools:usedTools,_fade:(supportNow||target.sup)?1:0,model:usedModel||target.model||S.model||"aries-1",_l:1});if(endedNow)target.ended=1;target.u=Date.now();touch(target);save();renderList();renderChat();
+  if(limitNow)full="You've hit your usage limit.";if(supportNow)target.sup=1;target.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1,limit:limitNow?1:0}:{r:"a",x:full,at:Date.now(),sources:sources,thinking:thinking,tools:usedTools,_fade:(supportNow||target.sup)?1:0,model:usedModel||target.model||S.model||"aries-1",_l:1});if(endedNow)target.ended=1;target.u=Date.now();touch(target);save();renderList();renderChat(fastReply);
   if(err&&!limitNow&&!endedNow)toast("Couldn't get an answer.",{retry:()=>regen()});
   if(API_URL&&!err&&target.auto)genTitle(target);
 
@@ -2984,7 +2992,7 @@ async function answer(c,q){
    if(responseWasStopped&&tmp.isConnected)tmp.remove();
    if(activeAnswerController===controller)activeAnswerController=null;
    setBusy(false);
-   renderChat();
+   if(!fastReply)renderChat();
   }
  }
 }
