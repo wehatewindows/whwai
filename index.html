@@ -1597,9 +1597,9 @@ html .steps li.step-live::before{background:var(--acc-solid)}
 #send{background:#111;color:#fff}
 #send:hover:not(.blocked){background:#333}
 #send svg{width:20px;height:20px}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #send{background:linear-gradient(180deg,#7fa9ff,#5b8df0);color:#fff}:root:not([data-theme="light"]) #send:hover:not(.blocked){background:linear-gradient(180deg,#8fb4ff,#6b96f4)}}
-:root[data-theme="dark"] #send{background:linear-gradient(180deg,#7fa9ff,#5b8df0);color:#fff}
-:root[data-theme="dark"] #send:hover:not(.blocked){background:linear-gradient(180deg,#8fb4ff,#6b96f4)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #send{background:#3a3a3e;color:#f2f2f2}:root:not([data-theme="light"]) #send:hover:not(.blocked){background:#4a4a4f}}
+:root[data-theme="dark"] #send{background:#3a3a3e;color:#f2f2f2}
+:root[data-theme="dark"] #send:hover:not(.blocked){background:#4a4a4f}
 
 body .mbar{background:linear-gradient(to bottom,#fff 0,#fff 50%,rgba(255,255,255,.7) 100%);-webkit-backdrop-filter:blur(16px) saturate(1.5);backdrop-filter:blur(16px) saturate(1.5)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body .mbar{background:linear-gradient(to bottom,#121212 0,#121212 50%,rgba(18,18,18,.7) 100%)}}
@@ -1629,19 +1629,17 @@ body{padding-bottom:0!important}
 }
 #list,#chat{position:relative}
 .loading-skel{position:absolute;inset:0;overflow:hidden;pointer-events:none;animation:loadIn .28s cubic-bezier(.2,.7,.2,1) both}
-.list.list-in>*{animation:listIn .34s cubic-bezier(.2,.7,.2,1) both}
+.list.list-in>*,.row.row-new{animation:listIn .34s cubic-bezier(.2,.7,.2,1) both}
 @keyframes listIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .loading-skel.loading-skel-chat{display:flex;align-items:center;justify-content:center}
 .loading-skel.out{animation:loadOut .22s ease forwards}
 @keyframes loadIn{from{opacity:0}to{opacity:1}}
 @keyframes loadOut{from{opacity:1}to{opacity:0}}
-@media (prefers-reduced-motion:reduce){.loading-skel{animation:none!important}}
+@media (prefers-reduced-motion:reduce){.loading-skel,.row.row-new,.list.list-in>*{animation:none!important}}
 @keyframes acctIn{from{opacity:0;transform:translateY(4px) scale(.9)}to{opacity:1;transform:none}}
 #profile-btn.acct-in{animation:acctIn .45s cubic-bezier(.2,.7,.2,1) both}
-@keyframes acctShimmer{from{background-position:200% 0}to{background-position:-200% 0}}
-.skel{height:12px;border-radius:8px;background:linear-gradient(90deg,var(--chip) 25%,rgba(255,255,255,.55) 50%,var(--chip) 75%);background-size:200% 100%;animation:acctShimmer 1.3s linear infinite}
 .skel.acct-skel-card{height:58px;border-radius:16px}
-@media (prefers-reduced-motion:reduce){#profile-btn.acct-in,.skel{animation:none!important}}
+@media (prefers-reduced-motion:reduce){#profile-btn.acct-in{animation:none!important}}
 </style>
 
 </head>
@@ -2382,9 +2380,10 @@ function accountLoading(){return gatesPassed()&&!!(accountSession&&accountSessio
 function retireLoading(el,host){el.classList.add("out");host.prepend(el);setTimeout(()=>el.remove(),230)}
 // Local and account chats are not drawn until the access and disabled screens are passed; skeletons stand in for them.
 function revealAppData(){if(!gatesPassed())return;renderList();renderChat();renderSyncStatus()}
+var seenChatIds=null;
 function renderList(){
  closeMenu();list.classList.toggle("selecting",selecting);
- const ghostL=list.querySelector(":scope > .loading-skel"),wantSkel=accountLoading()&&!S.chats.length;
+ const ghostL=list.querySelector(":scope > .loading-skel"),wantSkel=accountLoading();
  if(wantSkel&&ghostL&&!ghostL.classList.contains("out"))return;
  list.innerHTML="";if(ghostL){retireLoading(ghostL,list);list.classList.add("list-in");clearTimeout(list._inT);list._inT=setTimeout(()=>list.classList.remove("list-in"),900)}
  if(!gatesPassed()){renderBulkBar();return}
@@ -2397,7 +2396,8 @@ function renderList(){
  if(query){entries=S.chats.map(c=>({c,score:scoreChat(c,query)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||(b.c.u||0)-(a.c.u||0));
   if(!entries.length){list.insertAdjacentHTML("beforeend",'<div class="search-empty">No chats match your search.</div>');if(!canSave)list.insertAdjacentHTML("beforeend",'<div class="hint warn">Chats can&#39;t be saved in this browser, so they will be lost when you leave this page.</div>');return}
  }else{entries=sorted().map(c=>({c,score:0}));if(!S.chats.length)list.insertAdjacentHTML("beforeend",'<div class="hint">Your chats will show up here.</div>')}
- const drawEntry=(entry,target=list)=>{const c=entry.c;
+ if(!seenChatIds)seenChatIds=new Set(S.chats.map(x=>x.id));
+ const drawEntry=(entry,target=list)=>{const c=entry.c;const isNew=!seenChatIds.has(c.id);seenChatIds.add(c.id);
   if(renamingId===c.id){
    const e=document.createElement("div");e.className="chat on edit";
    const i=document.createElement("input");i.className="rn";i.value=c.t;i.maxLength=60;i.setAttribute("aria-label","Chat name");
@@ -2407,7 +2407,7 @@ function renderList(){
    i.onblur=()=>fin(true);
    e.appendChild(i);target.appendChild(e);return;
   }
-  const on=c.id===S.cur,r=document.createElement("div");r.className="row"+(on?" on":"");
+  const on=c.id===S.cur,r=document.createElement("div");r.className="row"+(on?" on":"")+(isNew?" row-new":"");
   const b=document.createElement("button");b.className="chat"+(on?" on":"");b.title=c.t;
   const ct=document.createElement("span");ct.className="ct";
   if(c.p)ct.insertAdjacentHTML("beforeend",ic(PIN,12));
@@ -2606,12 +2606,16 @@ function appendSupportCard(parent,c,fadeIn,key){
 }
 function renderChat(fresh){
  if(!gatesPassed()){lastChatRenderId=null;jumpBtn.classList.add("is-hidden");chatEl.innerHTML="";return}
- const c0=C(),ghostK=chatEl.querySelector(":scope > .loading-skel");
- if(accountLoading()&&!S.chats.length&&(!c0||!c0.m.length)&&ghostK&&!ghostK.classList.contains("out")){lastChatRenderId=c0&&c0.id;return}
+ if(accountLoading()){
+  const cc=C(),g=chatEl.querySelector(":scope > .loading-skel");lastChatRenderId=cc&&cc.id;jumpBtn.classList.add("is-hidden");
+  if(g&&!g.classList.contains("out"))return;
+  chatEl.innerHTML="";if(g)retireLoading(g,chatEl);
+  chatEl.insertAdjacentHTML("beforeend",'<div class="loading-skel loading-skel-chat"><div class="empty"><h2>WHW<b>ai</b><span class="beta-pill">Beta</span></h2><p><span class="sync-spinner" aria-hidden="true"></span>Loading your account chats…</p></div></div>');
+  return;
+ }
  const c=C();const wasNear=near(),prevTop=chatEl.scrollTop,switching=lastChatRenderId!==(c&&c.id);lastChatRenderId=c&&c.id;jumpBtn.classList.add("is-hidden");updateModelUI();const ghostC=chatEl.querySelector(":scope > .loading-skel");chatEl.innerHTML="";if(ghostC)retireLoading(ghostC,chatEl);
  if(!c||!c.m.length){
-  if(accountLoading()&&!S.chats.length)chatEl.insertAdjacentHTML("beforeend",'<div class="loading-skel loading-skel-chat"><div class="empty"><h2>WHW<b>ai</b><span class="beta-pill">Beta</span></h2><p><span class="sync-spinner" aria-hidden="true"></span>Loading your account chats…</p></div></div>');
-  else chatEl.innerHTML='<div class="empty"><h2>WHW<b>ai</b><span class="beta-pill">Beta</span></h2><p>Ask anything to get started.</p></div>';
+  chatEl.innerHTML='<div class="empty"><h2>WHW<b>ai</b><span class="beta-pill">Beta</span></h2><p>Ask anything to get started.</p></div>';
   return
  }
  c.m.forEach((m,i)=>{
