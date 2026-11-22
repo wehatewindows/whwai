@@ -1611,9 +1611,18 @@ body .mbar{background:linear-gradient(to bottom,#fff 0,#fff 50%,rgba(255,255,255
    --bottom-inset is where the composer and disclaimer sit above the main column's bottom. */
 :root{--frame-pad:12px;--bottom-inset:12px}
 body{padding-bottom:0!important}
-.main::before{content:"";position:absolute;left:0;right:0;bottom:calc(-1 * var(--frame-pad));height:calc(var(--note-space) + 90px + var(--frame-pad));pointer-events:none;z-index:2;opacity:0;background:radial-gradient(34% 90% at 22% 100%,rgba(106,160,255,.42),transparent 70%),radial-gradient(34% 90% at 78% 100%,rgba(244,114,182,.3),transparent 70%),radial-gradient(30% 80% at 50% 100%,rgba(167,139,250,.22),transparent 70%);filter:blur(14px);transition:opacity .5s cubic-bezier(.4,0,.2,1)}
-.main::before{animation:glow 2.4s ease-in-out infinite;animation-play-state:paused}
-.busy .main::before{opacity:1;animation-play-state:running}
+/* Thinking glow: three soft colour blobs drift and breathe inside a band clipped to the main column, so they never spill into the sidebar. */
+.busy-glow{position:absolute;left:0;right:0;bottom:calc(-1 * var(--frame-pad));height:calc(var(--note-space) + 90px + var(--frame-pad));pointer-events:none;z-index:2;overflow:hidden;opacity:0;filter:blur(14px);transition:opacity .5s cubic-bezier(.4,0,.2,1)}
+.busy .busy-glow{opacity:1}
+.busy-glow i{position:absolute;bottom:-30%;height:170%;width:46%;border-radius:50%;animation-play-state:paused;will-change:transform}
+.busy .busy-glow i{animation-play-state:running}
+.busy-glow i:nth-child(1){left:-8%;background:radial-gradient(closest-side,rgba(106,160,255,.5),rgba(106,160,255,0));animation:glowA 5.2s ease-in-out infinite}
+.busy-glow i:nth-child(2){right:-8%;background:radial-gradient(closest-side,rgba(244,114,182,.38),rgba(244,114,182,0));animation:glowB 6.6s ease-in-out infinite}
+.busy-glow i:nth-child(3){left:27%;height:120%;background:radial-gradient(closest-side,rgba(167,139,250,.3),rgba(167,139,250,0));animation:glowC 4.4s ease-in-out infinite}
+@keyframes glowA{0%,100%{transform:translate(0,0) scale(1)}35%{transform:translate(34%,-14px) scale(1.14)}70%{transform:translate(-10%,8px) scale(.92)}}
+@keyframes glowB{0%,100%{transform:translate(0,0) scale(1)}40%{transform:translate(-30%,10px) scale(1.1)}75%{transform:translate(12%,-12px) scale(.95)}}
+@keyframes glowC{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-44%,-10px) scale(1.2)}}
+@media (prefers-reduced-motion:reduce){.busy-glow i{animation:none!important}}
 @media (max-width:640px){
  :root{--frame-pad:0px;--bottom-inset:max(var(--gap-bottom),24px)}
  .main{overflow:hidden}
@@ -1672,6 +1681,7 @@ body{padding-bottom:0!important}
  <div class="modal" id="modal" hidden><div class="mcard" role="dialog" aria-label="Settings"><div class="mh"><b id="modal-title">Settings</b><button id="mx" aria-label="Close"><span class="xi" aria-hidden="true"></span></button></div><div id="mbody"></div></div></div>
  <div class="app-confirm-overlay" id="confirm-overlay" hidden role="alertdialog" aria-modal="true" aria-label="Confirm action"></div>
   <section class="main">
+    <div class="busy-glow" aria-hidden="true"><i></i><i></i><i></i></div>
   <button class="expand" id="expand" title="Show sidebar" aria-label="Show sidebar"></button>
   <div class="mbar"><button class="menubtn" id="mopen" title="Open chats and settings" aria-label="Open chats and settings" aria-expanded="false"></button><span class="mt">WHW<b>ai</b><span class="beta-pill">Beta</span></span><button class="mnew" id="mnew" title="New chat" aria-label="New chat"></button></div>
   <div class="banner-stack" id="banner-stack">
@@ -2379,7 +2389,7 @@ function renderList(){
  list.innerHTML="";if(ghostL){retireLoading(ghostL,list);list.classList.add("list-in");clearTimeout(list._inT);list._inT=setTimeout(()=>list.classList.remove("list-in"),900)}
  if(!gatesPassed()){renderBulkBar();return}
  for(const id of [...selectedIds]){if(!S.chats.some(c=>c.id===id))selectedIds.delete(id)}
- if(wantSkel){const rows=Math.max(6,Math.ceil((list.clientHeight||640)/40)+2);list.insertAdjacentHTML("beforeend",'<div class="loading-skel">'+skeletonCards(rows,"Loading your chats…","chat")+'</div>');renderBulkBar();return}
+ if(wantSkel){const rows=Math.max(3,Math.floor((list.clientHeight||640)/59)-2);list.insertAdjacentHTML("beforeend",'<div class="loading-skel">'+skeletonCards(rows,"Loading your chats…","chat")+'</div>');renderBulkBar();return}
  renderBulkBar();
  const query=searchInput?searchInput.value.trim():"";
  if(searchClear)searchClear.hidden=!query;
