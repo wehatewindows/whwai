@@ -201,7 +201,7 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 button,.chat{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 
 @media (hover:none){.more{opacity:1}.chat:hover{background:var(--chip)}.chat.on:hover{background:var(--sel)}}
-@keyframes glow{0%,100%{transform:translateX(-6px);opacity:.55}50%{transform:translateX(6px);opacity:1}}
+@keyframes glow{0%,100%{transform:translateX(-6px) scale(1)}50%{transform:translateX(6px) scale(1.04)}}
 
 
 html,body{width:100%;min-width:0}
@@ -215,9 +215,6 @@ body{overflow:hidden}
    Unfocused and idle: no glow. Focused: a very slight glow. Replying: the pulse. */
 .field{transition:background .3s ease,border-color .3s ease}
 /* Layer 1: focus glow. Slight when focused, a little stronger once there is text. */
-.field::before{content:"";position:absolute;inset:0;border-radius:inherit;z-index:0;pointer-events:none;opacity:0;box-shadow:none;transition:opacity .4s cubic-bezier(.4,0,.2,1),box-shadow .4s cubic-bezier(.4,0,.2,1)}
-.field:focus-within::before{opacity:1;box-shadow:-6px 4px 18px rgba(106,160,255,.32),6px 4px 18px rgba(244,114,182,.24),0 -4px 18px rgba(167,139,250,.2)}
-.field:focus-within:has(#in:not(:placeholder-shown))::before{box-shadow:-6px 4px 18px rgba(106,160,255,.32),6px 4px 18px rgba(244,114,182,.24),0 -4px 18px rgba(167,139,250,.2)}
 /* Layer 2: reply pulse. Always animating; only its opacity fades in and out. */
 .msg.u{background:linear-gradient(180deg,#7fa9ff,#5b8df0);color:#fff}
 .empty p{margin:0;color:var(--mute)}
@@ -1614,7 +1611,8 @@ body .mbar{background:linear-gradient(to bottom,#fff 0,#fff 50%,rgba(255,255,255
 :root{--frame-pad:12px;--bottom-inset:12px}
 body{padding-bottom:0!important}
 .main::before{content:"";position:absolute;left:-10%;right:-10%;bottom:calc(-1 * var(--frame-pad));height:calc(var(--note-space) + 90px + var(--frame-pad));pointer-events:none;z-index:2;opacity:0;background:radial-gradient(34% 90% at 22% 100%,rgba(106,160,255,.42),transparent 70%),radial-gradient(34% 90% at 78% 100%,rgba(244,114,182,.3),transparent 70%),radial-gradient(30% 80% at 50% 100%,rgba(167,139,250,.22),transparent 70%);filter:blur(14px);transition:opacity .5s cubic-bezier(.4,0,.2,1)}
-.busy .main::before{opacity:1;animation:glow 2.4s ease-in-out infinite}
+.main::before{animation:glow 2.4s ease-in-out infinite;animation-play-state:paused}
+.busy .main::before{opacity:1;animation-play-state:running}
 @media (max-width:640px){
  :root{--frame-pad:0px;--bottom-inset:max(var(--gap-bottom),24px)}
  .main{overflow:hidden}
