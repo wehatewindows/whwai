@@ -1597,8 +1597,9 @@ html .steps li.step-live::before{background:var(--acc-solid)}
 #send{background:#111;color:#fff}
 #send:hover:not(.blocked){background:#333}
 #send svg{width:20px;height:20px}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #send{background:#f2f2f2;color:#111}:root:not([data-theme="light"]) #send:hover:not(.blocked){background:#fff}}
-:root[data-theme="dark"] #send{background:#f2f2f2;color:#111}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #send{background:linear-gradient(180deg,#7fa9ff,#5b8df0);color:#fff}:root:not([data-theme="light"]) #send:hover:not(.blocked){background:linear-gradient(180deg,#8fb4ff,#6b96f4)}}
+:root[data-theme="dark"] #send{background:linear-gradient(180deg,#7fa9ff,#5b8df0);color:#fff}
+:root[data-theme="dark"] #send:hover:not(.blocked){background:linear-gradient(180deg,#8fb4ff,#6b96f4)}
 
 body .mbar{background:linear-gradient(to bottom,#fff 0,#fff 50%,rgba(255,255,255,.7) 100%);-webkit-backdrop-filter:blur(16px) saturate(1.5);backdrop-filter:blur(16px) saturate(1.5)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body .mbar{background:linear-gradient(to bottom,#121212 0,#121212 50%,rgba(18,18,18,.7) 100%)}}
@@ -1610,13 +1611,19 @@ body .mbar{background:linear-gradient(to bottom,#fff 0,#fff 50%,rgba(255,255,255
    --bottom-inset is where the composer and disclaimer sit above the main column's bottom. */
 :root{--frame-pad:12px;--bottom-inset:12px}
 body{padding-bottom:0!important}
-.main::before{content:"";position:absolute;left:-10%;right:-10%;bottom:calc(-1 * var(--frame-pad));height:calc(var(--note-space) + 90px + var(--frame-pad));pointer-events:none;z-index:2;opacity:0;background:radial-gradient(34% 90% at 22% 100%,rgba(106,160,255,.42),transparent 70%),radial-gradient(34% 90% at 78% 100%,rgba(244,114,182,.3),transparent 70%),radial-gradient(30% 80% at 50% 100%,rgba(167,139,250,.22),transparent 70%);filter:blur(14px);transition:opacity .5s cubic-bezier(.4,0,.2,1)}
+.main::before{content:"";position:absolute;left:0;right:0;bottom:calc(-1 * var(--frame-pad));height:calc(var(--note-space) + 90px + var(--frame-pad));pointer-events:none;z-index:2;opacity:0;background:radial-gradient(34% 90% at 22% 100%,rgba(106,160,255,.42),transparent 70%),radial-gradient(34% 90% at 78% 100%,rgba(244,114,182,.3),transparent 70%),radial-gradient(30% 80% at 50% 100%,rgba(167,139,250,.22),transparent 70%);filter:blur(14px);transition:opacity .5s cubic-bezier(.4,0,.2,1)}
 .main::before{animation:glow 2.4s ease-in-out infinite;animation-play-state:paused}
 .busy .main::before{opacity:1;animation-play-state:running}
 @media (max-width:640px){
  :root{--frame-pad:0px;--bottom-inset:max(var(--gap-bottom),24px)}
  .main{overflow:hidden}
 }
+@keyframes acctIn{from{opacity:0;transform:translateY(4px) scale(.9)}to{opacity:1;transform:none}}
+#profile-btn.acct-in{animation:acctIn .45s cubic-bezier(.2,.7,.2,1) both}
+@keyframes acctShimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+.skel{height:12px;border-radius:8px;background:linear-gradient(90deg,var(--chip) 25%,rgba(255,255,255,.55) 50%,var(--chip) 75%);background-size:200% 100%;animation:acctShimmer 1.3s linear infinite}
+.skel.acct-skel-card{height:58px;border-radius:16px}
+@media (prefers-reduced-motion:reduce){#profile-btn.acct-in,.skel{animation:none!important}}
 </style>
 
 </head>
@@ -3953,7 +3960,7 @@ function renderSyncStatus(){
  else if(navigator.onLine===false||accountSyncFailed){state="off";text="Offline · saved on this device"}
  else if(accountLastSync){state="ok";text="Chats synced · last synced "+new Date(accountLastSync).toLocaleTimeString()}
  else{state="idle";text="Not synced yet"}
- b.hidden=false;b.dataset.sync=state;b.textContent=name.charAt(0).toUpperCase();b.style.background=accountSession.user.profileColor||"";
+ const reveal=b.hidden;b.hidden=false;b.dataset.sync=state;if(reveal){b.classList.remove("acct-in");void b.offsetWidth;b.classList.add("acct-in")}b.textContent=name.charAt(0).toUpperCase();b.style.background=accountSession.user.profileColor||"";
  b.insertAdjacentHTML("beforeend",'<span class="sync-dot" aria-hidden="true"></span>');
  b.title=name+" · "+text;b.setAttribute("aria-label","Account menu, signed in as "+name+". "+text);const pm=$("profile-menu");if(pm&&!pm.hidden)renderProfileMenu();
 }
@@ -3982,12 +3989,13 @@ async function resumeAccountSession(){
   if(!result||!result.user)throw new Error("invalid_session");
   accountSession.user=result.user;accountReady=true;
   if(result.user.mustChange){renderRequiredPasswordChange();return}
+  refreshSettingsPane();
   accountInitialSyncPending=true;renderChat();
   await syncAccountChatsNow();
  }catch(e){
   if(e&&e.message==="accesslocked"){accountReady=true;accountInitialSyncPending=false;renderSyncStatus();return}
   if(e&&e.message==="invalid_session"){
-   clearAccountSession();renderList();renderChat();toast("Your account session expired. Your chats are still saved on this device. Sign in again to sync them.",{act:{icon:"log-in",label:"Sign in",run:()=>openSettings(()=>renderAccountAuth("login"))}});
+   clearAccountSession();renderList();renderChat();refreshSettingsPane();toast("Your account session expired. Your chats are still saved on this device. Sign in again to sync them.",{act:{icon:"log-in",label:"Sign in",run:()=>openSettings(()=>renderAccountAuth("login"))}});
   }else{accountReady=true;accountSyncAgain=true;scheduleSyncRetry();}
  }
 }
@@ -4733,9 +4741,21 @@ function renderAccountAuth(mode){
   }catch(err){if(err&&err.payload&&err.payload.error==="breached_password_confirm")showBreachConfirm(mbody.querySelector("#account-auth-error"),err.payload.message);else{const msg=err&&err.payload&&err.payload.message||"Couldn't complete sign-in. Check your details and try again.";showAccountAuthError(msg,/user/i.test(msg)?mbody.querySelector("#account-username"):mbody.querySelector("#account-password"))}submit.disabled=false;submit.textContent=signup?"Create account":"Sign in"}
  };
 }
+function acctSkeletonHtml(){return '<div class="acct-skel" aria-hidden="true"><div class="skel" style="width:42%;height:20px"></div><div class="skel" style="width:88%;height:12px;margin-top:12px"></div><div class="skel" style="width:70%;height:12px;margin-top:8px"></div><div class="skel acct-skel-card" style="margin-top:20px"></div><div class="skel acct-skel-card" style="margin-top:10px"></div><div class="skel acct-skel-card" style="margin-top:10px"></div></div>'}
+// Re-renders the open Settings page (or the account page) when the account state changes, so admin and account options appear without reopening it.
+function refreshSettingsPane(){
+ if(!modal||modal.hidden)return;
+ if(currentSettingsView==="account")renderAccount();else if(currentSettingsView==="settings")renderSettings();else return;
+ animateMenuContent();
+}
 function renderAccount(){
  currentSettingsView="account";$("modal-title").textContent="Account settings";
- if(!accountSession||!accountSession.token||!accountSession.user){renderSettings();return}
+ if(!accountSession||!accountSession.token){renderSettings();return}
+ if(!accountSession.user){
+  const failed=accountReady;
+  mbody.innerHTML='<p class="sm" role="status">'+(failed?"Can't reach your account right now. It will load when the connection is back.":"Checking your account session…")+'</p>'+(failed?"":acctSkeletonHtml())+'<div class="data-toolbar"><button class="pbtn" id="account-back">Back to Settings</button></div>';
+  $("account-back").onclick=renderSettings;return;
+ }
  const u=accountSession.user;
  mbody.innerHTML=`<p class="acct-who"><strong>${esc(u.username)}</strong>${u.role==="admin"?" · Administrator":""}</p><p class="sm">Your account chats sync to the server when you make changes and when you return to WHWai. You can use the same account on multiple browsers.</p><p class="sm" id="account-sync-status" role="status">${accountSyncing?"Syncing account chats…":accountLastSync?"Last synced "+ago(accountLastSync):"Account chat sync runs automatically."}</p>
   ${profileColorHtml()}
