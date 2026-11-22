@@ -1628,7 +1628,7 @@ body{padding-bottom:0!important}
  .main{overflow:hidden}
 }
 #list,#chat{position:relative}
-.loading-skel{position:absolute;inset:0;overflow:hidden;pointer-events:none;animation:loadIn .28s cubic-bezier(.2,.7,.2,1) both}
+.loading-skel{position:absolute;inset:0;box-sizing:border-box;overflow:hidden;pointer-events:none;animation:loadIn .28s cubic-bezier(.2,.7,.2,1) both}
 .list.list-in>*,.row.row-new{animation:listIn .34s cubic-bezier(.2,.7,.2,1) both}
 @keyframes listIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .loading-skel.loading-skel-chat{display:flex;align-items:center;justify-content:center}
@@ -2611,6 +2611,7 @@ function renderChat(fresh){
   if(g&&!g.classList.contains("out"))return;
   chatEl.innerHTML="";if(g)retireLoading(g,chatEl);
   chatEl.insertAdjacentHTML("beforeend",'<div class="loading-skel loading-skel-chat"><div class="empty"><h2>WHW<b>ai</b><span class="beta-pill">Beta</span></h2><p><span class="sync-spinner" aria-hidden="true"></span>Loading your account chats…</p></div></div>');
+  {const cs=getComputedStyle(chatEl),spacer=parseFloat(getComputedStyle(chatEl,"::after").height)||0;chatEl.lastElementChild.style.padding=[cs.paddingTop,cs.paddingRight,(parseFloat(cs.paddingBottom)+spacer+(parseFloat(cs.rowGap)||0))+"px",cs.paddingLeft].join(" ")}
   return;
  }
  const c=C();const wasNear=near(),prevTop=chatEl.scrollTop,switching=lastChatRenderId!==(c&&c.id);lastChatRenderId=c&&c.id;jumpBtn.classList.add("is-hidden");updateModelUI();const ghostC=chatEl.querySelector(":scope > .loading-skel");chatEl.innerHTML="";if(ghostC)retireLoading(ghostC,chatEl);
