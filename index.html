@@ -2556,7 +2556,7 @@ function appendSupportCard(parent,c,fadeIn,key){
  wrap.innerHTML='<div class="support-card" role="note"><strong>You\'re not alone</strong><p>It sounds like you\'re going through something heavy. You don\'t have to handle it by yourself.</p><p>If you\'re in the US, you can call or text <a href="tel:988">988</a> (Suicide &amp; Crisis Lifeline) any time, or text HOME to <a href="sms:741741?body=HOME">741741</a> (Crisis Text Line).</p><button type="button" class="support-close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>';
  wrap.querySelector(".support-close").onclick=()=>{c.sup=0;touch(c);save();collapseSupport(wrap)};
  parent.appendChild(wrap);
- if(fadeIn&&!reduceMotion())wrap.animate([{opacity:0,transform:"translateY(8px)"},{opacity:1,transform:"none"}],{duration:300,easing:"cubic-bezier(.2,.7,.2,1)"});
+ if(fadeIn&&!reduceMotion())wrap.animate([{opacity:0,transform:"translateY(8px)"},{opacity:1,transform:"none"}],{duration:700,delay:1000,fill:"backwards",easing:"cubic-bezier(.2,.7,.2,1)"});
 }
 function renderChat(fresh){
  const c=C();const wasNear=near(),prevTop=chatEl.scrollTop,switching=lastChatRenderId!==(c&&c.id);lastChatRenderId=c&&c.id;jumpBtn.classList.add("is-hidden");updateModelUI();chatEl.innerHTML="";
