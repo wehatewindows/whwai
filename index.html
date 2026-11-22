@@ -216,8 +216,8 @@ body{overflow:hidden}
 .field{transition:background .3s ease,border-color .3s ease}
 /* Layer 1: focus glow. Slight when focused, a little stronger once there is text. */
 .field::before{content:"";position:absolute;inset:0;border-radius:inherit;z-index:0;pointer-events:none;opacity:0;box-shadow:none;transition:opacity .4s cubic-bezier(.4,0,.2,1),box-shadow .4s cubic-bezier(.4,0,.2,1)}
-.field:focus-within::before{opacity:1;box-shadow:-4px 3px 12px rgba(106,160,255,.10),4px 3px 12px rgba(244,114,182,.07),0 -2px 12px rgba(167,139,250,.06)}
-.field:focus-within:has(#in:not(:placeholder-shown))::before{box-shadow:-5px 4px 16px rgba(106,160,255,.20),5px 4px 16px rgba(244,114,182,.13),0 -3px 16px rgba(167,139,250,.11)}
+.field:focus-within::before{opacity:1;box-shadow:-6px 4px 18px rgba(106,160,255,.32),6px 4px 18px rgba(244,114,182,.24),0 -4px 18px rgba(167,139,250,.2)}
+.field:focus-within:has(#in:not(:placeholder-shown))::before{box-shadow:-6px 4px 18px rgba(106,160,255,.32),6px 4px 18px rgba(244,114,182,.24),0 -4px 18px rgba(167,139,250,.2)}
 /* Layer 2: reply pulse. Always animating; only its opacity fades in and out. */
 .msg.u{background:linear-gradient(180deg,#7fa9ff,#5b8df0);color:#fff}
 .empty p{margin:0;color:var(--mute)}
@@ -1584,7 +1584,7 @@ html .steps li.step-live::before{background:var(--acc-solid)}
 .main{--note-space:40px}
 .main>.input{position:absolute;left:0;right:0;bottom:calc(var(--note-space) + var(--bottom-inset));z-index:3}
 .main>.note{position:absolute;left:0;right:0;bottom:var(--bottom-inset);margin:0;z-index:3;pointer-events:none}
-.main>.scroll#chat::after{content:"";display:block;flex:0 0 auto;height:calc(var(--note-space) + 104px)}
+.main>.scroll#chat::after{content:"";display:block;flex:0 0 auto;height:calc(var(--note-space) + 210px)}
 .main>.scroll#chat{margin-bottom:calc(-1 * (var(--note-space) + var(--bottom-inset)));padding-bottom:0!important}
 /* Composer edge and shadow, so the box stands out from the chat behind it. */
 .field{box-shadow:0 0 0 1px rgba(0,0,0,.05),0 2px 10px rgba(20,28,44,.07)}
@@ -1609,12 +1609,11 @@ body .mbar{background:linear-gradient(to bottom,#fff 0,#fff 50%,rgba(255,255,255
 
 
 /* Bottom band: the blur and the busy glow reach the bottom of the screen */
-:root{--bottom-inset:0px}
+:root{--bottom-inset:max(var(--gap-bottom),24px)}
+body{padding-bottom:0!important}
 .main::before{content:"";position:absolute;left:-10%;right:-10%;bottom:var(--bottom-inset);height:calc(var(--note-space) + 90px);pointer-events:none;z-index:2;opacity:0;background:radial-gradient(34% 90% at 22% 100%,rgba(106,160,255,.42),transparent 70%),radial-gradient(34% 90% at 78% 100%,rgba(244,114,182,.3),transparent 70%),radial-gradient(30% 80% at 50% 100%,rgba(167,139,250,.22),transparent 70%);filter:blur(14px);transition:opacity .5s cubic-bezier(.4,0,.2,1)}
 .busy .main::before{opacity:1;animation:glow 2.4s ease-in-out infinite}
 @media (max-width:640px){
- :root{--bottom-inset:max(var(--gap-bottom),24px)}
- body{padding-bottom:0}
  .main{overflow:hidden}
 }
 </style>
@@ -2145,6 +2144,7 @@ function sleepUntilAbort(ms,signal){return new Promise(resolve=>{
 })}
 const near=()=>chatEl.scrollHeight-chatEl.scrollTop-chatEl.clientHeight<140;
 const toBottom=()=>chatEl.scrollTo({top:chatEl.scrollHeight});
+const followBottom=()=>{const d=chatEl.scrollHeight-chatEl.clientHeight-chatEl.scrollTop;if(Math.abs(d)<1){chatEl.scrollTop=chatEl.scrollHeight;return}chatEl.scrollTop+=d*.3};
 const nextFrame=()=>new Promise(r=>requestAnimationFrame(()=>r()));
 let lastChatRenderId=null;
 const jumpBtn=document.createElement("button");jumpBtn.type="button";jumpBtn.id="jump-bottom";jumpBtn.className="jump-bottom is-hidden";jumpBtn.setAttribute("aria-label","Jump to the latest message");jumpBtn.innerHTML=ic('arrow-down',18,2);
@@ -2181,6 +2181,7 @@ chatEl.parentElement.appendChild(jumpBtn);
 chatEl.addEventListener("scroll",updateJump,{passive:true});
 // Draws a reply a little at a time, one frame at a time, so it stays smooth and never rebuilds the whole message on a timer.
 async function typeOut(el,full,signal,isStale){
+ cancelAnimationFrame(jumpAnim);
  const tokens=full.split(/(\s+)/),dur=Math.min(1500,Math.max(400,tokens.length*6)),step=Math.max(4,Math.ceil(tokens.length/100));
  const start=performance.now();let shown=0;
  while(shown<tokens.length){
@@ -2190,7 +2191,7 @@ async function typeOut(el,full,signal,isStale){
   el.innerHTML=md(tokens.slice(0,shown).join(""));
   const h1=el.scrollHeight;
   if(Math.abs(h1-h0)>1){el.style.overflow="hidden";el.style.height=h0+"px";void el.offsetHeight;el.style.transition="height .22s cubic-bezier(.2,.7,.2,1)";el.style.height=h1+"px";clearTimeout(el._hT);el._hT=setTimeout(()=>{el.style.transition="";el.style.height="";el.style.overflow=""},240)}
-  if(followOn||near())toBottom();
+  if(followOn||near())followBottom();
   updateJump();
   await nextFrame();
  }
@@ -2603,7 +2604,7 @@ function renderChat(fresh){
  if(c.ended){const note=document.createElement("p");note.className="sm chat-ended-note";note.setAttribute("role","status");note.textContent="This chat was ended and can't be continued. Start a new chat to keep talking.";chatEl.appendChild(note)}
  if(fresh){const ms=chatEl.querySelectorAll(".msg");ms[ms.length-1].classList.add("fresh")}
  const newest=[...chatEl.querySelectorAll(".msg")].pop();[...chatEl.querySelectorAll(".chart-retry")].forEach(x=>{if(newest&&x.closest(".msg")===newest)x.onclick=regen;else x.remove()});
- if(fresh||switching||wasNear)toBottom();else chatEl.scrollTop=prevTop;
+ if(fresh||switching)flickToBottom();else if(wasNear)toBottom();else chatEl.scrollTop=prevTop;
  updateJump();
 }
 const plain=t=>t.replace(/\*\*(.+?)\*\*/g,"$1").replace(/^[-*] /gm,"\u2022 ");
