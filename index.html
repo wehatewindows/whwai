@@ -497,7 +497,6 @@ body.access-locked .frame{filter:blur(22px);pointer-events:none;user-select:none
 .steps li.step-end::before{background:#2fa35a}
 @keyframes stepIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes stepPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.45);opacity:.5}}
-.live-steps{margin:2px 0}
 .profile-menu{position:absolute;left:14px;bottom:52px;width:min(240px,calc(100% - 28px));background:#fff;border:1px solid #ddd;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.16);padding:8px;z-index:9;animation:rise .15s ease-out}
 .profile-menu[hidden]{display:none}
 .pm-head{padding:6px 10px 8px;font-size:12.5px;color:#555;line-height:1.35}.pm-head strong{display:block;color:#111;font-size:14px;margin-bottom:2px}
@@ -2984,12 +2983,6 @@ async function answer(c,q){
  const activeModelName=(availableModels.find(m=>m.id===selectedModelId())||availableModels[0]||{name:"WHWai"}).name;const thinkingLines=[activeModelName+" is thinking…",activeModelName+" is working on it…",activeModelName+" is putting it together…",activeModelName+" is checking that…",activeModelName+" is almost there…",activeModelName+" is working…"];
  const rareThinkingLines=["idk ask chatgpt","The tiny calculators are meeting…","Consulting the office plant…","My last two neurons are syncing…","The pixels are negotiating…"];
  const thinkingLine=Math.random()<0.08?rareThinkingLines[Math.floor(Math.random()*rareThinkingLines.length)]:thinkingLines[Math.floor(Math.random()*thinkingLines.length)];tmp.setAttribute("aria-label",thinkingLine);tmp.innerHTML='<span class="typing-indicator" aria-hidden="true"><span></span><span></span><span></span></span><span class="thinking-label"></span>';tmp.querySelector(".thinking-label").textContent=thinkingLine;chatEl.appendChild(tmp);flickToBottom();
- if(selectedModelId()!=="aries-1"&&wantsThinkingView(q)){
-  tmp.classList.remove("dim");tmp.innerHTML='<ol class="steps play live-steps" aria-hidden="true"></ol>';
-  const ol=tmp.querySelector(".steps"),seq=["Searching the web","Reading the results",activeModelName+" is thinking…"];let si=-1,timer=null;
-  const tick=()=>{if(!ol.isConnected){clearInterval(timer);return}ol.querySelectorAll("li.step-live").forEach(x=>x.classList.remove("step-live"));si++;if(si>=seq.length){clearInterval(timer);return}const li=document.createElement("li");li.textContent=seq[si];if(si===seq.length-1)li.className="step-live";ol.appendChild(li)};
-  tick();timer=setInterval(tick,1800);
- }
  try{
   let full,err=0,sources=[],thinking="",usedModel=null,limitNow=false,endedNow=false,usedTools=[],supportNow=false;
   if(API_URL){
@@ -3002,11 +2995,8 @@ async function answer(c,q){
     full=j.text||ERR_TEXT;sources=Array.isArray(j.sources)?j.sources:[];thinking=typeof j.thinking==="string"?j.thinking:"";if(j.ended)endedNow=true;if(j.support)supportNow=true;if(Array.isArray(j.tools))usedTools=j.tools.filter(t=>typeof t==="string").slice(0,5);if(!(accountSession&&accountSession.token)&&j.text&&!j.ended&&!j.disabled&&bumpGuestCount()>=GUEST_LIMIT)setLimitHit();if(!j.text||j.disabled)err=1;
    }catch(e){
     if(responseWasStopped||run!==answerRunId||e&&e.name==="AbortError"&&controller.signal.aborted)return;
-    if(e&&e.payload&&e.payload.error==="chat_ended"){endedNow=true;full=e.payload.message||"This chat was ended.";}else if(e&&e.payload&&e.payload.error==="vela_unavailable"){
-     try{const j2=await post({action:"chat",model:"aries-1",chatId:c.id,messages:hist(c)},controller.signal);if(responseWasStopped||run!==answerRunId)return;full=j2.text||ERR_TEXT;usedModel="aries-1";if(!j2.text)err=1;toast("Vela couldn't finish that answer, so Aries answered instead.",{retry:()=>regen()})}
-     catch(e2){if(responseWasStopped||run!==answerRunId||e2&&e2.name==="AbortError")return;full=ERR_TEXT;err=1}
-    }
-    else{    if(e&&e.payload&&e.payload.error==="guest_limit"){setLimitHit();limitNow=true}full=e&&e.message==="daily_limit"?(e.payload&&e.payload.message||"You've reached this model's daily limit. Please try again tomorrow."):e&&e.message==="model_unavailable"?"That model is not available right now.":e&&e.payload&&e.payload.message?e.payload.message:ERR_TEXT;err=1;}
+    if(e&&e.payload&&e.payload.error==="chat_ended"){endedNow=true;full=e.payload.message||"This chat was ended.";}
+    else{    if(e&&e.payload&&e.payload.error==="guest_limit"){setLimitHit();limitNow=true}full=e&&e.message==="model_unavailable"?"That model is not available right now.":e&&e.payload&&e.payload.message?e.payload.message:ERR_TEXT;err=1;}
    }
   }else{
    await sleepUntilAbort(800+Math.random()*700,controller.signal);
@@ -3056,7 +3046,7 @@ function sendBlockReason(){
  if(browserDisabledGate)return"This browser is disabled, so messages can't be sent.";
  if(C()&&C().ended)return"This chat was ended, so messages can't be sent. Start a new chat to continue.";
  if(accountDisabledGate)return"This account is disabled, so messages can't be sent.";
- if(limitHit()&&!(accountSession&&accountSession.token))return"You've reached today's usage limit. You can sign in or try again after midnight Hawaii time.";
+ if(limitHit()&&!(accountSession&&accountSession.token))return`You've used today's ${GUEST_LIMIT} free messages. Sign in or create an account for more, or try again after midnight Hawaii time.`;
  return"";
 }
 let lastShowLimit=null;
@@ -3982,7 +3972,6 @@ function wireProfileColors(){const av=$("pc-avatar"),opts=$("pc-options");if(av&
 function profileStateText(){if(accountSyncing)return "Syncing chats…";if(navigator.onLine===false||accountSyncFailed)return "Offline · saved on this device";if(accountLastSync)return "Chats synced · "+new Date(accountLastSync).toLocaleTimeString();return "Not synced yet"}
 function renderProfileMenu(){const menu=$("profile-menu");if(!menu||!accountSession||!accountSession.user)return;menu.innerHTML='<div class="pm-head"><strong>'+esc(accountSession.user.username)+'</strong><span>'+esc(profileStateText())+'</span></div><button class="pm-item" id="pm-sync" type="button"'+(accountSyncing?' disabled':'')+'>'+(accountSyncing?'Syncing…':'Sync now')+'</button><button class="pm-item" id="pm-settings" type="button">Account settings</button>';const doSync=async()=>{await syncAccountChatsNow();renderProfileMenu();toast(accountSyncFailed?"Couldn't sync right now. Your chats are saved on this device.":"Chats synced",accountSyncFailed?{retry:doSync}:{})};$("pm-sync").onclick=doSync;$("pm-settings").onclick=()=>{hideProfileMenu();openSettings(()=>isDeskSettings()?renderDeskSettings("account"):renderAccount())}}
 function hideProfileMenu(){hideEl($("profile-menu"))}
-function wantsThinkingView(text){return /(show|see|display|reveal)\b.{0,20}\b(thinking|thought|reasoning)\b|\bthink (it |this )?through\b|\bstep[- ]by[- ]step\b/i.test(String(text||""))}
 function togglePanel(panel,btn,replay){const open=panel.hidden;open?showEl(panel):hideEl(panel);btn.setAttribute("aria-expanded",String(open));if(open&&replay){const ol=panel.querySelector(".steps");if(ol){ol.classList.remove("play");void ol.offsetWidth;ol.classList.add("play")}}}
 function thinkingSteps(text){return String(text||"").replace(/([.!?])\s+(?=[A-Z])/g,"$1\n").split(/\n+/).map(s=>s.replace(/^[\s\-*•\d.)]+/,"").replace(/\s+/g," ").trim()).filter(s=>s.length>2).slice(0,14).map(s=>s.length>220?s.slice(0,217)+"…":s)}
 setInterval(()=>{if(gatesPassed()&&accountSession&&accountSession.token&&accountReady&&!(accountSession.user&&accountSession.user.mustChange))post({action:"account_me",sessionToken:accountSession.token}).catch(e=>{if(e&&e.message==="invalid_session"&&accountSession){clearAccountSession();renderList();renderChat();toast("Your sign-in expired. Your chats are still saved on this device. Sign in again to sync them.",{act:{icon:"log-in",label:"Sign in",run:()=>openSettings(()=>renderAccountAuth("login"))}})}})},60000);
