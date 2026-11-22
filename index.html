@@ -4745,6 +4745,9 @@ function acctSkeletonHtml(){return '<div class="acct-skel" aria-hidden="true"><d
 // Re-renders the open Settings page (or the account page) when the account state changes, so admin and account options appear without reopening it.
 function refreshSettingsPane(){
  if(!modal||modal.hidden)return;
+ // Desktop layout: rebuild it the same way it was first drawn (account summary, admin sections), keeping the section that is open.
+ const desk=mbodyOuter.querySelector(":scope > .set-wrap.desk");
+ if(desk){const cur=desk.querySelector('[aria-current="true"][data-desk]');renderDeskSettings(cur?cur.dataset.desk:"account");return}
  if(currentSettingsView==="account")renderAccount();else if(currentSettingsView==="settings")renderSettings();else return;
  animateMenuContent();
 }
