@@ -272,7 +272,7 @@ button:focus-visible,.chat:focus-visible,.model:focus-visible{outline:2px solid 
 html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(32px,env(safe-area-inset-bottom,0px))}
 
 @media (max-width:640px){
- body{height:100vh;height:100svh;min-height:320px;padding:var(--gap-top) 0 var(--gap-bottom);background:radial-gradient(120% 50% at 50% 108%,rgba(120,150,255,.2),transparent 70%),#fff}
+ body{height:100vh;height:100svh;min-height:320px;padding:max(var(--gap-top),56px) 0 var(--gap-bottom);background:radial-gradient(120% 50% at 50% 108%,rgba(120,150,255,.2),transparent 70%),#fff}
  .frame{width:100%;height:100%;min-height:0;border:0;border-radius:0;padding:0;gap:0;background:transparent}
  .main{width:100%;padding:0}
  .expand,.scrim{display:none!important}
@@ -1624,7 +1624,7 @@ body .mbar{background:linear-gradient(to bottom,#fff 0,#fff 50%,rgba(255,255,255
 @keyframes glowC{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-44%,-10px) scale(1.2)}}
 @media (prefers-reduced-motion:reduce){.busy-glow i{animation:none!important}}
 @media (max-width:640px){
- :root{--frame-pad:0px;--bottom-inset:12px}
+ :root{--frame-pad:0px;--bottom-inset:max(var(--gap-bottom),64px)}
  .main{overflow:hidden}
 }
 #list,#chat{position:relative}
