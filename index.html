@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.github.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.github.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -258,7 +258,7 @@ button:focus-visible,.chat:focus-visible,.model:focus-visible{outline:2px solid 
 .typing-indicator span:nth-child(2){animation-delay:.14s}.typing-indicator span:nth-child(3){animation-delay:.28s}
 .msg a{color:#2559c9;text-decoration:none;overflow-wrap:anywhere}.msg a:hover{text-decoration:underline}
 .answer-sources{align-self:flex-start;max-width:86%;margin-top:4px;font-size:12.5px;color:#555;background:#f7f7f7;border:1px solid #e5e5e5;border-radius:11px;padding:7px 10px}
-.answer-sources[hidden]{display:none}.answer-sources ul{margin:0;padding-left:18px}.answer-sources li{margin:4px 0;overflow-wrap:anywhere}.answer-sources a{color:#2559c9;text-decoration:none}.answer-sources a:hover{text-decoration:underline}
+.answer-sources[hidden]{display:none}.answer-sources ul{margin:0;padding-left:18px}.answer-sources.src-list{padding:9px 12px}.answer-sources .src-head{font-weight:600;margin-bottom:4px}.answer-sources ol{margin:0;padding-left:18px}.answer-sources ol li{margin:4px 0;overflow-wrap:anywhere}.answer-sources .src-domain{opacity:.7}.msg-foot{align-self:flex-start;display:flex;align-items:center;gap:6px;max-width:100%;flex-wrap:wrap;margin-top:-6px}.msg-foot>.bar{margin-top:0}.msg-foot .src{display:inline-flex;align-items:center;height:32px;padding:0 10px 0 6px;border-radius:999px;background:var(--bub);border:0;cursor:pointer;color:#333;font-size:12.5px}.msg-foot .src:hover{background:#ddd}.msg-foot .src[aria-expanded="true"]{background:#ddd}.msg-foot .src em{font-style:normal;margin-left:4px}.msg-foot .src svg{transition:transform .2s}.msg-foot .src[aria-expanded="true"] svg{transform:rotate(180deg)}.msg-foot .src .fav{width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 0 0 1.5px var(--bub);margin-left:-4px}.msg-foot .src .fav:first-child{margin-left:0}.answer-sources .fav{width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:6px}.thk-row{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;background:none;border:0;padding:4px 2px;margin:0 0 2px;color:#6b6b6b;font-size:13.5px;cursor:pointer;border-radius:8px;font-family:inherit}.thk-row svg{transform:rotate(-90deg);transition:transform .2s}.thk-row[aria-expanded="true"] svg{transform:none}.thk-row:hover{color:#222}.msg-foot .src .fav{box-shadow:0 0 0 1.5px #fff}.bar .src svg{transition:transform .2s}.bar .src[aria-expanded="true"] svg{transform:rotate(180deg)}.answer-sources li{margin:4px 0;overflow-wrap:anywhere}.answer-sources a{color:#2559c9;text-decoration:none}.answer-sources a:hover{text-decoration:underline}
 .bar .src{display:inline-flex;align-items:center;gap:5px;width:auto;height:26px;padding:0 9px;border-radius:13px;color:#333}.bar .src em{font-style:normal;margin-left:0;font-size:12.5px;color:#333}.bar .src[aria-expanded="true"]{background:#ddd}
 .thinking{align-self:flex-start;max-width:86%;font-size:13px;color:#555;margin:2px 0 -2px}.thinking summary{cursor:pointer;user-select:none;list-style:none;display:inline-flex;align-items:center;gap:6px;color:#666;padding:4px 2px}.thinking summary::-webkit-details-marker{display:none}.thinking summary::before{content:"\25B8";display:inline-block;transition:transform .15s}.thinking[open] summary::before{transform:rotate(90deg)}
 
@@ -1239,7 +1239,7 @@ html.keyboard-nav .set-select:focus{outline:none;border-color:#8fb3ff;box-shadow
  .data-toolbar .pbtn.danger{background:#3a2426;color:#ffb4b4}
  .data-toolbar .pbtn.danger:hover{background:#4a2a2d}
  .export-contents,.policy-placeholder{background:#242426;color:#d6d6dc}
- .answer-sources{background:#242426;border-color:#3a3a3c;color:#d6d6dc}
+ .answer-sources{background:#242426;border-color:#3a3a3c;color:#d6d6dc}.thk-row{color:#a8a8b0}.thk-row:hover{color:#f2f2f2}.msg-foot .src{color:#e6e6e6}.msg-foot .src:hover,.msg-foot .src[aria-expanded="true"]{background:#3a3a3c}.msg-foot .src .fav{box-shadow:0 0 0 1.5px #2c2c2e}
  .msg{background:#242426;color:#f2f2f2}
  .msg.u{background:linear-gradient(180deg,#547bc1,#3c65a9);color:#fff}
  .msg pre,.msg code{background:#3a3a3c;color:#f2f2f2}
@@ -2562,28 +2562,23 @@ function updateModelUI(){
   };
   options.appendChild(b);
  });
- const placeholder=document.createElement("button");
- placeholder.type="button";
- placeholder.className="mi";
- placeholder.disabled=true;
- placeholder.setAttribute("role","menuitem");
- placeholder.setAttribute("aria-disabled","true");
- const copy=document.createElement("div");
- copy.textContent="More models";
- const small=document.createElement("small");
- small.textContent="Coming soon";
- copy.appendChild(small);
- const marker=document.createElement("i");
- marker.textContent="···";
- marker.style.color="var(--mute)";
- placeholder.append(copy,marker);
- options.appendChild(placeholder);
 }
+// Models from the server, and Vela, which only admins see while it is in testing.
+let serverModelList=[{id:"aries-1",name:"Aries",description:"Best for quick, straightforward reasoning and everyday questions."}];
+const VELA_MODEL={id:"vela-1",name:"Vela",description:"Thinks through harder questions in more depth and searches the web for current, sourced answers."};
+function isAdminSignedIn(){return !!(accountSession&&accountSession.token&&accountSession.user&&accountSession.user.role==="admin")}
+function sourceDomain_(url){try{return new URL(url).hostname.replace(/^www\./,"")}catch(e){return ""}}
+// Site icon for a source, from Google's favicon service (it receives only the domain name).
+function favUrl_(url){const d=sourceDomain_(url);return d?"https://www.google.com/s2/favicons?domain="+encodeURIComponent(d)+"&sz=32":""}
 function updateAvailableModels(models){
  if(!Array.isArray(models))return;
  const cleanModels=models.filter(m=>m&&typeof m.id==="string"&&typeof m.name==="string"&&m.name.trim()).map(m=>({id:m.id,name:m.name,description:m.id==="aries-1"?"Best for quick, straightforward reasoning and everyday questions.":String(m.description||"")}));
  if(!cleanModels.some(m=>m.id==="aries-1"))cleanModels.unshift({id:"aries-1",name:"Aries",description:"Best for quick, straightforward reasoning and everyday questions."});
- availableModels=cleanModels;
+ serverModelList=cleanModels;applyModelList();
+}
+// Builds the picker list: server models, plus Vela for admins. Repairs chats on a model that is no longer listed.
+function applyModelList(){
+ availableModels=serverModelList.concat(isAdminSignedIn()?[VELA_MODEL]:[]);
  let repaired=false;
  S.chats.forEach(c=>{if(!availableModels.some(m=>m.id===c.model)){c.model="aries-1";repaired=true}});
  if(!availableModels.some(m=>m.id===S.model)){S.model="aries-1";repaired=true}
@@ -2621,6 +2616,8 @@ function renderChat(fresh){
  c.m.forEach((m,i)=>{
   const d=document.createElement("div");d.className="msg"+(m.r==="u"?" u":"");
    if(m.r==="u")d.textContent=m.x;else d.innerHTML=md(m.x);
+   const thkSteps=m.r==="a"&&!m.err&&!m.limit&&m.thinking?thinkingSteps(m.thinking):[];
+   if(thkSteps.length){const thkBtn=document.createElement("button");thkBtn.type="button";thkBtn.className="thk-row";thkBtn.setAttribute("aria-expanded","false");thkBtn.innerHTML="<span>Thought process</span>"+I.chev;const tp=document.createElement("div");tp.className="answer-sources thought-panel";tp.hidden=true;tp.innerHTML='<ol class="steps">'+thkSteps.map((x,k)=>'<li style="--d:'+(k*140)+'ms">'+esc(x)+'</li>').join("")+'<li class="step-end" style="--d:'+(thkSteps.length*140)+'ms">Answer</li></ol>';thkBtn.onclick=()=>togglePanel(tp,thkBtn,true);chatEl.append(thkBtn,tp)}
    chatEl.appendChild(d);
    if(m.limit){
     if(!limitHit()||(accountSession&&accountSession.token)){const w=document.createElement("div");w.className="limit-retry-row";w.innerHTML='<button type="button" class="pbtn limit-retry">'+I.regen+'<span style="margin-left:6px">Regenerate</span></button>';w.querySelector(".limit-retry").onclick=()=>resendAfterLimit(i);chatEl.appendChild(w)}
@@ -2636,12 +2633,14 @@ function renderChat(fresh){
     const TOOL_LABELS={end_chat:"end_chat",draw_chart:"draw_chart",calculate:"calculate",get_current_datetime:"check_date_time"};
     const toolNames=Array.isArray(m.tools)?m.tools.filter(t=>typeof t==="string").map(t=>TOOL_LABELS[t]||t):[];
     const toolChip=toolNames.map(n=>'<span class="tool-chip" title="Tool used" aria-label="Tool used: '+escapeAttr(n)+'">'+wrenchIcon+'<em>'+esc(n)+'</em></span>').join("");
-    b.innerHTML='<button class="cp" title="Copy" aria-label="Copy">'+I.copy+'</button>'+(canRegen?'<button class="rg" title="Regenerate" aria-label="Regenerate">'+I.regen+'</button>':'')+(steps.length?'<button class="thk" type="button" aria-expanded="false" title="Show thought process">'+thkIcon+'<em>Thought process</em></button>':'')+(srcs.length?'<button class="src" type="button" aria-expanded="false" aria-label="Show sources" title="Show sources">'+srcIcon+'<em>'+srcs.length+(srcs.length===1?' source':' sources')+'</em></button>':'')+toolChip+'<span data-t="'+m.at+'">'+ago(m.at)+'</span>';
-    const cp=b.querySelector(".cp"),rg=b.querySelector(".rg"),tk=b.querySelector(".thk"),sb=b.querySelector(".src");
+    b.innerHTML='<button class="cp" title="Copy" aria-label="Copy">'+I.copy+'</button>'+(canRegen?'<button class="rg" title="Regenerate" aria-label="Regenerate">'+I.regen+'</button>':'')+toolChip+'<span data-t="'+m.at+'">'+ago(m.at)+'</span>';
+    const cp=b.querySelector(".cp"),rg=b.querySelector(".rg");
     cp.onclick=()=>copy(m.x,cp);if(rg)rg.onclick=regen;
-    chatEl.appendChild(b);
-    if(tk){const tp=document.createElement("div");tp.className="answer-sources thought-panel";tp.hidden=true;tp.innerHTML='<ol class="steps">'+steps.map((x,k)=>'<li style="--d:'+(k*140)+'ms">'+esc(x)+'</li>').join("")+'<li class="step-end" style="--d:'+(steps.length*140)+'ms">Answer</li></ol>';chatEl.appendChild(tp);tk.onclick=()=>togglePanel(tp,tk,true)}
-    if(sb){const panel=document.createElement("div");panel.className="answer-sources";panel.hidden=true;const ol=document.createElement("ul");srcs.forEach(source=>{const li=document.createElement("li"),a=document.createElement("a");a.textContent=source.title;a.href=source.url;a.target="_blank";a.rel="noopener noreferrer";li.appendChild(a);ol.appendChild(li)});panel.appendChild(ol);chatEl.appendChild(panel);sb.onclick=()=>togglePanel(panel,sb,false)}
+    const foot=document.createElement("div");foot.className="msg-foot";foot.appendChild(b);
+    let sb=null;
+    if(srcs.length){sb=document.createElement("button");sb.type="button";sb.className="src";sb.setAttribute("aria-expanded","false");sb.setAttribute("aria-label","Show sources");sb.title="Show sources";sb.innerHTML=srcs.slice(0,3).map(source=>'<img class="fav" src="'+escapeAttr(favUrl_(source.url))+'" alt="" width="16" height="16" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">').join("")+"<em>Sources</em>"+I.chev;foot.appendChild(sb)}
+    chatEl.appendChild(foot);
+    if(srcs.length){const panel=document.createElement("div");panel.className="answer-sources src-list";panel.hidden=true;const head=document.createElement("div");head.className="src-head";head.textContent="Sources";panel.appendChild(head);sb.onclick=()=>togglePanel(panel,sb,false);const ol=document.createElement("ol");srcs.forEach(source=>{const li=document.createElement("li"),a=document.createElement("a");a.textContent=source.title||source.url;a.href=source.url;a.target="_blank";a.rel="noopener noreferrer";const fav=document.createElement("img");fav.className="fav";fav.src=favUrl_(source.url);fav.alt="";fav.width=16;fav.height=16;fav.loading="lazy";fav.referrerpolicy="no-referrer";fav.onerror=()=>fav.remove();li.appendChild(fav);li.appendChild(a);const domain=sourceDomain_(source.url);if(domain){const d=document.createElement("span");d.className="src-domain";d.textContent=" · "+domain;li.appendChild(d)}ol.appendChild(li)});panel.appendChild(ol);chatEl.appendChild(panel)}
    }
  });
  {const last=c.m[c.m.length-1];if(c.sup&&last&&last.r==="a"&&!last.err&&!last.limit){const fadeIn=!!last._fade;delete last._fade;appendSupportCard(chatEl,c,fadeIn,c.id+"|"+last.at)}}
@@ -3921,7 +3920,7 @@ async function askStimulation(){const ok=await appConfirm({title:"Enable stimula
 orb.addEventListener("click",()=>{if(stimOn||siteStimDisabled)return;const now=Date.now();stimTaps=stimTaps.filter(t=>now-t<3000);stimTaps.push(now);if(stimTaps.length>=5){stimTaps=[];askStimulation()}});
 let smsg="",currentSettingsView="settings",closeModalTimer=null,closingModal=false,siteSignupMode="code",siteNoticeText="",siteStatusLoaded=false;
 const touch=c=>{c.mu=Date.now()};
-function clearAccountSession(){setTimeout(updateSchoolLock,0);if(accountSyncTimer!==null){clearTimeout(accountSyncTimer);accountSyncTimer=null}accountSession=null;accountSyncFailed=false;renderSyncStatus();refreshSendState();accountReady=true;accountInitialSyncPending=false;accountMergePendingToast=false;try{localStorage.removeItem(ACCOUNT_SESSION_STORAGE_KEY)}catch(e){}}
+function clearAccountSession(){setTimeout(updateSchoolLock,0);if(accountSyncTimer!==null){clearTimeout(accountSyncTimer);accountSyncTimer=null}accountSession=null;applyModelList();accountSyncFailed=false;renderSyncStatus();refreshSendState();accountReady=true;accountInitialSyncPending=false;accountMergePendingToast=false;try{localStorage.removeItem(ACCOUNT_SESSION_STORAGE_KEY)}catch(e){}}
 function scheduleAccountSync(){if(selfDisabledInfo)return;
  if(accountDisabledGate||!accountSession||!accountSession.token||!accountReady||accountSession.user&&accountSession.user.mustChange)return;
  if(accountSyncTimer!==null)clearTimeout(accountSyncTimer);
@@ -4015,7 +4014,7 @@ async function resumeAccountSession(){
  try{
   const result=await post({action:"account_me",sessionToken:accountSession.token});
   if(!result||!result.user)throw new Error("invalid_session");
-  accountSession.user=result.user;accountReady=true;
+  accountSession.user=result.user;accountReady=true;applyModelList();
   if(result.user.mustChange){renderRequiredPasswordChange();return}
   refreshSettingsPane();
   accountInitialSyncPending=true;renderChat();
@@ -4332,12 +4331,12 @@ function openLegalPanel(kind){
  const c=o.querySelector(".policy-close");if(c)c.focus();
 }
 document.addEventListener("click",e=>{if(e.target.closest&&e.target.closest("#pre-close")){preDismissed=true;updateSchoolNotice();return}const fp=e.target.closest&&e.target.closest(".forgot-link");if(fp){openForgotPanel();return}const lg=e.target.closest&&e.target.closest("[data-legal]");if(lg){e.preventDefault();openLegalPanel(lg.dataset.legal)}const si=e.target.closest&&e.target.closest("#school-lock-signin");if(si)openSettings(()=>renderAccountAuth("login"))});
-function termsBodyHTML(){return `<div class="policy-takeaways"><strong>Key takeaways</strong><ul><li>WHWai is a general-purpose AI chat tool and is not affiliated with any school.</li><li>You must be 13 or older. Under 18 requires a parent or guardian's permission.</li><li>During school hours, WHWai is available only to signed-in users.</li><li>AI replies can be wrong. Check important information and disclose AI use in schoolwork.</li><li>You are responsible for activity on your account.</li></ul></div><p class="sm">Effective date: November 8, 2026</p>
+function termsBodyHTML(){return `<div class="policy-takeaways"><strong>Key takeaways</strong><ul><li>WHWai is a general-purpose AI chat tool and is not affiliated with any school.</li><li>You must be 13 or older. Under 18 requires a parent or guardian's permission.</li><li>During school hours, WHWai is available only to signed-in users.</li><li>AI replies can be wrong. Check important information and disclose AI use in schoolwork.</li><li>You are responsible for activity on your account.</li></ul></div><p class="sm">Effective date: November 22, 2026</p>
  <h3>Who runs WHWai</h3><p>WHWai is operated by We Hate Windows (WHW), a fictional name used for this beta, based in Hawaii, United States. Contact: <a href="mailto:wehatewindows.help@gmail.com">wehatewindows.help@gmail.com</a>.</p>
  <h3>Who can use WHWai</h3><p>You must be at least 13 to use WHWai. When you create an account, you confirm that you are 13 or older and, if you are under 18, that you have your parent or guardian's permission. WHWai is in early access, so new accounts currently need an early-access code.</p>
  <h3>School use</h3><p>During school hours, WHWai is available only to signed-in users. WHWai is not affiliated with, endorsed by, or partnered with any school. Schools set their own rules for device and AI use, and those rules apply to you.</p>
  <h3>Accounts</h3><p>You are responsible for activity on your account. Temporary passwords must be changed at sign-in and expire after 72 hours.</p>
- <h3>AI-generated replies</h3><p>Replies from Aries are generated by AI and can be wrong, incomplete, or out of date. Check important information before relying on it, and disclose AI use in schoolwork.</p>
+ <h3>AI-generated replies</h3><p>Replies from Aries and Vela are generated by AI and can be wrong, incomplete, or out of date. Vela searches the web and links the pages it used, but those pages can also be wrong or out of date. Check important information before relying on it, and disclose AI use in schoolwork.</p>
  <h3>Acceptable use</h3><p>Do not use WHWai to break the law, harass people, spread malware, access other accounts or the service's systems, or overload the service.</p>
  <h3>Access and changes</h3><p>Admins may limit, disable, or end access to protect the service or enforce these terms. That includes disabling an account or the browsers signed into it, for a set time or until it is re-enabled. Features may change over time.</p>
  <h3>Your content</h3><p>You keep ownership of what you type. You allow WHWai to process it to produce replies and titles and to sync your chats. We do not sell your content or use it to train our own models.</p>
@@ -4350,16 +4349,17 @@ function renderTerms(){
  mbody.innerHTML=termsBodyHTML()+`<div class="btns"><button class="pbtn" id="terms-back">Back to Settings</button></div>`;
  $("terms-back").onclick=renderSettings;
 }
-function privacyBodyHTML(){return `<div class="policy-takeaways"><strong>Key takeaways</strong><ul><li>Guest chats stay in this browser. Signed-in chats are saved to your account so they sync across devices.</li><li>Your messages are sent to Groq to generate replies and titles.</li><li>Admins can see account details and usage totals, never message text.</li><li>Passwords are never stored in plain text.</li><li>Deleting your account removes its server-stored chats and account data.</li></ul></div>
- <p class="sm">Effective date: November 8, 2026</p>
+function privacyBodyHTML(){return `<div class="policy-takeaways"><strong>Key takeaways</strong><ul><li>Guest chats stay in this browser. Signed-in chats are saved to your account so they sync across devices.</li><li>Your messages are sent to Groq to generate replies and titles. When Vela searches the web, its search queries are sent to Tavily.</li><li>Admins can see account details and usage totals, never message text.</li><li>Passwords are never stored in plain text.</li><li>Deleting your account removes its server-stored chats and account data.</li></ul></div>
+ <p class="sm">Effective date: November 22, 2026</p>
  <h3>Guest use and accounts</h3><p>Guest chats are stored in this browser and do not sync. When you create an account or sign in, the chats on this device are merged into your account, and the browser keeps a local copy for display and syncing. Accounts use a username and password. No email address or date of birth is collected. The server stores your username, a salted password hash, account role and status, sign-in and creation times, session-token hashes, your account chats, and usage totals. The browser stores your session token. Sessions expire after 14 days and can be revoked.</p>
  <h3>How data is used</h3><p>Conversations are used to show, save, and sync chats and to generate the replies and titles you request. WHWai counts requests and Groq input and output tokens to enforce limits and to show admins usage totals. These counts never include message text. WHW does not sell conversations, use them for advertising, or train its own models on them.</p>
  <h3>Storage and access</h3><p>Signed-in chats and account details are stored in a Supabase database that WHWai's server uses, so they can sync across your devices. Authorized admins and support staff can view account details and usage totals to run and support the service. Admin tools do not show chat content. Admins can add flags (short notes about an issue) and can disable accounts or browsers for a set time.</p>
  <h3>AI processing</h3><p>WHWai sends your prompt and up to the latest 14 messages to Groq to generate replies and chat titles. The models are OpenAI open-weight gpt-oss models run by Groq. WHWai records only the token counts that Groq reports, not the text. Groq may keep prompts and outputs for up to 30 days for reliability and abuse investigations, unless Zero Data Retention is enabled. WHWai cannot verify whether it is enabled. See <a href="https://console.groq.com/docs/your-data" target="_blank" rel="noopener noreferrer">Groq's data documentation</a>.</p>
+ <p>When Vela answers a question that needs current information, it sends search queries to Tavily, a web search service, and receives titles, links and short excerpts of web pages, which it uses to write the answer. Your account details are not sent to Tavily. Tavily handles search queries under its own privacy policy: see <a href="https://www.tavily.com/privacy" target="_blank" rel="noopener noreferrer">Tavily's privacy policy</a>.</p>
  <h3>Usage limits</h3><p>Usage is limited each day to keep WHWai available. Limits are enforced on our server and may change. Browser identifiers used for guest limits are pseudonymous and can be cleared.</p>
  <h3>Security</h3><p>Passwords are never intentionally stored or logged in plain text. Temporary passwords expire after 72 hours and must be changed at sign-in. WHW takes reasonable steps to protect data, but no online service is completely secure. If a serious security issue is found, WHW may restrict access, revoke sessions, or delete active server-stored data.</p>
  <h3>Export, deletion, and contact</h3><p>You can export chats to a ZIP file created in this browser. Keep exports private, because anyone who has one can read its conversations. Deleting data on this device removes only the local copy and session. Deleting your account from Account settings removes its server-stored chats, account record, sessions, and usage totals. Admin audit log entries and flags that name your account may keep your username until they expire. Encrypted backups of account data are kept for 14 days. Deleting your account also deletes the key that protects its backups, so those backups can no longer be read.</p>
- <h3>Service providers</h3><p>WHWai uses Groq to generate replies and titles, Supabase to store account data and chats, and Google Apps Script to run the server. When you set a password, WHWai checks it against the Pwned Passwords service from Have I Been Pwned. That service receives only the first five characters of the password's hash, never the password.</p>`}
+ <h3>Service providers</h3><p>WHWai uses Groq to generate replies and titles, Tavily to search the web for Vela, Supabase to store account data and chats, and Google Apps Script to run the server. To show the site icon next to each source, the browser asks Google's favicon service for the icon, which receives only the source's domain name, not your messages. When you set a password, WHWai checks it against the Pwned Passwords service from Have I Been Pwned. That service receives only the first five characters of the password's hash, never the password.</p>`}
 function renderPrivacyPolicy(){
  currentSettingsView="privacy";$("modal-title").textContent="Privacy Policy";
  mbody.innerHTML=privacyBodyHTML()+`<div class="btns"><button class="pbtn" id="privacy-back">Back to Settings</button></div>`;
@@ -4433,7 +4433,7 @@ function renderSiteNotice(){
  }
 }
 function setAccountFromResult(result){
- accountSession={token:String(result.token||""),user:result.user||null};accountReady=true;updateSchoolLock();refreshSendState();renderSyncStatus();
+ accountSession={token:String(result.token||""),user:result.user||null};accountReady=true;applyModelList();updateSchoolLock();refreshSendState();renderSyncStatus();
  try{if(accountSession.token)localStorage.setItem(ACCOUNT_SESSION_STORAGE_KEY,accountSession.token)}catch(e){}
 }
 function applyLoginChats(result){
@@ -5283,6 +5283,7 @@ function paintAdminUsage(box){
  const r=(adminData&&adminData.usage)||{},t=r.today||{},w=r.week||{};
  box.innerHTML=`<div class="admin-stat-grid"><div class="admin-stat"><span>Requests today</span><strong>${Number(t.total)||0}</strong></div><div class="admin-stat"><span>Requests in 7 days</span><strong>${Number(w.total)||0}</strong></div><div class="admin-stat"><span>Accounts</span><strong>${Number(r.accountCount)||0}</strong></div><div class="admin-stat"><span>Failed sign-ins today</span><strong>${Number(t.failedSignins)||0}</strong></div><div class="admin-stat"><span>Guest requests today</span><strong>${Number(t.guests)||0}</strong></div><div class="admin-stat"><span>Account requests today</span><strong>${Number(t.accounts)||0}</strong></div></div>`
   +`<h3 class="usage-sub">Groq tokens</h3><div class="usage-tok-grid">${tokenRow("Today",t.inputTokens,t.outputTokens)}${tokenRow("Last 7 days",w.inputTokens,w.outputTokens)}</div>`
+  +`<h3 class="usage-sub">Vela (admin testing)</h3><div class="admin-stat-grid"><div class="admin-stat"><span>Requests today</span><strong>${Number((t.vela||{}).requests)||0}</strong></div><div class="admin-stat"><span>Requests in 7 days</span><strong>${Number((w.vela||{}).requests)||0}</strong></div></div><div class="usage-tok-grid">${tokenRow("Today",(t.vela||{}).inputTokens,(t.vela||{}).outputTokens)}${tokenRow("Last 7 days",(w.vela||{}).inputTokens,(w.vela||{}).outputTokens)}</div>`
   +`<div class="data-toolbar"><button type="button" class="pbtn" id="usage-by-user">Per user usage</button></div>`;
  box.querySelector("#usage-by-user").onclick=()=>{adminUsersUsage=null;adminUsageView="users";paintAdminUsage(box);animateAdminContent()};
  syncAdminBack();
