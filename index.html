@@ -102,7 +102,7 @@ svg{display:block}
 .bar button{border:0;background:none;padding:5px;cursor:pointer;border-radius:8px;display:grid;place-items:center}
 .bar button:hover{background:#ddd}.bar span{margin-left:12px;font-size:13px;color:#333}
 .empty{margin:auto;text-align:center;color:var(--mute)}.empty h2{font-size:28px;font-weight:400;color:var(--ink);margin:0 0 6px}
-.orb{position:absolute;right:26px;bottom:calc(100% + 22px);z-index:3;width:68px;height:68px;border-radius:50%;background:#78a4fa;pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .14s cubic-bezier(.2,.7,.2,1);will-change:transform}
+.orb{position:absolute;right:0;bottom:calc(100% + 22px);z-index:3;width:68px;height:68px;border-radius:50%;background:#78a4fa;pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .14s cubic-bezier(.2,.7,.2,1);will-change:transform}
 .orb::before{content:"";position:absolute;inset:-6px;border-radius:50%;background:rgba(120,164,250,.38);z-index:-1;pointer-events:none}
 .orb:active{transform:scale(.9)}
 .orb.think{animation:breathe 3s ease-in-out infinite}
@@ -1672,7 +1672,7 @@ html body.vela-mode .busy-glow i:nth-child(3){background:radial-gradient(closest
 .limit-retry svg{display:block;flex:none}
 .limit-retry span{margin:0!important}
 /* Limit bar: stacked above the composer on its own surface, never under the composer's blur */
-.main>.limit-bar{position:absolute;left:var(--edge);right:var(--edge);margin:0;bottom:calc(var(--note-space) + var(--bottom-inset) + 66px);z-index:4;box-shadow:0 10px 28px rgba(0,0,0,.12);border:1px solid rgba(0,0,0,.06);font-size:13.5px;padding:10px 12px 10px 16px}
+.input>.limit-bar{position:absolute;left:0;right:0;margin:0;bottom:calc(100% + 14px);z-index:4;box-shadow:0 10px 28px rgba(0,0,0,.12);border:1px solid rgba(0,0,0,.06);font-size:13.5px;padding:10px 12px 10px 16px}
 /* Footer row: no pill background, never overflows its text */
 .bar{background:none!important;border-radius:0;flex-wrap:nowrap;min-width:0;max-width:100%}
 .bar span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
@@ -1742,8 +1742,8 @@ html body.vela-mode .orb{--orb-a:#7f86e6;--orb-b:#5159c2;--orb-c:#3b4596;backgro
   </div>
   <div class="scroll" id="chat"></div>
   <div class="toasts" id="toasts" aria-live="polite"></div>
-  <div class="limit-bar" id="limit-bar" role="status" hidden><span>You've hit your usage limit. Sign in, create an account, or wait until midnight Hawaii time for more usage.</span><div class="lb-actions"><button type="button" class="pbtn" id="limit-signin">Sign in</button><button type="button" class="pbtn" id="limit-signup">Create account</button></div></div>
   <div class="input">
+  <div class="limit-bar" id="limit-bar" role="status" hidden><span>You've hit your usage limit. Sign in, create an account, or wait until midnight Hawaii time for more usage.</span><div class="lb-actions"><button type="button" class="pbtn" id="limit-signin">Sign in</button><button type="button" class="pbtn" id="limit-signup">Create account</button></div></div>
    <div class="orb" id="orb"></div>
    <div class="field">
     <textarea id="in" rows="1" maxlength="10000" placeholder="Message WHWai" aria-label="Message" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea><div id="composer-visual" class="composer-visual" aria-hidden="true"></div>
