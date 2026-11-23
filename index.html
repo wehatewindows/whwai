@@ -3009,7 +3009,9 @@ async function answer(c,q){
    }catch(e){
     if(responseWasStopped||run!==answerRunId||e&&e.name==="AbortError"&&controller.signal.aborted)return;
     if(e&&e.payload&&e.payload.error==="chat_ended"){endedNow=true;full=e.payload.message||"This chat was ended.";}
-    else{    if(e&&e.payload&&e.payload.error==="guest_limit"){setLimitHit();limitNow=true}full=e&&e.message==="model_unavailable"?"That model is not available right now.":e&&e.payload&&e.payload.message?e.payload.message:ERR_TEXT;err=1;}
+    else{    if(e&&e.payload&&e.payload.error==="guest_limit"){setLimitHit();limitNow=true}
+    if(e&&e.payload&&e.payload.error==="vela_daily_limit"){setVelaLimit("daily",nextHawaiiMidnight());limitNow=true}
+    else if(e&&e.payload&&e.payload.error==="vela_account_limit"){setVelaLimit("account",Date.now()+(Number(e.payload.minutes_left)||30)*60000);limitNow=true}full=e&&e.message==="model_unavailable"?"That model is not available right now.":e&&e.payload&&e.payload.message?e.payload.message:ERR_TEXT;err=1;}
    }
   }else{
    await sleepUntilAbort(800+Math.random()*700,controller.signal);
@@ -3060,14 +3062,43 @@ function sendBlockReason(){
  if(C()&&C().ended)return"This chat was ended, so messages can't be sent. Start a new chat to continue.";
  if(accountDisabledGate)return"This account is disabled, so messages can't be sent.";
  if(limitHit()&&!(accountSession&&accountSession.token))return`You've used today's ${GUEST_LIMIT} free messages. Sign in or create an account for more, or try again after midnight Hawaii time.`;
+ if(velaLimitActive()&&selectedModelId()==="vela-1")return"Vela's usage limit is reached for now, so messages can't be sent. Use Aries or try again later.";
  return"";
+}
+// Vela limits (per account window, or the daily cap) reuse the same limit bar as the guest limit.
+// Stored per browser with its expiry, so the bar survives a refresh and clears when the limit resets.
+const VELA_LIMIT_KEY="whwai_vela_limit";
+let velaLimitTimer=null;
+function nextHawaiiMidnight(){const hi=new Date(Date.now()-10*3600000);return Date.UTC(hi.getUTCFullYear(),hi.getUTCMonth(),hi.getUTCDate()+1,10,0,0)}
+function velaLimitState(){try{const v=JSON.parse(localStorage.getItem(VELA_LIMIT_KEY)||"null");return v&&v.until>Date.now()?v:null}catch(e){return null}}
+function velaLimitActive(){return!!velaLimitState()}
+function setVelaLimit(kind,until){
+ try{localStorage.setItem(VELA_LIMIT_KEY,JSON.stringify({kind:kind,until:until}))}catch(e){}
+ clearTimeout(velaLimitTimer);
+ velaLimitTimer=setTimeout(refreshSendState,Math.max(1000,until-Date.now()+500));
+ refreshSendState();
+}
+function velaLimitText(v){
+ if(v.kind==="daily")return"Vela has reached its daily limit. It resets at midnight Hawaii time. You can use Aries in the meantime.";
+ const mins=Math.max(1,Math.ceil((v.until-Date.now())/60000));
+ return`You've used Vela's limit for now. Try again in about ${mins} minute${mins===1?"":"s"}, or use Aries in the meantime.`;
 }
 let lastShowLimit=null;
 function refreshSendState(){
  const r=sendBlockReason();
  const lb=$("limit-bar");
- const showLimit=limitHit()&&!aiDisabled&&!accountDisabledGate&&!(accountSession&&accountSession.token);
- if(lb)lb.hidden=!showLimit;
+ const vela=velaLimitState();
+ const velaShown=!!vela&&selectedModelId()==="vela-1";
+ const showLimit=velaShown||(limitHit()&&!aiDisabled&&!accountDisabledGate&&!(accountSession&&accountSession.token));
+ if(lb){
+  lb.hidden=!showLimit;
+  if(showLimit){
+   const sp=lb.querySelector("span"),act=lb.querySelector(".lb-actions");
+   const txt=velaShown?velaLimitText(vela):"You've hit your usage limit. Sign in, create an account, or wait until midnight Hawaii time for more usage.";
+   if(sp&&sp.textContent!==txt)sp.textContent=txt;
+   if(act)act.hidden=velaShown;
+  }
+ }
  if(lastShowLimit===true&&!showLimit&&!busy)renderChat();
  lastShowLimit=showLimit;
  document.body.classList.toggle("body-limit",showLimit);
