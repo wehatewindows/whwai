@@ -1743,7 +1743,7 @@ html body.vela-mode .orb{--orb-a:#7f86e6;--orb-b:#5159c2;--orb-c:#3b4596;backgro
   <div class="scroll" id="chat"></div>
   <div class="toasts" id="toasts" aria-live="polite"></div>
   <div class="input">
-  <div class="limit-bar" id="limit-bar" role="status" hidden><span>You've hit your usage limit. Sign in, create an account, or wait until midnight Hawaii time for more usage.</span><div class="lb-actions"><button type="button" class="pbtn" id="limit-signin">Sign in</button><button type="button" class="pbtn" id="limit-signup">Create account</button></div></div>
+  <div class="limit-bar" id="limit-bar" role="status" hidden><span>You've used today's free messages. Sign in or create an account for more, or try again after midnight Hawaii time.</span><div class="lb-actions"><button type="button" class="pbtn" id="limit-signin">Sign in</button><button type="button" class="pbtn" id="limit-signup">Create account</button></div></div>
    <div class="orb" id="orb"></div>
    <div class="field">
     <textarea id="in" rows="1" maxlength="10000" placeholder="Message WHWai" aria-label="Message" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea><div id="composer-visual" class="composer-visual" aria-hidden="true"></div>
@@ -3086,7 +3086,7 @@ async function answer(c,q){
    if(responseWasStopped||run!==answerRunId)return;
    full=(RULES.find(([r])=>r.test(q.toLowerCase()))||[0,FALLBACK])[1]
   }
-  if(limitNow){full="You've hit your usage limit.";await sleepUntilAbort(1100+Math.random()*500,controller.signal);if(responseWasStopped||run!==answerRunId)return}
+  if(limitNow){full="You've used your limit for now. Try again later.";await sleepUntilAbort(1100+Math.random()*500,controller.signal);if(responseWasStopped||run!==answerRunId)return}
   tmp.classList.remove("dim");
   let drawn;
   // A reply that arrives within a second is not typed out: it fades in as a new message, the same way a send does.
@@ -3098,7 +3098,7 @@ async function answer(c,q){
   if(responseWasStopped||run!==answerRunId)return;
   const target=S.chats.find(x=>x.id===c.id);
   if(!target)return;
-  if(limitNow)full="You've hit your usage limit.";if(supportNow)target.sup=1;target.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1,limit:limitNow?1:0}:{r:"a",x:full,at:Date.now(),sources:sources,thinking:thinking,tools:usedTools,_fade:(supportNow||target.sup)?1:0,model:usedModel||target.model||S.model||"aries-1",_l:1});if(endedNow)target.ended=1;target.u=Date.now();touch(target);save();renderList();renderChat(fastReply);
+  if(limitNow)full="You've used your limit for now. Try again later.";if(supportNow)target.sup=1;target.m.push(err?{r:"a",x:full,at:Date.now(),_l:1,err:1,limit:limitNow?1:0}:{r:"a",x:full,at:Date.now(),sources:sources,thinking:thinking,tools:usedTools,_fade:(supportNow||target.sup)?1:0,model:usedModel||target.model||S.model||"aries-1",_l:1});if(endedNow)target.ended=1;target.u=Date.now();touch(target);save();renderList();renderChat(fastReply);
   if(err&&!limitNow&&!endedNow)toast("Couldn't get an answer.",{retry:()=>regen()});
   if(API_URL&&!err&&target.auto)genTitle(target);
 
@@ -3130,7 +3130,7 @@ function sendBlockReason(){
  if(C()&&C().ended)return"This chat was ended, so messages can't be sent. Start a new chat to continue.";
  if(accountDisabledGate)return"This account is disabled, so messages can't be sent.";
  if(limitHit()&&!(accountSession&&accountSession.token))return`You've used today's ${GUEST_LIMIT} free messages. Sign in or create an account for more, or try again after midnight Hawaii time.`;
- if(velaLimitActive()&&selectedModelId()==="vela-1")return"Vela's usage limit is reached for now, so messages can't be sent. Use Aries or try again later.";
+ if(velaLimitActive()&&selectedModelId()==="vela-1")return velaLimitText(velaLimitState());
  return"";
 }
 // Vela limits (per account window, or the daily cap) reuse the same limit bar as the guest limit.
@@ -3147,7 +3147,7 @@ function setVelaLimit(kind,until){
  refreshSendState();
 }
 function velaLimitText(v){
- if(v.kind==="daily")return"Vela has reached its daily limit. It resets at midnight Hawaii time. You can use Aries in the meantime.";
+ if(v.kind==="daily")return"You've used Vela's limit for today. Try again after midnight Hawaii time, or use Aries in the meantime.";
  const mins=Math.max(1,Math.ceil((v.until-Date.now())/60000));
  return`You've used Vela's limit for now. Try again in about ${mins} minute${mins===1?"":"s"}, or use Aries in the meantime.`;
 }
@@ -3162,7 +3162,7 @@ function refreshSendState(){
   if(showLimit)showEl(lb);else hideEl(lb);
   if(showLimit){
    const sp=lb.querySelector("span"),act=lb.querySelector(".lb-actions");
-   const txt=velaShown?velaLimitText(vela):"You've hit your usage limit. Sign in, create an account, or wait until midnight Hawaii time for more usage.";
+   const txt=velaShown?velaLimitText(vela):`You've used today's ${GUEST_LIMIT} free messages. Sign in or create an account for more, or try again after midnight Hawaii time.`;
    if(sp&&sp.textContent!==txt)sp.textContent=txt;
    if(act)act.hidden=velaShown;
   }
