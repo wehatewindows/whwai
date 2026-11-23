@@ -1685,6 +1685,8 @@ html body.vela-mode .busy-glow i:nth-child(3){background:radial-gradient(closest
 /* Thought panel: sized to its content, clearer step text */
 .thought-panel{max-height:260px;width:100%;max-width:100%;padding:4px 0}
 .steps li{font-size:13.5px;color:#3c3c42;padding:5px 0 7px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .steps li{color:#c9c9d1}}
+:root[data-theme="dark"] .steps li{color:#c9c9d1}
 /* Vela orb: colours crossfade instead of snapping */
 @property --orb-a{syntax:'<color>';inherits:false;initial-value:#78a4fa}
 @property --orb-b{syntax:'<color>';inherits:false;initial-value:#78a4fa}
@@ -2657,7 +2659,7 @@ function applyModelList(){
  // Admins get Vela. Guests see it greyed out. Signed-in users who are not admins don't see it.
  // While the account is still loading after a refresh, Vela stays in the list so the chat keeps its model.
  const pendingAccount=!!(accountSession&&accountSession.token&&!accountSession.user);
- const velaEntry=isAdminSignedIn()||pendingAccount?VELA_MODEL:(accountSession&&accountSession.token?null:Object.assign({},VELA_MODEL,{disabled:true,description:"Sign in to an account to use Vela."}));
+ const velaEntry=isAdminSignedIn()||pendingAccount?VELA_MODEL:(accountSession&&accountSession.token?null:Object.assign({},VELA_MODEL,{disabled:true,description:"Vela is in alpha testing and is limited to admins."}));
  availableModels=serverModelList.concat(velaEntry?[velaEntry]:[]);
  let repaired=false;
  S.chats.forEach(c=>{if(!availableModels.some(m=>m.id===c.model&&!m.disabled)){c.model="aries-1";repaired=true}});
@@ -2710,7 +2712,7 @@ function renderChat(fresh){
     const srcIcon=ic('link',14,2);
     const thkIcon=ic('activity',14,2);
     const wrenchIcon=ic('wrench',14,2);
-    const TOOL_LABELS={end_chat:"end_chat",draw_chart:"draw_chart",calculate:"calculate",get_current_datetime:"check_date_time"};
+    const TOOL_LABELS={end_chat:"end_chat",draw_chart:"draw_chart",calculate:"calculate",get_current_datetime:"check_date_time",web_search:"Searched the web"};
     const toolNames=Array.isArray(m.tools)?m.tools.filter(t=>typeof t==="string").map(t=>TOOL_LABELS[t]||t):[];
     const toolChip=toolNames.map(n=>'<span class="tool-chip" title="Tool used" aria-label="Tool used: '+escapeAttr(n)+'">'+wrenchIcon+'<em>'+esc(n)+'</em></span>').join("");
     b.innerHTML='<button class="cp" title="Copy" aria-label="Copy">'+I.copy+'</button>'+(canRegen?'<button class="rg" title="Regenerate" aria-label="Regenerate">'+I.regen+'</button>':'')+toolChip+'<span data-t="'+m.at+'">'+ago(m.at)+'</span>';
