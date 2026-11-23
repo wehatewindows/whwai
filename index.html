@@ -1676,6 +1676,21 @@ html body.vela-mode .busy-glow i:nth-child(3){background:radial-gradient(closest
 /* Footer row: no pill background, never overflows its text */
 .bar{background:none!important;border-radius:0;flex-wrap:nowrap;min-width:0;max-width:100%}
 .bar span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+/* Vela picker: wider menu, checkmark on the title row */
+.pop{width:300px}
+@media (max-width:640px){.pop{width:min(300px,calc(100vw - 2 * var(--edge)))}}
+.mi{align-items:flex-start;padding:11px 14px}
+.mi i{margin-top:3px}
+.mi small{font-size:13px;line-height:1.4}
+/* Thought panel: sized to its content, clearer step text */
+.thought-panel{max-height:260px;width:100%;max-width:100%;padding:4px 0}
+.steps li{font-size:13.5px;color:#3c3c42;padding:5px 0 7px}
+/* Vela orb: colours crossfade instead of snapping */
+@property --orb-a{syntax:'<color>';inherits:false;initial-value:#78a4fa}
+@property --orb-b{syntax:'<color>';inherits:false;initial-value:#78a4fa}
+@property --orb-c{syntax:'<color>';inherits:false;initial-value:#78a4fa}
+.orb{--orb-a:#78a4fa;--orb-b:#78a4fa;--orb-c:#78a4fa;background:linear-gradient(135deg,var(--orb-a),var(--orb-b) 60%,var(--orb-c));transition:transform .14s cubic-bezier(.2,.7,.2,1),--orb-a .5s ease,--orb-b .5s ease,--orb-c .5s ease}
+html body.vela-mode .orb{--orb-a:#7f86e6;--orb-b:#5159c2;--orb-c:#3b4596;background:linear-gradient(135deg,var(--orb-a),var(--orb-b) 60%,var(--orb-c))}
 </style>
 
 </head>
