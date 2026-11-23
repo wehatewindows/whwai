@@ -258,7 +258,7 @@ button:focus-visible,.chat:focus-visible,.model:focus-visible{outline:2px solid 
 .typing-indicator span:nth-child(2){animation-delay:.14s}.typing-indicator span:nth-child(3){animation-delay:.28s}
 .msg a{color:#2559c9;text-decoration:none;overflow-wrap:anywhere}.msg a:hover{text-decoration:underline}
 .answer-sources{align-self:flex-start;max-width:86%;margin-top:4px;font-size:12.5px;color:#555;background:#f7f7f7;border:1px solid #e5e5e5;border-radius:11px;padding:7px 10px}
-.answer-sources[hidden]{display:none}.answer-sources ul{margin:0;padding-left:18px}.answer-sources.src-list{padding:9px 12px}.answer-sources .src-head{font-weight:600;margin-bottom:4px}.answer-sources ol{margin:0;padding-left:18px}.answer-sources ol li{margin:4px 0;overflow-wrap:anywhere}.answer-sources .src-domain{opacity:.7}.msg-foot{align-self:flex-start;display:flex;align-items:center;gap:6px;max-width:100%;flex-wrap:wrap;margin-top:-6px}.msg-foot>.bar{margin-top:0}.msg-foot .src{display:inline-flex;align-items:center;height:32px;padding:0 10px 0 6px;border-radius:999px;background:var(--bub);border:0;cursor:pointer;color:#333;font-size:12.5px}.msg-foot .src:hover{background:#ddd}.msg-foot .src[aria-expanded="true"]{background:#ddd}.msg-foot .src em{font-style:normal;margin-left:4px}.msg-foot .src svg{transition:transform .2s}.msg-foot .src[aria-expanded="true"] svg{transform:rotate(180deg)}.msg-foot .src .fav{width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 0 0 1.5px var(--bub);margin-left:-4px}.msg-foot .src .fav:first-child{margin-left:0}.answer-sources .fav{width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:6px}.thk-row{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;background:none;border:0;padding:4px 2px;margin:0 0 2px;color:#6b6b6b;font-size:13.5px;cursor:pointer;border-radius:8px;font-family:inherit}.thk-row svg{transform:rotate(-90deg);transition:transform .2s}.thk-row[aria-expanded="true"] svg{transform:none}.thk-row:hover{color:#222}.msg-foot .src .fav{box-shadow:0 0 0 1.5px #fff}.bar .src svg{transition:transform .2s}.bar .src[aria-expanded="true"] svg{transform:rotate(180deg)}.answer-sources li{margin:4px 0;overflow-wrap:anywhere}.answer-sources a{color:#2559c9;text-decoration:none}.answer-sources a:hover{text-decoration:underline}
+.answer-sources[hidden]{display:none}.answer-sources ul{margin:0;padding-left:18px}.answer-sources.src-list{padding:9px 12px}.answer-sources .src-head{font-weight:600;margin-bottom:4px}.answer-sources ol{margin:0;padding-left:18px}.answer-sources ol li{margin:4px 0;overflow-wrap:anywhere}.answer-sources .src-domain{opacity:.7}.mi:disabled{opacity:.45;cursor:not-allowed}.mi:disabled:hover{background:none}.msg-foot{align-self:flex-start;display:flex;align-items:center;gap:6px;max-width:100%;flex-wrap:wrap;margin-top:-6px}.msg-foot>.bar{margin-top:0}.msg-foot .src{display:inline-flex;align-items:center;height:32px;padding:0 10px 0 6px;border-radius:999px;background:var(--bub);border:0;cursor:pointer;color:#333;font-size:12.5px}.msg-foot .src:hover{background:#ddd}.msg-foot .src[aria-expanded="true"]{background:#ddd}.msg-foot .src em{font-style:normal;margin-left:4px}.msg-foot .src svg{transition:transform .2s}.msg-foot .src[aria-expanded="true"] svg{transform:rotate(180deg)}.msg-foot .src .fav{width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 0 0 1.5px var(--bub);margin-left:-4px}.msg-foot .src .fav:first-child{margin-left:0}.answer-sources .fav{width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:6px}.thk-row{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;background:none;border:0;padding:4px 2px;margin:0 0 2px;color:#6b6b6b;font-size:13.5px;cursor:pointer;border-radius:8px;font-family:inherit}.thk-row svg{transform:rotate(-90deg);transition:transform .2s}.thk-row[aria-expanded="true"] svg{transform:none}.thk-row:hover{color:#222}.msg-foot .src .fav{box-shadow:0 0 0 1.5px #fff}.bar .src svg{transition:transform .2s}.bar .src[aria-expanded="true"] svg{transform:rotate(180deg)}.answer-sources li{margin:4px 0;overflow-wrap:anywhere}.answer-sources a{color:#2559c9;text-decoration:none}.answer-sources a:hover{text-decoration:underline}
 .bar .src{display:inline-flex;align-items:center;gap:5px;width:auto;height:26px;padding:0 9px;border-radius:13px;color:#333}.bar .src em{font-style:normal;margin-left:0;font-size:12.5px;color:#333}.bar .src[aria-expanded="true"]{background:#ddd}
 .thinking{align-self:flex-start;max-width:86%;font-size:13px;color:#555;margin:2px 0 -2px}.thinking summary{cursor:pointer;user-select:none;list-style:none;display:inline-flex;align-items:center;gap:6px;color:#666;padding:4px 2px}.thinking summary::-webkit-details-marker{display:none}.thinking summary::before{content:"\25B8";display:inline-block;transition:transform .15s}.thinking[open] summary::before{transform:rotate(90deg)}
 
@@ -2553,7 +2553,9 @@ function updateModelUI(){
   const copy=document.createElement("div");copy.textContent=m.name;
   const small=document.createElement("small");small.textContent=m.description||"";copy.appendChild(small);
   const tick=document.createElement("i");tick.innerHTML=m.id===id?I.check:"";b.append(copy,tick);
+  if(m.disabled){b.disabled=true;b.setAttribute("aria-disabled","true")}
   b.onclick=()=>{
+   if(m.disabled)return;
    const c=C();
    S.model=m.id;
    if(c){c.model=m.id;touch(c)}
@@ -2579,10 +2581,12 @@ function updateAvailableModels(models){
 }
 // Builds the picker list: server models, plus Vela for admins. Repairs chats on a model that is no longer listed.
 function applyModelList(){
- availableModels=serverModelList.concat(isAdminSignedIn()?[VELA_MODEL]:[]);
+ // Admins get Vela. Guests see it greyed out. Signed-in users who are not admins don't see it.
+ const velaEntry=isAdminSignedIn()?VELA_MODEL:(accountSession&&accountSession.token?null:Object.assign({},VELA_MODEL,{disabled:true}));
+ availableModels=serverModelList.concat(velaEntry?[velaEntry]:[]);
  let repaired=false;
- S.chats.forEach(c=>{if(!availableModels.some(m=>m.id===c.model)){c.model="aries-1";repaired=true}});
- if(!availableModels.some(m=>m.id===S.model)){S.model="aries-1";repaired=true}
+ S.chats.forEach(c=>{if(!availableModels.some(m=>m.id===c.model&&!m.disabled)){c.model="aries-1";repaired=true}});
+ if(!availableModels.some(m=>m.id===S.model&&!m.disabled)){S.model="aries-1";repaired=true}
  if(repaired)save(true);
  updateModelUI();
 }
