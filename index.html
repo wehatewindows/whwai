@@ -1671,6 +1671,11 @@ html body.vela-mode .busy-glow i:nth-child(3){background:radial-gradient(closest
 .limit-retry{display:inline-flex;align-items:center;gap:6px;width:auto;height:36px;padding:0 14px;border-radius:18px;font-size:13px;line-height:1;white-space:nowrap;flex:0 0 auto}
 .limit-retry svg{display:block;flex:none}
 .limit-retry span{margin:0!important}
+/* Limit bar: stacked above the composer on its own surface, never under the composer's blur */
+.main>.limit-bar{position:absolute;left:var(--edge);right:var(--edge);margin:0;bottom:calc(var(--note-space) + var(--bottom-inset) + 66px);z-index:4;box-shadow:0 10px 28px rgba(0,0,0,.12);border:1px solid rgba(0,0,0,.06);font-size:13.5px;padding:10px 12px 10px 16px}
+/* Footer row: no pill background, never overflows its text */
+.bar{background:none!important;border-radius:0;flex-wrap:nowrap;min-width:0;max-width:100%}
+.bar span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 </style>
 
 </head>
