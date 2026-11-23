@@ -1640,6 +1640,12 @@ body .mbar{background:linear-gradient(to bottom,#fff 0,#fff 50%,rgba(255,255,255
 #profile-btn.acct-in{animation:acctIn .45s cubic-bezier(.2,.7,.2,1) both}
 .skel.acct-skel-card{height:58px;border-radius:16px}
 @media (prefers-reduced-motion:reduce){#profile-btn.acct-in{animation:none!important}}
+/* Vela: indigo and navy orb, with a muted purple and blue glow. */
+html body.vela-mode .orb{background:linear-gradient(135deg,#4c4fa8,#2b2f6e 60%,#1d2a52)}
+html body.vela-mode .orb::before{background:rgba(76,79,168,.32)}
+html body.vela-mode .busy-glow i:nth-child(1){background:radial-gradient(closest-side,rgba(60,72,150,.42),rgba(60,72,150,0))}
+html body.vela-mode .busy-glow i:nth-child(2){background:radial-gradient(closest-side,rgba(110,80,170,.34),rgba(110,80,170,0))}
+html body.vela-mode .busy-glow i:nth-child(3){background:radial-gradient(closest-side,rgba(40,58,110,.3),rgba(40,58,110,0))}
 </style>
 
 </head>
@@ -2545,6 +2551,7 @@ function selectedModelId(){
  return availableModels.some(m=>m.id===id)?id:"aries-1";
 }
 function updateModelUI(){
+ document.body.classList.toggle("vela-mode",selectedModelId()==="vela-1");
  const id=selectedModelId(),selected=availableModels.find(m=>m.id===id)||availableModels[0];
  $("model").innerHTML='<span class="model-name">'+esc(selected.name)+'</span>'+I.chev;
  const options=$("model-options");if(!options)return;options.innerHTML="";
@@ -2582,7 +2589,9 @@ function updateAvailableModels(models){
 // Builds the picker list: server models, plus Vela for admins. Repairs chats on a model that is no longer listed.
 function applyModelList(){
  // Admins get Vela. Guests see it greyed out. Signed-in users who are not admins don't see it.
- const velaEntry=isAdminSignedIn()?VELA_MODEL:(accountSession&&accountSession.token?null:Object.assign({},VELA_MODEL,{disabled:true}));
+ // While the account is still loading after a refresh, Vela stays in the list so the chat keeps its model.
+ const pendingAccount=!!(accountSession&&accountSession.token&&!accountSession.user);
+ const velaEntry=isAdminSignedIn()||pendingAccount?VELA_MODEL:(accountSession&&accountSession.token?null:Object.assign({},VELA_MODEL,{disabled:true,description:"Sign in to an account to use Vela."}));
  availableModels=serverModelList.concat(velaEntry?[velaEntry]:[]);
  let repaired=false;
  S.chats.forEach(c=>{if(!availableModels.some(m=>m.id===c.model&&!m.disabled)){c.model="aries-1";repaired=true}});
@@ -2991,7 +3000,7 @@ async function answer(c,q){
   let full,err=0,sources=[],thinking="",usedModel=null,limitNow=false,endedNow=false,usedTools=[],supportNow=false;
   if(API_URL){
    try{
-    const modelId=availableModels.some(m=>m.id===c.model)?c.model:(S.model||"aries-1");
+    const modelId=availableModels.some(m=>m.id===c.model&&!m.disabled)?c.model:(S.model||"aries-1");
     if(c.model!==modelId)c.model=modelId;
     const j=await post({action:"chat",model:modelId,chatId:c.id,messages:hist(c)},controller.signal);
     if(responseWasStopped||run!==answerRunId)return;
