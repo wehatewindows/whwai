@@ -272,7 +272,7 @@ button:focus-visible,.chat:focus-visible,.model:focus-visible{outline:2px solid 
 html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(32px,env(safe-area-inset-bottom,0px))}
 
 @media (max-width:640px){
- body{height:100vh;height:100svh;min-height:320px;padding:max(var(--gap-top),56px) 0 var(--gap-bottom);background:radial-gradient(120% 50% at 50% 108%,rgba(120,150,255,.2),transparent 70%),#fff}
+ body{height:100vh;height:100svh;min-height:320px;padding:max(env(safe-area-inset-top,0px),48px) 0 var(--gap-bottom);background:radial-gradient(120% 50% at 50% 108%,rgba(120,150,255,.2),transparent 70%),#fff}
  .frame{width:100%;height:100%;min-height:0;border:0;border-radius:0;padding:0;gap:0;background:transparent}
  .main{width:100%;padding:0}
  .expand,.scrim{display:none!important}
@@ -2550,6 +2550,14 @@ function selectedModelId(){
  const c=C();const id=(c&&c.model)||S.model||"aries-1";
  return availableModels.some(m=>m.id===id)?id:"aries-1";
 }
+// Updates the label, Vela styling and checkmarks in place, so an open or fading menu does not get rebuilt.
+function paintModelSelection(){
+ document.body.classList.toggle("vela-mode",selectedModelId()==="vela-1");
+ const id=selectedModelId(),selected=availableModels.find(m=>m.id===id)||availableModels[0];
+ $("model").innerHTML='<span class="model-name">'+esc(selected.name)+'</span>'+I.chev;
+ const options=$("model-options");if(!options)return;
+ [...options.children].forEach((b,i)=>{const m=availableModels[i];if(!m)return;b.setAttribute("aria-checked",String(m.id===id));const t=b.querySelector("i");if(t)t.innerHTML=m.id===id?I.check:""});
+}
 function updateModelUI(){
  document.body.classList.toggle("vela-mode",selectedModelId()==="vela-1");
  const id=selectedModelId(),selected=availableModels.find(m=>m.id===id)||availableModels[0];
@@ -2566,8 +2574,8 @@ function updateModelUI(){
    const c=C();
    S.model=m.id;
    if(c){c.model=m.id;touch(c)}
-   save();pop(false);updateModelUI();
-   if(c)renderChat();
+   save();pop(false);paintModelSelection();
+   if(c)setTimeout(renderChat,160);
    if(m.id==="aries-1")setTimeout(showAriesIntroOnce,100);
   };
   options.appendChild(b);
@@ -2630,7 +2638,7 @@ function renderChat(fresh){
  c.m.forEach((m,i)=>{
   const d=document.createElement("div");d.className="msg"+(m.r==="u"?" u":"");
    if(m.r==="u")d.textContent=m.x;else d.innerHTML=md(m.x);
-   const thkSteps=m.r==="a"&&!m.err&&!m.limit&&m.thinking?thinkingSteps(m.thinking):[];
+   const thkSteps=m.r==="a"&&!m.err&&!m.limit&&m.thinking&&thinkingWorthShowing(m)?thinkingSteps(m.thinking):[];
    if(thkSteps.length){const thkBtn=document.createElement("button");thkBtn.type="button";thkBtn.className="thk-row";thkBtn.setAttribute("aria-expanded","false");thkBtn.innerHTML="<span>Thought process</span>"+I.chev;const tp=document.createElement("div");tp.className="answer-sources thought-panel";tp.hidden=true;tp.innerHTML='<ol class="steps">'+thkSteps.map((x,k)=>'<li style="--d:'+(k*140)+'ms">'+esc(x)+'</li>').join("")+'<li class="step-end" style="--d:'+(thkSteps.length*140)+'ms">Answer</li></ol>';thkBtn.onclick=()=>togglePanel(tp,thkBtn,true);chatEl.append(thkBtn,tp)}
    chatEl.appendChild(d);
    if(m.limit){
@@ -4017,6 +4025,8 @@ function profileStateText(){if(accountSyncing)return "Syncing chats…";if(navig
 function renderProfileMenu(){const menu=$("profile-menu");if(!menu||!accountSession||!accountSession.user)return;menu.innerHTML='<div class="pm-head"><strong>'+esc(accountSession.user.username)+'</strong><span>'+esc(profileStateText())+'</span></div><button class="pm-item" id="pm-sync" type="button"'+(accountSyncing?' disabled':'')+'>'+(accountSyncing?'Syncing…':'Sync now')+'</button><button class="pm-item" id="pm-settings" type="button">Account settings</button>';const doSync=async()=>{await syncAccountChatsNow();renderProfileMenu();toast(accountSyncFailed?"Couldn't sync right now. Your chats are saved on this device.":"Chats synced",accountSyncFailed?{retry:doSync}:{})};$("pm-sync").onclick=doSync;$("pm-settings").onclick=()=>{hideProfileMenu();openSettings(()=>isDeskSettings()?renderDeskSettings("account"):renderAccount())}}
 function hideProfileMenu(){hideEl($("profile-menu"))}
 function togglePanel(panel,btn,replay){const open=panel.hidden;open?showEl(panel):hideEl(panel);btn.setAttribute("aria-expanded",String(open));if(open&&replay){const ol=panel.querySelector(".steps");if(ol){ol.classList.remove("play");void ol.offsetWidth;ol.classList.add("play")}}}
+// The thought process is shown only when it adds something: a web search ran, sources were used, or the reasoning is long. Simple questions show no thought process.
+function thinkingWorthShowing(m){const searched=Array.isArray(m.tools)&&m.tools.length>0;const sourced=Array.isArray(m.sources)&&m.sources.length>0;return searched||sourced||String(m.thinking||"").length>=500}
 function thinkingSteps(text){return String(text||"").replace(/([.!?])\s+(?=[A-Z])/g,"$1\n").split(/\n+/).map(s=>s.replace(/^[\s\-*•\d.)]+/,"").replace(/\s+/g," ").trim()).filter(s=>s.length>2).slice(0,14).map(s=>s.length>220?s.slice(0,217)+"…":s)}
 setInterval(()=>{if(gatesPassed()&&accountSession&&accountSession.token&&accountReady&&!(accountSession.user&&accountSession.user.mustChange))post({action:"account_me",sessionToken:accountSession.token}).catch(e=>{if(e&&e.message==="invalid_session"&&accountSession){clearAccountSession();renderList();renderChat();toast("Your sign-in expired. Your chats are still saved on this device. Sign in again to sync them.",{act:{icon:"log-in",label:"Sign in",run:()=>openSettings(()=>renderAccountAuth("login"))}})}})},60000);
 var lastAcctLoading=null;
