@@ -2687,7 +2687,7 @@ function applyModelList(){
  // Admins get Vela. Guests see it greyed out. Signed-in users who are not admins don't see it.
  // While the account is still loading after a refresh, Vela stays in the list so the chat keeps its model.
  const pendingAccount=!!(accountSession&&accountSession.token&&!accountSession.user);
- const velaEntry=isAdminSignedIn()||pendingAccount?VELA_MODEL:Object.assign({},VELA_MODEL,{disabled:true,description:accountSession&&accountSession.token?"Coming soon for signed-in users. Your account will get access when Vela opens.":"Coming soon for signed-in users. Sign in to be ready when it opens."});
+ const velaEntry=isAdminSignedIn()||pendingAccount?VELA_MODEL:Object.assign({},VELA_MODEL,{disabled:true,description:accountSession&&accountSession.token?"Coming soon for signed-in users. Your account will get access when Vela opens.":"Coming soon for signed-in users."});
  availableModels=serverModelList.concat(velaEntry?[velaEntry]:[]);
  let repaired=false;
  S.chats.forEach(c=>{if(!availableModels.some(m=>m.id===c.model&&!m.disabled)){c.model="aries-1";repaired=true}});
