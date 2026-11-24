@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.github.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>(function(){try{var d=document.documentElement,phone=/iPhone|iPod/.test(navigator.userAgent||""),notch=phone&&Math.max(screen.width,screen.height)>=812;d.style.setProperty("--safe-top-fallback",(notch?59:phone?20:0)+"px");d.style.setProperty("--safe-bottom-fallback",(notch?34:0)+"px")}catch(e){}})();</script>
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>WHWai</title>
@@ -284,7 +285,7 @@ button:focus-visible,.chat:focus-visible,.model:focus-visible{outline:2px solid 
 html.embedded{--gap-top:max(88px,env(safe-area-inset-top,0px));--gap-bottom:max(32px,env(safe-area-inset-bottom,0px))}
 
 @media (max-width:640px){
- body{height:100vh;height:100svh;min-height:320px;padding:min(max(env(safe-area-inset-top,0px),48px),64px) 0 var(--gap-bottom);background:radial-gradient(120% 50% at 50% 108%,rgba(120,150,255,.2),transparent 70%),#fff}
+ body{height:100vh;height:100svh;min-height:320px;padding:calc(max(env(safe-area-inset-top,0px),var(--safe-top-fallback,0px)) + 8px) 0 var(--gap-bottom);background:radial-gradient(120% 50% at 50% 108%,rgba(120,150,255,.2),transparent 70%),#fff}
  .frame{width:100%;height:100%;min-height:0;border:0;border-radius:0;padding:0;gap:0;background:transparent}
  .main{width:100%;padding:0}
  .expand,.scrim{display:none!important}
@@ -1337,6 +1338,9 @@ html.keyboard-nav .set-select:focus{outline:none;border-color:#8fb3ff;box-shadow
 .site-form .data-manage-button{width:100%;justify-content:space-between;border-radius:999px;padding:12px 16px}
 .usage-users-head{display:flex;align-items:center;gap:12px;margin:0 0 14px}
 .usage-users-head .usage-sub{margin:0}
+.usage-models{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 0 12px}
+.usage-model h4{margin:0 0 6px;font-size:14px;font-weight:600}
+@media (max-width:640px){.usage-models{grid-template-columns:1fr}}
 .usage-back{border-radius:999px;white-space:nowrap}
 @media (prefers-color-scheme:dark){
  .site-group{background:#1c1c1e!important;border-color:#343438!important;color:#e0e0e4}
@@ -1623,7 +1627,7 @@ body .mbar{background:linear-gradient(to bottom,#fff 0,#fff 50%,rgba(255,255,255
    --frame-pad is the frame's bottom padding on desktop (the band runs into it, up to the frame border).
    --bottom-inset is where the composer and disclaimer sit above the main column's bottom. */
 :root{--frame-pad:12px;--bottom-inset:12px}
-@media (min-width:641px){body{padding-bottom:0!important}}
+@media (min-width:641px){body{padding-bottom:12px!important}}
 /* Thinking glow: three soft colour blobs drift and breathe inside a band clipped to the main column, so they never spill into the sidebar. */
 .busy-glow{position:absolute;left:0;right:0;bottom:calc(-1 * var(--frame-pad));height:calc(var(--note-space) + 90px + var(--frame-pad));pointer-events:none;z-index:2;overflow:hidden;opacity:0;filter:blur(14px);transition:opacity .5s cubic-bezier(.4,0,.2,1)}
 .busy .busy-glow{opacity:1}
@@ -1637,7 +1641,7 @@ body .mbar{background:linear-gradient(to bottom,#fff 0,#fff 50%,rgba(255,255,255
 @keyframes glowC{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-44%,-10px) scale(1.2)}}
 @media (prefers-reduced-motion:reduce){.busy-glow i{animation:none!important}}
 @media (max-width:640px){
- :root{--frame-pad:0px;--bottom-inset:max(var(--gap-bottom),40px)}
+ :root{--gap-bottom:calc(max(env(safe-area-inset-bottom,0px),var(--safe-bottom-fallback,0px)) + 8px);--frame-pad:0px;--bottom-inset:max(var(--gap-bottom),40px)}
  .main{overflow:hidden}
 }
 #list,#chat{position:relative}
@@ -2683,7 +2687,7 @@ function applyModelList(){
  // Admins get Vela. Guests see it greyed out. Signed-in users who are not admins don't see it.
  // While the account is still loading after a refresh, Vela stays in the list so the chat keeps its model.
  const pendingAccount=!!(accountSession&&accountSession.token&&!accountSession.user);
- const velaEntry=isAdminSignedIn()||pendingAccount?VELA_MODEL:(accountSession&&accountSession.token?null:Object.assign({},VELA_MODEL,{disabled:true,description:"Vela is in alpha testing and is limited to admins."}));
+ const velaEntry=isAdminSignedIn()||pendingAccount?VELA_MODEL:Object.assign({},VELA_MODEL,{disabled:true,description:accountSession&&accountSession.token?"Coming soon for signed-in users. Your account will get access when Vela opens.":"Coming soon for signed-in users. Sign in to be ready when it opens."});
  availableModels=serverModelList.concat(velaEntry?[velaEntry]:[]);
  let repaired=false;
  S.chats.forEach(c=>{if(!availableModels.some(m=>m.id===c.model&&!m.disabled)){c.model="aries-1";repaired=true}});
@@ -4499,7 +4503,7 @@ function privacyBodyHTML(){return `<div class="policy-takeaways"><strong>Key tak
  <h3>Usage limits</h3><p>Usage is limited each day to keep WHWai available. Limits are enforced on our server and may change. Browser identifiers used for guest limits are pseudonymous and can be cleared.</p>
  <h3>Security</h3><p>Passwords are never intentionally stored or logged in plain text. Temporary passwords expire after 72 hours and must be changed at sign-in. WHW takes reasonable steps to protect data, but no online service is completely secure. If a serious security issue is found, WHW may restrict access, revoke sessions, or delete active server-stored data.</p>
  <h3>Export, deletion, and contact</h3><p>You can export chats to a ZIP file created in this browser. Keep exports private, because anyone who has one can read its conversations. Deleting data on this device removes only the local copy and session. Deleting your account from Account settings removes its server-stored chats, account record, sessions, and usage totals. Admin audit log entries and flags that name your account may keep your username until they expire. Encrypted backups of account data are kept for 14 days. Deleting your account also deletes the key that protects its backups, so those backups can no longer be read.</p>
- <h3>Service providers</h3><p>WHWai uses Groq to generate replies and titles, Supabase to store account data and chats, and Google Apps Script to run the server. When you set a password, WHWai checks it against the Pwned Passwords service from Have I Been Pwned. That service receives only the first five characters of the password's hash, never the password.</p>`}
+ <h3>Service providers</h3><p>WHWai uses Groq to generate replies and titles, Supabase to store account data and chats, and Google Apps Script to run the server. Source icons come from Google's favicon service, which receives only the source's domain name. When you set a password, WHWai checks it against the Pwned Passwords service from Have I Been Pwned. That service receives only the first five characters of the password's hash, never the password.</p>`}
 function renderPrivacyPolicy(){
  currentSettingsView="privacy";$("modal-title").textContent="Privacy Policy";
  mbody.innerHTML=privacyBodyHTML()+`<div class="btns"><button class="pbtn" id="privacy-back">Back to Settings</button></div>`;
@@ -5415,12 +5419,12 @@ function fmtTok(n){return (Number(n)||0).toLocaleString("en-US")}
 function fmtTokShort(n){n=Number(n)||0;if(n>=1e6)return (n/1e6).toFixed(n>=1e7?0:1)+"M";if(n>=1e3)return (n/1e3).toFixed(n>=1e4?0:1)+"k";return String(n)}
 function fmtHstWhen(ms){return new Date(ms).toLocaleString("en-US",{timeZone:"Pacific/Honolulu",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})+" HST"}
 function tokenRow(label,i,o){const ii=Number(i)||0,oo=Number(o)||0;return '<div class="usage-tok-row"><span>'+label+'</span><span>'+fmtTokShort(ii)+'</span><span>'+fmtTokShort(oo)+'</span><span><strong>'+fmtTokShort(ii+oo)+'</strong></span></div>'}
+function usageModelCard(name,today,week){return `<div class="usage-model"><h4>${name}</h4><div class="admin-stat-grid"><div class="admin-stat"><span>Requests today</span><strong>${Math.max(0,today.req)}</strong></div><div class="admin-stat"><span>Requests in 7 days</span><strong>${Math.max(0,week.req)}</strong></div></div><div class="usage-tok-grid">${tokenRow("Today",today.i,today.o)}${tokenRow("Last 7 days",week.i,week.o)}</div></div>`}
 function paintAdminUsage(box){
  if(adminUsageView==="users"){paintAdminUsageUsers(box);return}
- const r=(adminData&&adminData.usage)||{},t=r.today||{},w=r.week||{};
+ const r=(adminData&&adminData.usage)||{},t=r.today||{},w=r.week||{},vt=t.vela||{},vw=w.vela||{},n=v=>Number(v)||0;
  box.innerHTML=`<div class="admin-stat-grid"><div class="admin-stat"><span>Requests today</span><strong>${Number(t.total)||0}</strong></div><div class="admin-stat"><span>Requests in 7 days</span><strong>${Number(w.total)||0}</strong></div><div class="admin-stat"><span>Accounts</span><strong>${Number(r.accountCount)||0}</strong></div><div class="admin-stat"><span>Failed sign-ins today</span><strong>${Number(t.failedSignins)||0}</strong></div><div class="admin-stat"><span>Guest requests today</span><strong>${Number(t.guests)||0}</strong></div><div class="admin-stat"><span>Account requests today</span><strong>${Number(t.accounts)||0}</strong></div></div>`
-  +`<h3 class="usage-sub">Groq tokens</h3><div class="usage-tok-grid">${tokenRow("Today",t.inputTokens,t.outputTokens)}${tokenRow("Last 7 days",w.inputTokens,w.outputTokens)}</div>`
-  +`<h3 class="usage-sub">Vela (admin testing)</h3><div class="admin-stat-grid"><div class="admin-stat"><span>Requests today</span><strong>${Number((t.vela||{}).requests)||0}</strong></div><div class="admin-stat"><span>Requests in 7 days</span><strong>${Number((w.vela||{}).requests)||0}</strong></div></div><div class="usage-tok-grid">${tokenRow("Today",(t.vela||{}).inputTokens,(t.vela||{}).outputTokens)}${tokenRow("Last 7 days",(w.vela||{}).inputTokens,(w.vela||{}).outputTokens)}</div>`
+  +`<h3 class="usage-sub">Models</h3><div class="usage-models">${usageModelCard("Aries",{req:n(t.total)-n(vt.requests),i:n(t.inputTokens)-n(vt.inputTokens),o:n(t.outputTokens)-n(vt.outputTokens)},{req:n(w.total)-n(vw.requests),i:n(w.inputTokens)-n(vw.inputTokens),o:n(w.outputTokens)-n(vw.outputTokens)})}${usageModelCard("Vela",{req:n(vt.requests),i:n(vt.inputTokens),o:n(vt.outputTokens)},{req:n(vw.requests),i:n(vw.inputTokens),o:n(vw.outputTokens)})}</div>`
   +`<div class="data-toolbar"><button type="button" class="pbtn" id="usage-by-user">Per user usage</button></div>`;
  box.querySelector("#usage-by-user").onclick=()=>{adminUsersUsage=null;adminUsageView="users";paintAdminUsage(box);animateAdminContent()};
  syncAdminBack();
