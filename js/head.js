@@ -1,0 +1,1 @@
+(function(){try{var d=document.documentElement,phone=/iPhone|iPod/.test(navigator.userAgent||""),notch=phone&&Math.max(screen.width,screen.height)>=812;d.style.setProperty("--safe-top-fallback",(notch?59:phone?20:0)+"px");d.style.setProperty("--safe-bottom-fallback",(notch?34:0)+"px")}catch(e){}})();
