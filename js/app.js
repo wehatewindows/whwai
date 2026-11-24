@@ -1196,7 +1196,7 @@ function showAccountDisabled(message,info){
  document.body.classList.add("access-locked");(showEl(accessGate),setTimeout(updateSchoolLock,0));$("app-frame").setAttribute("aria-hidden","true");accessCard.classList.add("disabled-mode");swapText(accessTitle,"Your account has been disabled");accessForm.hidden=true;accessError.hidden=true;accessError.textContent="";$("access-admin-open").hidden=!(info&&info.isAdmin);$("access-admin-form").hidden=true;
  const wn=$("wn");if(wn)wn.hidden=true;
  renderGateReason(message,info);
- if(info&&info.isAdmin){const nb=$("gate-body");if(nb)nb.insertAdjacentHTML("afterbegin",'<p class="sm admin-test-note">Test account disable.</p>')}
+ if(info&&info.isAdmin){const nb=$("gate-body");if(nb)nb.insertAdjacentHTML("beforeend",'<p class="sm admin-test-note">Test account disable.</p>')}
  resetScroll();
  const canDownload=!!(info&&info.canDownload),dl=$("gate-download"),st=$("gate-status");
  const notes={keep:"Your chats are still saved on your account.",delete:"Your chats were removed from this account."};
@@ -1209,7 +1209,7 @@ function showBrowserDisabled(info){
  if(info&&info.source==="account"){
   if(selfDisabledInfo||accountDisabledGate||browserDisabledGate)return;
   showAccountDisabled(info.message||"",info);
-  $("gate-actions").hidden=true;$("gate-download").hidden=true;
+  $("gate-download").hidden=true;$("gate-actions").hidden=false;
   const body=$("gate-body");
   if(body){body.insertAdjacentHTML("beforeend",'<p class="gate-reason-text">This browser is also disabled from accessing WHWai.</p>')}
   return;
@@ -1226,7 +1226,8 @@ function showBrowserDisabled(info){
  resetScroll();
  const body=$("gate-body");
  if(body&&Number(i.reenableAt)>0)body.insertAdjacentHTML("beforeend",'<div class="policy-takeaways gate-box"><strong>This browser can be used again:</strong><p class="gate-box-text">'+esc(hstText(i.reenableAt))+'</p></div>');
- $("gate-download").hidden=true;$("gate-actions").hidden=true;
+ $("gate-download").hidden=true;
+ const hasSession=!!(accountSession&&accountSession.token);$("gate-actions").hidden=!hasSession;if(hasSession)$("gate-signout").onclick=disabledSignOut;
  const st=$("gate-status");if(st){st.hidden=true;st.textContent=""}
 }
 document.addEventListener("pointerdown",e=>{const b=e.target.closest&&e.target.closest("#gate-signout");if(!b||b.disabled)return;const r=b.getBoundingClientRect();const s=document.createElement("span");s.className="btn-ripple";s.style.left=(e.clientX-r.left)+"px";s.style.top=(e.clientY-r.top)+"px";b.appendChild(s);setTimeout(()=>s.remove(),700)});
