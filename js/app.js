@@ -1124,10 +1124,14 @@ const ACCESS_STORAGE_KEY="whwai.earlyAccessUntil.v1",ACCESS_TOKEN_KEY="whwai.ear
 try{localStorage.removeItem(ACCESS_STORAGE_KEY);localStorage.removeItem(ACCESS_TOKEN_KEY)}catch(e){}
 const accessGate=$("access-gate"),accessCard=$("access-card"),accessTitle=$("access-title"),accessForm=$("access-form"),accessInput=$("access-code"),accessError=$("access-error"),accessButton=$("access-unlock");
 let aiDisabled=false,accessRequired=true,accountDisabledGate=false,accessUnlocked=false,browserDisabledGate=false;
+let appInertKey="";
 function syncAppInert(){
  const frame=$("app-frame");if(!frame)return;
  const blocked=!accessGate.hidden||!$("wn").hidden;
  const modalOpen=!modal.hidden;
+ const key=blocked+"|"+modalOpen+"|"+frame.children.length;
+ if(key===appInertKey)return;
+ appInertKey=key;
  frame.inert=blocked;
  Array.from(frame.children).forEach(ch=>{ch.inert=!blocked&&modalOpen&&!ch.contains(modal)});
 }
@@ -1250,8 +1254,8 @@ async function downloadDisabledData(){
 }
 try{if(localStorage.getItem(ACCESS_OFF_KEY)==="1"){accessRequired=false;openApp()}else{document.body.classList.add("access-locked")}}catch(e){document.body.classList.add("access-locked")}
 accessForm.addEventListener("submit",async e=>{e.preventDefault();const code=accessInput.value.trim();if(!code)return;accessButton.disabled=true;accessError.hidden=true;accessError.textContent="";try{if(!API_URL)throw new Error("backend");const result=await post({action:"access_check",code,deviceId:getDeviceId()});if(result&&result.aiEnabled===false){showAIDisabled();return}
-   if(result&&result.error==="access_locked_temporarily"){accessError.hidden=true;window.fieldError(accessInput,"Too many attempts. Wait 15 minutes and try again.",true);return}if(result&&result.ok&&result.token){unlockEarlyAccess(result.token,result.expiresAt)}else{accessError.hidden=true;window.fieldError(accessInput,"Incorrect code",true);accessInput.select()}}catch(err){accessError.hidden=true;window.fieldError(accessInput,"Unable to verify code",true)}finally{accessButton.disabled=false}});
-(async function checkBackendStatus(){if(!API_URL){lockEarlyAccess(false);return}try{const status=await post({action:"status_check"});setTimeout(()=>{schoolStatusReady=true;updateSchoolLock()},0);applySiteStatus(status);if(status&&status.aiEnabled===false){showAIDisabled();return}
+   if(result&&result.error==="access_locked_temporarily"){accessError.hidden=true;window.fieldError(accessInput,"Too many attempts. Wait 15 minutes and try again.",true);return}if(result&&result.ok&&result.token){unlockEarlyAccess(result.token,result.expiresAt)}else{accessError.hidden=true;window.fieldError(accessInput,"Incorrect code",true);accessInput.select()}}catch(err){accessError.hidden=true;if(err&&err.payload&&err.payload.error==="access_locked_temporarily"){window.fieldError(accessInput,"Too many attempts. Wait 15 minutes and try again.",true);return}window.fieldError(accessInput,"Unable to verify code",true)}finally{accessButton.disabled=false}});
+(async function checkBackendStatus(){if(!API_URL){lockEarlyAccess(false);return}try{const status=await post({action:"status_check"});siteStatusAt=Date.now();setTimeout(()=>{schoolStatusReady=true;updateSchoolLock()},0);applySiteStatus(status);if(status&&status.aiEnabled===false){showAIDisabled();return}
  if(status&&status.accessRequired===false){accessRequired=false;try{localStorage.setItem(ACCESS_OFF_KEY,"1")}catch(e){}openApp();return}
  accessRequired=true;try{localStorage.removeItem(ACCESS_OFF_KEY)}catch(e){}
  const typed=accessInput.value;if(!accessUnlocked)lockEarlyAccess(false);accessInput.value=typed
@@ -1268,14 +1272,16 @@ function applySiteStatus(status){
  updateSchoolLock();
 }
 let siteStatusBusy=false;
+// Site status (kill switch, notices, what's new) is checked every 5 minutes. Returning to the tab checks again only if the last check is older than that.
+const SITE_STATUS_MS=300000;let siteStatusAt=0;
 async function refreshSiteStatus(){
  if(!API_URL||siteStatusBusy||document.hidden)return;
- siteStatusBusy=true;
+ siteStatusBusy=true;siteStatusAt=Date.now();
  try{const status=await post({action:"status_check"});applySiteStatus(status);if(status&&status.aiEnabled===false&&!aiDisabled)showAIDisabled()}catch(e){}
  finally{siteStatusBusy=false}
 }
-setInterval(refreshSiteStatus,30000);
-document.addEventListener("visibilitychange",()=>{if(!document.hidden)refreshSiteStatus()});
+setInterval(refreshSiteStatus,SITE_STATUS_MS);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&Date.now()-siteStatusAt>SITE_STATUS_MS)refreshSiteStatus()});
 
 const titleRequests=new Set();
 async function genTitle(c){
@@ -2339,7 +2345,8 @@ function togglePanel(panel,btn,replay){const open=panel.hidden;open?showEl(panel
 // The thought process is shown only when it adds something: a web search ran, sources were used, or the reasoning is long. Simple questions show no thought process.
 function thinkingWorthShowing(m){const searched=Array.isArray(m.tools)&&m.tools.length>0;const sourced=Array.isArray(m.sources)&&m.sources.length>0;return searched||sourced||String(m.thinking||"").length>=500}
 function thinkingSteps(text){return String(text||"").replace(/([.!?])\s+(?=[A-Z])/g,"$1\n").split(/\n+/).map(s=>s.replace(/^[\s\-*•\d.)]+/,"").replace(/\s+/g," ").trim()).filter(s=>s.length>2).slice(0,14).map(s=>s.length>220?s.slice(0,217)+"…":s)}
-setInterval(()=>{if(gatesPassed()&&accountSession&&accountSession.token&&accountReady&&!(accountSession.user&&accountSession.user.mustChange))post({action:"account_me",sessionToken:accountSession.token}).catch(e=>{if(e&&e.message==="invalid_session"&&accountSession){clearAccountSession();renderList();renderChat();toast("Your sign-in expired. Your chats are still saved on this device. Sign in again to sync them.",{act:{icon:"log-in",label:"Sign in",run:()=>openSettings(()=>renderAccountAuth("login"))}})}})},60000);
+// Signed-in session check every 5 minutes (was every minute).
+setInterval(()=>{if(gatesPassed()&&accountSession&&accountSession.token&&accountReady&&!(accountSession.user&&accountSession.user.mustChange))post({action:"account_me",sessionToken:accountSession.token}).catch(e=>{if(e&&e.message==="invalid_session"&&accountSession){clearAccountSession();renderList();renderChat();toast("Your sign-in expired. Your chats are still saved on this device. Sign in again to sync them.",{act:{icon:"log-in",label:"Sign in",run:()=>openSettings(()=>renderAccountAuth("login"))}})}})},300000);
 var lastAcctLoading=null;
 function renderSyncStatus(){
  const ld=accountLoading();if(ld!==lastAcctLoading){const first=lastAcctLoading===null;lastAcctLoading=ld;if(!first){renderList();renderChat()}}
@@ -2730,7 +2737,7 @@ function privacyBodyHTML(){return `<div class="policy-takeaways"><strong>Key tak
 
  <h3>Cookies and local storage</h3><p>WHWai does not use cookies, advertising, or analytics trackers. It stores your session token, guest chats, and a few settings in your browser's local storage, which you can clear at any time.</p>
 
- <h3>Service providers</h3><p>WHWai uses these providers: Groq (generates replies and titles), Supabase (stores account data and chats), Google Apps Script (runs the server), Google Drive (stores encrypted backups), Tavily (web search, when a model uses it), and Have I Been Pwned (checks new passwords). The site is hosted on GitHub Pages, and it checks GitHub for new versions. Source icons come from Google's favicon service, which receives only the source's domain name. Icons and fonts are loaded from jsDelivr and Google Fonts. Your browser contacts Google, GitHub, and jsDelivr directly, so they can see your IP address. When you set a password, WHWai checks it against the Pwned Passwords service, which receives only the first five characters of the password's hash, never the password. These providers may process data in other countries.</p>`}
+ <h3>Service providers</h3><p>WHWai uses these providers: Groq (generates replies and titles), Supabase (stores account data and chats), Google Apps Script (runs the server), Google Drive (stores encrypted backups), Tavily (web search, when a model uses it), and Have I Been Pwned (checks new passwords). The site is hosted on GitHub Pages, and it checks GitHub for new versions. Source icons come from Google's favicon service, which receives only the source's domain name. Fonts are loaded from Google Fonts. Your browser contacts Google and GitHub directly, so they can see your IP address. When you set a password, WHWai checks it against the Pwned Passwords service, which receives only the first five characters of the password's hash, never the password. These providers may process data in other countries.</p>`}
 function renderPrivacyPolicy(){
  currentSettingsView="privacy";$("modal-title").textContent="Privacy Policy";
  mbody.innerHTML=privacyBodyHTML()+`<div class="btns"><button class="pbtn" id="privacy-back">Back to Settings</button></div>`;
