@@ -454,6 +454,8 @@ function sleepUntilAbort(ms,signal){return new Promise(resolve=>{
  const t=setTimeout(finish,ms);
  if(signal){if(signal.aborted)finish();else signal.addEventListener("abort",finish,{once:true})}
 })}
+// The chat stays on the latest message until the reader scrolls up. Layout that settles after a render (the model bar, images, fonts) is followed.
+let pinnedBottom=true,lastUserScroll=0,flickUntil=0,touchY=null;
 const near=()=>chatEl.scrollHeight-chatEl.scrollTop-chatEl.clientHeight<140;
 const toBottom=()=>chatEl.scrollTo({top:chatEl.scrollHeight});
 const followBottom=()=>{const d=chatEl.scrollHeight-chatEl.clientHeight-chatEl.scrollTop;if(Math.abs(d)<1){chatEl.scrollTop=chatEl.scrollHeight;return}chatEl.scrollTop+=d*.3};
@@ -474,12 +476,26 @@ function flickToBottom(){
   chatEl.scrollTop=start+(end-start)*ease(t);
   if(t<1)jumpAnim=requestAnimationFrame(step);
  };
+ flickUntil=performance.now()+dur+50;
  jumpAnim=requestAnimationFrame(step);
 }
 ["wheel","touchstart","pointerdown"].forEach(ev=>chatEl.addEventListener(ev,()=>cancelAnimationFrame(jumpAnim),{passive:true}));
 chatEl.addEventListener("wheel",()=>{followOn=false},{passive:true});
 chatEl.addEventListener("touchmove",()=>{followOn=false},{passive:true});
 chatEl.addEventListener("scroll",()=>{if(!followOn&&near())followOn=true},{passive:true});
+chatEl.addEventListener("wheel",e=>{lastUserScroll=performance.now();if(e.deltaY<0)pinnedBottom=false},{passive:true});
+chatEl.addEventListener("touchstart",e=>{lastUserScroll=performance.now();touchY=e.touches[0]?e.touches[0].clientY:null},{passive:true});
+chatEl.addEventListener("touchmove",e=>{const y=e.touches[0]?e.touches[0].clientY:null;if(touchY!==null&&y!==null&&y>touchY)pinnedBottom=false;touchY=y},{passive:true});
+chatEl.addEventListener("keydown",()=>{lastUserScroll=performance.now()},{passive:true});
+chatEl.addEventListener("scroll",()=>{
+ if(chatEl.clientHeight===0)return;
+ if(near())pinnedBottom=true;else if(performance.now()-lastUserScroll<500)pinnedBottom=false;
+},{passive:true});
+// Holds the view at the bottom while it is pinned. Skips frames during the flick and when the chat is hidden.
+function keepPinned(){if(pinnedBottom&&chatEl.clientHeight>0&&performance.now()>flickUntil&&chatEl.scrollTop+chatEl.clientHeight<chatEl.scrollHeight-1)chatEl.scrollTop=chatEl.scrollHeight}
+new ResizeObserver(keepPinned).observe(chatEl);
+new MutationObserver(()=>requestAnimationFrame(keepPinned)).observe(chatEl,{childList:true,subtree:true,characterData:true});
+chatEl.addEventListener("load",keepPinned,true);
 jumpBtn.onclick=()=>flickToBottom();
 // Centres the jump button above the blue orb, wherever the orb sits on this screen size.
 function alignJump(){
@@ -909,7 +925,8 @@ function applyModelList(){
  // While the account is still loading after a refresh, Vela stays in the list so the chat keeps its model.
  const pendingAccount=!!(accountSession&&accountSession.token&&!accountSession.user);
  const velaEntry=isAdminSignedIn()||pendingAccount?VELA_MODEL:Object.assign({},VELA_MODEL,{disabled:true,description:accountSession&&accountSession.token?"Coming soon for signed-in users. Your account will get access when Vela opens.":"Coming soon for signed-in users."});
- availableModels=serverModelList.concat(velaEntry?[velaEntry]:[]);
+ // The server may also list Vela for admins. Drop that copy so the local entry is the only one.
+ availableModels=serverModelList.filter(m=>m.id!==VELA_MODEL.id).concat(velaEntry?[velaEntry]:[]);
  let repaired=false;
  S.chats.forEach(c=>{if(!availableModels.some(m=>m.id===c.model&&!m.disabled)){c.model="aries-1";repaired=true}});
  if(!availableModels.some(m=>m.id===S.model&&!m.disabled)){S.model="aries-1";repaired=true}
@@ -980,7 +997,8 @@ function renderChat(fresh){
  if(c.ended){const note=document.createElement("p");note.className="sm chat-ended-note";note.setAttribute("role","status");note.textContent="This chat was ended and can't be continued. Start a new chat to keep talking.";chatEl.appendChild(note)}
  if(fresh){const ms=chatEl.querySelectorAll(".msg");ms[ms.length-1].classList.add("fresh")}
  const newest=[...chatEl.querySelectorAll(".msg")].pop();[...chatEl.querySelectorAll(".chart-retry")].forEach(x=>{if(newest&&x.closest(".msg")===newest)x.onclick=regen;else x.remove()});
- if(fresh)flickToBottom();else if(switching||(wasNear&&busy))toBottom();else chatEl.scrollTop=prevTop;
+ if(switching)pinnedBottom=true;
+ if(fresh)flickToBottom();else if(switching||pinnedBottom||(wasNear&&busy))toBottom();else chatEl.scrollTop=prevTop;
  updateJump();
 }
 const plain=t=>t.replace(/\*\*(.+?)\*\*/g,"$1").replace(/^[-*] /gm,"\u2022 ");
@@ -2340,7 +2358,7 @@ function accountAvatarHtml(){const u=accountSession&&accountSession.user||{};con
 function profileColorHtml(){const u=accountSession&&accountSession.user||{};const cur=u.profileColor||"#3f6ce0";const initial=String(u.username||"?").charAt(0).toUpperCase();return '<div class="pc-block"><button type="button" class="pc-avatar" id="pc-avatar" aria-expanded="false" aria-controls="pc-options" aria-label="Change profile color" style="background:'+esc(cur)+'"><span>'+esc(initial)+'</span><span class="pc-pencil" aria-hidden="true">'+ic('pencil',15,2)+'</span></button><div class="pc-options" id="pc-options" hidden><span class="pc-label">Profile color</span><div class="pc-swatches">'+PROFILE_COLORS.map(c=>'<button type="button" class="pc-sw'+(c===cur?' on':'')+'" data-color="'+c+'" style="background:'+c+'" aria-label="Color '+c+'" aria-pressed="'+(c===cur)+'"></button>').join("")+'</div></div></div>'}
 function wireProfileColors(){const av=$("pc-avatar"),opts=$("pc-options");if(av&&opts)av.onclick=()=>{const open=opts.hidden;opts.hidden=!open;av.setAttribute("aria-expanded",String(open))};document.querySelectorAll(".pc-sw").forEach(btn=>{btn.onclick=async()=>{const color=btn.dataset.color,previous=(accountSession&&accountSession.user&&accountSession.user.profileColor)||"#3f6ce0";document.querySelectorAll(".pc-sw").forEach(x=>{x.classList.toggle("on",x===btn);x.setAttribute("aria-pressed",String(x===btn))});if(av)av.style.background=color;try{const r=await post({action:"account_profile_color",sessionToken:accountSession.token,color});if(!r||!r.ok)throw new Error("failed");accountSession.user.profileColor=r.profileColor;if(adminData&&adminData.accounts){const me=adminData.accounts.find(x=>x.username===accountSession.user.username);if(me)me.profileColor=r.profileColor}renderSyncStatus();toast("Profile color updated",{undo:async()=>{try{const r=await post({action:"account_profile_color",sessionToken:accountSession.token,color:previous});if(!r||!r.ok)throw new Error("failed");accountSession.user.profileColor=r.profileColor;if(av)av.style.background=previous;document.querySelectorAll(".pc-sw").forEach(x=>{x.classList.toggle("on",x.dataset.color===previous);x.setAttribute("aria-pressed",String(x.dataset.color===previous))});renderSyncStatus();toast("Changes undone.")}catch(e){toast("Couldn't undo that. Try again.")}}})}catch(e){if(av)av.style.background=previous;toast("Couldn't save the color. Try again.",{retry:()=>btn.click()})}}})}
 function profileStateText(){if(accountSyncing)return "Syncing chats…";if(navigator.onLine===false||accountSyncFailed)return "Offline · saved on this device";if(accountLastSync)return "Chats synced · "+new Date(accountLastSync).toLocaleTimeString();return "Not synced yet"}
-function renderProfileMenu(){const menu=$("profile-menu");if(!menu||!accountSession||!accountSession.user)return;menu.innerHTML='<div class="pm-head"><strong>'+esc(accountSession.user.username)+'</strong><span>'+esc(profileStateText())+'</span></div><button class="pm-item" id="pm-sync" type="button"'+(accountSyncing?' disabled':'')+'>'+(accountSyncing?'Syncing…':'Sync now')+'</button><button class="pm-item" id="pm-settings" type="button">Account settings</button>';const doSync=async()=>{await syncAccountChatsNow();renderProfileMenu();toast(accountSyncFailed?"Couldn't sync right now. Your chats are saved on this device.":"Chats synced",accountSyncFailed?{retry:doSync}:{})};$("pm-sync").onclick=doSync;$("pm-settings").onclick=()=>{hideProfileMenu();openSettings(()=>isDeskSettings()?renderDeskSettings("account"):renderAccount())}}
+function renderProfileMenu(){const menu=$("profile-menu");if(!menu||!accountSession||!accountSession.user)return;menu.innerHTML='<div class="pm-head"><strong>'+esc(accountSession.user.username)+'</strong><span>'+esc(profileStateText())+'</span></div><button class="pm-item" id="pm-sync" type="button"'+(accountSyncing?' disabled':'')+'>'+(accountSyncing?'Syncing…':'Sync now')+'</button><button class="pm-item" id="pm-settings" type="button">Account settings</button>';const doSync=async()=>{await syncAccountChatsNow();renderProfileMenu();toast(accountSyncFailed?"Couldn't sync right now. Your chats are saved on this device.":"Chats synced",accountSyncFailed?{retry:doSync}:{})};$("pm-sync").onclick=doSync;$("pm-settings").onclick=()=>{hideProfileMenu();openSettings(isDeskSettings()?null:()=>renderAccount())}}
 function hideProfileMenu(){hideEl($("profile-menu"))}
 function togglePanel(panel,btn,replay){const open=panel.hidden;open?showEl(panel):hideEl(panel);btn.setAttribute("aria-expanded",String(open));if(open&&replay){const ol=panel.querySelector(".steps");if(ol){ol.classList.remove("play");void ol.offsetWidth;ol.classList.add("play")}}}
 // The thought process is shown only when it adds something: a web search ran, sources were used, or the reasoning is long. Simple questions show no thought process.
@@ -2705,40 +2723,50 @@ function openLegalPanel(kind){
  const c=o.querySelector(".policy-close");if(c)c.focus();
 }
 document.addEventListener("click",e=>{if(e.target.closest&&e.target.closest("#pre-close")){preDismissed=true;updateSchoolNotice();return}const fp=e.target.closest&&e.target.closest(".forgot-link");if(fp){openForgotPanel();return}const lg=e.target.closest&&e.target.closest("[data-legal]");if(lg){e.preventDefault();openLegalPanel(lg.dataset.legal)}const si=e.target.closest&&e.target.closest("#school-lock-signin");if(si)openSettings(()=>renderAccountAuth("login"))});
-function termsBodyHTML(){return `<div class="policy-takeaways"><strong>Key takeaways</strong><ul><li>WHWai is a general-purpose AI chat tool and is not affiliated with any school.</li><li>You must be 13 or older. Under 18 requires a parent or guardian's permission.</li><li>During school hours, WHWai is available only to signed-in users.</li><li>AI replies can be wrong. Check important information and disclose AI use in schoolwork.</li><li>You are responsible for activity on your account.</li></ul></div><p class="sm">Effective date: November 23, 2026</p>
- <h3>Who runs WHWai</h3><p>WHWai is operated by We Hate Windows (WHW), a fictional name used for this beta, based in Hawaii, United States. Contact: <a href="mailto:wehatewindows.help@gmail.com">wehatewindows.help@gmail.com</a>.</p>
- <h3>Who can use WHWai</h3><p>You must be at least 13 to use WHWai. When you create an account, you confirm that you are 13 or older and, if you are under 18, that you have your parent or guardian's permission. WHWai is in early access, so new accounts currently need an early-access code. These terms also apply if you use WHWai without an account.</p>
- <h3>School use</h3><p>During school hours, WHWai is available only to signed-in users. WHWai is not affiliated with, endorsed by, or partnered with any school. Schools set their own rules for device and AI use, and those rules apply to you.</p>
- <h3>Accounts</h3><p>You are responsible for activity on your account. Temporary passwords must be changed at sign-in and expire after 72 hours.</p>
- <h3>AI-generated replies</h3><p>Replies from Aries are generated by AI and can be wrong, incomplete, or out of date. Check important information before relying on it, and disclose AI use in schoolwork.</p>
- <h3>Acceptable use</h3><p>Do not use WHWai to break the law, harass people, spread malware, access other accounts or the service's systems, or overload the service. You agree to cover claims against WHW that result from your misuse of WHWai or your content.</p>
- <h3>Access and changes</h3><p>Admins may limit, disable, or end access to protect the service or enforce these terms. That includes disabling an account or the browsers signed into it, for a set time or until it is re-enabled. Features may change over time.</p>
- <h3>Your content</h3><p>You keep ownership of what you type. You allow WHWai to process it to produce replies and titles, to run web searches when a model uses them, and to sync your chats. We do not sell your content or use it to train our own models.</p>
- <h3>No warranty and limits of liability</h3><p>WHWai is provided as is, without warranties of any kind. To the extent the law allows, We Hate Windows (WHW) is not liable for indirect or consequential losses.</p>
+function termsBodyHTML(){return `<div class="policy-takeaways"><strong>Key takeaways</strong><ul><li>WHWai is a general-purpose AI chat tool. It is not made by, endorsed by, or affiliated with any school.</li><li>You must be 13 or older. If you are under 18, you need a parent or guardian's permission.</li><li>During school hours, WHWai is available only to signed-in users.</li><li>AI replies can be wrong. Check important information before you rely on it.</li><li>You are responsible for activity on your account.</li></ul></div>
+ <p class="sm">Effective date: November 25, 2026</p>
+ <h3>Who runs WHWai</h3><p>WHWai is operated by We Hate Windows (WHW), based in Hawaii, United States. Contact: <a href="mailto:wehatewindows.help@gmail.com">wehatewindows.help@gmail.com</a>.</p>
+ <h3>Who can use WHWai</h3><p>You must be at least 13 years old. When you create an account, you confirm that you meet this age and, if you are under 18, that your parent or guardian has given permission. WHWai is in early access, so new accounts need an access code. These terms also apply if you use WHWai without an account.</p>
+ <h3>School use</h3><p>During school hours, WHWai is available only to signed-in users. Schools set their own rules for device and AI use, and those rules apply to you too. WHWai is not endorsed by or partnered with any school.</p>
+ <h3>Your account</h3><p>You are responsible for activity on your account and for keeping your password private. Temporary passwords must be changed when you sign in.</p>
+ <h3>Your content</h3><p>You keep ownership of what you type. You allow WHWai to process it to produce replies and titles, to run web searches when a model uses them, and to sync your chats across your devices. We do not sell your content or use it to train AI models.</p>
+ <h3>AI-generated replies</h3><p>Replies are generated by AI and can be wrong, incomplete, or out of date. Check important information before relying on it, and follow your school's rules on AI use.</p>
+ <h3>Acceptable use</h3><p>Do not use WHWai to break the law, harass or threaten people, spread malware, access other people's accounts or the service's systems, or overload or interfere with the service. You agree to be responsible for claims against WHW that arise from your misuse of WHWai or your content.</p>
+ <h3>Access and changes</h3><p>We may limit, suspend, or end access to protect the service or to enforce these terms. That can include disabling an account or a browser, for a set period or until it is re-enabled. Features may change over time.</p>
  <h3>Ending your use</h3><p>You can stop using WHWai at any time and delete your chats or account from Settings. We may suspend accounts that break these terms.</p>
+ <h3>No warranty</h3><p>WHWai is provided as is, without warranties of any kind. To the extent the law allows, WHW is not liable for indirect or consequential losses.</p>
+ <h3>Third-party software and fonts</h3><p>WHWai uses icons from the Lucide icon set, licensed under the ISC License, Copyright (c) Lucide Icons and Contributors. Some Lucide icons are derived from Feather and licensed under the MIT License, Copyright (c) 2013-present Cole Bemis. Full license text: <a href="https://github.com/lucide-icons/lucide/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">Lucide license</a>. The Inter font is loaded from Google Fonts and is licensed under the SIL Open Font License.</p>
  <h3>Governing law</h3><p>These terms are governed by the laws of the State of Hawaii, United States. Disputes are heard in the state or federal courts in Hawaii.</p>
- <h3>Changes to these terms</h3><p>We will show the new effective date at the top of this page and post a notice in WHWai before material changes take effect. Continuing to use WHWai after a change means you accept it.</p>`}
+ <h3>Changes to these terms</h3><p>We will change the effective date at the top of this page and post a notice in WHWai before material changes take effect. If you keep using WHWai after a change takes effect, you accept the updated terms.</p>`}
 function renderTerms(){
  currentSettingsView="terms";$("modal-title").textContent="Terms of Use";
  mbody.innerHTML=termsBodyHTML()+`<div class="btns"><button class="pbtn" id="terms-back">Back to Settings</button></div>`;
  $("terms-back").onclick=renderSettings;
 }
-function privacyBodyHTML(){return `<div class="policy-takeaways"><strong>Key takeaways</strong><ul><li>Guest chats stay in this browser. Signed-in chats are saved to your account so they sync across devices.</li><li>Your messages are sent to Groq to generate replies and titles. Web search queries go to Tavily.</li><li>Admins can see account details and usage totals, never message text.</li><li>Passwords are never stored in plain text.</li><li>Deleting your account removes its server-stored chats and account data.</li></ul></div>
- <p class="sm">Effective date: November 23, 2026</p>
- <h3>Guest use and accounts</h3><p>Guest chats are stored in this browser and do not sync. When you create an account or sign in, the chats on this device are merged into your account, and the browser keeps a local copy for display and syncing. Accounts use a username and password. No email address or date of birth is collected. The server stores your username, a salted password hash, account role and status, sign-in and creation times, session-token hashes, your account chats, and usage totals. The browser stores your session token. Sessions expire after 14 days and can be revoked.</p>
- <h3>How data is used</h3><p>Conversations are used to show, save, and sync chats and to generate the replies and titles you request. WHWai counts requests and Groq input and output tokens to enforce limits and to show admins usage totals. These counts never include message text. WHW does not sell conversations, use them for advertising, or train its own models on them.</p>
- <h3>Storage and access</h3><p>Signed-in chats and account details are stored in a Supabase database that WHWai's server uses, so they can sync across your devices. Authorized admins and support staff can view account details and usage totals to run and support the service. Admin tools do not show chat content. Admins can add flags (short notes about an issue) and can disable accounts or browsers for a set time.</p>
- <h3>AI processing</h3><p>WHWai sends your prompt and up to the latest 14 messages to Groq to generate replies and chat titles. The models are OpenAI open-weight gpt-oss models run by Groq. WHWai records only the token counts that Groq reports, not the text. Groq says it does not keep inference data by default, but it may keep logs of prompts and outputs for up to 30 days to troubleshoot reliability problems and investigate abuse. See <a href="https://console.groq.com/docs/your-data" target="_blank" rel="noopener noreferrer">Groq's data documentation</a>.</p><h3>Web search</h3><p>When a model uses web search, WHWai sends only the search query to Tavily, which returns web results. WHWai does not send your account name or other identifiers with the query. See <a href="https://www.tavily.com/privacy" target="_blank" rel="noopener noreferrer">Tavily's privacy policy</a>.</p>
- <h3>Usage limits</h3><p>Usage is limited to keep WHWai available. Account and request limits are enforced on our server. Guest daily limits are counted in your browser, so clearing site data resets them. Browser identifiers used for limits are pseudonymous and can be cleared. Limits may change.</p>
- <h3>Security</h3><p>Passwords are never intentionally stored or logged in plain text. Temporary passwords expire after 72 hours and must be changed at sign-in. WHW takes reasonable steps to protect data, but no online service is completely secure. If a serious security issue is found, WHW may restrict access, revoke sessions, or delete active server-stored data.</p>
- <h3>Retention</h3><p>Chats stay until you delete them. Expired and revoked sessions are removed. Admin audit log entries and account-device records are kept for 90 days. Backups are kept for 7 days. Temporary passwords expire after 72 hours.</p>
-
- <h3>Export, deletion, and contact</h3><p>You can export chats to a ZIP file created in this browser. Keep exports private, because anyone who has one can read its conversations. Deleting data on this device removes only the local copy and session. Deleting your account from Account settings removes its server-stored chats, account record, sessions, and usage totals. Admin audit log entries that name your account may keep your username for 90 days, and admin flags that name it are kept until they are cleared or removed as the flag list is trimmed. Encrypted backups of account data are kept for 7 days. Deleting your account also deletes the key that protects its backups, so those backups can no longer be read. To ask about your data, contact <a href="mailto:wehatewindows.help@gmail.com">wehatewindows.help@gmail.com</a>.</p>
+function privacyBodyHTML(){return `<div class="policy-takeaways"><strong>Key takeaways</strong><ul><li>Guest chats stay in your browser. Signed-in chats are saved to your account so they sync across your devices.</li><li>Your messages go to Groq to generate replies. Web search queries go to Tavily.</li><li>Admins can see account details and usage totals, never chat content.</li><li>Passwords are stored only as salted hashes.</li><li>Deleting your account removes it and its saved chats.</li></ul></div>
+ <p class="sm">Effective date: November 25, 2026</p>
+ <h3>Who we are</h3><p>WHWai is operated by We Hate Windows (WHW). For privacy questions, contact <a href="mailto:wehatewindows.help@gmail.com">wehatewindows.help@gmail.com</a>.</p>
+ <h3>What we collect</h3>
+ <p><strong>Accounts.</strong> A username, a salted hash of your password (never the password itself), your role and account status, and account timestamps. We do not collect email addresses or birth dates.</p>
+ <p><strong>Chats.</strong> Guest chats stay in your browser. Signed-in chats are saved to our server so they can sync across your devices.</p>
+ <p><strong>Sessions and devices.</strong> A hashed session token, its expiry and revocation times, and when it was last used. Your browser also creates a random device ID. We use it for usage limits and sign-in protection. When you sign in, we link it to your account.</p>
+ <p><strong>Usage.</strong> Counts of requests and AI tokens, used for limits and admin totals. These counts never include message text.</p>
+ <p><strong>Connection details.</strong> Services your browser contacts, such as Google and GitHub, can see your IP address and browser details.</p>
+ <h3>How we use it</h3><p>We use your data to show, save, and sync chats; to generate the replies and titles you request; to enforce usage limits and protect accounts from abuse; and to run, support, and secure WHWai. We do not sell your data, use it for advertising, or use it to train AI models.</p>
+ <h3>AI processing</h3><p>Your prompt and recent messages from the conversation are sent to Groq to generate replies and chat titles. We record only the token counts Groq reports, not the text. Groq's handling of data is described in <a href="https://console.groq.com/docs/your-data" target="_blank" rel="noopener noreferrer">Groq's data documentation</a>.</p>
+ <h3>Web search</h3><p>When a model uses web search, only the search query is sent to Tavily. We do not send your account name or other identifiers with it. See <a href="https://www.tavily.com/privacy" target="_blank" rel="noopener noreferrer">Tavily's privacy policy</a>.</p>
+ <h3>Storage and access</h3><p>Signed-in data is stored in a Supabase database and processed by our server, which runs on Google Apps Script. Authorized admins can view account details and usage totals to run and support the service. Admin tools do not show chat content. Admins can add short notes (flags) about issues and can disable accounts or browsers for a set period.</p>
+ <h3>Backups</h3><p>Account data is backed up daily. Backups are encrypted and stored in a private Google Drive folder. Each account's backup uses its own encryption key. Deleting an account deletes that key, so its backups can no longer be read.</p>
+ <h3>Security</h3><p>Passwords are stored as salted hashes, never in plain text. When you set a password, it is checked against the Have I Been Pwned breach database. Only the first five characters of the password's hash are sent, never the password. Sessions expire after 14 days and can be revoked. No online service is completely secure, but we take reasonable steps to protect your data.</p>
+ <h3>How long we keep data</h3><p>Chats are kept until you delete them. Sessions are removed about a week after they expire or are revoked. Device records are removed 90 days after they were last used. Admin audit log entries are kept for up to 90 days. Daily usage counts are kept for about a week. Encrypted backups are kept for 7 days. Temporary passwords expire after 72 hours. Admin flags are kept until they are cleared, and older flags are removed when the list is trimmed.</p>
+ <h3>Your choices</h3>
+ <p><strong>Export.</strong> You can download your chats as a ZIP file from Settings. The file is created in your browser. Anyone who has it can read the conversations, so keep it private.</p>
+ <p><strong>Delete.</strong> You can delete your chats and your account from Settings. Deleting data on this device removes only the local copy and your session. Deleting your account removes your account record, sessions, and saved chats. Audit log entries that name your username may remain for up to 90 days. Your encrypted backups stop being readable as soon as your account is deleted, and are removed within 7 days.</p>
+ <p><strong>Other requests.</strong> To ask about your data, contact us. Depending on where you live, you may have additional rights under local privacy law.</p>
  <h3>Children</h3><p>WHWai is not directed to children under 13, and we do not knowingly collect personal information from them. If you believe a child under 13 has an account, contact us and we will delete it. Users under 18 need a parent or guardian's permission (see the Terms of Use).</p>
-
- <h3>Cookies and local storage</h3><p>WHWai does not use cookies, advertising, or analytics trackers. It stores your session token, guest chats, and a few settings in your browser's local storage, which you can clear at any time.</p>
-
- <h3>Service providers</h3><p>WHWai uses these providers: Groq (generates replies and titles), Supabase (stores account data and chats), Google Apps Script (runs the server), Google Drive (stores encrypted backups), Tavily (web search, when a model uses it), and Have I Been Pwned (checks new passwords). The site is hosted on GitHub Pages, and it checks GitHub for new versions. Source icons come from Google's favicon service, which receives only the source's domain name. Fonts are loaded from Google Fonts. Your browser contacts Google and GitHub directly, so they can see your IP address. When you set a password, WHWai checks it against the Pwned Passwords service, which receives only the first five characters of the password's hash, never the password. These providers may process data in other countries.</p>`}
+ <h3>Cookies and local storage</h3><p>WHWai does not use cookies, advertising, or analytics trackers. Your browser stores your session token, your device ID, guest chats, and a few settings in local storage. You can clear these at any time, which signs you out on this device.</p>
+ <h3>Service providers</h3><p>WHWai uses Groq (replies and titles), Supabase (database), Google Apps Script (server), Google Drive (encrypted backups), Tavily (web search, when a model uses it), and Have I Been Pwned (password checks). The site is hosted on GitHub Pages, which also checks for new versions. Source icons come from Google's favicon service, which receives only the source's domain name. Fonts are loaded from Google Fonts. These providers may process data outside your country.</p>
+ <h3>Changes to this policy</h3><p>We will change the effective date at the top of this page and post a notice in WHWai before material changes take effect.</p>`}
 function renderPrivacyPolicy(){
  currentSettingsView="privacy";$("modal-title").textContent="Privacy Policy";
  mbody.innerHTML=privacyBodyHTML()+`<div class="btns"><button class="pbtn" id="privacy-back">Back to Settings</button></div>`;
@@ -3897,8 +3925,16 @@ renderExportInfo=wrapViewTransition(renderExportInfo);
 renderPrivacyPolicy=wrapViewTransition(renderPrivacyPolicy);renderTerms=wrapViewTransition(renderTerms);
 renderLocalDeleteConfirm=wrapViewTransition(renderLocalDeleteConfirm);
 function finishModalClose(){if(!closingModal)return;mbody=mbodyOuter;if(closeModalTimer!==null){clearTimeout(closeModalTimer);closeModalTimer=null}modal.hidden=true;modal.classList.remove("closing");closingModal=false}
-function closeSettings(){if(currentSettingsView==="password-required"&&accountSession&&accountSession.user&&accountSession.user.mustChange){toast("Set a new password to continue.");return}resolvePendingConfirmation(false);if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}if(modal.hidden||closingModal)return;closingModal=true;modal.classList.add("closing");closeModalTimer=setTimeout(finishModalClose,190)}
-function openSettings(initialRenderer){if(closeModalTimer!==null){clearTimeout(closeModalTimer);closeModalTimer=null}closingModal=false;mbody=mbodyOuter;modal.classList.remove("closing");modal.hidden=false;smsg="";if(typeof initialRenderer==="function")initialRenderer();else renderSettings()}
+function closeSettings(){if(currentSettingsView==="password-required"&&accountSession&&accountSession.user&&accountSession.user.mustChange){toast("Set a new password to continue.");return}resolvePendingConfirmation(false);if(exportCooldownTicker!==null){clearInterval(exportCooldownTicker);exportCooldownTicker=null}if(modal.hidden||closingModal)return;closingModal=true;modal.classList.add("closing");closeModalTimer=setTimeout(finishModalClose,230)}
+// Desktop always opens the redesigned settings shell. A sub-view (sign in, admin) is drawn inside that shell, never in the old layout.
+// deskSection names the sidebar item to highlight for that sub-view.
+function openSettings(initialRenderer,deskSection){
+ if(closeModalTimer!==null){clearTimeout(closeModalTimer);closeModalTimer=null}
+ closingModal=false;modal.classList.remove("closing");modal.hidden=false;smsg="";
+ if(typeof initialRenderer==="function"&&isDeskSettings()){renderDeskSettings("account");deskMark(deskSection||"account");initialRenderer();return}
+ mbody=mbodyOuter;
+ if(typeof initialRenderer==="function")initialRenderer();else renderSettings();
+}
 function gateAdminMode(open){
  const form=$("access-admin-form"),link=$("access-admin-open");form.hidden=!open;link.hidden=!!open;accessForm.hidden=!!open||aiDisabled;accessError.hidden=true;$("access-admin-error").hidden=true;
  if(open){$("access-admin-user").focus()}else if(!aiDisabled)accessInput.focus();
@@ -3907,7 +3943,7 @@ $("access-admin-open").onclick=()=>gateAdminMode(true);$("access-admin-back").on
 $("access-admin-form").onsubmit=async e=>{
  e.preventDefault();const username=$("access-admin-user").value.trim().toLowerCase(),password=$("access-admin-password").value,b=$("access-admin-submit"),error=$("access-admin-error");if(!username||!password)return;
  b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Signing in…';error.hidden=true;
- try{const result=await post({action:"auth_admin_login",username,password});if(!result||!result.ok||!result.token)throw Object.assign(new Error(result&&result.error||"invalid_admin_credentials"),{payload:result});setAccountFromResult(result);if(result.selfDisabled){selfDisabledInfo={account:result.selfDisabled,browser:result.selfBrowser||null,userId:result.selfId||""};leaveDisabledGate()}$("access-admin-password").value="";hideEl(accessGate);openApp(true);if(result.user&&result.user.mustChange){openSettings();renderRequiredPasswordChange()}else{openSettings(()=>renderAdminPanel("site"))}}
+ try{const result=await post({action:"auth_admin_login",username,password});if(!result||!result.ok||!result.token)throw Object.assign(new Error(result&&result.error||"invalid_admin_credentials"),{payload:result});setAccountFromResult(result);if(result.selfDisabled){selfDisabledInfo={account:result.selfDisabled,browser:result.selfBrowser||null,userId:result.selfId||""};leaveDisabledGate()}$("access-admin-password").value="";hideEl(accessGate);openApp(true);if(result.user&&result.user.mustChange){openSettings();renderRequiredPasswordChange()}else{openSettings(()=>renderAdminPanel("site"),"admin:site")}}
  catch(err){error.hidden=true;window.fieldError($("access-admin-password"),err&&err.payload&&err.payload.message||"Invalid admin username or password.",true)}
  finally{b.disabled=false;b.textContent="Sign in"}
 };
