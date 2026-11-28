@@ -1684,3 +1684,16 @@ html body.vela-mode .orb{--orb-a:#7f86e6;--orb-b:#5159c2;--orb-c:#3b4596;backgro
 @starting-style{.fx:not([hidden]){opacity:0}}
 #model-options[hidden],#admin-site-notice[hidden],#pre-close[hidden]{display:none}
 @media (prefers-reduced-motion:reduce){.fx{transition:none}}
+
+/* Dark-mode fixes from the on-screen audit: policy card, disabled model note, header close buttons. */
+@media (prefers-color-scheme:dark){
+:root:not([data-theme="light"]) .policy-close{background:#2c2c2e;color:#f2f2f2}
+:root:not([data-theme="light"]) .policy-head{border-bottom-color:#3a3a3c}
+:root:not([data-theme="light"]) .policy-takeaways{background:#1f2a3d;border-color:#2e3f5c;color:#c9dbff}
+:root:not([data-theme="light"]) .policy-takeaways strong{color:#dbe7ff}
+:root:not([data-theme="light"]) .policy-body .sm,:root:not([data-theme="light"]) .policy-card .sm{color:#a1a1a6}
+:root:not([data-theme="light"]) .mi:disabled{background:#242426;color:#a1a1a6}
+:root:not([data-theme="light"]) .mi:disabled small{color:#8e8e93}
+:root:not([data-theme="light"]) #mx,:root:not([data-theme="light"]) .mh button,:root:not([data-theme="light"]) .pre-close{color:#f2f2f2}
+:root:not([data-theme="light"]) .side button:has(>.xi){color:#f2f2f2}
+}
