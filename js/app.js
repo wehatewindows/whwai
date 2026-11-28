@@ -157,7 +157,7 @@ function scoreChat(chat,query){
  if(messages.includes(q)){const pos=messages.indexOf(q);score+=42+Math.max(0,12-Math.floor(pos/180))}
  let found=0;terms.forEach(term=>{const titleCount=countOccurrences(title,term),messageCount=countOccurrences(messages,term);if(titleCount||messageCount)found++;if(titleCount)score+=Math.min(titleCount,3)*22+(title.startsWith(term)?8:0);if(messageCount)score+=Math.min(messageCount,8)*4+Math.max(0,7-Math.floor(messages.indexOf(term)/250));});
  if(found===terms.length)score+=35;else if(found>1)score+=found*3;
- if(!terms.some(t=>title.includes(t)||messages.includes(t)))return 0;
+ const words=(title+" "+messages).split(" ");if(!terms.every(t=>words.some(w=>w.startsWith(t))))return 0;
  return score;
 }
 function searchSnippet(chat,query){
@@ -170,6 +170,7 @@ function searchSnippet(chat,query){
 }
 
 const chatEl=$("chat"),ta=$("in"),orb=$("orb"),list=$("list"),sendBtn=$("send");
+let listFadeNext=false,chatFadeNext=false;
 let busy=false,activeAnswerController=null,responseWasStopped=false,answerRunId=0;
 if(LOGO)document.querySelectorAll(".logo,.expand").forEach(l=>l.style.background="url("+LOGO+") center/cover no-repeat");
 
@@ -515,10 +516,8 @@ async function typeOut(el,full,signal,isStale){
  while(shown<tokens.length){
   if(isStale()||(signal&&signal.aborted))return false;
   const target=Math.floor((performance.now()-start)/dur*tokens.length);shown=Math.min(tokens.length,Math.max(shown+1,Math.min(target,shown+step)));
-  const h0=el.offsetHeight;
+  // The bubble grows with its text. Animating its height here lagged behind the text and clipped it.
   el.innerHTML=md(tokens.slice(0,shown).join(""));
-  const h1=el.scrollHeight;
-  if(Math.abs(h1-h0)>1){el.style.overflow="hidden";el.style.height=h0+"px";void el.offsetHeight;el.style.transition="height .22s cubic-bezier(.2,.7,.2,1)";el.style.height=h1+"px";clearTimeout(el._hT);el._hT=setTimeout(()=>{el.style.transition="";el.style.height="";el.style.overflow=""},240)}
   if(followOn||near())followBottom();
   updateJump();
   await nextFrame();
@@ -682,17 +681,18 @@ function accountLoading(){return gatesPassed()&&!!(accountSession&&accountSessio
 // A loading placeholder fades out (and is removed) when real content replaces it.
 function retireLoading(el,host){el.classList.add("out");host.prepend(el);setTimeout(()=>el.remove(),230)}
 // Local and account chats are not drawn until the access and disabled screens are passed; skeletons stand in for them.
-function revealAppData(){if(!gatesPassed())return;renderList();renderChat();renderSyncStatus()}
+function revealAppData(){if(!gatesPassed())return;listFadeNext=true;chatFadeNext=true;renderList();renderChat();renderSyncStatus()}
 var seenChatIds=null;
 function renderList(){
  closeMenu();list.classList.toggle("selecting",selecting);
  const ghostL=list.querySelector(":scope > .loading-skel"),wantSkel=accountLoading();
  if(wantSkel&&ghostL&&!ghostL.classList.contains("out"))return;
- list.innerHTML="";if(ghostL){retireLoading(ghostL,list);list.classList.add("list-in");clearTimeout(list._inT);list._inT=setTimeout(()=>list.classList.remove("list-in"),900)}
+ const fadeList=!!ghostL||listFadeNext;list.innerHTML="";if(ghostL)retireLoading(ghostL,list);if(fadeList){list.classList.add("list-in");clearTimeout(list._inT);list._inT=setTimeout(()=>list.classList.remove("list-in"),900)}
  if(!gatesPassed()){renderBulkBar();return}
  for(const id of [...selectedIds]){if(!S.chats.some(c=>c.id===id))selectedIds.delete(id)}
  if(wantSkel){const rows=Math.max(3,Math.floor((list.clientHeight||640)/59)-2);list.insertAdjacentHTML("beforeend",'<div class="loading-skel">'+skeletonCards(rows,"Loading your chats…","chat")+'</div>');renderBulkBar();return}
  renderBulkBar();
+ listFadeNext=false;
  const query=searchInput?searchInput.value.trim():"";
  if(searchClear)searchClear.hidden=!query;
  let entries;
@@ -956,7 +956,7 @@ function renderChat(fresh){
   {const cs=getComputedStyle(chatEl),spacer=parseFloat(getComputedStyle(chatEl,"::after").height)||0;chatEl.lastElementChild.style.padding=[cs.paddingTop,cs.paddingRight,(parseFloat(cs.paddingBottom)+spacer+(parseFloat(cs.rowGap)||0))+"px",cs.paddingLeft].join(" ")}
   return;
  }
- const c=C();const wasNear=near(),prevTop=chatEl.scrollTop,switching=lastChatRenderId!==(c&&c.id);lastChatRenderId=c&&c.id;jumpBtn.classList.add("is-hidden");updateModelUI();const ghostC=chatEl.querySelector(":scope > .loading-skel");chatEl.innerHTML="";if(ghostC)retireLoading(ghostC,chatEl);
+ const c=C();const wasNear=near(),prevTop=chatEl.scrollTop,switching=lastChatRenderId!==(c&&c.id);lastChatRenderId=c&&c.id;jumpBtn.classList.add("is-hidden");updateModelUI();const ghostC=chatEl.querySelector(":scope > .loading-skel");const fadeChat=!!ghostC||chatFadeNext||switching;chatFadeNext=false;chatEl.innerHTML="";if(ghostC)retireLoading(ghostC,chatEl);if(fadeChat){chatEl.classList.add("chat-in");clearTimeout(chatEl._inT);chatEl._inT=setTimeout(()=>chatEl.classList.remove("chat-in"),700)}
  if(!c||!c.m.length){
   chatEl.innerHTML='<div class="empty"><h2>WHW<b>ai</b><span class="beta-pill">Beta</span></h2><p>Ask anything to get started.</p></div>';
   return
@@ -1282,6 +1282,7 @@ accessForm.addEventListener("submit",async e=>{e.preventDefault();const code=acc
 
 function applySiteStatus(status){
  if(!status)return;
+ if(status.realtime)startRealtime(status.realtime);
  if(Array.isArray(status.models))updateAvailableModels(status.models);
  siteStatusLoaded=true;applyWhatsNewCfg(status.whatsNew);siteSignupMode=status.signupMode||"code";
  siteNoticeText=String(status.siteNotice||"").slice(0,600);siteNoticeDismissible=!!status.siteNoticeDismissible;siteNoticeOnGates=status.siteNoticeOnGates!==false;
@@ -1291,16 +1292,75 @@ function applySiteStatus(status){
  updateSchoolLock();
 }
 let siteStatusBusy=false;
-// Site status (kill switch, notices, what's new) is checked every 5 minutes. Returning to the tab checks again only if the last check is older than that.
-const SITE_STATUS_MS=300000;let siteStatusAt=0;
+// Site status (kill switch, notices, what's new) is pushed by the server. Returning to the tab refreshes it if the last check is older than a minute.
+const SITE_STATUS_RETURN_MS=60000;let siteStatusAt=0;
 async function refreshSiteStatus(){
  if(!API_URL||siteStatusBusy||document.hidden)return;
  siteStatusBusy=true;siteStatusAt=Date.now();
  try{const status=await post({action:"status_check"});applySiteStatus(status);if(status&&status.aiEnabled===false&&!aiDisabled)showAIDisabled()}catch(e){}
  finally{siteStatusBusy=false}
 }
-setInterval(refreshSiteStatus,SITE_STATUS_MS);
-document.addEventListener("visibilitychange",()=>{if(!document.hidden&&Date.now()-siteStatusAt>SITE_STATUS_MS)refreshSiteStatus()});
+// Push updates. The server sends a "changed" ping over a realtime connection, and the app then asks for fresh state once.
+// The 25-second heartbeat only keeps the connection open. It fetches nothing.
+const RT={cfg:null,ws:null,ref:0,hb:0,tries:0,opened:0,joined:new Set()};
+function rtRef(){RT.ref+=1;return String(RT.ref)}
+async function rtHash(value){
+ const digest=new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(String(value))));
+ let bin="";digest.forEach(b=>{bin+=String.fromCharCode(b)});
+ return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+async function rtTopics(){
+ const topics=["realtime:site","realtime:d-"+await rtHash(getDeviceId())];
+ if(accountSession&&accountSession.token)topics.push("realtime:s-"+await rtHash(accountSession.token));
+ return topics;
+}
+function rtSend(msg){if(RT.ws&&RT.ws.readyState===1)RT.ws.send(JSON.stringify(msg))}
+async function rtJoin(){
+ if(!RT.ws||RT.ws.readyState!==1)return;
+ const topics=await rtTopics();
+ topics.forEach(topic=>{
+  if(RT.joined.has(topic))return;
+  RT.joined.add(topic);
+  const ref=rtRef();
+  rtSend([ref,ref,topic,"phx_join",{config:{broadcast:{ack:false,self:false}}}]);
+ });
+}
+function rtPing(topic){
+ const t=String(topic||"").replace(/^realtime:/,"");
+ if(t==="site"||t.startsWith("d-"))refreshSiteStatus();
+ else if(t.startsWith("s-"))accountCheckNow();
+}
+function rtOnMessage(raw){
+ let msg;try{msg=JSON.parse(raw)}catch(e){return}
+ if(!Array.isArray(msg))return;
+ const topic=msg[2],event=msg[3],payload=msg[4]||{};
+ if(event==="broadcast"&&payload.event==="changed"){rtPing(topic);return}
+ if(event==="phx_error"||event==="phx_close"){RT.joined.delete(topic);setTimeout(rtJoin,5000)}
+}
+function rtConnect(){
+ if(!RT.cfg||(RT.ws&&RT.ws.readyState<2))return;
+ const ws=new WebSocket(RT.cfg.url.replace(/^https:/,"wss:").replace(/\/+$/,"")+"/realtime/v1/websocket?apikey="+encodeURIComponent(RT.cfg.key)+"&vsn=2.0.0");
+ RT.ws=ws;
+ ws.onopen=()=>{
+  RT.tries=0;RT.joined=new Set();
+  // After a reconnect, pings may have been missed, so ask once for current state.
+  if(RT.opened++>0){refreshSiteStatus();accountCheckNow()}
+  rtJoin();
+  clearInterval(RT.hb);RT.hb=setInterval(()=>rtSend([null,rtRef(),"phoenix","heartbeat",{}]),25000);
+ };
+ ws.onmessage=e=>rtOnMessage(e.data);
+ ws.onclose=()=>{
+  clearInterval(RT.hb);RT.ws=null;
+  const wait=Math.min(60000,2000*Math.pow(2,RT.tries));RT.tries++;
+  setTimeout(rtConnect,wait);
+ };
+}
+function startRealtime(cfg){
+ if(!cfg||!cfg.url||!cfg.key||RT.cfg||!(window.crypto&&crypto.subtle))return;
+ RT.cfg=cfg;rtConnect();
+}
+function rtRejoin(){RT.joined=new Set();rtJoin()}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&Date.now()-siteStatusAt>SITE_STATUS_RETURN_MS)refreshSiteStatus()});
 
 const titleRequests=new Set();
 async function genTitle(c){
@@ -2365,7 +2425,11 @@ function togglePanel(panel,btn,replay){const open=panel.hidden;open?showEl(panel
 function thinkingWorthShowing(m){const searched=Array.isArray(m.tools)&&m.tools.length>0;const sourced=Array.isArray(m.sources)&&m.sources.length>0;return searched||sourced||String(m.thinking||"").length>=500}
 function thinkingSteps(text){return String(text||"").replace(/([.!?])\s+(?=[A-Z])/g,"$1\n").split(/\n+/).map(s=>s.replace(/^[\s\-*•\d.)]+/,"").replace(/\s+/g," ").trim()).filter(s=>s.length>2).slice(0,14).map(s=>s.length>220?s.slice(0,217)+"…":s)}
 // Signed-in session check every 5 minutes (was every minute).
-setInterval(()=>{if(gatesPassed()&&accountSession&&accountSession.token&&accountReady&&!(accountSession.user&&accountSession.user.mustChange))post({action:"account_me",sessionToken:accountSession.token}).catch(e=>{if(e&&e.message==="invalid_session"&&accountSession){clearAccountSession();renderList();renderChat();toast("Your sign-in expired. Your chats are still saved on this device. Sign in again to sync them.",{act:{icon:"log-in",label:"Sign in",run:()=>openSettings(()=>renderAccountAuth("login"))}})}})},300000);
+async function accountCheckNow(){
+ if(!(gatesPassed()&&accountSession&&accountSession.token&&accountReady&&!(accountSession.user&&accountSession.user.mustChange)))return;
+ try{await post({action:"account_me",sessionToken:accountSession.token})}
+ catch(e){if(e&&e.message==="invalid_session"&&accountSession){clearAccountSession();renderList();renderChat();toast("Your sign-in expired. Your chats are still saved on this device. Sign in again to sync them.",{act:{icon:"log-in",label:"Sign in",run:()=>openSettings(()=>renderAccountAuth("login"))}})}}
+}
 var lastAcctLoading=null;
 function renderSyncStatus(){
  const ld=accountLoading();if(ld!==lastAcctLoading){const first=lastAcctLoading===null;lastAcctLoading=ld;if(!first){renderList();renderChat()}}
@@ -2837,7 +2901,7 @@ function renderSiteNotice(){
  }
 }
 function setAccountFromResult(result){
- accountSession={token:String(result.token||""),user:result.user||null};accountReady=true;applyModelList();updateSchoolLock();refreshSendState();renderSyncStatus();
+ accountSession={token:String(result.token||""),user:result.user||null};rtRejoin();accountReady=true;applyModelList();updateSchoolLock();refreshSendState();renderSyncStatus();
  try{if(accountSession.token)localStorage.setItem(ACCOUNT_SESSION_STORAGE_KEY,accountSession.token)}catch(e){}
 }
 function applyLoginChats(result){
@@ -2907,24 +2971,6 @@ function renderSettings(){
 const SET_ICONS={general:'settings-2',appearance:'sun',account:'user',data:'shield',admin:'star',stim:'sun'};
 // Desktop Settings: a sidebar (Account, Data & privacy, and Administration's tabs in a grouped bar) and one content pane. Phones keep the single-column list.
 const DESK_ADMIN_TABS=[["site","Site"],["accounts","Accounts"],["flags","Flags"],["usage","Usage"],["audit","Audit log"]];
-const DESK_SEARCH_ITEMS=[
- ["account","Account","Sign in, create account, profile color, change password, sign out, delete account","login signup profile color password sign out delete account sync"],
- ["data","Data & privacy","Export, import, or delete chats and local data","export import backup delete chats data privacy"],
- ["admin:site","Site settings","AI availability, access code, sign-up, announcement, school notice, and What's new","ai enabled access code sign-up announcement notice school lock whats new model"],
- ["admin:accounts","Accounts","Create accounts, roles, passwords, sessions, browser access, flags, and deletion","create account administrator admin promote demote temporary password reset sign out disable enable browser flag delete"],
- ["admin:flags","Flags","Review and resolve account or browser flags","review resolve flag abuse browser"],
- ["admin:usage","Usage","View model and account usage totals","tokens model usage daily account"],
- ["admin:audit","Audit log","Review administrative activity","audit log actions history"]
-];
-function deskSearch(query,results,nav,search,isAdmin){
- const q=String(query||"").trim().toLowerCase();
- if(!q){results.hidden=true;results.innerHTML="";nav.hidden=false;return}
- nav.hidden=true;
- const matches=DESK_SEARCH_ITEMS.filter(x=>(isAdmin||!x[0].startsWith("admin:"))&&(x[1]+" "+x[2]+" "+x[3]).toLowerCase().includes(q));
- results.hidden=false;
- results.innerHTML=matches.length?matches.map(x=>'<button type="button" class="set-search-result" data-search-key="'+escapeAttr(x[0])+'"><strong>'+esc(x[1])+'</strong><small>'+esc(x[2])+'</small></button>').join(""):'<p class="set-search-empty">No settings or admin options found for “'+esc(query.trim())+'”.</p>';
- results.querySelectorAll("[data-search-key]").forEach(b=>b.onclick=()=>{const key=b.dataset.searchKey;search.value="";deskSearch("",results,nav,search,isAdmin);deskGo(key)});
-}
 function isDeskSettings(){return !!(window.matchMedia&&matchMedia("(min-width:641px)").matches)}
 function deskIcon(paths,size){if(typeof paths==='string'&&paths[0]!=='<')return ic(paths,size||17,1.8);return '<svg viewBox="0 0 24 24" width="'+(size||17)+'" height="'+(size||17)+'" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+paths+'</svg>'}
 function deskFooterHtml(){
@@ -2934,15 +2980,10 @@ function deskSetTitle(t){$("modal-title").textContent="Settings"}
 function renderDeskSettings(active){
  const signed=!!(accountSession&&accountSession.token&&accountSession.user),isAdmin=signed&&accountSession.user.role==="admin";
  const adminBlock=isAdmin?'<div class="set-cap">Administration</div><div class="set-group">'+DESK_ADMIN_TABS.map(t=>'<button type="button" class="set-sub" data-desk="admin:'+t[0]+'"><span class="set-sub-ico">'+deskIcon(ADMIN_ICONS[t[0]]||"",14)+'</span><span>'+t[1]+'</span></button>').join("")+'</div>':"";
- mbodyOuter.innerHTML='<div class="set-wrap desk"><div class="set-side"><input type="search" class="set-search" placeholder="Search settings" aria-label="Search settings" autocomplete="off"><nav class="set-nav" aria-label="Settings sections"><button type="button" class="set-nav-btn" data-desk="account"><span class="set-ico" aria-hidden="true">'+deskIcon(SET_ICONS.account)+'</span><span>Account</span></button><button type="button" class="set-nav-btn" data-desk="data"><span class="set-ico" aria-hidden="true">'+deskIcon(SET_ICONS.data)+'</span><span>Data &amp; privacy</span></button>'+adminBlock+'</nav><div class="set-search-results" hidden aria-live="polite"></div><div class="set-side-foot">'+deskFooterHtml()+'</div></div><div class="set-pane" id="set-pane"></div></div>';
+ mbodyOuter.innerHTML='<div class="set-wrap desk"><div class="set-side"><nav class="set-nav" aria-label="Settings sections"><button type="button" class="set-nav-btn" data-desk="account"><span class="set-ico" aria-hidden="true">'+deskIcon(SET_ICONS.account)+'</span><span>Account</span></button><button type="button" class="set-nav-btn" data-desk="data"><span class="set-ico" aria-hidden="true">'+deskIcon(SET_ICONS.data)+'</span><span>Data &amp; privacy</span></button>'+adminBlock+'</nav><div class="set-side-foot">'+deskFooterHtml()+'</div></div><div class="set-pane" id="set-pane"></div></div>';
  mbody=$("set-pane");
  if(!window.__deskObs){window.__deskObs=new MutationObserver(()=>{const mc=document.querySelector("#modal .mcard");if(mc)mc.classList.toggle("settings-wide",!!mbodyOuter.querySelector(":scope > .set-wrap.desk"))});window.__deskObs.observe(mbodyOuter,{childList:true})}
  const mc0=document.querySelector("#modal .mcard");if(mc0)mc0.classList.add("settings-wide");
- const search=mbodyOuter.querySelector(".set-search");
- const searchResults=mbodyOuter.querySelector(".set-search-results"),nav=mbodyOuter.querySelector(".set-nav");
- const runSearch=()=>deskSearch(search.value,searchResults,nav,search,isAdmin);
- search.oninput=runSearch;
- search.onkeydown=e=>{if(e.key==="Enter"){const first=searchResults.querySelector("[data-search-key]");if(first){e.preventDefault();first.click()}}else if(e.key==="Escape"&&search.value){search.value="";runSearch()}};
  mbodyOuter.querySelectorAll("[data-desk]").forEach(b=>b.onclick=()=>deskGo(b.dataset.desk));
  mbodyOuter.querySelector("#privacy-open").onclick=e=>{e.preventDefault();renderPrivacyPolicy()};
  mbodyOuter.querySelector("#terms-open").onclick=e=>{e.preventDefault();renderTerms()};
@@ -3971,3 +4012,16 @@ function preSchoolWindow(now){const p=hstParts(now||new Date());const wd=["Sun",
 let preDismissed=false;
 function updateSchoolNotice(){const pre=$("pre-school-reminder");if(pre){const on=preSchoolWindow(new Date())&&!preDismissed;if(on){if(pre.hidden)showEl(pre)}else hideEl(pre,260)}const inWin=inSchoolWindow();const el=$("school-notice");if(el){if(inWin){if(el.hidden)showEl(el)}else hideEl(el,260)}const g=$("gate-school");if(g)g.hidden=!inWin;updateSchoolLock()}
 updateSchoolNotice();setInterval(updateSchoolNotice,10000);
+// Fade for show and hide: elements that start out hidden, or are added hidden, get the .fx class.
+// Skips elements that already animate their own open and close (modals, toasts, menus, the jump button).
+const FX_SKIP='#modal,.modal,.mcard,.toast-slot,.app-confirm-overlay,.cmenu,.pop,.info-pop,.jump-bottom';
+function tagFx(root){
+ if(!root||root.nodeType!==1)return;
+ const hits=[root,...root.querySelectorAll("[hidden]")];
+ hits.forEach(el=>{if(el.hasAttribute("hidden")&&!el.closest(FX_SKIP))el.classList.add("fx")});
+}
+tagFx(document.body);
+new MutationObserver(recs=>{for(const r of recs){
+ if(r.type==="attributes"){if(!r.target.closest(FX_SKIP))r.target.classList.add("fx")}
+ else r.addedNodes.forEach(n=>tagFx(n));
+}}).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:["hidden"]});
