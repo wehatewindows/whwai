@@ -1,3 +1,7 @@
+// Kill switch: set AI_ENABLED to false to turn WHWai off completely. The app scripts do not run, so the backend is never contacted.
+var AI_ENABLED=true;
+window.WHWAI_ON=AI_ENABLED;
+if(!AI_ENABLED)document.documentElement.classList.add("ai-off");
 (function(){try{
  // The notch and home-indicator fallbacks only apply when WHWai runs as a Home Screen app (no browser UI).
  // In a browser tab the browser already keeps the page clear of them, so the fallbacks are 0.

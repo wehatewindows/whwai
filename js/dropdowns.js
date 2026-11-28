@@ -1,3 +1,4 @@
+if(window.WHWAI_ON){
 /* Custom dropdowns (native select kept as the value store); menus float above everything */
 (function(){
  const chev=ic('chevron-down',16,2);
@@ -46,3 +47,5 @@
   window.fieldError(t,msgOf(t),first);
  },true);
 })();
+
+}

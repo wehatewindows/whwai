@@ -21,9 +21,14 @@ html.geo-block body>#geo-screen{display:block!important}
 #geo-screen .url{position:absolute;left:0;right:0;top:80%;margin:0;text-align:center;font-size:clamp(12px,2vh,16px);letter-spacing:.01em}
 #geo-screen .url a{color:#555;text-decoration:none}
 #geo-screen .url a:hover{text-decoration:underline}
+html.ai-off body>*{display:none!important}
+html.ai-off body>#kill-screen{display:block!important}
+#kill-screen{display:none;position:fixed;inset:0;margin:0;background:#fff}
+#kill-screen .mark{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(30vw,33vh,150px);height:auto}
 </style>
 </head>
 <body class="access-locked">
+<div id="kill-screen" role="alert"><svg class="mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="#8c8c8c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg></div>
 <div id="geo-screen" role="alert" aria-live="polite">
 <svg class="mark" viewBox="0 0 150 120" aria-hidden="true" focusable="false">
   <g transform="translate(50 60) scale(4.6) translate(-12 -12)" fill="none" stroke="#8c8c8c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></g>

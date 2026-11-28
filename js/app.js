@@ -1,3 +1,4 @@
+if(window.WHWAI_ON){
 document.addEventListener("error",e=>{const t=e.target;if(t&&t.tagName==="IMG"&&t.classList.contains("fav"))t.remove()},true);
 (function(){try{var f=window.self!==window.top,c=window.matchMedia&&matchMedia("(pointer:coarse)").matches;if(!(f&&c))return;var sw=screen.width||innerWidth,k=Math.max(1,innerWidth/sw),px=Math.max(22,Math.ceil(16*k)+4);document.documentElement.style.setProperty("--field-fs",px+"px")}catch(e){}})();
 
@@ -4025,3 +4026,5 @@ new MutationObserver(recs=>{for(const r of recs){
  if(r.type==="attributes"){if(!r.target.closest(FX_SKIP))r.target.classList.add("fx")}
  else r.addedNodes.forEach(n=>tagFx(n));
 }}).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:["hidden"]});
+
+}
