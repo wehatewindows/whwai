@@ -1123,11 +1123,29 @@ const ERR_TEXT="WHWai is busy or can't be reached right now. Wait a moment, then
 // Declared before the startup status check, which calls post() and so getDeviceId().
 const DEVICE_STORAGE_KEY="whwai.device.v1";let cachedDeviceId="";
 const hist=c=>c.m.filter(m=>!m.err).slice(-14).map(m=>({r:m.r,x:m.x}));
+// Password scheme v4: PBKDF2 in the browser. The salt is tied to the username, so it is the same on every sign-in.
+async function deriveKeyV4(password, username) {
+  var enc = new TextEncoder();
+  var base = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveBits"]);
+  var bits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: enc.encode("whwai-v4:" + username), iterations: 600000 }, base, 256);
+  var bin = ""; new Uint8Array(bits).forEach(function (b) { bin += String.fromCharCode(b); });
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+// Breached-password check, run in the browser. Only the first five characters of the SHA-1 hash are sent.
+async function breachCount_(password) {
+  var digest = new Uint8Array(await crypto.subtle.digest("SHA-1", new TextEncoder().encode(password)));
+  var hex = Array.from(digest, function (b) { return b.toString(16).padStart(2, "0"); }).join("").toUpperCase();
+  var res = await fetch("https://api.pwnedpasswords.com/range/" + hex.slice(0, 5), { headers: { "Add-Padding": "true" } });
+  if (!res.ok) return 0;
+  var suffix = hex.slice(5), lines = (await res.text()).split("\n");
+  for (var i = 0; i < lines.length; i++) { var parts = lines[i].trim().split(":"); if (parts[0] === suffix) return Number(parts[1]) || 0; }
+  return 0;
+}
 async function post(body,externalSignal){
  const action=body.action;
  if(!body.deviceId){const d=getDeviceId();if(d)body={...body,deviceId:d}}
  if(action!=="access_check"&&action!=="status_check"){try{const token=localStorage.getItem(ACCESS_TOKEN_KEY);if(token)body={...body,accessToken:token}}catch(e){}}
- if(accountSession&&accountSession.token&&!body.sessionToken&&["auth_login","auth_signup","auth_admin_login","status_check","access_check"].indexOf(action)===-1)body={...body,sessionToken:accountSession.token};
+ if(accountSession&&accountSession.token&&!body.sessionToken&&["auth_login","auth_signup","auth_admin_login","auth_scheme","status_check","access_check"].indexOf(action)===-1)body={...body,sessionToken:accountSession.token};
  const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),45000);
  const forwardAbort=()=>ctl.abort();
  if(externalSignal){if(externalSignal.aborted)ctl.abort();else externalSignal.addEventListener("abort",forwardAbort,{once:true})}
@@ -3202,8 +3220,9 @@ function renderAccountAuth(mode){
   if(signup&&password!==mbody.querySelector("#account-password-confirm").value){showAccountAuthError("The passwords do not match.",mbody.querySelector("#account-password-confirm"));return}
   const submit=mbody.querySelector("#account-auth-submit");submit.disabled=true;submit.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>'+(signup?"Creating…":"Signing in…");
   try{
-   const body={action:signup?"auth_signup":"auth_login",username,password,deviceId:getDeviceId()};
-   if(signup)body.acknowledgeBreached=!!($("breach-ack")&&$("breach-ack").checked);
+   if(signup&&!($("breach-ack")&&$("breach-ack").checked)&&await breachCount_(password).catch(()=>0)>0)throw Object.assign(new Error("breached_password_confirm"),{payload:{error:"breached_password_confirm",message:"This password has appeared in a known data breach. You can keep it, but it is not safe. Tick the box to confirm you understand the risk."}});
+   const body={action:signup?"auth_signup":"auth_login",username,derived:await deriveKeyV4(password,username),deviceId:getDeviceId()};
+   if(!signup&&(await post({action:"auth_scheme",username})).scheme!=="v4")body.password=password;
    if(signup&&siteSignupMode==="code")body.inviteCode=mbody.querySelector("#account-invite-code").value.trim();
    const result=await post(body);
    if(!result||!result.ok||!result.token)throw Object.assign(new Error(result&&result.error||"account_action_failed"),{payload:result});
@@ -3249,7 +3268,11 @@ function renderPasswordChange(required){
  enhanceAuthForm(true,{pw:"new-password",pc:"new-password-confirm"});const form=$("password-change-form");if(!required)$("password-cancel").onclick=renderAccount;
  form.onsubmit=async e=>{e.preventDefault();const next=$("new-password").value,confirmPassword=$("new-password-confirm").value;if(next.length<8){passwordError("Choose a password with at least 8 characters.",$("new-password"));return}if(next!==confirmPassword){passwordError("The passwords do not match.",$("new-password-confirm"));return}
   const b=$("password-change-submit");b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Saving…';
-  try{const result=await post({action:"account_password_change",currentPassword:required?"":($("current-password")?$("current-password").value:""),newPassword:next,acknowledgeBreached:!!($("breach-ack")&&$("breach-ack").checked)});if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});accountSession.user=result.user||accountSession.user;accountReady=true;toast("Password updated.");if(required){accountInitialSyncPending=true;syncAccountChatsNow()}if(required&&accountSession.user&&accountSession.user.role==="admin")renderAdminPanel("site");else renderAccount()}
+  try{if(!($("breach-ack")&&$("breach-ack").checked)&&await breachCount_(next).catch(()=>0)>0)throw Object.assign(new Error("breached_password_confirm"),{payload:{error:"breached_password_confirm",message:"This password has appeared in a known data breach. You can keep it, but it is not safe. Tick the box to confirm you understand the risk."}});
+   const user=accountSession.user||{},currentPw=required?"":($("current-password")?$("current-password").value:"");
+   const body={action:"account_password_change",newDerived:await deriveKeyV4(next,user.username)};
+   if(!required){body.currentDerived=await deriveKeyV4(currentPw,user.username);if(user.passwordScheme!=="v4")body.currentPassword=currentPw}
+   const result=await post(body);if(!result||!result.ok)throw Object.assign(new Error(result&&result.error||"failed"),{payload:result});accountSession.user=result.user||accountSession.user;accountReady=true;toast("Password updated.");if(required){accountInitialSyncPending=true;syncAccountChatsNow()}if(required&&accountSession.user&&accountSession.user.role==="admin")renderAdminPanel("site");else renderAccount()}
   catch(err){if(err&&err.payload&&err.payload.error==="breached_password_confirm")showBreachConfirm($("password-change-error"),err.payload.message);else{const msg=err&&err.payload&&err.payload.message||"Couldn't change the password. Try again.";passwordError(msg,/current|incorrect|wrong/i.test(msg)&&$("current-password")?$("current-password"):$("new-password"))}b.disabled=false;b.textContent="Save password"}
  };
 }
@@ -3985,7 +4008,7 @@ $("access-admin-open").onclick=()=>gateAdminMode(true);$("access-admin-back").on
 $("access-admin-form").onsubmit=async e=>{
  e.preventDefault();const username=$("access-admin-user").value.trim().toLowerCase(),password=$("access-admin-password").value,b=$("access-admin-submit"),error=$("access-admin-error");if(!username||!password)return;
  b.disabled=true;b.innerHTML='<span class="sync-spinner" aria-hidden="true"></span>Signing in…';error.hidden=true;
- try{const result=await post({action:"auth_admin_login",username,password});if(!result||!result.ok||!result.token)throw Object.assign(new Error(result&&result.error||"invalid_admin_credentials"),{payload:result});setAccountFromResult(result);if(result.selfDisabled){selfDisabledInfo={account:result.selfDisabled,browser:result.selfBrowser||null,userId:result.selfId||""};leaveDisabledGate()}$("access-admin-password").value="";hideEl(accessGate);openApp(true);if(result.user&&result.user.mustChange){openSettings();renderRequiredPasswordChange()}else{openSettings(()=>renderAdminPanel("site"),"admin:site")}}
+ try{const adminBody={action:"auth_admin_login",username,derived:await deriveKeyV4(password,username)};if((await post({action:"auth_scheme",username})).scheme!=="v4")adminBody.password=password;const result=await post(adminBody);if(!result||!result.ok||!result.token)throw Object.assign(new Error(result&&result.error||"invalid_admin_credentials"),{payload:result});setAccountFromResult(result);if(result.selfDisabled){selfDisabledInfo={account:result.selfDisabled,browser:result.selfBrowser||null,userId:result.selfId||""};leaveDisabledGate()}$("access-admin-password").value="";hideEl(accessGate);openApp(true);if(result.user&&result.user.mustChange){openSettings();renderRequiredPasswordChange()}else{openSettings(()=>renderAdminPanel("site"),"admin:site")}}
  catch(err){error.hidden=true;window.fieldError($("access-admin-password"),err&&err.payload&&err.payload.message||"Invalid admin username or password.",true)}
  finally{b.disabled=false;b.textContent="Sign in"}
 };
