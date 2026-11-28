@@ -7,3 +7,9 @@
  d.style.setProperty("--safe-top-fallback",(standalone?(notch?59:phone?20:0):0)+"px");
  d.style.setProperty("--safe-bottom-fallback",(notch?34:0)+"px")
 }catch(e){}})();
+// Hawaii-only: if the browser's time zone is not Hawaii's, hide the app and show the support screen.
+// This is a light check only. The browser reports its own time zone, so it is not a security control.
+(function(){try{
+ var tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+ if(tz&&tz!=="Pacific/Honolulu"&&tz!=="US/Hawaii")document.documentElement.classList.add("geo-block")
+}catch(e){}})();
