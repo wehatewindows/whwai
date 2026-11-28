@@ -1,4 +1,5 @@
-// Kill switch: set AI_ENABLED to false to turn WHWai off completely. The app scripts do not run, so the backend is never contacted.
+// Kill switch: set AI_ENABLED to false to hide WHWai and stop the app from running in the browser, so the backend is not contacted.
+// This is only a front-end switch. Anyone with the source can change it back. To block the backend too, set WHWAI_AI_ENABLED to false in Apps Script Script Properties.
 var AI_ENABLED=true;
 window.WHWAI_ON=AI_ENABLED;
 if(!AI_ENABLED)document.documentElement.classList.add("ai-off");
