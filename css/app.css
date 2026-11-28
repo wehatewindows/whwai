@@ -169,7 +169,7 @@ svg{display:block}
 .mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;font-size:18px}
 .mh button{border:0;background:var(--bub);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:18px;line-height:1;padding:0}
 .mcard a{color:#2559c9}
-.mcard h3{margin:10px 0 6px;font-size:16px}.mcard p{margin:0 0 10px}.sm{font-size:13px;color:var(--mute)}
+.mcard h3{margin:10px 0 6px;font-size:16px}.mcard h4,.policy-card h4{margin:10px 0 4px;font-size:14px;font-weight:600}.mcard p{margin:0 0 10px}.sm{font-size:13px;color:var(--mute)}
 
 
 .key{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--bub);border-radius:14px;padding:10px 14px;margin-bottom:10px;font-size:20px;font-weight:700;letter-spacing:.06em}.key-value{min-width:0;overflow-wrap:anywhere}.btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
